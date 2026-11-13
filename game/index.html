@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="de" class="is-boot-splash">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta id="theme-color" name="theme-color" content="#08080a" />
+    <meta name="description" content="Squish – ein entspannendes Merge-Spiel." />
+    <title>Squish attack</title>
+    <meta name="application-name" content="Squish attack" />
+    <meta name="apple-mobile-web-app-title" content="Squish attack" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <link rel="preload" as="image" href="assets/squish-attack-logo-v1.png" fetchpriority="high" />
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/squishy-v1-180.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/squishy-v1-32.png" />
+    <link rel="icon" type="image/png" sizes="64x64" href="icons/squishy-v1-64.png" />
+    <link rel="manifest" href="manifest.webmanifest?v=glass-menu-1" />
+    <style>
+      :root { color-scheme: dark; font-family: ui-rounded, "SF Pro Rounded", "Avenir Next", system-ui, sans-serif; }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; }
+      body { background: #07546a; overflow-x: hidden; }
+      .water { position: fixed; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; background: #0b7993; }
+      .wash { position: fixed; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(2, 30, 35, .14), transparent 28%, rgba(0, 22, 32, .1)); pointer-events: none; }
+      .game { width: min(100%, 980px); min-height: 100svh; margin: 0 auto; padding: clamp(18px, 3vw, 36px) clamp(8px, 2vw, 26px) 28px; display: flex; flex-direction: column; gap: clamp(18px, 3vw, 30px); }
+      .topbar { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(42px, 1fr); align-items: start; gap: clamp(6px, 1.8vw, 18px); }
+      .brand { padding-top: 9px; text-shadow: 0 2px 16px rgba(0, 34, 35, .5); }
+      .wordmark { font-size: clamp(2rem, 7vw, 3.85rem); font-weight: 300; letter-spacing: .14em; line-height: .85; color: #fff; white-space: nowrap; }
+      .wordmark sup { display: inline-block; margin-left: .05em; font-size: .42em; font-weight: 500; letter-spacing: 0; vertical-align: top; transform: translateY(-.1em); }
+      .motto { margin: 12px 0 0; color: rgba(255,255,255,.95); font-size: clamp(.6rem, 2vw, .88rem); font-weight: 700; letter-spacing: .3em; white-space: nowrap; }
+      .scores { width: clamp(112px, 25vw, 190px); border: 1px solid rgba(255,255,255,.28); border-radius: 25px; overflow: hidden; background: linear-gradient(145deg, rgba(9, 51, 63, .84), rgba(14, 71, 84, .68)); box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 11px 28px rgba(0, 36, 43, .22); backdrop-filter: blur(12px); }
+      .score { padding: 14px 10px 15px; text-align: center; }
+      .score-label { display: block; color: #fff1a8; font-size: .69rem; font-weight: 800; letter-spacing: .16em; }
+      .score-value { display: grid; place-items: center; margin-top: 6px; }
+      .best-tile { width: clamp(44px, 11vw, 72px); font-size: clamp(1.25rem, 4vw, 2.25rem); }
+      .score-value .best-tile.long-number { font-size: clamp(.65rem, 2.6vw, 1.35rem); }
+      .pause { justify-self: end; width: clamp(48px, 8.5vw, 64px); aspect-ratio: 1; border: 1px solid rgba(255,255,255,.33); border-radius: 50%; color: white; background: rgba(13, 40, 36, .6); box-shadow: inset 0 1px 1px rgba(255,255,255,.18), 0 7px 19px rgba(0,35,31,.25); backdrop-filter: blur(8px); font-size: 1.45rem; line-height: 1; cursor: pointer; }
+      .pause:focus-visible { outline: 3px solid #fff4ad; outline-offset: 3px; }
+      .playfield { align-self: center; position: relative; width: min(100%, 860px); margin: clamp(24px, 6svh, 105px) auto 0; filter: drop-shadow(0 20px 17px rgba(0, 35, 40, .36)); touch-action: none; user-select: none; -webkit-user-select: none; }
+      .board { display: block; width: 100%; height: auto; border-radius: clamp(20px, 4vw, 38px); pointer-events: none; }
+      .tiles { position: absolute; inset: 0; pointer-events: none; }
+      .well-fronts, .well-fronts svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+      .board-tile.is-travelling { z-index: 12; }
+      .effects { position: absolute; inset: 0; z-index: 14; pointer-events: none; }
+      .combo-badge { position: absolute; margin: 0; font-weight: 900; line-height: 1; white-space: nowrap; text-shadow: 0 2px 0 #176079, 0 4px 12px rgba(0,35,50,.55); transform: translate(-50%, -50%); }
+      .combo-badge { left: 50%; top: 4%; padding: .32em .7em; border-radius: 999px; border: 1px solid rgba(255,240,173,.65); color: #fff1a5; background: rgba(6,65,78,.85); box-shadow: 0 5px 20px rgba(0,35,50,.25); font-size: clamp(.95rem, 4vw, 2rem); letter-spacing: .03em; }
+      .merge-ring { position: absolute; height: auto; aspect-ratio: 1.35; border: 2px solid var(--effect-color, #c6ffff); border-radius: 50%; box-shadow: 0 0 12px rgba(181,255,255,.6); transform: translate(-50%, -50%); }
+      .merge-bubble { position: absolute; width: clamp(5px, 1.5vw, 12px); aspect-ratio: 1; border: 1px solid rgba(255,255,255,.9); border-radius: 50%; background: radial-gradient(circle at 30% 25%, white, var(--effect-color, #83e8ef) 55%, rgba(72,205,224,.3)); box-shadow: 0 0 6px rgba(207,255,255,.5); }
+      .merge-charge { position: absolute; aspect-ratio: 1.1; border: 2px solid #fff2b7; border-radius: 32%; background: radial-gradient(ellipse, rgba(255,231,147,.16), rgba(255,231,147,.38) 60%, transparent 74%); box-shadow: 0 0 15px rgba(255,235,152,.7), inset 0 0 10px rgba(255,247,191,.5); transform: translate(-50%, -50%); }
+      .merge-ring.is-upgraded { border-width: 3px; box-shadow: 0 0 18px rgba(255,228,154,.85); }
+      .upgrade-badge { position: absolute; display: grid; gap: 3px; justify-items: center; max-width: 40%; padding: 7px 13px; border: 1px solid #ffe8a4; border-radius: 16px; background: linear-gradient(135deg, rgba(5,49,65,.98), rgba(12,80,92,.97)); color: #fff1aa; box-shadow: 0 4px 20px rgba(0,35,50,.4), 0 0 16px rgba(255,216,112,.3); transform: translate(-50%, -50%); text-align: center; }
+      .upgrade-jump { font-size: clamp(1rem, 4vw, 2.2rem); line-height: 1; font-weight: 900; white-space: nowrap; }
+      .upgrade-caption { font-size: clamp(.75rem, 2.6vw, .875rem); line-height: 1.2; font-weight: 800; letter-spacing: .03em; }
+      .tile { --hue: 0deg; position: relative; display: grid; place-items: center; aspect-ratio: 1; color: #f7ffff; font-weight: 800; line-height: 1; isolation: isolate; }
+      .gel-idle { display: grid; place-items: center; width: 100%; height: 100%; transform-origin: 50% 89%; animation: gel-idle-sway var(--idle-duration, 4.8s) cubic-bezier(.45, 0, .55, 1) var(--idle-delay, 0s) infinite; }
+      .game.is-paused .gel-idle { animation-play-state: paused; }
+      @keyframes gel-idle-sway {
+        0%, 100% { transform: skewX(0deg) scaleY(1); }
+        24% { transform: skewX(var(--idle-lean)) scaleY(calc(1 - var(--idle-squash))); }
+        57% { transform: skewX(calc(var(--idle-lean) * -.8)) scaleY(calc(1 + var(--idle-squash) * .8)); }
+        81% { transform: skewX(calc(var(--idle-lean) * .45)) scaleY(calc(1 - var(--idle-squash) * .35)); }
+      }
+      .gel-body { position: relative; display: grid; place-items: center; width: 100%; height: 100%; transform-origin: 50% 89%; filter: drop-shadow(0 5px 3px rgba(3, 42, 68, .42)) drop-shadow(0 8px 7px rgba(2, 32, 48, .24)); }
+      .board-tile .gel-body { filter: drop-shadow(0 2px 3px rgba(52,36,21,.38)) drop-shadow(2px 5px 5px rgba(44,31,21,.23)); }
+      .gel-skin { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: contain; filter: hue-rotate(var(--hue)) saturate(1.08); pointer-events: none; }
+      .tile-number { position: relative; z-index: 1; padding-bottom: .05em; color: var(--number-ink, #f7ffff); text-shadow: 0 2px 1px rgba(255,255,255,.26), 0 3px 4px rgba(0,37,91,.5); pointer-events: none; }
+      .tile[data-material="Perle"] .tile-number, .tile[data-material="Gold"] .tile-number { text-shadow: 0 1px 2px rgba(255,255,255,.8), 0 0 5px rgba(255,255,255,.45); }
+      .board-tile { position: absolute; z-index: var(--row-z, 0); aspect-ratio: auto; transform: translate(-50%, -50%); font-size: clamp(1.3rem, 6vw, 4rem); transition: left 290ms cubic-bezier(.22,.8,.3,1), top 290ms cubic-bezier(.22,.8,.3,1), width 290ms ease-out, height 290ms ease-out, opacity 210ms ease, transform 210ms ease; will-change: left, top; }
+      .board-tile .tile-number { font-size: calc(1em * var(--row-scale, 1)); transition: font-size 290ms ease-out; }
+      .board-tile .gel-plane { --plane-perspective: 220px; display: grid; place-items: center; width: 100%; height: 100%; transform: perspective(var(--plane-perspective)) rotateX(var(--plane-pitch, 18deg)) rotateY(var(--plane-yaw, 0deg)) skewX(var(--plane-shear, 0deg)) scaleY(var(--plane-height, 1.05)); transform-origin: 50% 55%; transition: transform 290ms cubic-bezier(.22,.8,.3,1); }
+      .board-tile.is-pushing, .board-tile.is-pushing .gel-plane, .board-tile.is-pushing .tile-number { transition: none; }
+      .board-tile .gel-skin { object-fit: fill; }
+      .tile.long-number { font-size: clamp(.7rem, 3.2vw, 2.3rem); }
+      .gesture-note { position: absolute; left: 50%; bottom: 3%; transform: translateX(-50%); max-width: 86%; width: max-content; padding: 6px 12px; border-radius: 999px; color: #fff; background: rgba(4,47,62,.73); backdrop-filter: blur(8px); font-size: .82rem; font-weight: 650; text-align: center; text-shadow: 0 1px 4px rgba(0,0,0,.4); pointer-events: none; transition: opacity .3s ease; }
+      .gesture-note[hidden] { display: none; }
+      .preview { align-self: center; width: clamp(245px, 48vw, 420px); aspect-ratio: 2.35; display: grid; place-items: center; overflow: hidden; border: 1px solid rgba(255,255,255,.48); border-radius: clamp(26px, 4vw, 42px); background: linear-gradient(145deg, rgba(20, 87, 104, .64), rgba(31, 119, 137, .32)); box-shadow: inset 0 1px 1px rgba(255,255,255,.35), 0 13px 28px rgba(0, 45, 56, .25); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+      .queue { display: flex; justify-content: center; align-items: center; gap: 2%; width: 100%; height: 100%; padding: 5%; }
+      .preview-tile { width: 28%; max-height: 100%; font-size: clamp(1.3rem, 4.6vw, 3.5rem); }
+      .veil { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 24px; background: rgba(0,28,39,.56); backdrop-filter: blur(8px); }
+      .veil[hidden] { display: none; }
+      .dialog { width: min(100%, 350px); padding: 28px; border: 1px solid rgba(255,255,255,.4); border-radius: 28px; color: white; text-align: center; background: linear-gradient(145deg, rgba(8,62,75,.96), rgba(8,83,99,.92)); box-shadow: 0 20px 55px rgba(0,0,0,.3); }
+      .dialog h2 { margin: 0 0 9px; font-size: 1.6rem; }
+      .dialog p { margin: 0 0 22px; line-height: 1.45; }
+      .dialog button { min-height: 44px; margin: 4px; padding: 9px 18px; border: 1px solid rgba(255,255,255,.5); border-radius: 999px; color: white; background: rgba(255,255,255,.15); font: inherit; font-weight: 700; cursor: pointer; }
+      .dialog button:first-of-type { background: #f6dc7b; color: #164653; }
+      .dialog button[hidden] { display: none; }
+      @media (max-width: 550px) { .wordmark { font-size: clamp(1.9rem, 7vw, 2.3rem); letter-spacing: .09em; } .motto { font-size: .58rem; letter-spacing: .13em; } .score { padding: 9px 5px 10px; } .score-label { font-size: .58rem; } .score-value { font-size: 1.35rem; } .pause { width: 42px; font-size: 1.15rem; } .board-tile .gel-plane { --plane-perspective: 110px; } }
+      @media (max-width: 380px) { .topbar { gap: 5px; } .scores { width: 112px; } .wordmark { font-size: 1.8rem; } .motto { font-size: .52rem; } .pause { width: 38px; } }
+      @media (prefers-reduced-motion: reduce) { .water { display: none; } body { background: radial-gradient(circle at 50% 10%, #59cce0, #0b6d84 55%, #045265); } .board-tile, .board-tile .gel-plane, .board-tile .tile-number { transition-duration: .01ms; } .gel-idle { animation: none; } }
+      .brand-splash {position:fixed;inset:0;z-index:2000;display:grid;place-items:center;padding:16px;background:#08080a radial-gradient(ellipse at 50% 44%,#141824 0%,#0b0d13 32%,#08080a 70%);color-scheme:dark;}
+      .brand-splash[hidden] {display:none;}
+      .brand-lockup {display:grid;justify-items:center;gap:22px;width:min(78vw,540px);}
+      .brand-splash img {display:block;width:100%;height:auto;max-height:54svh;object-fit:contain;}
+      .squish-loader {width:min(100%,302px);text-align:center;}
+      .squish-loader-track {position:relative;height:43px;padding:7px 8px;border:1px solid #68d3ff55;border-radius:13px;background:#111824;box-shadow:inset 0 1px #ffffff16,0 0 28px #31bfff29;}
+      .squish-loader-fill {position:absolute;inset:0;border-radius:12px;background:linear-gradient(90deg,#095c826e,#48317d91,#901c6670);transform:scaleX(0);transform-origin:left;}
+      .squish-loader-jellies {position:relative;display:flex;align-items:center;gap:4px;height:100%;}
+      .loading-squish {position:relative;flex:1;min-width:0;height:100%;display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--gel),white 24%);border-radius:8px;background:linear-gradient(153deg,color-mix(in srgb,var(--gel),white 28%),var(--gel) 52%,color-mix(in srgb,var(--gel),#08080a 28%));box-shadow:inset 0 1px #ffffff88,inset 0 -2px 4px #0003,0 0 8px color-mix(in srgb,var(--gel),transparent 52%);color:#fff;font:900 13px/1 ui-rounded,system-ui,sans-serif;text-shadow:0 1px 3px #051124ce;opacity:0;transform:translateY(-22px) scale(.7);transform-origin:center bottom;}
+      .squish-loader-caption {margin:12px 0 0;color:#b0bed1;font:650 12px/1.4 ui-rounded,system-ui,sans-serif;letter-spacing:.015em;}
+      [data-loading="running"] .squish-loader-fill {animation:loader-fill var(--loading-time,3820ms) linear both;}
+      [data-loading="running"] .loading-squish {animation:loader-plop 440ms cubic-bezier(.2,.7,.3,1) both;animation-delay:calc(var(--loading-time,3820ms) * var(--step));}
+      [data-loading="complete"] .squish-loader-fill {transform:scaleX(1);}
+      [data-loading="complete"] .loading-squish {opacity:1;transform:none;}
+      @keyframes loader-fill {to {transform:scaleX(1);}}
+      @keyframes loader-plop {0% {opacity:0;transform:translateY(-22px) scale(.7);}32% {opacity:1;transform:translateY(0) scale(1.13,.69);}60% {opacity:1;transform:translateY(-4px) scale(.91,1.12);}82% {opacity:1;transform:translateY(0) scale(1.04,.93);}100% {opacity:1;transform:none;}}
+      @media(max-height:500px) {.brand-lockup {gap:13px;}.brand-splash img {max-height:36svh;}.squish-loader-track {height:36px;padding:5px 7px;}.loading-squish {font-size:11px;}.squish-loader-caption {margin-top:8px;}}
+      @media(prefers-reduced-motion:reduce) {[data-loading="running"] .loading-squish {animation-name:loader-appear;animation-duration:1ms;}@keyframes loader-appear {to {opacity:1;transform:none;}}}
+      /* A single table menu follows the four-second logo splash. */
+      .start-menu-overlay {position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:16px;background:#08080ad1;}
+      .start-menu-overlay[hidden],.menu-button[hidden],.loading-retry[hidden] {display:none;}
+        </style>
+    <link rel="stylesheet" href="graphics.css" />
+    <link rel="stylesheet" href="fixed-screen.css?v=glass-menu-1" />
+    <link rel="stylesheet" href="duel.css?v=speed-2" />
+    <link rel="stylesheet" href="reward-effects.css?v=vfx-1" />
+    <link rel="stylesheet" href="menu.css?v=glass-title-1" />
+    <link rel="stylesheet" href="title-menu.css?v=3" />
+    <link rel="stylesheet" href="clean-screen.css?v=speed-2" />
+    <link rel="stylesheet" href="world-menu.css?v=speed-2" />
+    <link rel="stylesheet" href="combo.css?v=combo-1" />
+  </head>
+  <body>
+    <section class="brand-splash" id="brand-splash" aria-label="Squish attack wird geladen">
+      <div class="brand-lockup">
+      <img id="brand-logo" src="assets/squish-attack-logo-v1.png" alt="Squish attack" fetchpriority="high" decoding="async" />
+      <div class="squish-loader">
+        <div class="squish-loader-track" id="splash-progress" role="progressbar" aria-label="Squish wird vorbereitet" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="squish-loader-fill" aria-hidden="true"></div>
+          <div class="squish-loader-jellies" aria-hidden="true">
+            <span class="loading-squish" style="--gel:#00c9ff;--step:.02">1</span>
+            <span class="loading-squish" style="--gel:#ff2455;--step:.14">2</span>
+            <span class="loading-squish" style="--gel:#39ff29;--step:.26">3</span>
+            <span class="loading-squish" style="--gel:#ff7816;--step:.38">4</span>
+            <span class="loading-squish" style="--gel:#a440ff;--step:.50">5</span>
+            <span class="loading-squish" style="--gel:#fff13b;--step:.62">6</span>
+            <span class="loading-squish" style="--gel:#ff42ca;--step:.74">7</span>
+            <span class="loading-squish" style="--gel:#11ffe0;--step:.86">8</span>
+          </div>
+        </div>
+        <p class="squish-loader-caption" id="splash-caption">Noch kurz zusammenquetschen …</p>
+      </div>
+      </div>
+    </section>
+    <section class="start-menu-overlay" id="loading-screen" data-phase="loading" hidden inert>
+      <nav class="title-menu" id="main-menu" role="dialog" aria-modal="true" aria-labelledby="main-menu-title" aria-busy="true" tabindex="-1">
+        <div class="title-brand">
+          <i class="title-gel title-gel-cyan" aria-hidden="true"></i>
+          <i class="title-gel title-gel-violet" aria-hidden="true"></i>
+          <i class="title-gel title-gel-rose" aria-hidden="true"></i>
+          <h2 id="main-menu-title"><img src="assets/squish-attack-logo-v1.png" alt="Squish Attack" width="540" height="270" /></h2>
+          <p>Schieben. Quetschen. Ploppen.</p>
+        </div>
+        <div class="title-controls">
+          <div class="title-main-actions">
+            <button class="title-play" id="menu-continue" type="button" disabled hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7Z"/></svg><span>Weiterspielen</span></button>
+            <button class="title-play" id="menu-new" type="button" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7Z"/></svg><span data-button-label>Spiel starten</span></button>
+          </div>
+          <div class="title-shortcuts">
+            <button class="title-shortcut" id="menu-multiplayer" type="button" disabled>
+              <span class="title-icon title-icon-duel"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M2 20v-2a6 6 0 0 1 12 0v2m2-6a5 5 0 0 1 6 5v1"/></svg></span>
+              <span>Mehrspieler</span><small>Duell · 5 Minuten</small>
+            </button>
+            <button class="title-shortcut" id="menu-settings" data-open-settings type="button" disabled>
+              <span class="title-icon title-icon-settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2.5"/><circle cx="15" cy="17" r="2.5"/></svg></span>
+              <span>Einstellungen</span>
+            </button>
+          </div>
+          <p class="menu-status" id="loading-status" role="status" aria-live="polite">Spiel wird geladen …</p>
+          <button class="title-retry loading-retry" id="loading-retry" type="button" hidden>Erneut laden</button>
+          <noscript>Bitte aktiviere JavaScript, um zu spielen.</noscript>
+        </div>
+      </nav>
+      <nav class="world-menu-a11y" id="world-menu" aria-label="Menü"></nav>
+      <p class="world-menu-a11y" id="world-live" role="status" aria-live="polite"></p>
+    </section>
+    <main class="game is-start" inert aria-hidden="true">
+      <div class="game-stage">
+      <header class="topbar">
+        <section class="brand" aria-label="Squish attack">
+          <h1><img src="assets/squish-attack-logo-v1.png" alt="Squish attack" /></h1>
+        </section>
+        <p class="run-score"><span>PUNKTE</span><output id="score" aria-label="Punktestand" aria-live="off">0</output><span class="score-energy" aria-hidden="true"><i></i></span></p>
+        <span class="fx-announcement" id="score-announcement" role="status" aria-live="polite"></span>
+        <section class="scores" aria-label="Höchster Stein aller Zeiten">
+          <div class="score"><span class="score-label">♛ BEST</span><div class="score-value" id="best" role="img" aria-label="Höchster Squishy: 4"></div></div>
+        </section>
+        <button class="pause" id="pause" type="button" aria-label="Spiel pausieren" aria-pressed="false">Ⅱ</button>
+      </header>
+      <aside class="duel-hud" id="duel-hud" aria-label="Mehrspieler-Duell" hidden>
+        <div class="duel-hud-meta">
+          <strong id="duel-timer" role="timer" aria-label="Verbleibende Duellzeit" aria-live="off">5:00</strong>
+          <span id="duel-hud-status" role="status">Verbunden</span>
+        </div>
+        <div class="duel-tug">
+          <span class="duel-tug-score duel-tug-me"><small>Du</small><output id="duel-my-score">0</output></span>
+          <div class="duel-tug-track" id="duel-tug" role="meter" aria-label="Punktestand im Duell" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-valuetext="Gleichauf">
+            <span class="duel-tug-fill" aria-hidden="true"><i class="duel-tug-blue" id="duel-tug-blue"></i><i class="duel-tug-red" id="duel-tug-red"></i></span>
+            <i class="duel-tug-knob" id="duel-tug-knob" aria-hidden="true"></i>
+          </div>
+          <span class="duel-tug-score duel-tug-opp"><small>Gegner</small><output id="duel-opponent-score">0</output></span>
+        </div>
+      </aside>
+      <section class="playfield" id="playfield" tabindex="-1" aria-label="Spielfeld mit 5 mal 5 Feldern. Wische waagrecht oder senkrecht, um den nächsten Stein einzuschieben.">
+        <div class="board-slot" aria-hidden="true"></div>
+        <div id="graphics" aria-hidden="true"></div>
+        <div class="effects" id="effects" aria-hidden="true"></div>
+        <div class="gesture-note" id="note" role="status" aria-live="polite" hidden>Wische über eine Reihe oder Spalte</div>
+      </section>
+      <div class="combo-meter" id="combo-meter" aria-hidden="true" hidden></div>
+      <p class="world-caption" id="world-caption" aria-hidden="true" hidden></p>
+      <div class="world-keypad" id="world-keypad" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <section class="preview" aria-label="Die nächsten drei Spielsteine">
+        <div class="queue" id="queue"></div>
+      </section>
+      </div>
+    </main>
+    <div class="veil" id="veil" hidden>
+      <div class="dialog classic-panel" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
+        <span class="menu-kicker">SQUISH ATTACK</span>
+        <h2 id="dialog-title">Pause</h2>
+        <p id="dialog-message">Dein Spielfeld wartet auf dich.</p>
+        <div class="dialog-actions">
+          <button class="menu-button primary" id="resume" type="button">Weiterspielen</button>
+          <button class="menu-button" id="restart" type="button">Neues Spiel</button>
+          <button class="menu-button" data-open-settings type="button">Einstellungen</button>
+        </div>
+        <details class="rules">
+          <summary>Spielregeln</summary>
+          <p>Wische waagerecht über eine Reihe oder senkrecht über eine Spalte. Der nächste Stein kommt von der Seite, von der du einschiebst. Die berührte Reihe rückt bis zur nächsten freien Mulde nach. Eine volle Reihe nimmt keinen weiteren Stein auf.</p>
+          <p>Drei oder mehr gleiche Steine in einer waagerechten oder senkrechten Linie verschmelzen zu einem Stein mit einem höheren Wert. Ein gleicher Stein direkt neben der Mitte kann bei einem T-Merge dazugehören. Diagonalen zählen nicht.</p>
+          <p>Bei drei oder vier Steinen steigt der Wert um 1. Bei fünf oder mehr Steinen steigt er um 2: Aus fünf Dreiern wird zum Beispiel eine 5. Neue passende Linien lösen weitere Merges aus.</p>
+          <p>Straßen bestehen aus mindestens drei direkt benachbarten, aufeinanderfolgenden Werten in einer Reihe oder Spalte, auf- oder absteigend. Sie verschmelzen automatisch am Platz des höchsten Steins: 1–2–3 wird zu 3, 12–13–14 zu 14. Ab vier Steinen steigt der höchste Wert um 1: 1–2–3–4 wird zu 5, 1–2–3–4–5 zu 6. Gleiche Werte verschmelzen zuerst. Bei sich kreuzenden Straßen zählt zuerst die längere, bei gleicher Länge die waagerechte.</p>
+          <p>Pro Merge erhältst du den neuen Steinwert × die Anzahl der verschmolzenen Steine × 10 Punkte. Unten siehst du die nächsten drei Steine. Die möglichen neuen Steinwerte entwickeln sich mit deinem Fortschritt.</p>
+          <p>Der Rekordstein oben zeigt deinen höchsten Stein aller Zeiten. Spielstand und Rekord werden automatisch gespeichert. Wenn das Brett ganz voll ist und weder Merge noch Straße möglich sind, endet das Spiel. Jedes neue Spiel beginnt mit sieben zufällig verteilten Steinen und behält deinen Rekord.</p>
+        </details>
+      </div>
+    </div>
+    <section class="settings-screen" id="settings-screen" hidden>
+      <div class="settings-panel classic-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+        <div class="settings-sheet">
+        <span class="menu-kicker">SQUISH ATTACK</span>
+        <h2 id="settings-title" tabindex="-1">Einstellungen</h2>
+        <button class="setting-toggle" id="fullscreen-toggle" type="button" aria-pressed="false" hidden><span class="setting-label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m8 0h5v-5"/></svg><span data-fullscreen-label>Vollbild</span></span></button>
+        <button class="setting-toggle" id="sound-toggle" type="button" role="switch" aria-checked="true"><span class="setting-label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4 6 8H3v8h3l5 4V4Z"/><path d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></svg>Ton</span><span data-toggle-state>An</span></button>
+        <p class="setting-description">Saugnapf beim Schieben, Ballonplatzer beim Merge.</p>
+        <button class="setting-toggle" id="phone-motion" type="button" role="switch" aria-checked="false" aria-pressed="false" aria-describedby="phone-motion-status"><span class="setting-label"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 17h2M3 8l-2 4 2 4m18-8 2 4-2 4"/></svg>Handybewegung</span><span data-toggle-state>Aus</span></button>
+        <p class="setting-description" id="phone-motion-status" role="status" aria-live="polite"></p>
+        <details class="menu-support">
+          <summary>Darstellung & Hilfe</summary>
+          <button class="setting-toggle" id="display-check" type="button">Bildschirmprüfung senden</button>
+          <p class="setting-description" id="display-check-status" role="status">Bildschirmdarstellung prüfen.</p>
+        </details>
+        <button class="menu-button primary" id="settings-close" type="button">Zurück</button>
+        </div>
+      </div>
+    </section>
+    <section class="duel-screen" id="duel-screen" hidden>
+      <div class="duel-panel classic-panel" id="duel-panel" role="dialog" aria-modal="true" aria-labelledby="duel-title" tabindex="-1">
+        <p class="duel-eyebrow">SQUISH ATTACK · 1 GEGEN 1</p>
+        <h2 id="duel-title">Mehrspieler</h2>
+        <div class="duel-tabs" aria-label="Spiel erstellen oder beitreten">
+          <button id="duel-host-tab" type="button" aria-pressed="true">Host · Erstellen</button>
+          <button id="duel-join-tab" type="button" aria-pressed="false">Beitreten</button>
+        </div>
+        <div id="duel-host">
+          <p>Dein Spielcode</p>
+          <output class="duel-code" id="duel-code" aria-label="Vierstelliger Spielcode">····</output>
+          <p>Der zweite Spieler öffnet Mehrspieler → Beitreten und gibt diesen Code ein.</p>
+          <button class="duel-action" id="duel-host-retry" type="button" hidden>Neuen Code erstellen</button>
+        </div>
+        <div id="duel-join" hidden>
+          <form id="duel-join-form">
+            <label for="duel-input">Code des Hosts</label>
+            <input id="duel-input" type="text" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" placeholder="0000" required aria-describedby="duel-status" />
+            <button class="duel-action" type="submit">Verbinden & spielen</button>
+          </form>
+        </div>
+        <p class="duel-status" id="duel-status" role="status" aria-live="polite"></p>
+        <ul class="duel-rules">
+          <li><b>5:00</b><span>Sammelt fünf Minuten lang Punkte. Der höhere Punktestand gewinnt; Gleichstand zählt als Unentschieden.</span></li>
+        </ul>
+        <p class="duel-fair">Gleiches Startbrett und gleiche Vorschau. Keine zusätzlichen Steine beim Gegner. Bei vollem Brett bleiben deine Punkte stehen; die Zeit läuft weiter.</p>
+        <button class="duel-back" id="duel-close" type="button">Zurück zum Menü</button>
+      </div>
+    </section>
+    <script src="config.js"></script>
+    <script type="module" src="display-audit.mjs?v=display-99"></script>
+    <script>
+    (function(){
+      var BUILD='speed-2';
+      var key='squish-build-reload';
+      fetch('build.txt?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.text();}).then(function(v){
+        v=(v||'').trim();
+        if(!v||v===BUILD)return;
+        if(sessionStorage.getItem(key)===v)return;
+        sessionStorage.setItem(key,v);
+        location.reload();
+      }).catch(function(){});
+    })();
+    </script>
+    <script type="module" src="debug-overlay.mjs?v=speed-2"></script>
+    <script type="module" src="loading-screen.mjs?v=speed-2"></script>
+  </body>
+</html>

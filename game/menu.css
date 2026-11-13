@@ -1,0 +1,202 @@
+/* Black glass and the same cyan/violet accents as the Squish palette. */
+.start-menu-overlay,.settings-screen,.duel-screen,.veil {
+  --menu-ink:#f1f6ff;
+  --menu-muted:#b0bed1;
+  --menu-cyan:#86e9ff;
+  --menu-violet:#ccb1ff;
+  --menu-border:#8aafd041;
+  --menu-action-border:#9dedffb5;
+  --menu-action-bg:linear-gradient(172deg,#b2f3ff 0%,#64d8f8 53%,#39b5e7 100%);
+  --menu-action-ink:#092035;
+  --menu-action-shadow:inset 0 1px #ffffffa6,0 6px 24px #00bbff38;
+  --menu-button-bg:linear-gradient(175deg,#202a3b,#151c29);
+  --menu-button-shadow:inset 0 1px #ffffff12,0 3px 10px #0004;
+  display:grid;
+  grid-template:minmax(0,1fr)/minmax(0,1fr);
+  place-items:center;
+  padding:16px;
+  padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right))
+          max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));
+  background:#08080ad1;
+  color:var(--menu-ink);
+  color-scheme:dark;
+  backdrop-filter:none;
+}
+.settings-screen {position:fixed;inset:0;z-index:1100;}
+.classic-panel {
+  position:relative;
+  isolation:isolate;
+  width:min(100%,364px);
+  min-height:0;
+  max-height:100%;
+  overflow:auto;
+  overscroll-behavior:contain;
+  padding:25px clamp(16px,5vw,26px) 21px;
+  border:1px solid var(--menu-border);
+  border-radius:24px;
+  background:radial-gradient(ellipse at 18% 0%,#16465762,transparent 62%),
+             radial-gradient(ellipse at 100% 100%,#2c185264,transparent 60%),
+             linear-gradient(165deg,#141925,#0d1019 60%,#11101b);
+  box-shadow:inset 0 1px #ffffff1c,0 22px 60px #000b,0 0 42px #38ccff13;
+  color:var(--menu-ink);
+  scrollbar-width:thin;
+  scrollbar-color:#50647c transparent;
+}
+.menu-kicker,.duel-panel .duel-eyebrow {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  margin:0;
+  color:var(--menu-cyan);
+  font:800 10px/1.4 system-ui,sans-serif;
+  letter-spacing:.18em;
+  opacity:1;
+}
+.menu-kicker::before {
+  content:"";
+  width:12px;
+  height:2px;
+  border-radius:2px;
+  background:#58e2ff;
+  box-shadow:0 0 9px #34d8ffb3;
+}
+.classic-panel h2 {
+  margin:8px 0;
+  color:var(--menu-ink);
+  font:850 29px/1.14 ui-rounded,"SF Pro Rounded","Avenir Next",system-ui,sans-serif;
+  letter-spacing:-.035em;
+}
+.dialog-actions {display:grid;gap:10px;}
+.menu-button,.dialog .menu-button {
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  width:100%;
+  min-height:51px;
+  margin:0;
+  padding:11px 16px;
+  border:1px solid var(--menu-border);
+  border-radius:13px;
+  background:var(--menu-button-bg);
+  box-shadow:var(--menu-button-shadow);
+  color:var(--menu-ink);
+  font:750 15px/1.22 ui-rounded,"SF Pro Rounded","Avenir Next",system-ui,sans-serif;
+  cursor:pointer;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .13s ease,filter .13s ease,box-shadow .13s ease;
+}
+.menu-actions .menu-button {justify-content:flex-start;padding-left:50px;text-align:left;}
+.menu-button>svg {
+  position:absolute;
+  left:16px;
+  width:20px;
+  height:20px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.menu-button.primary,.dialog #resume,.dialog #resume[hidden]+#restart,.duel-panel .duel-action {
+  border:1px solid var(--menu-action-border);
+  background:var(--menu-action-bg);
+  box-shadow:var(--menu-action-shadow);
+  color:var(--menu-action-ink);
+}
+.menu-button.primary {min-height:56px;font-size:16px;font-weight:850;}
+.menu-button.primary>svg {fill:currentColor;stroke-width:1;}
+.dialog #restart {
+  border:1px solid var(--menu-border);
+  background:var(--menu-button-bg);
+  box-shadow:var(--menu-button-shadow);
+  color:var(--menu-ink);
+}
+.menu-button:active:not(:disabled),.duel-action:active:not(:disabled) {transform:translateY(2px);filter:brightness(.93);}
+.menu-button:disabled {opacity:.57;cursor:default;}
+.menu-button:focus-visible,.setting-toggle:focus-visible,.menu-support summary:focus-visible,
+.rules summary:focus-visible,.duel-panel :focus-visible {outline:2px solid var(--menu-cyan);outline-offset:3px;}
+.menu-status {margin:13px 0 0;color:var(--menu-muted);font-size:12px;line-height:1.5;}
+.menu-status:empty {display:none;}
+[data-phase="loading"] .menu-status::before {
+  content:"";display:inline-block;width:6px;height:6px;margin:0 7px 1px 0;
+  border-radius:50%;background:var(--menu-cyan);animation:menu-pulse .9s ease-in-out infinite alternate;
+}
+[data-phase="error"] .menu-status {color:#ffbbc6;}
+.loading-retry {margin-top:11px;}
+@keyframes menu-pulse {to {opacity:.25;transform:scale(.75);}}
+@keyframes menu-arrive {from {opacity:0;translate:0 9px;}to {opacity:1;translate:0 0;}}
+.settings-screen:not([hidden]) .settings-panel,
+.duel-screen:not([hidden]) .duel-panel {animation:menu-arrive .23s cubic-bezier(.2,.7,.3,1) both;}
+
+.settings-panel {width:min(100%,350px);}
+.settings-panel h2 {margin-bottom:22px;text-align:center;font-size:26px;outline:none;}
+.setting-toggle {
+  width:100%;min-height:53px;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:9px 12px;border:1px solid var(--menu-border);border-radius:12px;
+  background:var(--menu-button-bg);box-shadow:var(--menu-button-shadow);
+  color:var(--menu-ink);font:700 14px/1.3 system-ui,sans-serif;cursor:pointer;touch-action:manipulation;
+}
+.setting-label {display:flex;align-items:center;gap:10px;text-align:left;}
+.setting-label svg {flex:none;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;color:var(--menu-cyan);}
+.setting-toggle [data-toggle-state] {
+  position:relative;flex:none;min-width:52px;padding:6px 8px 6px 19px;
+  border:1px solid #63788f80;border-radius:20px;background:#151e2b;color:#c8d6e7;text-align:center;font-size:10px;
+}
+.setting-toggle [data-toggle-state]::before {
+  content:"";position:absolute;left:6px;top:50%;width:7px;height:7px;
+  border-radius:50%;background:#8499af;transform:translateY(-50%);
+}
+.setting-toggle[aria-checked="true"] [data-toggle-state] {
+  border-color:#54e4bd6b;background:#164235;color:#b5ffe7;
+}
+.setting-toggle[aria-checked="true"] [data-toggle-state]::before {background:#65f9cc;box-shadow:0 0 8px #56ffc399;}
+.setting-toggle:disabled {opacity:.57;cursor:default;}
+.setting-description {margin:8px 3px 16px;color:var(--menu-muted);font-size:11px;line-height:1.5;}
+.settings-panel #settings-close {margin-top:17px;min-height:49px;}
+.menu-support,.dialog .rules {margin:7px 0 0;padding-top:12px;border-top:1px solid var(--menu-border);color:var(--menu-muted);}
+.menu-support summary,.dialog .rules summary {width:fit-content;min-height:30px;margin:0 auto;color:#c2d5eb;font:700 12px/2.4 system-ui;cursor:pointer;}
+.menu-support .setting-toggle {margin-top:9px;font-size:12px;}
+.menu-support .setting-description {margin-bottom:0;}
+.dialog #dialog-message {margin:10px 0 20px;color:var(--menu-muted);font-size:13px;line-height:1.5;}
+.dialog [data-open-settings] {min-height:45px;font-size:14px;}
+.dialog .rules {margin-top:20px;font-size:12px;}
+.dialog .rules p {font-size:12px;line-height:1.6;}
+
+.duel-panel {width:min(100%,370px);}
+.duel-panel h2 {margin-bottom:18px;font-size:27px;}
+.duel-panel p {color:var(--menu-muted);font-size:12px;line-height:1.5;}
+.duel-panel .duel-eyebrow {color:var(--menu-violet);}
+.duel-tabs {padding:4px;border:1px solid var(--menu-border);border-radius:12px;background:#090d16;}
+.duel-tabs button {border-radius:8px;color:#cad7e9;}
+.duel-tabs button[aria-pressed="true"] {color:#f0e8ff;background:#402d66;box-shadow:inset 0 1px #b798f24a;}
+.duel-code,.duel-panel input {
+  border:1px solid #926ae26b;border-radius:12px;background:#141025;color:#e3cfff;
+  box-shadow:inset 0 1px 10px #06060b80;
+}
+.duel-panel input::placeholder {color:#a593bf;}
+.duel-panel .duel-status {color:var(--menu-cyan);}
+.duel-rules {border-color:var(--menu-border);}
+.duel-rules b {background:#3b265e;color:#e3cfff;}
+.duel-panel .duel-back {color:#c7b7eb;text-decoration:none;}
+.duel-panel .duel-back:hover {text-decoration:underline;}
+.start-menu-overlay[hidden],.settings-screen[hidden],.duel-screen[hidden],.veil[hidden],
+.classic-panel .menu-button[hidden],.classic-panel .duel-action[hidden] {display:none;}
+@media(hover:hover) {
+  .menu-button:hover:not(:disabled),.setting-toggle:hover:not(:disabled),.duel-action:hover:not(:disabled) {filter:brightness(1.10);}
+}
+@media(max-height:650px) {
+  .classic-panel {padding-top:20px;padding-bottom:17px;}
+}
+@media(max-height:500px) {
+  .dialog-actions {gap:7px;}
+  .menu-button,.menu-button.primary {min-height:44px;padding-top:8px;padding-bottom:8px;}
+}
+@media(prefers-reduced-motion:reduce) {
+  .menu-button {transition:none;}
+  .settings-screen:not([hidden]) .settings-panel,
+  .duel-screen:not([hidden]) .duel-panel,[data-phase="loading"] .menu-status::before {animation:none;}
+}

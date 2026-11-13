@@ -1,0 +1,55 @@
+html,body {width:100%;height:100%;overflow:hidden;background:#292116;overscroll-behavior:none;}
+body {display:block;}
+/* iOS can sample the document background outside its web viewport. */
+html.is-boot-splash,html.is-boot-splash body {background:#08080a;color-scheme:dark;}
+/* Foreground geometry stays fitted to its existing safe area. The forest is
+   a separate fixed layer so Safari's shorter dvh cannot clip its bottom. */
+.game {--safe-top:env(safe-area-inset-top);--safe-right:env(safe-area-inset-right);--safe-bottom:env(safe-area-inset-bottom);--safe-left:env(safe-area-inset-left);position:fixed;inset:0;z-index:1;width:100%;height:auto;min-height:0;max-width:none;aspect-ratio:auto;padding:var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);margin:0;display:grid;place-items:center;overflow:hidden;isolation:isolate;}
+.game-stage {position:relative;width:min(100%,calc((100vh - var(--safe-top) - var(--safe-bottom)) * 941 / 1672));width:min(100%,calc((100dvh - var(--safe-top) - var(--safe-bottom)) * 941 / 1672));aspect-ratio:941 / 1672;overflow:hidden;container-type:inline-size;}
+/* Fit the original scene to the actual content box, including safe-area
+   padding, rather than independently guessing the available viewport height. */
+@supports (height:1cqh) {
+  .game {container-type:size;}
+  .game-stage {width:min(100%,calc(100cqh * 941 / 1672));}
+}
+.setting-toggle[hidden] {display:none;}
+#fullscreen-toggle {margin-bottom:14px;}
+.screen-art {position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;user-select:none;}
+.forest-viewport {position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;visibility:hidden;}
+.forest-viewport[data-aligned="true"] {visibility:visible;}
+.forest-frame {position:absolute;left:var(--forest-left);top:var(--forest-top);width:var(--forest-width);height:var(--forest-height);object-fit:fill;pointer-events:none;user-select:none;}
+.has-living-forest .core-art {visibility:hidden;}
+.forest-video {opacity:0;}
+.forest-video.is-playing {opacity:1;}
+.playfield {inset:0;width:100%;height:100%;margin:0;filter:none;}
+.playfield:focus {outline:none;}
+.topbar {position:absolute;inset:0;display:block;pointer-events:none;}
+.brand {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
+.scores {position:absolute;left:41.55%;top:14.83%;width:17.0%;height:7.25%;border:0;background:none;box-shadow:none;border-radius:0;overflow:visible;pointer-events:none;}
+.score {width:100%;height:100%;padding:0;}
+.score-label {position:absolute;left:-46%;width:38%;top:38%;font-size:clamp(12px,2.6vw,16px);letter-spacing:.08em;color:#fff2c2;text-shadow:0 2px 4px #24180e;}
+.score-value {width:100%;height:100%;margin:0;}
+.best-tile {width:80%;height:90%;font-size:initial;}
+.pause {position:absolute;right:3.5%;top:2.5%;width:clamp(38px,10vw,48px);background:#342414c4;border:1px solid #f6d59c85;box-shadow:0 3px 10px #25150780;font-size:1.1rem;}
+.run-score {position:absolute;left:65%;top:17.8%;margin:0;max-width:28%;color:#fff1bf;text-shadow:0 2px 4px #291909;font-size:clamp(12px,3vw,18px);font-weight:800;}
+.run-score span {display:block;font-size:12px;font-weight:650;letter-spacing:.05em;}
+.preview {position:absolute;left:0;top:0;bottom:auto;width:100%;height:100%;transform:none;border:0;border-radius:0;background:none;box-shadow:none;overflow:visible;}
+.queue {position:absolute;inset:0;padding:0;display:block;}
+.preview-tile {position:absolute;top:80.33%;width:14.15%;height:7.65%;aspect-ratio:auto;max-height:none;}
+.preview-tile:nth-child(1) {left:26.20%;}
+.preview-tile:nth-child(2) {left:43.10%;}
+.preview-tile:nth-child(3) {left:59.45%;}
+.gesture-note {bottom:6.0%;font-size:12px;background:#302318db;padding:5px 9px;max-width:90%;}
+.combo-badge {top:23%;font-size:clamp(14px,4vw,24px);background:#4d321fed;}
+.upgrade-badge {background:linear-gradient(135deg,#4f2f19f5,#795135f5);}
+.veil {z-index:30;background:#241b13ad;}
+.dialog {max-height:90svh;overflow:auto;background:linear-gradient(145deg,#4c3424f7,#6a4b31f7);border-color:#ffdfa660;}
+.dialog button:first-of-type {color:#4a2e19;}
+.dialog button:disabled {opacity:.55;cursor:default;}
+.dialog #phone-motion-status {margin:7px 0 0;font-size:13px;color:#f5dfc3;}
+.rules {text-align:left;margin:18px 0 0;font-size:14px;line-height:1.5;}
+.rules summary {cursor:pointer;font-weight:800;color:#ffe4ae;}
+.rules p {margin:10px 0;font-size:14px;}
+.is-start .pause,.is-start .run-score,.is-start .queue,.is-entering .pause {visibility:hidden;}
+.is-start .playfield {touch-action:auto;}
+@media(prefers-reduced-motion:reduce) {body {background:#292116;}.forest-video {display:none;}}

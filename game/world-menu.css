@@ -1,0 +1,21 @@
+/* In-world start menu: the 3D glass table is the menu; DOM stays for a11y. */
+.start-menu-overlay[data-mode="world"] {background:transparent;pointer-events:none;}
+.start-menu-overlay[data-mode="world"] .title-menu {position:absolute;inset:auto;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);opacity:0;}
+.world-menu-a11y {position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0;}
+.world-menu-a11y button {pointer-events:none;}
+.world-caption {position:absolute;z-index:4;left:5%;right:5%;top:26.8cqw;margin:0;text-align:center;
+  white-space:normal;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  font:650 clamp(11px,3.3cqw,15px)/1.25 ui-rounded,"SF Pro Rounded","Avenir Next",system-ui,sans-serif;letter-spacing:.01em;
+  color:#f3efe8;text-shadow:0 1px 10px rgba(0,0,0,.75);pointer-events:none;animation:world-caption-in .35s ease both;}
+.world-caption[hidden] {display:none;}
+@keyframes world-caption-in {from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+/* Sit above the iOS home indicator. Hidden slots still receive taps when active,
+   so a missed 3D raycast does not drop a digit. */
+.world-keypad {position:absolute;left:3%;width:94%;top:auto;bottom:max(2.2cqw,34px);height:24.4cqw;
+  display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(2,1fr);gap:0;
+  visibility:hidden;pointer-events:none;z-index:8;touch-action:manipulation;-webkit-user-select:none;user-select:none;}
+.world-keypad.is-active {visibility:visible;pointer-events:auto;}
+.world-keypad i {display:block;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+/* No double-tap zoom, selection or callouts while tapping the glass menu. */
+html.world-menu-open,html.world-menu-open body {touch-action:manipulation;overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+html.world-menu-open .game-stage,html.world-menu-open canvas {touch-action:none;}
