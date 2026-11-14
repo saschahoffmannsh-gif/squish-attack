@@ -1,0 +1,2354 @@
+{
+ "version": 1,
+ "generator": {
+  "seed": 20261114,
+  "candidates": 3000,
+  "seqLen": 12,
+  "reserve": 5
+ },
+ "count": 25,
+ "levels": [
+  {
+   "id": 1,
+   "chapter": 1,
+   "kind": "tile",
+   "board": [
+    [
+     null,
+     null,
+     1,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     2,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     1,
+     2,
+     null,
+     null,
+     null
+    ],
+    [
+     2,
+     null,
+     null,
+     null,
+     null
+    ]
+   ],
+   "sequence": [
+    2,
+    3,
+    2,
+    3,
+    1,
+    1,
+    1,
+    2,
+    3
+   ],
+   "moves": 4,
+   "goals": [
+    {
+     "type": "tile",
+     "value": 3
+    }
+   ],
+   "stars": {
+    "three": 1,
+    "two": 3
+   },
+   "solution": "i",
+   "meta": {
+    "seed": 24711592,
+    "difficulty": 11,
+    "difficultyRaw": 6.51,
+    "minMoves": 1,
+    "slack": 3,
+    "optimalSolutions": 1,
+    "pathsAtMin": 20,
+    "pOptimal": 0.05,
+    "statesExplored": 1,
+    "avgBranching": 20,
+    "winRate": {
+     "random": 0.34,
+     "casual": 1,
+     "good": 1
+    },
+    "withExtraMoves3": {
+     "casual": 1,
+     "good": 1
+    },
+    "expectedAttempts": {
+     "casual": 1,
+     "casualWithExtraMoves3": 1
+    },
+    "greedySolves": true,
+    "solverMs": 0
+   }
+  },
+  {
+   "id": 2,
+   "chapter": 1,
+   "kind": "tile",
+   "board": [
+    [
+     1,
+     null,
+     1,
+     null,
+     null
+    ],
+    [
+     1,
+     null,
+     null,
+     2,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     1,
+     null,
+     null,
+     null
+    ]
+   ],
+   "sequence": [
+    3,
+    2,
+    2,
+    1,
+    2,
+    1,
+    2,
+    1,
+    1,
+    2
+   ],
+   "moves": 5,
+   "goals": [
+    {
+     "type": "tile",
+     "value": 3
+    }
+   ],
+   "stars": {
+    "three": 2,
+    "two": 4
+   },
+   "solution": "as",
+   "meta": {
+    "seed": 21480640,
+    "difficulty": 19,
+    "difficultyRaw": 11.59,
+    "minMoves": 2,
+    "slack": 3,
+    "optimalSolutions": 10,
+    "pathsAtMin": 400,
+    "pOptimal": 0.025,
+    "statesExplored": 18,
+    "avgBranching": 20,
+    "winRate": {
+     "random": 0.16,
+     "casual": 0.83,
+     "good": 0.92
+    },
+    "withExtraMoves3": {
+     "casual": 0.97,
+     "good": 0.98
+    },
+    "expectedAttempts": {
+     "casual": 1.2,
+     "casualWithExtraMoves3": 1
+    },
+    "greedySolves": true,
+    "solverMs": 3
+   }
+  },
+  {
+   "id": 3,
+   "chapter": 1,
+   "kind": "tile",
+   "board": [
+    [
+     null,
+     3,
+     null,
+     null,
+     null
+    ],
+    [
+     1,
+     1,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     1,
+     null,
+     null,
+     1
+    ],
+    [
+     null,
+     null,
+     3,
+     3,
+     2
+    ],
+    [
+     null,
+     null,
+     2,
+     1,
+     null
+    ]
+   ],
+   "sequence": [
+    2,
+    2,
+    2,
+    2,
+    3,
+    3,
+    3,
+    1,
+    2,
+    1,
+    3
+   ],
+   "moves": 6,
+   "goals": [
+    {
+     "type": "tile",
+     "value": 4
+    }
+   ],
+   "stars": {
+    "three": 2,
+    "two": 4
+   },
+   "solution": "ce",
+   "meta": {
+    "seed": 21100528,
+    "difficulty": 20,
+    "difficultyRaw": 12.27,
+    "minMoves": 2,
+    "slack": 4,
+    "optimalSolutions": 6,
+    "pathsAtMin": 400,
+    "pOptimal": 0.015,
+    "statesExplored": 17,
+    "avgBranching": 20,
+    "winRate": {
+     "random": 0.125,
+     "casual": 0.86,
+     "good": 0.92
+    },
+    "withExtraMoves3": {
+     "casual": 0.99,
+     "good": 0.98
+    },
+    "expectedAttempts": {
+     "casual": 1.2,
+     "casualWithExtraMoves3": 1
+    },
+    "greedySolves": true,
+    "solverMs": 3
+   }
+  },
+  {
+   "id": 4,
+   "chapter": 1,
+   "kind": "tile",
+   "board": [
+    [
+     null,
+     null,
+     2,
+     2,
+     null
+    ],
+    [
+     null,
+     null,
+     1,
+     null,
+     null
+    ],
+    [
+     null,
+     1,
+     null,
+     null,
+     1
+    ],
+    [
+     null,
+     null,
+     "#",
+     null,
+     null
+    ],
+    [
+     null,
+     1,
+     null,
+     null,
+     null
+    ]
+   ],
+   "sequence": [
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    2,
+    2
+   ],
+   "moves": 6,
+   "goals": [
+    {
+     "type": "tile",
+     "value": 3
+    }
+   ],
+   "stars": {
+    "three": 2,
+    "two": 4
+   },
+   "solution": "cc",
+   "meta": {
+    "seed": 30476624,
+    "difficulty": 21,
+    "difficultyRaw": 12.32,
+    "minMoves": 2,
+    "slack": 4,
+    "optimalSolutions": 1,
+    "pathsAtMin": 400,
+    "pOptimal": 0.0025,
+    "statesExplored": 17,
+    "avgBranching": 20,
+    "winRate": {
+     "random": 0.19,
+     "casual": 0.97,
+     "good": 0.98
+    },
+    "withExtraMoves3": {
+     "casual": 0.98,
+     "good": 0.98
+    },
+    "expectedAttempts": {
+     "casual": 1,
+     "casualWithExtraMoves3": 1
+    },
+    "greedySolves": true,
+    "solverMs": 3
+   }
+  },
+  {
+   "id": 5,
+   "chapter": 1,
+   "kind": "make",
+   "board": [
+    [
+     null,
+     1,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     1
+    ],
+    [
+     null,
+     null,
+     4,
+     null,
+     null
+    ],
+    [
+     null,
+     1,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     1,
+     1,
+     null,
+     null
+    ]
+   ],
+   "sequence": [
+    1,
+    2,
+    1,
+    1,
+    2,
+    1,
+    1,
+    2,
+    1,
+    1,
+    2
+   ],
+   "moves": 6,
+   "goals": [
+    {
+     "type": "make",
+     "value": 2,
+     "count": 2
+    }
+   ],
+   "stars": {
+    "three": 3,
+    "two": 5
+   },
+   "solution": "qhl",
+   "meta": {
+    "seed": 21409369,
+    "difficulty": 30,
+    "difficultyRaw": 17.81,
+    "minMoves": 3,
+    "slack": 3,
+    "optimalSolutions": 2,
+    "pathsAtMin": 8000,
+    "pOptimal": 0.00025,
+    "statesExplored": 266,
+    "avgBranching": 20,
+    "winRate": {
+     "random": 0.12,
+     "casual": 0.91,
+     "good": 0.85
+    },
+    "withExtraMoves3": {
+     "casual": 1,
+     "good": 1
+    },
+    "expectedAttempts": {
+     "casual": 1.1,
+     "casualWithExtraMoves3": 1
+    },
+    "greedySolves": true,
+    "solverMs": 49
+   }
+  },
+  {
+   "id": 6,
+   "chapter": 1,
+   "kind": "make",
+   "board": [
+    [
+     null,
+     1,
+     1,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     2,
+     1,
+     null
+    ],
+    [
+     3,
+     null,
+     null,
+     null,
+     3
+    ],
+    [
+     null,
+     null,
+     null,
+     3,
+     3
+    ],
+    [
+     null,
+     null,
+     3,
+     null,
+     null
+    ]
+   ],
+   "sequence": [
+    3,
+    1,
+    1,
+    1,
+    2,
+    1,
+    2,
+    1,
+    1,
+    3,
+    1
+   ],
+   "moves": 6,
+   "goals": [
+    {
+     "type": "make",
+     "value": 3,
+     "count": 2
+    }
+   ],
+   "stars": {
+    "three": 3,
+    "two": 5
+   },
+   "solution": "ata",
+   "meta": {
+    "seed": 37120665,
+    "difficulty": 30,
+    "difficultyRaw": 17.88,
+    "minMoves": 3,
+    "slack": 3,
+    "optimalSolutions": 60,
+    "pathsAtMin": 8000,
+    "pOptimal": 0.0075,
+    "statesExplored": 252,
+    "avgBranching": 20,
+    "winRate": {
+     "random": 0.105,
+     "casual": 0.89,
+     "good": 0.96
+    },
+    "withExtraMoves3": {
+     "casual": 0.98,
+     "good": 1
+    },
+    "expectedAttempts": {
+     "casual": 1.1,
+     "casualWithExtraMoves3": 1
+    },
+    "greedySolves": false,
+    "solverMs": 45
+   }
+  },
+  {
+   "id": 7,
+   "chapter": 1,
+   "kind": "make",
+   "board": [
+    [
+     null,
+     null,
+     1,
+     null,
+     1
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     2,
+     null,
+     null,
+     2,
+     null
+    ],
+    [
+     null,
+     1,
+     2,
+     1,
+     null
+    ],
+    [
+     1,
+     2,
+     null,
+     null,
+     2
+    ]
+   ],
+   "sequence": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1
+   ],
+   "moves": 6,
+   "goals": [
+    {
+     "type": "make",
+     "value": 2,
+     "count": 3
+    }
+   ],
+   "stars": {
+    "three": 3,
+    "two": 5
+   },
+   "solution": "ddh",
+   "meta": {
+    "seed": 38831169,
+    "difficulty": 38,
+    "difficultyRaw": 22.53,
+    "minMoves": 3,
+    "slack": 3,
+    "optimalSolutions": 3,
+    "pathsAtMin": 7960,
+    "pOptimal": 0.000377,
+    "statesExplored": 156,
+    "avgBranching": 19.9,
+    "winRate": {
+     "random": 0.085,
+     "casual": 0.67,
+     "good": 0.88
+    },
+    "withExtraMoves3": {
+     "casual": 0.99,
+     "good": 0.99
+    },
+    "expectedAttempts": {
+     "casual": 1.5,
+     "casualWithExtraMoves3": 1
+    },
+    "greedySolves": false,
+    "solverMs": 29
+   }
+  },
+  {
+   "id": 8,
+   "chapter": 1,
+   "kind": "tile",
+   "board": [
+    [
+     1,
+     2,
+     null,
+     "#",
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     1
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     2,
+     null,
+     null
+    ]
+   ],
+   "sequence": [
+    1,
+    2,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    2,
+    2
+   ],
+   "moves": 6,
+   "goals": [
+    {
+     "type": "tile",
+     "value": 3
+    }
+   ],
+   "stars": {
+    "three": 3,
+    "two": 5
+   },
+   "solution": "rqq",
+   "meta": {
+    "seed": 24901648,
+    "difficulty": 41,
+    "difficultyRaw": 24.49,
+    "minMoves": 3,
+    "slack": 3,
+    "optimalSolutions": 1,
+    "pathsAtMin": 7976,
+    "pOptimal": 0.000125,
+    "statesExplored": 285,
+    "avgBranching": 19.95,
+    "winRate": {
+     "random": 0.045,
+     "casual": 0.72,
+     "good": 0.78
+    },
+    "withExtraMoves3": {
+     "casual": 0.94,
+     "good": 0.98
+    },
+    "expectedAttempts": {
+     "casual": 1.4,
+     "casualWithExtraMoves3": 1.1
+    },
+    "greedySolves": false,
+    "solverMs": 48
+   }
+  },
+  {
+   "id": 9,
+   "chapter": 1,
+   "kind": "clear",
+   "board": [
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     1,
+     1,
+     null,
+     2,
+     null
+    ],
+    [
+     null,
+     null,
+     1,
+     1,
+     null
+    ],
+    [
+     null,
+     null,
+     2,
+     null,
+     null
+    ],
+    [
+     1,
+     null,
+     null,
+     null,
+     null
+    ]
+   ],
+   "sequence": [
+    1,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "moves": 5,
+   "goals": [
+    {
+     "type": "clear",
+     "tiles": 5
+    }
+   ],
+   "stars": {
+    "three": 2,
+    "two": 4
+   },
+   "solution": "qq",
+   "meta": {
+    "seed": 22731842,
+    "difficulty": 33,
+    "difficultyRaw": 19.7,
+    "minMoves": 2,
+    "slack": 3,
+    "optimalSolutions": 1,
+    "pathsAtMin": 400,
+    "pOptimal": 0.0025,
+    "statesExplored": 16,
+    "avgBranching": 20,
+    "winRate": {
+     "random": 0.065,
+     "casual": 0.66,
+     "good": 0.79
+    },
+    "withExtraMoves3": {
+     "casual": 0.99,
+     "good": 0.99
+    },
+    "expectedAttempts": {
+     "casual": 1.5,
+     "casualWithExtraMoves3": 1
+    },
+    "greedySolves": false,
+    "solverMs": 3
+   }
+  },
+  {
+   "id": 10,
+   "chapter": 1,
+   "kind": "clear",
+   "board": [
+    [
+     null,
+     2,
+     1,
+     2,
+     1
+    ],
+    [
+     null,
+     null,
+     1,
+     null,
+     1
+    ],
+    [
+     null,
+     1,
+     null,
+     1,
+     2
+    ],
+    [
+     1,
+     null,
+     null,
+     null,
+     1
+    ],
+    [
+     2,
+     null,
+     null,
+     1,
+     null
+    ]
+   ],
+   "sequence": [
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    2,
+    2
+   ],
+   "moves": 5,
+   "goals": [
+    {
+     "type": "clear",
+     "tiles": 9
+    }
+   ],
+   "stars": {
+    "three": 3,
+    "two": 4
+   },
+   "solution": "arc",
+   "meta": {
+    "seed": 40787162,
+    "difficulty": 39,
+    "difficultyRaw": 23.47,
+    "minMoves": 3,
+    "slack": 2,
+    "optimalSolutions": 17,
+    "pathsAtMin": 7560,
+    "pOptimal": 0.00225,
+    "statesExplored": 187,
+    "avgBranching": 19.61,
+    "winRate": {
+     "random": 0.04,
+     "casual": 0.58,
+     "good": 0.73
+    },
+    "withExtraMoves3": {
+     "casual": 0.98,
+     "good": 1
+    },
+    "expectedAttempts": {
+     "casual": 1.7,
+     "casualWithExtraMoves3": 1
+    },
+    "greedySolves": false,
+    "solverMs": 39
+   }
+  },
+  {
+   "id": 11,
+   "chapter": 2,
+   "kind": "tile",
+   "board": [
+    [
+     1,
+     null,
+     2,
+     null,
+     null
+    ],
+    [
+     1,
+     2,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     1
+    ],
+    [
+     null,
+     null,
+     null,
+     1,
+     null
+    ],
+    [
+     1,
+     2,
+     null,
+     1,
+     1
+    ]
+   ],
+   "sequence": [
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    2,
+    1
+   ],
+   "moves": 3,
+   "goals": [
+    {
+     "type": "tile",
+     "value": 3
+    }
+   ],
+   "stars": {
+    "three": 2,
+    "two": 3
+   },
+   "solution": "em",
+   "meta": {
+    "seed": 31173496,
+    "difficulty": 31,
+    "difficultyRaw": 18.53,
+    "minMoves": 2,
+    "slack": 1,
+    "optimalSolutions": 8,
+    "pathsAtMin": 398,
+    "pOptimal": 0.0201,
+    "statesExplored": 14,
+    "avgBranching": 19.86,
+    "winRate": {
+     "random": 0.085,
+     "casual": 0.58,
+     "good": 0.67
+    },
+    "withExtraMoves3": {
+     "casual": 0.96,
+     "good": 0.98
+    },
+    "expectedAttempts": {
+     "casual": 1.7,
+     "casualWithExtraMoves3": 1
+    },
+    "greedySolves": false,
+    "solverMs": 2
+   }
+  },
+  {
+   "id": 12,
+   "chapter": 2,
+   "kind": "make",
+   "board": [
+    [
+     4,
+     4,
+     5,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     4,
+     3
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     4,
+     1,
+     null,
+     null,
+     2
+    ]
+   ],
+   "sequence": [
+    2,
+    2,
+    1,
+    2,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "moves": 6,
+   "goals": [
+    {
+     "type": "make",
+     "value": 3,
+     "count": 2
+    }
+   ],
+   "stars": {
+    "three": 4,
+    "two": 5
+   },
+   "solution": "aaoc",
+   "meta": {
+    "seed": 33889713,
+    "difficulty": 37,
+    "difficultyRaw": 22.01,
+    "minMoves": 4,
+    "slack": 2,
+    "optimalSolutions": 1591,
+    "pathsAtMin": 156962,
+    "pOptimal": 0.0101,
+    "statesExplored": 3002,
+    "avgBranching": 19.8,
+    "winRate": {
+     "random": 0.075,
+     "casual": 0.69,
+     "good": 0.79
+    },
+    "withExtraMoves3": {
+     "casual": 0.8,
+     "good": 0.81
+    },
+    "expectedAttempts": {
+     "casual": 1.5,
+     "casualWithExtraMoves3": 1.3
+    },
+    "greedySolves": false,
+    "solverMs": 553
+   }
+  },
+  {
+   "id": 13,
+   "chapter": 2,
+   "kind": "street",
+   "board": [
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     2
+    ],
+    [
+     1,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     2
+    ],
+    [
+     null,
+     2,
+     null,
+     1,
+     null
+    ]
+   ],
+   "sequence": [
+    3,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    4
+   ],
+   "moves": 3,
+   "goals": [
+    {
+     "type": "street",
+     "count": 1
+    }
+   ],
+   "stars": {
+    "three": 2,
+    "two": 3
+   },
+   "solution": "fg",
+   "meta": {
+    "seed": 36281251,
+    "difficulty": 30,
+    "difficultyRaw": 17.93,
+    "minMoves": 2,
+    "slack": 1,
+    "optimalSolutions": 8,
+    "pathsAtMin": 400,
+    "pOptimal": 0.02,
+    "statesExplored": 17,
+    "avgBranching": 20,
+    "winRate": {
+     "random": 0.09,
+     "casual": 0.64,
+     "good": 0.67
+    },
+    "withExtraMoves3": {
+     "casual": 0.74,
+     "good": 0.76
+    },
+    "expectedAttempts": {
+     "casual": 1.6,
+     "casualWithExtraMoves3": 1.4
+    },
+    "greedySolves": false,
+    "solverMs": 3
+   }
+  },
+  {
+   "id": 14,
+   "chapter": 2,
+   "kind": "street",
+   "board": [
+    [
+     null,
+     2,
+     2,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     2,
+     null
+    ],
+    [
+     3,
+     "#",
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     3
+    ],
+    [
+     null,
+     null,
+     null,
+     2,
+     null
+    ]
+   ],
+   "sequence": [
+    2,
+    1,
+    3,
+    2,
+    1,
+    1,
+    1,
+    1,
+    2,
+    3,
+    1,
+    2,
+    1
+   ],
+   "moves": 8,
+   "goals": [
+    {
+     "type": "street",
+     "count": 2
+    }
+   ],
+   "stars": {
+    "three": 5,
+    "two": 7
+   },
+   "solution": "aaadn",
+   "meta": {
+    "seed": 32163371,
+    "difficulty": 43,
+    "difficultyRaw": 25.53,
+    "minMoves": 5,
+    "slack": 3,
+    "optimalSolutions": 21634,
+    "pathsAtMin": 3194134,
+    "pOptimal": 0.00677,
+    "statesExplored": 44199,
+    "avgBranching": 19.95,
+    "winRate": {
+     "random": 0.065,
+     "casual": 0.58,
+     "good": 0.78
+    },
+    "withExtraMoves3": {
+     "casual": 0.87,
+     "good": 0.99
+    },
+    "expectedAttempts": {
+     "casual": 1.7,
+     "casualWithExtraMoves3": 1.2
+    },
+    "greedySolves": false,
+    "solverMs": 9154
+   }
+  },
+  {
+   "id": 15,
+   "chapter": 2,
+   "kind": "clear",
+   "board": [
+    [
+     null,
+     3,
+     1,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     2,
+     null,
+     null
+    ],
+    [
+     2,
+     null,
+     2,
+     3,
+     2
+    ],
+    [
+     null,
+     null,
+     1,
+     null,
+     null
+    ],
+    [
+     null,
+     3,
+     null,
+     1,
+     4
+    ]
+   ],
+   "sequence": [
+    2,
+    1,
+    2,
+    2,
+    2,
+    1,
+    2,
+    1,
+    1
+   ],
+   "moves": 4,
+   "goals": [
+    {
+     "type": "clear",
+     "tiles": 6
+    }
+   ],
+   "stars": {
+    "three": 2,
+    "two": 3
+   },
+   "solution": "hc",
+   "meta": {
+    "seed": 26469610,
+    "difficulty": 40,
+    "difficultyRaw": 24.03,
+    "minMoves": 2,
+    "slack": 2,
+    "optimalSolutions": 2,
+    "pathsAtMin": 394,
+    "pOptimal": 0.00508,
+    "statesExplored": 18,
+    "avgBranching": 19.67,
+    "winRate": {
+     "random": 0.015,
+     "casual": 0.44,
+     "good": 0.65
+    },
+    "withExtraMoves3": {
+     "casual": 0.89,
+     "good": 1
+    },
+    "expectedAttempts": {
+     "casual": 2.3,
+     "casualWithExtraMoves3": 1.1
+    },
+    "greedySolves": false,
+    "solverMs": 4
+   }
+  },
+  {
+   "id": 16,
+   "chapter": 2,
+   "kind": "make",
+   "board": [
+    [
+     2,
+     2,
+     null,
+     null,
+     2
+    ],
+    [
+     null,
+     2,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     1,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ]
+   ],
+   "sequence": [
+    1,
+    2,
+    2,
+    1,
+    2,
+    1,
+    2,
+    2,
+    1,
+    1
+   ],
+   "moves": 5,
+   "goals": [
+    {
+     "type": "make",
+     "value": 3,
+     "count": 2
+    }
+   ],
+   "stars": {
+    "three": 3,
+    "two": 4
+   },
+   "solution": "aar",
+   "meta": {
+    "seed": 34903345,
+    "difficulty": 52,
+    "difficultyRaw": 31.29,
+    "minMoves": 3,
+    "slack": 2,
+    "optimalSolutions": 9,
+    "pathsAtMin": 7994,
+    "pOptimal": 0.00113,
+    "statesExplored": 268,
+    "avgBranching": 19.99,
+    "winRate": {
+     "random": 0,
+     "casual": 0.42,
+     "good": 0.57
+    },
+    "withExtraMoves3": {
+     "casual": 0.89,
+     "good": 0.97
+    },
+    "expectedAttempts": {
+     "casual": 2.4,
+     "casualWithExtraMoves3": 1.1
+    },
+    "greedySolves": false,
+    "solverMs": 45
+   }
+  },
+  {
+   "id": 17,
+   "chapter": 2,
+   "kind": "score",
+   "board": [
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     1,
+     null,
+     null,
+     null
+    ],
+    [
+     2,
+     null,
+     null,
+     1,
+     null
+    ],
+    [
+     2,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ]
+   ],
+   "sequence": [
+    1,
+    2,
+    2,
+    2,
+    1,
+    1,
+    1,
+    1,
+    2,
+    2,
+    1
+   ],
+   "moves": 6,
+   "goals": [
+    {
+     "type": "score",
+     "points": 160
+    }
+   ],
+   "stars": {
+    "three": 3,
+    "two": 5
+   },
+   "solution": "fgg",
+   "meta": {
+    "seed": 41658252,
+    "difficulty": 45,
+    "difficultyRaw": 27.15,
+    "minMoves": 3,
+    "slack": 3,
+    "optimalSolutions": 6,
+    "pathsAtMin": 8000,
+    "pOptimal": 0.00075,
+    "statesExplored": 270,
+    "avgBranching": 20,
+    "winRate": {
+     "random": 0.025,
+     "casual": 0.44,
+     "good": 0.59
+    },
+    "withExtraMoves3": {
+     "casual": 0.84,
+     "good": 0.91
+    },
+    "expectedAttempts": {
+     "casual": 2.3,
+     "casualWithExtraMoves3": 1.2
+    },
+    "greedySolves": false,
+    "solverMs": 45
+   }
+  },
+  {
+   "id": 18,
+   "chapter": 2,
+   "kind": "score",
+   "board": [
+    [
+     null,
+     null,
+     null,
+     2,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     1,
+     null
+    ],
+    [
+     4,
+     null,
+     null,
+     null,
+     3
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ]
+   ],
+   "sequence": [
+    1,
+    1,
+    1,
+    4,
+    4,
+    2,
+    1,
+    2,
+    3,
+    1
+   ],
+   "moves": 5,
+   "goals": [
+    {
+     "type": "score",
+     "points": 120
+    }
+   ],
+   "stars": {
+    "three": 4,
+    "two": 5
+   },
+   "solution": "assc",
+   "meta": {
+    "seed": 26073660,
+    "difficulty": 52,
+    "difficultyRaw": 31.11,
+    "minMoves": 4,
+    "slack": 1,
+    "optimalSolutions": 68,
+    "pathsAtMin": 159954,
+    "pOptimal": 0.000425,
+    "statesExplored": 936,
+    "avgBranching": 19.98,
+    "winRate": {
+     "random": 0.025,
+     "casual": 0.43,
+     "good": 0.35
+    },
+    "withExtraMoves3": {
+     "casual": 0.74,
+     "good": 0.74
+    },
+    "expectedAttempts": {
+     "casual": 2.3,
+     "casualWithExtraMoves3": 1.4
+    },
+    "greedySolves": false,
+    "solverMs": 156
+   }
+  },
+  {
+   "id": 19,
+   "chapter": 2,
+   "kind": "tile",
+   "board": [
+    [
+     3,
+     null,
+     2,
+     null,
+     null
+    ],
+    [
+     null,
+     3,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     3
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     1,
+     2,
+     2
+    ]
+   ],
+   "sequence": [
+    1,
+    1,
+    2,
+    2,
+    2,
+    2,
+    1,
+    2,
+    1,
+    2,
+    2
+   ],
+   "moves": 6,
+   "goals": [
+    {
+     "type": "tile",
+     "value": 4
+    }
+   ],
+   "stars": {
+    "three": 4,
+    "two": 5
+   },
+   "solution": "abfq",
+   "meta": {
+    "seed": 21797400,
+    "difficulty": 55,
+    "difficultyRaw": 32.91,
+    "minMoves": 4,
+    "slack": 2,
+    "optimalSolutions": 384,
+    "pathsAtMin": 158888,
+    "pOptimal": 0.00242,
+    "statesExplored": 2979,
+    "avgBranching": 19.93,
+    "winRate": {
+     "random": 0.04,
+     "casual": 0.23,
+     "good": 0.25
+    },
+    "withExtraMoves3": {
+     "casual": 0.33,
+     "good": 0.4
+    },
+    "expectedAttempts": {
+     "casual": 4.3,
+     "casualWithExtraMoves3": 3
+    },
+    "greedySolves": false,
+    "solverMs": 498
+   }
+  },
+  {
+   "id": 20,
+   "chapter": 2,
+   "kind": "street",
+   "board": [
+    [
+     null,
+     null,
+     null,
+     1,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     2,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     3
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     1
+    ]
+   ],
+   "sequence": [
+    1,
+    2,
+    2,
+    2,
+    2,
+    1,
+    1,
+    2,
+    1
+   ],
+   "moves": 4,
+   "goals": [
+    {
+     "type": "street",
+     "count": 2
+    }
+   ],
+   "stars": {
+    "three": 3,
+    "two": 4
+   },
+   "solution": "abc",
+   "meta": {
+    "seed": 32036667,
+    "difficulty": 55,
+    "difficultyRaw": 33.18,
+    "minMoves": 3,
+    "slack": 1,
+    "optimalSolutions": 24,
+    "pathsAtMin": 8000,
+    "pOptimal": 0.003,
+    "statesExplored": 266,
+    "avgBranching": 20,
+    "winRate": {
+     "random": 0.01,
+     "casual": 0.31,
+     "good": 0.12
+    },
+    "withExtraMoves3": {
+     "casual": 0.66,
+     "good": 0.62
+    },
+    "expectedAttempts": {
+     "casual": 3.2,
+     "casualWithExtraMoves3": 1.5
+    },
+    "greedySolves": false,
+    "solverMs": 42
+   }
+  },
+  {
+   "id": 21,
+   "chapter": 3,
+   "kind": "combo",
+   "board": [
+    [
+     null,
+     null,
+     1,
+     2,
+     null
+    ],
+    [
+     1,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     2,
+     2,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     2,
+     1,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ]
+   ],
+   "sequence": [
+    2,
+    1,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    2,
+    2,
+    1
+   ],
+   "moves": 6,
+   "goals": [
+    {
+     "type": "combo",
+     "chain": 2
+    }
+   ],
+   "stars": {
+    "three": 4,
+    "two": 5
+   },
+   "solution": "afqq",
+   "meta": {
+    "seed": 40383293,
+    "difficulty": 53,
+    "difficultyRaw": 31.99,
+    "minMoves": 4,
+    "slack": 2,
+    "optimalSolutions": 1047,
+    "pathsAtMin": 159760,
+    "pOptimal": 0.00655,
+    "statesExplored": 2489,
+    "avgBranching": 19.98,
+    "winRate": {
+     "random": 0.05,
+     "casual": 0.34,
+     "good": 0.1
+    },
+    "withExtraMoves3": {
+     "casual": 0.45,
+     "good": 0.39
+    },
+    "expectedAttempts": {
+     "casual": 2.9,
+     "casualWithExtraMoves3": 2.2
+    },
+    "greedySolves": false,
+    "solverMs": 459
+   }
+  },
+  {
+   "id": 22,
+   "chapter": 3,
+   "kind": "combo",
+   "board": [
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     2,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     3
+    ],
+    [
+     null,
+     2,
+     2,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     1,
+     null,
+     null
+    ]
+   ],
+   "sequence": [
+    1,
+    1,
+    3,
+    1,
+    1,
+    1,
+    2,
+    2,
+    3,
+    1,
+    1
+   ],
+   "moves": 6,
+   "goals": [
+    {
+     "type": "combo",
+     "chain": 2
+    }
+   ],
+   "stars": {
+    "three": 4,
+    "two": 5
+   },
+   "solution": "abcc",
+   "meta": {
+    "seed": 32400941,
+    "difficulty": 63,
+    "difficultyRaw": 37.6,
+    "minMoves": 4,
+    "slack": 2,
+    "optimalSolutions": 523,
+    "pathsAtMin": 159956,
+    "pOptimal": 0.00327,
+    "statesExplored": 2200,
+    "avgBranching": 19.99,
+    "winRate": {
+     "random": 0.03,
+     "casual": 0.15,
+     "good": 0.1
+    },
+    "withExtraMoves3": {
+     "casual": 0.28,
+     "good": 0.2
+    },
+    "expectedAttempts": {
+     "casual": 6.5,
+     "casualWithExtraMoves3": 3.5
+    },
+    "greedySolves": false,
+    "solverMs": 449
+   }
+  },
+  {
+   "id": 23,
+   "chapter": 3,
+   "kind": "rocks",
+   "board": [
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     "#",
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     "#",
+     null
+    ],
+    [
+     1,
+     null,
+     null,
+     null,
+     1
+    ],
+    [
+     null,
+     null,
+     2,
+     null,
+     "#"
+    ]
+   ],
+   "sequence": [
+    2,
+    2,
+    "#",
+    2,
+    1,
+    1,
+    2,
+    1,
+    2,
+    2,
+    2
+   ],
+   "moves": 6,
+   "goals": [
+    {
+     "type": "score",
+     "points": 100
+    }
+   ],
+   "stars": {
+    "three": 4,
+    "two": 5
+   },
+   "solution": "dddm",
+   "meta": {
+    "seed": 34927102,
+    "difficulty": 52,
+    "difficultyRaw": 31.14,
+    "minMoves": 4,
+    "slack": 2,
+    "optimalSolutions": 442,
+    "pathsAtMin": 159788,
+    "pOptimal": 0.00277,
+    "statesExplored": 2547,
+    "avgBranching": 19.98,
+    "winRate": {
+     "random": 0.015,
+     "casual": 0.31,
+     "good": 0.48
+    },
+    "withExtraMoves3": {
+     "casual": 0.88,
+     "good": 0.96
+    },
+    "expectedAttempts": {
+     "casual": 3.2,
+     "casualWithExtraMoves3": 1.1
+    },
+    "greedySolves": false,
+    "solverMs": 425
+   }
+  },
+  {
+   "id": 24,
+   "chapter": 3,
+   "kind": "rocks",
+   "board": [
+    [
+     null,
+     1,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     "#",
+     null
+    ],
+    [
+     "#",
+     null,
+     null,
+     null,
+     1
+    ],
+    [
+     null,
+     1,
+     null,
+     null,
+     null
+    ]
+   ],
+   "sequence": [
+    2,
+    "#",
+    "#",
+    1,
+    2,
+    2,
+    "#",
+    1,
+    1,
+    1,
+    "#",
+    2
+   ],
+   "moves": 7,
+   "goals": [
+    {
+     "type": "tile",
+     "value": 3
+    }
+   ],
+   "stars": {
+    "three": 5,
+    "two": 6
+   },
+   "solution": "gllgg",
+   "meta": {
+    "seed": 43859734,
+    "difficulty": 68,
+    "difficultyRaw": 40.95,
+    "minMoves": 5,
+    "slack": 2,
+    "optimalSolutions": 9,
+    "pathsAtMin": 3191682,
+    "pOptimal": 0.00000282,
+    "statesExplored": 36458,
+    "avgBranching": 19.94,
+    "winRate": {
+     "random": 0.02,
+     "casual": 0.23,
+     "good": 0.36
+    },
+    "withExtraMoves3": {
+     "casual": 0.31,
+     "good": 0.44
+    },
+    "expectedAttempts": {
+     "casual": 4.3,
+     "casualWithExtraMoves3": 3.2
+    },
+    "greedySolves": false,
+    "solverMs": 6578
+   }
+  },
+  {
+   "id": 25,
+   "chapter": 3,
+   "kind": "make",
+   "board": [
+    [
+     1,
+     null,
+     null,
+     2,
+     2
+    ],
+    [
+     2,
+     2,
+     1,
+     null,
+     null
+    ],
+    [
+     null,
+     1,
+     null,
+     null,
+     1
+    ],
+    [
+     null,
+     2,
+     null,
+     null,
+     null
+    ],
+    [
+     1,
+     null,
+     1,
+     null,
+     2
+    ]
+   ],
+   "sequence": [
+    1,
+    2,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    2,
+    1
+   ],
+   "moves": 6,
+   "goals": [
+    {
+     "type": "make",
+     "value": 3,
+     "count": 3
+    }
+   ],
+   "stars": {
+    "three": 4,
+    "two": 5
+   },
+   "solution": "alql",
+   "meta": {
+    "seed": 20269033,
+    "difficulty": 71,
+    "difficultyRaw": 42.32,
+    "minMoves": 4,
+    "slack": 2,
+    "optimalSolutions": 20,
+    "pathsAtMin": 153024,
+    "pOptimal": 0.000131,
+    "statesExplored": 2609,
+    "avgBranching": 19.48,
+    "winRate": {
+     "random": 0.005,
+     "casual": 0.12,
+     "good": 0.2
+    },
+    "withExtraMoves3": {
+     "casual": 0.49,
+     "good": 0.83
+    },
+    "expectedAttempts": {
+     "casual": 8.1,
+     "casualWithExtraMoves3": 2
+    },
+    "greedySolves": false,
+    "solverMs": 612
+   }
+  }
+ ]
+}
