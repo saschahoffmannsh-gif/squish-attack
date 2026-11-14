@@ -9,10 +9,11 @@
 //                It ships to every browser, so it is a bundle check, not a secret.
 // Optional: apiUrl overrides the full function URL (e.g. a local `supabase functions serve`).
 //
-// Current values: shared project wlujgkbtpjxuekwsgnmg ("galaxy-empire").
+// Current values: dedicated project tzkgqwvldlfbswdvyqgy ("squish-attack", eu-central-1).
+// The leaderboard is read from {supabaseUrl}/rest/v1/sq_leaderboard with anonKey.
 window.SQ_CONFIG = {
-  supabaseUrl: "https://wlujgkbtpjxuekwsgnmg.supabase.co",
-  anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndsdWpna2J0cGp4dWVrd3Nnbm1nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5Nzk0MjIsImV4cCI6MjEwNzU1NTQyMn0.IPX_Vco2kJurtnZUAcNFYcZ4hs2nT6n6e8apIhZfhTk",
+  supabaseUrl: "https://tzkgqwvldlfbswdvyqgy.supabase.co",
+  anonKey: "sb_publishable__QxVxDRmON69TfkaOoPniw_GuAfFXr8",
   functionName: "squish",
-  accessToken: "eTz3OeKXM3ysmAK4wpSKCgS70DTudbEMtaF4xJmt7M8"
+  accessToken: "b0IyyZneW4G2ChkQ9a9WrPLe0TYMD5vtBCQNx1y1LOd"
 };
