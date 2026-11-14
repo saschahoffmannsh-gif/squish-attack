@@ -4,6 +4,7 @@
 // enabled (Einstellungen > Vibration). On iPhone the default is off, because
 // the system click is easy to mistake for a game sound.
 import {ios} from './flags.mjs?v=launch-2';
+import {hasNativeHaptics,haptic as nativeHaptic} from './native.mjs?v=native-1';
 const KEY='squish-haptics-v1';
 const PATTERNS={tap:[6],move:[9],merge:[16,60,16],big:[24,60,24,60,34]};
 const TICKS={tap:1,move:1,merge:2,big:3};
@@ -13,8 +14,9 @@ export function createHaptics({page=document,storage=globalThis.localStorage}={}
   let enabled=true;
   try{
     const stored=storage?.getItem(KEY);
-    enabled=ios?stored==='1':stored!=='0';
-  }catch{enabled=!ios;}
+    // The iOS web fallback (switch click) defaults off; real app haptics default on.
+    enabled=ios&&!hasNativeHaptics?stored==='1':stored!=='0';
+  }catch{enabled=!ios||hasNativeHaptics;}
   const vibrate=typeof navigator.vibrate==='function'?navigator.vibrate.bind(navigator):null;
   const listeners=new Set();
   let label=null,timers=[],lastAt=-1e9,lastRank=-1;
@@ -33,6 +35,7 @@ export function createHaptics({page=document,storage=globalThis.localStorage}={}
     // Rate limit: one pattern at a time; only a stronger one may cut in.
     if(now-lastAt<(rank>lastRank?45:110))return false;
     lastAt=now;lastRank=rank;
+    if(hasNativeHaptics)return nativeHaptic(kind);
     if(vibrate){try{vibrate(PATTERNS[kind]);}catch{}return true;}
     if(!ensureSwitch())return false;
     timers.forEach(clearTimeout);timers=[];
@@ -41,6 +44,8 @@ export function createHaptics({page=document,storage=globalThis.localStorage}={}
   }
   return {
     pulse,
+    /** One-off native pattern (gameover, win, lose); respects the Vibration setting. */
+    event(kind){return enabled&&hasNativeHaptics?nativeHaptic(kind):false;},
     prime(){if(enabled)ensureSwitch();},
     get enabled(){return enabled;},
     set enabled(value) {
@@ -49,6 +54,6 @@ export function createHaptics({page=document,storage=globalThis.localStorage}={}
     },
     toggle(){this.enabled=!enabled;return enabled;},
     onChange(fn){listeners.add(fn);return ()=>listeners.delete(fn);},
-    get supported(){return Boolean(vibrate)||'switch' in (page.createElement('input'));},
+    get supported(){return hasNativeHaptics||Boolean(vibrate)||'switch' in (page.createElement('input'));},
   };
 }

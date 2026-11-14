@@ -14,6 +14,7 @@ import {installFullscreen} from './fullscreen.mjs?v=timed-duel-1';
 import {createWorldMenu} from './world-menu.mjs?v=launch-2';
 import {createHaptics} from './haptics.mjs?v=launch-2';
 import {planMergeRipple} from './merge-ripple.mjs?v=swarm-fx-3';
+import * as native from './native.mjs?v=native-1';
 const playfield = document.getElementById('playfield');
 const gameElement = document.querySelector('.game');
 const visual = createGameGraphics(document.getElementById('graphics'));
@@ -344,7 +345,7 @@ async function enterGame() {
   if (booting || started || busy) return;
   started = true;
   busy = true;
-  paused = false;veil.hidden = true;gameElement.classList.remove('is-paused');
+  paused = false;native.keepAwake(true);veil.hidden = true;gameElement.classList.remove('is-paused');
   graphics.pause(false);
   sound.resume();
   sound.unlock();
@@ -419,7 +420,8 @@ function showNote(message, duration = 2200) {
 
 function showDialog(over) {
   if(duelMode&&over)return;
-  paused = true;
+  paused = true;native.keepAwake(false);
+  if (over) { haptics.event('gameover'); native.submitLeaderboardScore(score); }
   sound.pause();
   phoneMotion.reset();
   gameElement.classList.add('is-paused');
@@ -438,7 +440,7 @@ function showDialog(over) {
 
 function resume() {
   if(duelFinished)return;
-  paused = false;
+  paused = false;native.keepAwake(true);
   sound.resume();sound.unlock();
   phoneMotion.reset();
   gameElement.classList.remove('is-paused');
@@ -599,10 +601,11 @@ function updateDuelHud() {
 }
 function finishDuel(data) {
   if(duelFinished)return;
-  duelFinished=true;paused=true;sound.pause();releaseGesture();phoneMotion.reset();
+  duelFinished=true;paused=true;sound.pause();releaseGesture();phoneMotion.reset();native.keepAwake(false);
   mergeEffects.syncScore(data.game.score,true);mergeEffects.finish();
   gameElement.classList.add('is-paused');graphics.pause(false);veil.hidden=false;
   const won=data.winner===data.you,tie=data.winner===null;
+  haptics.event(tie?'gameover':won?'win':'lose');
   dialogTitle.textContent=tie?'Unentschieden!':won?'Du gewinnst!':'Duell verloren';
   dialogMessage.textContent=(data.reason==='left'?'Ein Spieler hat das Duell verlassen.':data.reason==='time'?'Die fünf Minuten sind um.': 'Das Duell ist beendet.')+` Du: ${format(data.game.score)} · Gegner: ${format(data.opponent?.score??0)} Punkte.`;
   resumeButton.hidden=true;restartButton.textContent='Zum Menü';restartButton.focus();updateDuelHud();
@@ -756,9 +759,21 @@ pauseButton.addEventListener('click', () => {
 resumeButton.addEventListener('click', resume);
 restartButton.addEventListener('click', restart);
 
+function persistNow() {
+  if (booting || duelMode) return;
+  saveState(); void flushPending({ keepalive: true }); void submitScore({ keepalive: true });
+}
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden && !booting && !duelMode) { saveState(); void flushPending({ keepalive: true }); void submitScore({ keepalive: true }); }
-  else if (!document.hidden && pendingSave) scheduleFlush(2000);
+  if (document.hidden) persistNow();
+  else if (pendingSave) scheduleFlush(2000);
+});
+// App shell: iOS can suspend right after 'pause', so save there as well.
+native.onPause(() => { persistNow(); native.keepAwake(false); });
+native.onResume(() => { if (pendingSave) scheduleFlush(2000); native.keepAwake(started && !paused && !booting); });
+// Android back button: pause a running game; otherwise leave the app.
+native.onBackButton(() => {
+  if (started && !paused && !booting && !duelFinished) { if (!duelMode) showDialog(false); return true; }
+  return false;
 });
 window.addEventListener('pagehide', event => {
   if (!event.persisted) {phoneMotion.dispose();sound.dispose();}

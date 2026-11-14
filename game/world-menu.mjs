@@ -1,5 +1,6 @@
 import {getLabelShapes,pillowTopHeight} from './original-gel-models.js?v=menu-1';
 import {BUILD} from './flags.mjs?v=launch-2';
+import {canShare,shareDuelCode} from './native.mjs?v=native-1';
 
 // In-world start menu: wide gel cushions (the original squish body with a
 // lengthened straight middle) drop onto the glass, one per grid row, and burst
@@ -372,9 +373,10 @@ export function createWorldMenu({visual,effects,sound,page=document,reduceMotion
   function showCode(room) {
     if(screen!=='multi'||multi.mode!=='host'||!room||room===multi.room)return;
     const old=multi.code;multi.room=room;
-    multi.code=[...room].map((d,i)=>codeTile({row:3,x:codeX(i,room.length),digit:+d,label:`Code-Ziffer ${d}`},room.length));
+    const share=canShare?it=>{kick(it,.35);void shareDuelCode(room);}:undefined;
+    multi.code=[...room].map((d,i)=>codeTile({row:3,x:codeX(i,room.length),digit:+d,label:`Code-Ziffer ${d}`,action:share},room.length));
     void burstAll(null,old||[]).then(()=>drop(multi.code,{spacing:.11}));
-    say('Dein Code: '+room+' · Warte auf Mitspieler (10 Min.)');
+    say('Dein Code: '+room+(canShare?' · Tippe ihn an zum Teilen':' · Warte auf Mitspieler (10 Min.)'));
   }
   function placeKeys() {
     if(!multi?.keys?.length||!keypadElement)return;
