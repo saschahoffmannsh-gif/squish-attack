@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de" class="is-boot-splash">
+<html lang="de" class="aw is-boot-splash">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -10,6 +10,7 @@
     <meta name="apple-mobile-web-app-title" content="Squish attack" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <link rel="preload" as="image" href="assets/squish-attack-logo-v1.png" fetchpriority="high" />
+    <link rel="preload" as="font" type="font/ttf" href="assets/fonts/LilitaOne-Regular.ttf" crossorigin />
     <link rel="apple-touch-icon" sizes="180x180" href="icons/squishy-v1-180.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="icons/squishy-v1-32.png" />
     <link rel="icon" type="image/png" sizes="64x64" href="icons/squishy-v1-64.png" />
@@ -110,17 +111,18 @@
         </style>
     <link rel="stylesheet" href="graphics.css" />
     <link rel="stylesheet" href="fixed-screen.css?v=glass-menu-1" />
-    <link rel="stylesheet" href="duel.css?v=launch-3" />
+    <link rel="stylesheet" href="duel.css?v=launch-4" />
     <link rel="stylesheet" href="reward-effects.css?v=vfx-1" />
     <link rel="stylesheet" href="menu.css?v=glass-title-1" />
     <link rel="stylesheet" href="title-menu.css?v=3" />
-    <link rel="stylesheet" href="clean-screen.css?v=launch-3" />
-    <link rel="stylesheet" href="world-menu.css?v=launch-3" />
+    <link rel="stylesheet" href="clean-screen.css?v=launch-4" />
     <link rel="stylesheet" href="combo.css?v=combo-1" />
-    <link rel="stylesheet" href="leaderboard.css?v=launch-3" />
-    <link rel="stylesheet" href="campaign.css?v=launch-3" />
+    <link rel="stylesheet" href="leaderboard.css?v=launch-4" />
+    <link rel="stylesheet" href="campaign.css?v=launch-4" />
+    <link rel="stylesheet" href="autumn-ui.css?v=launch-4" />
   </head>
   <body>
+    <div class="aw-bg" id="aw-bg" aria-hidden="true"></div>
     <section class="brand-splash" id="brand-splash" aria-label="Squish attack wird geladen">
       <div class="brand-lockup">
       <img id="brand-logo" src="assets/squish-attack-logo-v1.png" alt="Squish attack" fetchpriority="high" decoding="async" />
@@ -171,8 +173,13 @@
           <noscript>Bitte aktiviere JavaScript, um zu spielen.</noscript>
         </div>
       </nav>
-      <nav class="world-menu-a11y" id="world-menu" aria-label="Menü"></nav>
-      <p class="world-menu-a11y" id="world-live" role="status" aria-live="polite"></p>
+      <div class="aw-home" id="home-menu" data-screen="home" hidden>
+        <div class="aw-logo-wrap"><img class="aw-logo" src="assets/squish-attack-logo-v1.png" alt="Squish Attack" width="1774" height="887" decoding="async" /></div>
+        <p class="aw-tagline">Schieben. Quetschen. Ploppen.</p>
+        <nav class="aw-screen" id="home-screen" aria-label="Menü"><p class="aw-status" id="home-status" role="status" aria-live="polite"></p></nav>
+        <p class="aw-build" id="home-build" aria-hidden="true"></p>
+        <button class="aw-gear" id="home-settings" data-open-settings type="button" aria-label="Einstellungen"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M20.02 9.52 L22.98 9.77 L22.98 14.23 L20.02 14.48 L19.43 15.920 L21.34 18.19 L18.19 21.34 L15.92 19.43 L14.48 20.02 L14.23 22.98 L9.77 22.98 L9.52 20.02 L8.08 19.43 L5.81 21.34 L2.66 18.19 L4.57 15.92 L3.98 14.48 L1.02 14.23 L1.02 9.77 L3.98 9.52 L4.57 8.08 L2.66 5.81 L5.81 2.66 L8.08 4.57 L9.52 3.98 L9.77 1.02 L14.23 1.02 L14.48 3.98 L15.92 4.57 L18.19 2.66 L21.34 5.81 L19.43 8.08Z M12 8.2a3.8 3.8 0 1 0 0.001 0Z"/></svg></button>
+      </div>
     </section>
     <main class="game is-start" inert aria-hidden="true">
       <div class="game-stage">
@@ -208,8 +215,6 @@
         <div class="gesture-note" id="note" role="status" aria-live="polite" hidden>Wische über eine Reihe oder Spalte</div>
       </section>
       <div class="combo-meter" id="combo-meter" aria-hidden="true" hidden></div>
-      <p class="world-caption" id="world-caption" aria-hidden="true" hidden></p>
-      <div class="world-keypad" id="world-keypad" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
       <section class="preview" aria-label="Die nächsten drei Spielsteine">
         <div class="queue" id="queue"></div>
       </section>
@@ -245,18 +250,30 @@
         </details>
       </div>
     </div>
-    <div class="veil campaign-result" id="campaign-result" hidden>
-      <div class="dialog classic-panel" role="dialog" aria-modal="true" aria-labelledby="campaign-result-title">
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="aw-star-grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6a8"/><stop offset=".45" stop-color="#ffcf2e"/><stop offset="1" stop-color="#f08a0c"/></linearGradient>
+        <linearGradient id="aw-star-shine" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+        <g id="aw-star-full"><path d="M12.00 1.80 L14.82 8.92 L22.46 9.40 L16.57 14.28 L18.47 21.70 L12.00 17.60 L5.53 21.70 L7.43 14.28 L1.54 9.40 L9.18 8.92Z" fill="url(#aw-star-grad)" stroke="#9a4a06" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 4.6 13.9 9.6 19.2 9.95 12 11.4 4.8 9.95 10.1 9.6Z" fill="url(#aw-star-shine)" opacity=".85"/><ellipse cx="8.6" cy="9.4" rx="1.3" ry=".8" fill="#fff" opacity=".9" transform="rotate(-25 8.6 9.4)"/></g>
+      </defs>
+    </svg>
+    <div class="veil campaign-result" id="campaign-result" data-outcome="won" hidden>
+      <div class="aw-panel" role="dialog" aria-modal="true" aria-labelledby="campaign-result-title">
+        <span class="aw-deco d1" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 1.6 13.7 6 16.4 4.6 15.8 9.1 20 7.4 18.8 10.5 22.6 11.2 19 14.1 20.1 16.6 14.8 15.7 13.1 18.2 12.7 22.6h-1.4L10.9 18.2 9.2 15.7 3.9 16.6 5 14.1 1.4 11.2 5.2 10.5 4 7.4 8.2 9.1 7.6 4.6 10.3 6Z"/><path d="M12 22V7M12 13l-5-3.5M12 13l5-3.5" fill="none" stroke="#0000003a" stroke-width=".9" stroke-linecap="round"/></svg></span><span class="aw-deco d2" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 1.6 13.7 6 16.4 4.6 15.8 9.1 20 7.4 18.8 10.5 22.6 11.2 19 14.1 20.1 16.6 14.8 15.7 13.1 18.2 12.7 22.6h-1.4L10.9 18.2 9.2 15.7 3.9 16.6 5 14.1 1.4 11.2 5.2 10.5 4 7.4 8.2 9.1 7.6 4.6 10.3 6Z"/><path d="M12 22V7M12 13l-5-3.5M12 13l5-3.5" fill="none" stroke="#0000003a" stroke-width=".9" stroke-linecap="round"/></svg></span><span class="aw-deco d3" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 1.6 13.7 6 16.4 4.6 15.8 9.1 20 7.4 18.8 10.5 22.6 11.2 19 14.1 20.1 16.6 14.8 15.7 13.1 18.2 12.7 22.6h-1.4L10.9 18.2 9.2 15.7 3.9 16.6 5 14.1 1.4 11.2 5.2 10.5 4 7.4 8.2 9.1 7.6 4.6 10.3 6Z"/><path d="M12 22V7M12 13l-5-3.5M12 13l5-3.5" fill="none" stroke="#0000003a" stroke-width=".9" stroke-linecap="round"/></svg></span><span class="aw-deco d4" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 1.6 13.7 6 16.4 4.6 15.8 9.1 20 7.4 18.8 10.5 22.6 11.2 19 14.1 20.1 16.6 14.8 15.7 13.1 18.2 12.7 22.6h-1.4L10.9 18.2 9.2 15.7 3.9 16.6 5 14.1 1.4 11.2 5.2 10.5 4 7.4 8.2 9.1 7.6 4.6 10.3 6Z"/><path d="M12 22V7M12 13l-5-3.5M12 13l5-3.5" fill="none" stroke="#0000003a" stroke-width=".9" stroke-linecap="round"/></svg></span>
+        <div class="aw-stars" id="campaign-result-stars" role="img" aria-label="" data-stars="0"><span class="aw-star s1" style="--sd:0ms"><i class="flash"></i><svg class="slot" viewBox="0 0 24 24"><path d="M12.00 1.80 L14.82 8.92 L22.46 9.40 L16.57 14.28 L18.47 21.70 L12.00 17.60 L5.53 21.70 L7.43 14.28 L1.54 9.40 L9.18 8.92Z" fill="#0a1130" stroke="#2f3d72" stroke-width="1.6" stroke-linejoin="round"/><path d="M12.00 1.80 L14.82 8.92 L22.46 9.40 L16.57 14.28 L18.47 21.70 L12.00 17.60 L5.53 21.70 L7.43 14.28 L1.54 9.40 L9.18 8.92Z" fill="none" stroke="#000" stroke-opacity=".45" stroke-width=".7" stroke-linejoin="round" transform="translate(12 12.8) scale(.78) translate(-12 -12.8)"/></svg><svg class="full" viewBox="0 0 24 24"><use href="#aw-star-full"/></svg><i class="aw-spark" style="--sx:-46px;--sy:-30px"></i><i class="aw-spark" style="--sx:44px;--sy:-34px"></i><i class="aw-spark" style="--sx:-30px;--sy:40px"></i><i class="aw-spark" style="--sx:36px;--sy:38px"></i><i class="aw-spark" style="--sx:0px;--sy:-54px"></i></span><span class="aw-star s2" style="--sd:0ms"><i class="flash"></i><svg class="slot" viewBox="0 0 24 24"><path d="M12.00 1.80 L14.82 8.92 L22.46 9.40 L16.57 14.28 L18.47 21.70 L12.00 17.60 L5.53 21.70 L7.43 14.28 L1.54 9.40 L9.18 8.92Z" fill="#0a1130" stroke="#2f3d72" stroke-width="1.6" stroke-linejoin="round"/><path d="M12.00 1.80 L14.82 8.92 L22.46 9.40 L16.57 14.28 L18.47 21.70 L12.00 17.60 L5.53 21.70 L7.43 14.28 L1.54 9.40 L9.18 8.92Z" fill="none" stroke="#000" stroke-opacity=".45" stroke-width=".7" stroke-linejoin="round" transform="translate(12 12.8) scale(.78) translate(-12 -12.8)"/></svg><svg class="full" viewBox="0 0 24 24"><use href="#aw-star-full"/></svg><i class="aw-spark" style="--sx:-46px;--sy:-30px"></i><i class="aw-spark" style="--sx:44px;--sy:-34px"></i><i class="aw-spark" style="--sx:-30px;--sy:40px"></i><i class="aw-spark" style="--sx:36px;--sy:38px"></i><i class="aw-spark" style="--sx:0px;--sy:-54px"></i></span><span class="aw-star s3" style="--sd:0ms"><i class="flash"></i><svg class="slot" viewBox="0 0 24 24"><path d="M12.00 1.80 L14.82 8.92 L22.46 9.40 L16.57 14.28 L18.47 21.70 L12.00 17.60 L5.53 21.70 L7.43 14.28 L1.54 9.40 L9.18 8.92Z" fill="#0a1130" stroke="#2f3d72" stroke-width="1.6" stroke-linejoin="round"/><path d="M12.00 1.80 L14.82 8.92 L22.46 9.40 L16.57 14.28 L18.47 21.70 L12.00 17.60 L5.53 21.70 L7.43 14.28 L1.54 9.40 L9.18 8.92Z" fill="none" stroke="#000" stroke-opacity=".45" stroke-width=".7" stroke-linejoin="round" transform="translate(12 12.8) scale(.78) translate(-12 -12.8)"/></svg><svg class="full" viewBox="0 0 24 24"><use href="#aw-star-full"/></svg><i class="aw-spark" style="--sx:-46px;--sy:-30px"></i><i class="aw-spark" style="--sx:44px;--sy:-34px"></i><i class="aw-spark" style="--sx:-30px;--sy:40px"></i><i class="aw-spark" style="--sx:36px;--sy:38px"></i><i class="aw-spark" style="--sx:0px;--sy:-54px"></i></span></div>
+        <button class="aw-close" id="campaign-result-close" type="button" aria-label="Schließen – zum Menü"></button>
+        <h2 id="campaign-result-title">Level geschafft!</h2>
         <span class="menu-kicker" id="campaign-result-kicker">LEVEL 1</span>
-        <h2 id="campaign-result-title">Geschafft!</h2>
-        <p class="campaign-stars" id="campaign-result-stars" role="img" aria-label="">★★★</p>
+        <div class="aw-result-stats" id="campaign-result-stats"><span>ZÜGE<b id="campaign-result-moves">0</b></span><span>STERNE<b id="campaign-result-starcount">0 / 3</b></span></div>
         <p id="campaign-result-message"></p>
         <p class="campaign-gift" id="campaign-result-gift" role="status" hidden></p>
-        <div class="dialog-actions">
-          <button class="menu-button primary" id="campaign-next" type="button">Nächstes Level</button>
-          <button class="menu-button primary" id="campaign-extra" type="button" hidden>+3 Züge einsetzen</button>
-          <button class="menu-button" id="campaign-retry" type="button">Nochmal</button>
-          <button class="menu-button" id="campaign-menu" type="button">Zum Menü</button>
+        <div class="aw-result-actions">
+          <button class="aw-btn aw-green aw-big" id="campaign-next" type="button"><span class="aw-ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M8 5.5v13l10.5-6.5z"/></svg></span><span class="aw-label"><span>Weiter</span></span></button>
+          <button class="aw-btn aw-green aw-big" id="campaign-extra" type="button" hidden><span class="aw-ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></span><span class="aw-label"><span data-label>+3 Züge</span></span></button>
+          <div class="aw-pair" id="campaign-result-pair">
+            <button class="aw-btn aw-blue" id="campaign-menu" type="button"><span class="aw-ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 3.2 2.6 11.4h2.7V20h5v-5.2h3.4V20h5v-8.6h2.7z"/></svg></span><span class="aw-label"><span>Menü</span></span></button>
+            <button class="aw-btn aw-purple" id="campaign-retry" type="button"><span class="aw-ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12.5a7 7 0 1 1-2.2-5.1"/><path d="M19.5 3.8v4.6h-4.6"/></svg></span><span class="aw-label"><span>Nochmal</span></span></button>
+          </div>
         </div>
       </div>
     </div>
@@ -280,6 +297,8 @@
         <p class="setting-description">Saugnapf beim Schieben, Ballonplatzer beim Merge.</p>
         <button class="setting-toggle" id="phone-motion" type="button" role="switch" aria-checked="false" aria-pressed="false" aria-describedby="phone-motion-status"><span class="setting-label"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 17h2M3 8l-2 4 2 4m18-8 2 4-2 4"/></svg>Handybewegung</span><span data-toggle-state>Aus</span></button>
         <p class="setting-description" id="phone-motion-status" role="status" aria-live="polite"></p>
+        <button class="setting-toggle" id="vibration-toggle" type="button" role="switch" aria-checked="true"><span class="setting-label"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7.5" y="3" width="9" height="18" rx="2"/><path d="M3.5 8v8M20.5 8v8"/></svg>Vibration</span><span data-toggle-state>An</span></button>
+        <p class="settings-build" id="settings-build"></p>
         <button class="menu-button primary" id="settings-close" type="button">Zurück</button>
         </div>
       </div>
@@ -287,7 +306,7 @@
     <section class="duel-screen" id="duel-screen" hidden>
       <div class="duel-panel classic-panel" id="duel-panel" role="dialog" aria-modal="true" aria-labelledby="duel-title" tabindex="-1">
         <p class="duel-eyebrow">SQUISH ATTACK · 1 GEGEN 1</p>
-        <h2 id="duel-title">Mehrspieler</h2>
+        <h2 id="duel-title">2 Spieler</h2>
         <div class="duel-tabs" aria-label="Spiel erstellen oder beitreten">
           <button id="duel-host-tab" type="button" aria-pressed="true">Host · Erstellen</button>
           <button id="duel-join-tab" type="button" aria-pressed="false">Beitreten</button>
@@ -295,7 +314,7 @@
         <div id="duel-host">
           <p>Dein Spielcode</p>
           <output class="duel-code" id="duel-code" aria-label="Sechsstelliger Spielcode">····</output>
-          <p>Der zweite Spieler öffnet Mehrspieler → Beitreten und gibt diesen Code ein.</p>
+          <p>Der zweite Spieler öffnet „2 Spieler“ → Beitreten und gibt diesen Code ein.</p>
           <button class="duel-action" id="duel-host-retry" type="button" hidden>Neuen Code erstellen</button>
         </div>
         <div id="duel-join" hidden>
@@ -336,10 +355,10 @@
         <button class="duel-back" id="board-close" type="button">Zurück zum Menü</button>
       </div>
     </section>
-    <script src="config.js?v=launch-3"></script>
+    <script src="config.js?v=launch-4"></script>
     <script>
     (function(){
-      var BUILD='launch-3';
+      var BUILD='launch-4';
       var key='squish-build-reload';
       fetch('build.txt?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.text();}).then(function(v){
         v=(v||'').trim();
@@ -350,7 +369,7 @@
       }).catch(function(){});
     })();
     </script>
-    <script type="module" src="debug-overlay.mjs?v=launch-3"></script>
-    <script type="module" src="loading-screen.mjs?v=launch-3"></script>
+    <script type="module" src="debug-overlay.mjs?v=launch-4"></script>
+    <script type="module" src="loading-screen.mjs?v=launch-4"></script>
   </body>
 </html>

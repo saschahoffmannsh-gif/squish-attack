@@ -1,11 +1,10 @@
 const controllerKey=Symbol.for('squish.start-menu-controller');
 
-// The splash hands over to the in-world menu: the empty glass table, with wide
-// gel cushions as buttons. The DOM keeps invisible buttons for keyboards and
-// assistive technology, plus the loading status and retry for failures.
+// The splash hands over to the 2D start screen (home-menu.mjs). The legacy
+// title panel only keeps the loading status and retry for failures.
 export function installStartMenu({
   page=document,
-  loadGame=()=>import('./game.mjs?v=launch-3'),
+  loadGame=()=>import('./game.mjs?v=launch-4'),
   paint=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))),
   delay=ms=>new Promise(resolve=>setTimeout(resolve,ms)),
   splashMs=4000,timeoutMs=30000,
@@ -38,7 +37,7 @@ export function installStartMenu({
   }
   function enterWorld(){
     if(inWorld||!introDone||!available||failed||launching)return;
-    inWorld=true;overlay.dataset.mode='world';overlay.dataset.phase='menu';
+    inWorld=true;overlay.dataset.mode='home';overlay.dataset.phase='menu';
     panel.setAttribute('aria-busy','false');status.textContent='';
     void app.menuActions.world.open({launch}).catch(()=>failure('Das Menü konnte nicht geladen werden. Bitte erneut laden.'));
   }

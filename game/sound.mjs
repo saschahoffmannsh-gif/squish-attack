@@ -1,4 +1,4 @@
-import {flags,ios,safari,BUILD} from './flags.mjs?v=launch-3';
+import {flags,ios,safari,BUILD} from './flags.mjs?v=launch-4';
 // Sampled gel foley. Fetching is optional and never holds up the splash;
 // the AudioContext is created/resumed only by a real player gesture.
 // Slide/land use ralph.whitehead's CC0 Plunger Pop (#05); merge/pop use Gniffelbaf's CC0 balloon burst.
@@ -76,6 +76,8 @@ export function createGameSound(button,{
 
   function render(){
     if(!button)return;
+    const state=button.querySelector('[data-toggle-state]');
+    if(state){button.setAttribute('aria-checked',String(enabled));state.textContent=enabled?'An':'Aus';return;}
     button.setAttribute('aria-pressed',enabled?'true':'false');
     button.setAttribute('aria-label',enabled?'Ton aus':'Ton an');
     button.textContent=enabled?'♪':'♪̸';

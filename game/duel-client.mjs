@@ -1,6 +1,6 @@
-import {apiFetch} from './api.mjs?v=launch-3';
+import {apiFetch} from './api.mjs?v=launch-4';
 // All commands share one channel; polling can never overtake a player's move.
-export function createDuelClient({canSync,onView,onPrepare,onBegin,onConnection,onStatus=()=>{},onCode=()=>{}}) {
+export function createDuelClient({canSync,onView,onPrepare,onBegin,onConnection,onStatus=()=>{},onCode=()=>{},onClose=()=>{}}) {
   const overlay=document.getElementById('duel-screen'),panel=document.getElementById('duel-panel');
   const status=document.getElementById('duel-status'),code=document.getElementById('duel-code');
   const host=document.getElementById('duel-host'),join=document.getElementById('duel-join');
@@ -164,9 +164,15 @@ export function createDuelClient({canSync,onView,onPrepare,onBegin,onConnection,
     try{sessionStorage.removeItem(sessionKey);}catch{}
     location.href='./index.html';
   }
-  document.getElementById('duel-close').addEventListener('click',()=>void exit());
+  // Lobby schließen: ohne Neuladen zurück zum Startbildschirm; ein laufendes Duell wird verlassen.
+  async function close(){
+    if(begun){void exit();return;}
+    await cancel();
+    overlay.hidden=true;document.getElementById('loading-screen').inert=false;onClose();
+  }
+  document.getElementById('duel-close').addEventListener('click',()=>void close());
   overlay.addEventListener('keydown',e=>{
-    if(e.key==='Escape'){e.preventDefault();void exit();}
+    if(e.key==='Escape'){e.preventDefault();void close();}
     if(e.key==='Tab') {
       const items=[...overlay.querySelectorAll('button,input')].filter(el=>!el.disabled&&el.getClientRects().length);
       if(e.shiftKey&&document.activeElement===items[0]){e.preventDefault();items.at(-1)?.focus();}
@@ -189,7 +195,7 @@ export function createDuelClient({canSync,onView,onPrepare,onBegin,onConnection,
       await accept(data);
     }catch(e){failed(e);}finally{syncing=false;}
   },250);
-  return {open,exit,enter,host:hostRoom,joinMode,join:joinRoom,cancel,get mode(){return mode;},get room(){return session?.room||null;},get waiting(){return view?.status==='waiting';},get active(){return begun;},get view(){return view;},get serverNow(){return Date.now()+offset;},
+  return {open,exit,close,enter,host:hostRoom,joinMode,join:joinRoom,cancel,get mode(){return mode;},get room(){return session?.room||null;},get waiting(){return view?.status==='waiting';},get active(){return begun;},get view(){return view;},get serverNow(){return Date.now()+offset;},
     get canMove(){const now=Date.now()+offset;return begun&&!moving&&connected&&Date.now()-lastGood<10000&&view?.status==='playing'&&now>=view.startsAt&&now<view.endsAt;},
     async move(direction,line) {
       if(moving||retryMove)return null;

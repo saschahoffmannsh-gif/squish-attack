@@ -1,21 +1,22 @@
-import {apiFetch,hasSaveToken} from './api.mjs?v=launch-3';
-import {createRng,encodeMove,replayRun,MAX_LOG} from './ranked.mjs?v=launch-3';
-import {createLeaderboard} from './leaderboard.mjs?v=launch-3';
+import {apiFetch,hasSaveToken} from './api.mjs?v=launch-4';
+import {createRng,encodeMove,replayRun,MAX_LOG} from './ranked.mjs?v=launch-4';
+import {createLeaderboard} from './leaderboard.mjs?v=launch-4';
 import { SIZE, START_VALUES, createStartValues, insertTile, nextMergePass, settle, isGameOver } from './game-logic.mjs?v=automatic-streets-2';
 import { nextSpawn, spawnProfile } from './balance.mjs';
 import {canContinueRun} from './run-availability.mjs?v=splash-plate-1';
 import { createMergeEffects } from './merge-effects.mjs?v=fuse-3';
 import { createGameGraphics } from './graphics-adapter.mjs?v=fuse-6';
 import { installDeviceMotion } from './device-motion.mjs';
-import { createGameSound } from './sound.mjs?v=launch-3';
+import { createGameSound } from './sound.mjs?v=launch-4';
 import { installSettings } from './settings.mjs?v=woodland-menu-1';
-import { createDuelClient } from './duel-client.mjs?v=launch-3';
+import { createDuelClient } from './duel-client.mjs?v=launch-4';
 import {installFullscreen} from './fullscreen.mjs?v=timed-duel-1';
-import {createWorldMenu} from './world-menu.mjs?v=launch-3';
-import {createHaptics} from './haptics.mjs?v=launch-3';
+import {createHomeMenu} from './home-menu.mjs?v=launch-4';
+import {createConfetti} from './confetti.mjs?v=launch-4';
+import {createHaptics} from './haptics.mjs?v=launch-4';
 import {planMergeRipple} from './merge-ripple.mjs?v=swarm-fx-3';
-import * as Camp from './campaign.mjs?v=launch-3';
-import {createCampaignUI} from './campaign-ui.mjs?v=launch-3';
+import * as Camp from './campaign.mjs?v=launch-4';
+import {createCampaignUI} from './campaign-ui.mjs?v=launch-4';
 const playfield = document.getElementById('playfield');
 const gameElement = document.querySelector('.game');
 const visual = createGameGraphics(document.getElementById('graphics'));
@@ -74,6 +75,7 @@ const duel=createDuelClient({
   onConnection:(ok,message)=>{duelConnected=ok;if(message)showNote(message,0);},
   onStatus:text=>worldMenu?.status(text),
   onCode:room=>worldMenu?.code(room),
+  onClose:()=>document.querySelector('#home-screen button')?.focus({preventScroll:true}),
 });
 setInterval(updateDuelHud,200);
 
@@ -97,14 +99,18 @@ const leaderboard=createLeaderboard({
   storeRanks,
 });
 let moveCombo=0;
-const worldMenu=createWorldMenu({visual,effects:mergeEffects,sound,reduceMotion,hooks:{
+const confetti=createConfetti();
+let celebrating=false;
+// Menüs sind reine 2D-Bildschirme; die 3D-Szene pausiert, solange sie offen sind.
+const worldMenu=createHomeMenu({sound,reduceMotion,hooks:{
+  pauseScene:on=>{if(on){if(!started)graphics.pause(true);}else graphics.pause(false);},
+  endlessStats:()=>({best,bestTile:campaignMode&&stashedBestTile!=null?stashedBestTile:bestTile}),
   haptics,
   canContinue:()=>canContinueRun(hasSavedGame,board),
   gesture:()=>{void fullscreen.enter();sound.unlock();phoneMotion.restoreFromGesture();void prefetchRun();},
   launch:async()=>{},
   duel,
   leaderboard:()=>leaderboard.open(),
-  initialScreen:()=>{const m=storedMode();return m==='campaign'?'campaign':m==='endless'?'main':'mode';},
   setMode:mode=>{try{localStorage.setItem(MODE_KEY,mode);}catch{}},
   campaign:{
     summary:()=>campaignSummary(),
@@ -123,7 +129,7 @@ const newTile = value => ({ id: nextId++, value });
 // in localStorage unangetastet: während der Kampagne wird nichts davon gespeichert,
 // beim Verlassen wird er wieder geladen.
 const MODE_KEY='squish-mode-v1';
-const LEVELS_URL=new URL('../levels/levels-001-025.json?v=launch-3',import.meta.url);
+const LEVELS_URL=new URL('../levels/levels-001-025.json?v=launch-4',import.meta.url);
 function storedMode(){try{return localStorage.getItem(MODE_KEY)||'';}catch{return '';}}
 let campaignMode=false,camp=null,levels=null,levelsLoading=null,stashedBestTile=null,needsEntry=false,hammerArmed=false;
 let campaignProgress=Camp.loadProgress(),inventory=Camp.loadInventory();
@@ -134,12 +140,13 @@ function loadLevels(){
 }
 function campaignSummary(){
   const count=levels?.length||25,next=Camp.nextLevel(campaignProgress,count),total=Camp.totalStars(campaignProgress);
-  let caption=`★ ${total} von ${count*3} Sternen`;
+  let caption='';
   const open=Array.from({length:count},(_,i)=>i+1).find(n=>!campaignProgress.levels[String(n)]);
   const lock=open?Camp.lockReason(campaignProgress,open):null;
-  if(lock?.reason==='stars')caption+=` · Kapitel ${lock.chapter} ab ${lock.need} ★`;
-  else if(!open&&levels)caption+=' · Alle Level geschafft!';
-  return {next,ready:!!levels,caption};
+  if(lock?.reason==='stars')caption=`Kapitel ${lock.chapter} öffnet ab ${lock.need} ★`;
+  else if(!open&&levels)caption='Alle Level geschafft!';
+  else caption=`Kapitel ${Camp.chapterOf(next)} · Level ${next}`;
+  return {next,ready:!!levels,caption,total,count,inventory,allDone:!open&&!!levels};
 }
 const campaignUI=createCampaignUI({
   onPlay:n=>{void worldMenu.play({campaign:n});},
@@ -148,6 +155,8 @@ const campaignUI=createCampaignUI({
   onExtra:()=>useExtraMoves(),
   onMenu:()=>void backToMenu(),
   onTool:type=>type==='extraMoves'?useExtraMoves():toggleHammer(),
+  onStar:i=>{sound.play('merge',3+i,{combo:1+i});haptics.pulse(i===2?'big':'merge');},
+  reduceMotion,
 });
 function renderCampaign(){
   if(!campaignMode||!camp)return;
@@ -185,7 +194,7 @@ async function playLevel(n){
   if(levels&&n>levels.length)return;
   const lock=Camp.lockReason(campaignProgress,n);
   if(lock){showNote(lock.reason==='stars'?`Kapitel ${lock.chapter} braucht ${lock.need} ★`:'Level noch gesperrt',3000);return;}
-  campaignUI.hideResult();veil.hidden=true;paused=false;gameElement.classList.remove('is-paused');
+  campaignUI.hideResult();confetti.stop();veil.hidden=true;paused=false;gameElement.classList.remove('is-paused');
   pauseButton.textContent='Ⅱ';pauseButton.setAttribute('aria-pressed','false');pauseButton.setAttribute('aria-label','Spiel pausieren');
   graphics.pause(false);sound.resume();
   started=false;
@@ -237,9 +246,12 @@ async function finishLevel(){
     const g=Camp.grantGifts(inventory,campaignProgress);inventory=g.inventory;gifts=g.granted;Camp.saveInventory(inventory);
     sound.play('record');haptics.pulse('big');
     if(!reduceMotion.matches)visual.celebrateHud?.('queue-0',.3);
-  } else haptics.pulse('tap');
-  await wait(won?650:350);
-  if(turn!==generation||!campaignMode)return;
+    // Erst kurz Konfetti über dem Brett, dann der Dialog mit den Sternen.
+    celebrating=true;campaignUI.mark('confetti');
+    try{await confetti.burst(boardRect(),{reduced:reduceMotion.matches,burstMs:reduceMotion.matches?450:1200});}
+    finally{celebrating=false;}
+  } else {haptics.pulse('tap');await wait(350);}
+  if(turn!==generation||!campaignMode){confetti.stop();return;}
   paused=true;releaseGesture();phoneMotion.reset();
   const count=levels.length,nextLock=n<count?Camp.lockReason(campaignProgress,n+1):null;
   campaignUI.showResult({n,won,stars,moves:r.moves,limit:Camp.moveLimit(r),lostReason:r.lostReason,
@@ -281,7 +293,7 @@ function hammerAt(tileId){
 async function backToMenu(){
   if(booting||!started||duelMode)return;
   if(busy&&!paused)return;
-  campaignUI.hideResult();
+  campaignUI.hideResult();confetti.stop();
   if(campaignMode)leaveCampaign();
   else{void submitScore();saveState({now:true});hasSavedGame=board.flat().some(Boolean);}
   generation++;pendingMove=null;releaseGesture();hammerArmed=false;busy=false;
@@ -293,7 +305,7 @@ async function backToMenu(){
   graphics.pause(false);sound.resume();
   const overlay=document.getElementById('loading-screen');
   overlay.hidden=false;overlay.inert=false;overlay.dataset.phase='menu';
-  await worldMenu.open({screen:storedMode()==='campaign'?'campaign':'main'});
+  await worldMenu.open({screen:storedMode()==='campaign'?'campaign':'endless'});
 }
 
 // ---------- Ranked runs (leaderboard) ----------
@@ -559,6 +571,13 @@ async function enterGame() {
 }
 
 function location(row,col) { return visual.location(row,col); }
+// Bildschirm-Rechteck des 5×5-Bretts (für das Konfetti).
+function boardRect(){
+  const host=document.getElementById('graphics').getBoundingClientRect();
+  const pt=(r,c)=>{const l=location(r,c);return {x:host.left+l.x/100*host.width,y:host.top+l.y/100*host.height};};
+  const a=pt(0,0),b=pt(4,4),pad=Math.abs(b.x-a.x)/8;
+  return {left:Math.min(a.x,b.x)-pad,top:Math.min(a.y,b.y)-pad,width:Math.abs(b.x-a.x)+2*pad,height:Math.abs(b.y-a.y)+2*pad};
+}
 function graphicsTiles(incoming) {
   return board.flatMap((line,row)=>line.flatMap((tile,col)=> {
     if(!tile)return [];
@@ -946,7 +965,7 @@ playfield.addEventListener('lostpointercapture',releaseGesture);
 window.addEventListener('blur',releaseGesture);
 
 pauseButton.addEventListener('click', () => {
-  if (!started || booting || busy || duelFinished || campaignUI.resultOpen) return;
+  if (!started || booting || busy || duelFinished || campaignUI.resultOpen || celebrating) return;
   if (paused) resume(); else showDialog(false);
 });
 resumeButton.addEventListener('click', resume);
@@ -970,7 +989,7 @@ window.addEventListener('online', () => void flushPending());
 // Read-only inspection for integration checks; game state still belongs here.
 window.SquishGame={graphics,move,restart,get state(){return {board,queue,score,best,bestTile,moves,peak,busy,paused,booting,started,hasSavedGame,duelMode,duelRevision,ranked:run?{id:run.id,logLength:run.log.length,submitted:run.sub}:null};},get effects(){return mergeEffects.stats;},get sound(){return sound.stats;},get menu(){return worldMenu.stats;},get fusion(){return visual.fusion?.stats||null;},
   get campaign(){return {mode:campaignMode,level:camp?.n??null,status:camp?.run.status??null,moves:camp?.run.moves??0,movesLeft:camp?Camp.movesLeft(camp.run):null,
-    toolsUsed:camp?.run.toolsUsed.slice()??[],progress:campaignProgress,inventory,levelsLoaded:!!levels,resultOpen:campaignUI.resultOpen,hammerArmed};},
+    toolsUsed:camp?.run.toolsUsed.slice()??[],progress:campaignProgress,inventory,levelsLoaded:!!levels,resultOpen:campaignUI.resultOpen,hammerArmed,celebrating,timeline:campaignUI.timeline.slice()};},
   // Screen point of a board cell (for input tests).
   cellPoint(row,col){const host=document.getElementById('graphics').getBoundingClientRect(),loc=location(row,col);return {x:host.left+loc.x/100*host.width,y:host.top+(loc.y+1.5)/100*host.height};}};
 // QA only (?vfxdemo=1): stage a board, then swipe with SquishGame.move().
@@ -981,6 +1000,7 @@ if(new URLSearchParams(globalThis.location.search).has('vfxdemo'))window.SquishV
     renderBoard();renderQueue();renderBest();return true;
   },
   slow(v=1){mergeEffects.vfx.timeScale=v;},
+  confetti(ms=4000,speed=1){return confetti.burst(boardRect(),{burstMs:ms,speed});},
   get fusion(){return visual.fusion.stats;},
   get fusionDebug(){return visual.fusion.debug;},
   bench(...a){return visual.fusion.bench(...a);},

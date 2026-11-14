@@ -242,3 +242,13 @@ Spieldaten (Versuche pro Level) nachkalibriert werden.
 - **Ergebnis**: Sterne, Nächstes Level / Nochmal / Zum Menü; bei Niederlage durch Zugende „+3 Züge einsetzen“, wenn vorhanden.
 - **Hilfsmittel** (`squish-campaign-tools-v1`, nur Geschenke, keine Käufe): +3 Züge nach Level 10, Hammer nach Level 20, je 10 Sterne ein Hilfsmittel (abwechselnd +3 Züge und Hammer). Jedes Hilfsmittel deckelt das Level auf 2 ★.
 - Fortschritt: `squish-campaign-v1` (campaign.mjs). Kein Backend.
+
+## UI (launch-4, Herbst-Design)
+
+- **Ein Startbildschirm** (2D, `home-menu.mjs` + `autumn-ui.css`): Logo über dunklem Herbst-Hintergrund mit fallenden Blättern, Knöpfe **Abenteuer** (= Kampagne), **Endlos**, **2 Spieler** (das bestehende Online-Duell per Code), Zahnrad unten rechts für die Einstellungen (Ton, Handybewegung, Vibration, Build). Nach dem Laden kommt immer der Startbildschirm; „Zum Menü“ aus einem Spiel führt ins Menü des gespielten Modus.
+- **Modus-Menüs** im selben Stil: Abenteuer (Sterne-Karte, Hilfsmittel-Bestand, Level N spielen, Levelauswahl, Zurück), Endlos (Rekord, Weiterspielen/Neues Spiel, Bestenliste, Zurück).
+- Außerhalb des aktiven Spiels kein 3D mehr: Das alte Glastisch-Menü (`world-menu.mjs`) ist entfernt, die 3D-Szene pausiert im Menü.
+- **Sieg**: erst ca. 1,2 s Konfetti über dem Brett (`confetti.mjs`), dann der Dialog (Band „Level geschafft!“/„Perfekt!“, Weiter / Menü / Nochmal, rotes X = Menü); die verdienten Sterne ploppen nacheinander (≈360 ms Abstand) mit Glanz, unverdiente bleiben als leere Plätze. Ablauf-Protokoll für Tests: `SquishGame.campaign.timeline`.
+- Niederlage und Pause im selben Stil („+3 Züge“ als Hauptknopf, wenn möglich; sonst „Nochmal“).
+- Schriften lokal: Lilita One (unverändert, OFL) und Fredoka (Subset, OFL), Lizenzen in `game/assets/fonts/`.
+- `prefers-reduced-motion`: keine fallenden Blätter/Wackel-Animationen, kürzeres Konfetti, Sterne blenden nur ein.
