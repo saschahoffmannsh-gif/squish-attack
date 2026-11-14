@@ -10,10 +10,37 @@ export function hexColor(hex){const n=parseInt(String(hex).slice(1),16);return [
 const VS=`attribute vec2 p;attribute vec4 uv;attribute float m;attribute vec3 tint;attribute vec4 k;
 varying vec4 vUv;varying float vM;varying vec3 vT;varying vec4 vK;uniform vec2 view;
 void main(){vUv=uv;vM=m;vT=tint;vK=k;gl_Position=vec4(p.x/view.x*2.-1.,1.-p.y/view.y*2.,0.,1.);}`;
-const FS=`precision mediump float;varying vec4 vUv;varying float vM;varying vec3 vT;varying vec4 vK;uniform sampler2D atlas;
+// Comic look (launch-6): the channel-packed renders are posterised into flat
+// colour with two tones, hard white glints and a dark ink outline taken from
+// the coverage channel. Light-only cells (orbs, glints) become flat shapes.
+const FS=`precision mediump float;varying vec4 vUv;varying float vM;varying vec3 vT;varying vec4 vK;uniform sampler2D atlas;uniform float texel;uniform vec2 grid;
+float cov(vec2 o){return texture2D(atlas,vUv.xy+o*texel).b;}
 void main(){vec3 c=mix(texture2D(atlas,vUv.xy).rgb,texture2D(atlas,vUv.zw).rgb,vM);
-vec3 rgb=(vT*c.r*vK.x+vec3(c.g)*vK.y)*vK.w;float cover=c.b*vK.z*vK.w;
-gl_FragColor=vec4(rgb,clamp(max(cover,max(rgb.r,max(rgb.g,rgb.b))*.55),0.,1.));}`;
+const vec3 INK=vec3(.078,.039,.063);
+if(vK.z>.01){
+  float o=0.;for(int i=0;i<8;i++){float t=float(i)*.7853982;o=max(o,cov(vec2(cos(t),sin(t))*3.));}
+  float body=smoothstep(.42,.58,c.b),edge=smoothstep(.3,.5,o);
+  vec3 col=mix(vT*.66,vT,step(.5,c.r));
+  col=mix(col,vec3(1.),step(.62,c.g)*body*step(.5,vK.y));
+  col=mix(INK,col,body);
+  float a=max(body,edge)*vK.w;
+  gl_FragColor=vec4(col*a,a);
+}else if(vK.y<.5){
+  // Soft light orbs become a flat comic burst: jagged star, ink rim, light core.
+  vec2 p=fract(vUv.xy*grid)*2.-1.;float r=length(p),an=atan(p.y,p.x);
+  float k=abs(fract(an*2.2281692)-.5)*2.,R=.44+.24*k;
+  float fill=1.-smoothstep(R-.03,R,r),rim=1.-smoothstep(R+.05,R+.08,r),core=1.-smoothstep(.22,.25,r);
+  vec3 col=mix(INK,mix(vT,vec3(1.),.35+.35*core),fill);
+  float a=rim*vK.w*.92;
+  gl_FragColor=vec4(col*a,a);
+}else{
+  // Glints: the hot star, thresholded, white with an ink rim.
+  float o=0.;for(int i=0;i<8;i++){float t=float(i)*.7853982;o=max(o,texture2D(atlas,vUv.xy+vec2(cos(t),sin(t))*2.5*texel).g);}
+  float star=smoothstep(.45,.6,c.g),edge=smoothstep(.3,.45,o);
+  vec3 col=mix(INK,mix(vT,vec3(1.),.6),star);
+  float a=max(star,edge)*vK.w;
+  gl_FragColor=vec4(col*a,a);
+}}`;
 
 export function createFlipbookLayer(layer,{page=document,base=new URL('./assets/vfx/',import.meta.url),ratioCap=2}={}){
   const canvas=page.createElement('canvas');canvas.className='vfx-canvas';canvas.setAttribute('aria-hidden','true');layer.prepend(canvas);
@@ -29,7 +56,7 @@ export function createFlipbookLayer(layer,{page=document,base=new URL('./assets/
     if(!gl.getProgramParameter(program,gl.LINK_STATUS)){program=null;return;}
     buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,data.byteLength,gl.DYNAMIC_DRAW);
     for(const name of ['p','uv','m','tint','k'])loc[name]=gl.getAttribLocation(program,name);
-    loc.view=gl.getUniformLocation(program,'view');loc.atlas=gl.getUniformLocation(program,'atlas');
+    loc.view=gl.getUniformLocation(program,'view');loc.texel=gl.getUniformLocation(program,'texel');loc.grid=gl.getUniformLocation(program,'grid');loc.atlas=gl.getUniformLocation(program,'atlas');
     gl.disable(gl.DEPTH_TEST);gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
   }
   init();
@@ -133,7 +160,7 @@ export function createFlipbookLayer(layer,{page=document,base=new URL('./assets/
           write(n*FLOATS,x,y,ua+du,va+dv,ub+du,vb+dv,m,s,alpha);n++;
         }
       }
-      gl.bindTexture(gl.TEXTURE_2D,entry.texture);
+      gl.bindTexture(gl.TEXTURE_2D,entry.texture);gl.uniform1f(loc.texel,1/Math.max(1,cw*cols));gl.uniform2f(loc.grid,cols,rows);
       gl.bufferSubData(gl.ARRAY_BUFFER,0,data.subarray(0,n*FLOATS));
       gl.drawArrays(gl.TRIANGLES,0,n);drawn+=n/VERTS;
     }

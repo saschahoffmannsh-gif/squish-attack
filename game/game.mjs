@@ -1,22 +1,22 @@
-import {apiFetch,hasSaveToken} from './api.mjs?v=launch-5';
-import {createRng,encodeMove,replayRun,MAX_LOG} from './ranked.mjs?v=launch-5';
-import {createLeaderboard} from './leaderboard.mjs?v=launch-5';
+import {apiFetch,hasSaveToken} from './api.mjs?v=launch-6';
+import {createRng,encodeMove,replayRun,MAX_LOG} from './ranked.mjs?v=launch-6';
+import {createLeaderboard} from './leaderboard.mjs?v=launch-6';
 import { SIZE, START_VALUES, createStartValues, insertTile, nextMergePass, settle, isGameOver } from './game-logic.mjs?v=automatic-streets-2';
 import { nextSpawn, spawnProfile } from './balance.mjs';
 import {canContinueRun} from './run-availability.mjs?v=splash-plate-1';
-import { createMergeEffects } from './merge-effects.mjs?v=fuse-3';
-import { createGameGraphics } from './graphics-adapter.mjs?v=fuse-6';
+import { createMergeEffects } from './merge-effects.mjs?v=launch-6';
+import { createGameGraphics } from './graphics-adapter.mjs?v=launch-6';
 import { installDeviceMotion } from './device-motion.mjs';
-import { createGameSound } from './sound.mjs?v=launch-5';
+import { createGameSound } from './sound.mjs?v=launch-6';
 import { installSettings } from './settings.mjs?v=woodland-menu-1';
-import { createDuelClient } from './duel-client.mjs?v=launch-5';
+import { createDuelClient } from './duel-client.mjs?v=launch-6';
 import {installFullscreen} from './fullscreen.mjs?v=timed-duel-1';
-import {createHomeMenu} from './home-menu.mjs?v=launch-5';
-import {createConfetti} from './confetti.mjs?v=launch-5';
-import {createHaptics} from './haptics.mjs?v=launch-5';
+import {createHomeMenu} from './home-menu.mjs?v=launch-6';
+import {createConfetti} from './confetti.mjs?v=launch-6';
+import {createHaptics} from './haptics.mjs?v=launch-6';
 import {planMergeRipple} from './merge-ripple.mjs?v=swarm-fx-3';
-import * as Camp from './campaign.mjs?v=launch-5';
-import {createCampaignUI} from './campaign-ui.mjs?v=launch-5';
+import * as Camp from './campaign.mjs?v=launch-6';
+import {createCampaignUI} from './campaign-ui.mjs?v=launch-6';
 const playfield = document.getElementById('playfield');
 const gameElement = document.querySelector('.game');
 const visual = createGameGraphics(document.getElementById('graphics'));
@@ -129,7 +129,7 @@ const newTile = value => ({ id: nextId++, value });
 // in localStorage unangetastet: während der Kampagne wird nichts davon gespeichert,
 // beim Verlassen wird er wieder geladen.
 const MODE_KEY='squish-mode-v1';
-const LEVELS_URL=new URL('../levels/levels-001-025.json?v=launch-5',import.meta.url);
+const LEVELS_URL=new URL('../levels/levels-001-025.json?v=launch-6',import.meta.url);
 function storedMode(){try{return localStorage.getItem(MODE_KEY)||'';}catch{return '';}}
 let campaignMode=false,camp=null,levels=null,levelsLoading=null,stashedBestTile=null,needsEntry=false,hammerArmed=false;
 let campaignProgress=Camp.loadProgress(),inventory=Camp.loadInventory();
@@ -285,6 +285,8 @@ function hammerAt(tileId){
   const spent=Camp.spendTool(inventory,'hammer');
   if(!spent||!Camp.useHammer(camp.run,cell[0],cell[1]))return false;
   inventory=spent;Camp.saveInventory(inventory);hammerArmed=false;
+  // The stone bursts like a merge balloon (comic skin, drops, pop star).
+  visual.popTile?.(tileId);
   board=board.map(row=>row.slice());board[cell[0]][cell[1]]=null;
   renderBoard();sound.play('merge',3);haptics.pulse('big');note.hidden=true;
   renderCampaign();
@@ -1006,6 +1008,9 @@ if(new URLSearchParams(globalThis.location.search).has('vfxdemo'))window.SquishV
   bench(...a){return visual.fusion.bench(...a);},
   resetStats(){visual.fusion.resetStats();},
   get stats(){return mergeEffects.stats;},
+  // QA: drive the 2D effect layer directly (combo, record, headline).
+  get effects(){return mergeEffects;},
+  popTile(id){return visual.popTile?.(id);},
 };
 export const menuActions={
   get canContinue() {return canContinueRun(hasSavedGame,board);},

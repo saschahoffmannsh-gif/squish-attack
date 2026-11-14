@@ -1,16 +1,16 @@
 import {createContactSolver} from './dense-contacts.mjs?v=dense-board-1';
-import {configureRenderQuality} from './render-quality.mjs?v=foley-5';
+import {configureRenderQuality} from './render-quality.mjs?v=launch-6';
 import {enqueueRippleImpulse} from './merge-ripple.mjs?v=swarm-fx-3';
 import {installPressureWave} from './pressure-wave.mjs?v=soft-gel-1';
 import {applyGelSoftness,softWobblePower} from './gel-softness.mjs?v=soft-gel-1';
-import {applyDiffuseGelGlow,applyNeonGlassLighting} from './gel-lighting.mjs?v=menu-1';
-import {installNeonBands} from './neon-bands.mjs?v=gel-clarity-c-1';
-import {createCrispLabelFactory} from './crisp-labels.mjs?v=menu-1';
-import {installCleanScreen} from './clean-screen.mjs?v=menu-1';
-import {createFusion} from './fusion.mjs?v=fuse-6';
-import {flags} from './flags.mjs?v=launch-5';
+import {applyNeonGlassLighting} from './gel-lighting.mjs?v=menu-1';
+import {createCrispLabelFactory} from './crisp-labels.mjs?v=launch-6';
+import {applyComic,comicBodyMaterial,setComicValue} from './comic-style.mjs?v=launch-6';
+import {installCleanScreen} from './clean-screen.mjs?v=launch-6';
+import {createFusion} from './fusion.mjs?v=launch-6';
+import {flags} from './flags.mjs?v=launch-6';
 import {createSquishGraphics,THREE,PARAMETERS} from '../squish/squish-graphics.js?v=play-sharp-1';
-import {buildSquishy,createLabel,createGelMaterial,installGelOptics,bindGelOptics,initializeMotion,updateSquishy,PARAMETERS as HUD_PARAMETERS} from './original-gel-models.js?v=menu-1';
+import {buildSquishy,createLabel,bindGelOptics,initializeMotion,updateSquishy,PARAMETERS as HUD_PARAMETERS} from './original-gel-models.js?v=menu-1';
 
 // Values 1–8 keep the accepted palette; later values repeat it explicitly.
 function ensureColor(value) {
@@ -21,6 +21,9 @@ export function createGameGraphics(host) {
   applyGelSoftness(PARAMETERS,HUD_PARAMETERS);
   PARAMETERS.contactSolver=createContactSolver(PARAMETERS);
   const graphics=createSquishGraphics(host,{tiles:[],bindPointer:false,autoStart:false,alpha:true});
+  // Comic look: flat opaque bodies need no HDR target, gel bloom mask or
+  // refraction pass. The scene renders straight into the (multisampled) canvas.
+  graphics.bloom.enabled=false;
   let dirty=true;
   function requestFrame({shadows=false}={}){
     dirty=true;
@@ -29,7 +32,7 @@ export function createGameGraphics(host) {
       else graphics.renderer.shadowMap.needsUpdate=true;
     }
   }
-  const labelFactory=createCrispLabelFactory({anisotropy:graphics.renderer.capabilities.getMaxAnisotropy()});
+  const labelFactory=createCrispLabelFactory({anisotropy:graphics.renderer.capabilities.getMaxAnisotropy(),comic:true});
   PARAMETERS.labelFactory=HUD_PARAMETERS.labelFactory=labelFactory;
   const originalWobble=graphics.wobble.bind(graphics);
   graphics.wobble=(id,power=.25)=>{requestFrame();return originalWobble(id,softWobblePower(power));};
@@ -50,10 +53,10 @@ export function createGameGraphics(host) {
   });
   const setSize=graphics.renderer.setSize.bind(graphics.renderer);
   graphics.renderer.setSize=(...args)=>{setSize(...args);requestFrame({shadows:true});};
-  const setting=installCleanScreen(graphics,host);
+  const setting=installCleanScreen(graphics,host,{direct:true});
   const ray=new THREE.Raycaster(),pointer=new THREE.Vector2(),floor=new THREE.Plane(new THREE.Vector3(0,1,0),-PARAMETERS.board.floor);
   const characters=new WeakMap(),impulses=[],phoneImpulses=[],mergeJobs=[],dropJobs=[],waitJobs=[];
-  const hud=new Map(),extras=new Set(),extraJobs=[];let last=null,raf=0,disposed=false,hudDirty=true,warming=false,fusion=null,contextLost=false,I_onLand=null;
+  const hud=new Map(),extras=new Set(),extraJobs=[];let renderedLast=false,last=null,raf=0,disposed=false,hudDirty=true,warming=false,fusion=null,contextLost=false,I_onLand=null;
   const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
   const resetClock=()=>{last=null;requestFrame({shadows:true});};
   document.addEventListener('visibilitychange',resetClock);
@@ -83,38 +86,23 @@ export function createGameGraphics(host) {
     }));return nearest;
   }
   function disposeGel(s) {s.group.traverse(o=>{o.geometry?.dispose();for(const m of [].concat(o.material||[]))if(m!==graphics.board.children[0].material)m.dispose();o.customDepthMaterial?.dispose();});graphics.scene.remove(s.group);}
-  function createHudMaterial(value,stretch=0) {
-    const optics=installGelOptics(createGelMaterial(value));
-    if(stretch>0) {
-      // A wide body is the original cushion with a straight extruded middle.
-      // Collapse that middle in the optics boundary so the ray-marched gel
-      // depth, focus lobes and neon lip match the lengthened mesh exactly.
-      const base=optics.onBeforeCompile,key=optics.customProgramCacheKey.bind(optics),tag=stretch.toFixed(4);
-      optics.onBeforeCompile=function(shader,renderer){
-        base.call(this,shader,renderer);
-        shader.fragmentShader=shader.fragmentShader.replace('vec3 gelRest(vec3 p){',
-          'vec3 gelRest(vec3 p){p.x=sign(p.x)*max(abs(p.x)-'+tag+',0.0);');
-      };
-      optics.customProgramCacheKey=()=>key()+'|wide-'+tag;
-    }
-    const material=installNeonBands(applyDiffuseGelGlow(optics),value);
-    material.envMap=graphics.scene.environment;
-    material.envMapIntensity=PARAMETERS.gel.envMapIntensity;
-    return material;
+  // Every squish body (board, preview queue, record, fused merge body) is comic.
+  function createHudMaterial(value,stretch=0,options={}) {
+    return comicBodyMaterial(value,null,options);
   }
   function setHud(key,value,element) {
     ensureColor(value);let entry=hud.get(key);
     if(!entry) {
       const material=createHudMaterial(value);
-      const s=buildSquishy(value,material);initializeMotion(s);bindGelOptics(s);s.group.name='HUD_'+key;
+      const s=buildSquishy(value,material);initializeMotion(s);bindGelOptics(s);applyComic(s,value);s.group.name='HUD_'+key;
       // Preserve the soft contact shadow under the original HUD squishy.
       setting.addHudShadow(s);
       graphics.scene.add(s.group);entry={s,element};hud.set(key,entry);
     } else if(entry.s.value!==value) {
-      const s=entry.s;s.value=value;s.body.material.dispose();s.body.material=createHudMaterial(value);
+      const s=entry.s;s.value=value;setComicValue(s.body.material,value);
       s.group.remove(s.label);s.label.geometry.dispose();s.label.material.dispose();s.label=createLabel(value);s.group.add(s.label);
     }
-    entry.element=element;element.setAttribute('aria-label',String(value));hudDirty=true;requestFrame({shadows:true});
+    entry.s.forceUpdate=true;entry.element=element;element.setAttribute('aria-label',String(value));hudDirty=true;requestFrame({shadows:true});
   }
   function placeHud() {
     graphics.camera.updateMatrixWorld();
@@ -287,12 +275,13 @@ export function createGameGraphics(host) {
       for(const s of live)personalize(s,time,dt);
       const sliding=[...live].some(s=>s.motion||s.press.held||s.press.releaseQueued);
       const active=dropJobs.length||mergeJobs.length||extraJobs.length||impulses.length||phoneImpulses.length||waitJobs.length||sliding||[...live].some(s=>s.amplitude>.045);
-      graphics.quality.update(wall,now/1000,!active);
+      graphics.quality.update(wall,now/1000,!active,renderedLast);
       if(sliding)requestFrame({shadows:true});
       else if(active)dirty=true;
       for(const {s} of hud.values())if(s.group.visible||s.group.userData.entryProgress!==undefined){
         const hudLive=s.amplitude>.045||s.press?.held||s.group.userData.entryProgress!==undefined;
-        if(hudLive||active){personalize(s,time,dt);updateSquishy(s,time,dt,!reducedMotion.matches);dirty=true;}
+        // An opaque comic body would hide a fresh digit left at its rest pose: drape it once.
+        if(hudLive||active||s.forceUpdate){s.forceUpdate=false;personalize(s,time,dt);updateSquishy(s,time,dt,!reducedMotion.matches);dirty=true;}
       }
       // In-world menu bodies (wide buttons, code digits, keypad) share the
       // same gel spring; idle ones stop updating once their wobble settles.
@@ -303,6 +292,7 @@ export function createGameGraphics(host) {
     }
     // Idle tables keep the last frame. Redraw only when a tile moves, a
     // spring is live, the HUD shifts, or something else dirtied the view.
+    renderedLast=dirty;
     if(dirty){graphics.render(dt);dirty=false;}
     const settledTime=waitJobs.length&&!frameState.paused?graphics.state.time:0;
     if(!frameState.paused)for(let i=waitJobs.length-1;i>=0;i--)if(settledTime>=waitJobs[i].until){
@@ -315,7 +305,7 @@ export function createGameGraphics(host) {
     get onLand(){return I_onLand;},
     createHudMaterial,buildSquishy,createLabel,initializeMotion,bindGelOptics,disposeGel,softWobblePower,
     get paused(){return graphics.state.paused;},get time(){return graphics.state.time;},
-    addBody(s){extras.add(s);s.forceUpdate=true;graphics.scene.add(s.group);requestFrame({shadows:true});},
+    addBody(s){applyComic(s,s.value);extras.add(s);s.forceUpdate=true;graphics.scene.add(s.group);requestFrame({shadows:true});},
     removeBody(s){extras.delete(s);disposeGel(s);requestFrame({shadows:true});},
     job(job){extraJobs.push(job);requestFrame();return job;},
     cancelJobs(){extraJobs.splice(0).forEach(job=>job.cancel?.());},
@@ -333,7 +323,7 @@ export function createGameGraphics(host) {
     sync(tiles,options){
       tiles.forEach(t=>ensureColor(t.value));graphics.syncTiles(tiles,options);
       requestFrame({shadows:true});
-      for(const tile of graphics.tiles)installNeonBands(applyDiffuseGelGlow(tile.body.material),tile.value);
+      for(const tile of graphics.tiles)applyComic(tile,tile.value);
       const pressure=options?.animate&&options.incoming
         ?installPressureWave(graphics.tiles,options.incoming,graphics.state.time,options.onPop):0;
       if(options?.animate&&!pressure)for(const tile of graphics.tiles)if(tile.motion)graphics.wobble(tile.id,.25);
@@ -361,6 +351,13 @@ export function createGameGraphics(host) {
     },
     clearPhoneWobble(){phoneImpulses.length=0;},
     hurryMerges(){fusion?.hurry();},
+    // Hammer: tear the real stone like a merge balloon before it is removed.
+    popTile(id){
+      if(reducedMotion.matches||!fusion)return null;
+      let tile=null;try{tile=graphics.getTile(id);}catch{}
+      if(!tile?.group.visible)return null;
+      const h=fusion.popBody(tile,{value:tile.value,power:2.4});requestFrame({shadows:true});return h;
+    },
     set onLand(fn){I_onLand=fn;if(fusion){/* land hook lives on internals */}},
     get contextLost(){return contextLost;},
     clear(){fusion?.clear();impulses.length=0;phoneImpulses.length=0;dropJobs.splice(0).forEach(job=>job.cancel());mergeJobs.splice(0).forEach(job=>job.cancel());waitJobs.splice(0).forEach(job=>job.resolve());graphics.syncTiles([]);requestFrame({shadows:true});},

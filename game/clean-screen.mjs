@@ -42,7 +42,7 @@ export function fitStoneBoard(camera,width,height,bounds,slot) {
   camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
 }
 
-export function installCleanScreen(graphics,host) {
+export function installCleanScreen(graphics,host,{direct=false}={}) {
   const {renderer,scene,camera,board}=graphics;
   // The sizing anchor is a sibling of the canvas host inside the playfield.
   const slot=host.parentElement?.querySelector(':scope > .board-slot');
@@ -183,12 +183,24 @@ export function installCleanScreen(graphics,host) {
       }`,
   });
   const quad=new THREE.Mesh(new THREE.PlaneGeometry(2,2),material);quad.frustumCulled=false;screenScene.add(quad);
+  // Direct (comic) mode: no HDR target and no composite. The glass layers
+  // then tone-map and encode themselves like every other material.
+  if(direct)for(const m of [reflection.mesh.material,reflection.spill.material]){
+    m.toneMapped=true;
+    m.fragmentShader=m.fragmentShader.replace(/}\s*$/,'#include <tonemapping_fragment>\n#include <colorspace_fragment>\n}');
+    m.needsUpdate=true;
+  }
   graphics.bloom.render=()=>withBoardPositions(tiles=>{
     glassOwners.length=0;
     for(const tile of tiles)glassOwners.push(tile);
     for(const tile of hudOwners)glassOwners.push(tile);
     reflection.update(glassOwners);
     shadows.update(glassOwners);
+    if(direct){
+      try{renderer.setRenderTarget(null);renderer.render(scene,camera);graphics.bloom.lastDrawCalls=renderer.info.render.calls;}
+      finally{reflection.spill.visible=reflection.mesh.visible=shadows.mesh.visible=false;}
+      return;
+    }
     try{originalBloom.call(graphics.bloom);}finally{reflection.spill.visible=reflection.mesh.visible=shadows.mesh.visible=false;}
     material.uniforms.uStrength.value=graphics.bloom.strength;
     const {width=1,height=1}=graphics.bloom.targets.base;

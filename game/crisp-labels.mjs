@@ -1,10 +1,11 @@
 import {THREE} from '../squish/squish-graphics.js?v=play-sharp-1';
 import {getLabelShapes,pillowTopHeight} from './original-gel-models.js?v=menu-1';
+import {comicLabelMaterial} from './comic-style.mjs?v=launch-6';
 
 // Keep the accepted typeface and curved placement, but not the 10k–84k
 // extruded vertices per digit. Coverage carries the subpixel glyph edges;
 // a small indexed surface follows the exact same anchored body deformation.
-export function createCrispLabelFactory({canvasFactory=()=>document.createElement('canvas'),anisotropy=8}={}) {
+export function createCrispLabelFactory({canvasFactory=()=>document.createElement('canvas'),anisotropy=8,comic=false}={}) {
   const textures=new Map();
   function coverage(value) {
     let entry=textures.get(String(value));if(entry)return entry;
@@ -41,6 +42,8 @@ export function createCrispLabelFactory({canvasFactory=()=>document.createElemen
     geometry.computeVertexNormals();geometry.computeBoundingSphere();
     const material=new THREE.MeshBasicMaterial({color:0xfff7df,alphaMap:texture,transparent:true,depthWrite:false,
       polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1});
+    // Comic: white digit with a dark ink contour (same world thickness for every digit).
+    if(comic)comicLabelMaterial(material,{width,height,thickness:.03});
     let disposed=false;
     material.addEventListener('dispose',()=>{
       if(disposed)return;disposed=true;entry.refs--;

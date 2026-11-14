@@ -7,7 +7,8 @@
 // The torn skin is animated on the GPU from a tiny per-shard state texture.
 import {pillowTopHeight} from './original-gel-models.js?v=menu-1';
 import {createHost,capsuleIndex} from './fusion-core.mjs?v=fuse-3';
-import {flags} from './flags.mjs?v=launch-5';
+import {flags} from './flags.mjs?v=launch-6';
+import {comicOutline,comicColors,toonUniforms,comicBurstTexture,comicSparkTexture,comicRingTexture} from './comic-style.mjs?v=launch-6';
 
 export function createFusion({internals:I,graphics}){
   const {THREE}=I,P=I.PARAMETERS,G=I.HUD_PARAMETERS.gel,scene=graphics.scene;
@@ -83,43 +84,23 @@ export function createFusion({internals:I,graphics}){
   }
 
   // ---------- the gel material with the fused boundary ----------
+  // Comic body for the fused balloon: the mesh comes from the worker, so it
+  // needs no ray-marched boundary; the fuse uniforms are kept for bookkeeping.
   function fusedMaterial(value){
-    const material=I.createHudMaterial(value);
-    const u={uFuseA:{value:Array.from({length:MAXN},()=>new THREE.Vector4())},uFuseB:{value:Array.from({length:MAXN},()=>new THREE.Vector4())},
+    const material=I.createHudMaterial(value,0,{fused:true});
+    material.userData.fuse={uFuseA:{value:Array.from({length:MAXN},()=>new THREE.Vector4())},uFuseB:{value:Array.from({length:MAXN},()=>new THREE.Vector4())},
       uFuseN:{value:1},uFuseK:{value:0},uFuseW:{value:new THREE.Vector4()},uFuseR0:{value:r0Texture}};
-    const base=material.onBeforeCompile,key=material.customProgramCacheKey.bind(material);
-    material.onBeforeCompile=function(shader,renderer){
-      base.call(this,shader,renderer);Object.assign(shader.uniforms,u);
-      shader.fragmentShader=shader.fragmentShader.replace('float gelBoundary(vec3 p){',`
-        uniform vec4 uFuseA[${MAXN}];uniform vec4 uFuseB[${MAXN}];uniform int uFuseN;uniform float uFuseK;uniform vec4 uFuseW;uniform sampler2D uFuseR0;
-        float fuseCushion(vec4 a,vec4 b,vec3 p){
-          float qx=p.x-a.x;qx/=1.0+(qx>0.0?b.z:b.y);
-          vec3 v=vec3(qx/a.z,p.y/a.w-${Y0.toFixed(5)},(p.z-a.y)/b.x);float len=max(length(v),1e-5);
-          float th=acos(clamp(v.y/len,-1.0,1.0))/3.14159265;float ph=atan(v.z,v.x)/6.2831853;
-          float r=texture2D(uFuseR0,vec2(ph+.5/${PH}.0,th*${((TH-1)/TH).toFixed(6)}+.5/${TH}.0)).r;
-          r=mix(r,min(r,.98+.12*v.y/len),uFuseW.w);
-          return (len-r)*min(min(a.z,a.w),b.x);
-        }
-        float fuseField(vec3 p){
-          float d=1e9;
-          for(int i=0;i<${MAXN};i++){if(i>=uFuseN)break;float e=fuseCushion(uFuseA[i],uFuseB[i],p);
-            if(uFuseK<=1e-5)d=min(d,e);else{float h=max(uFuseK-abs(d-e),0.0)/uFuseK;d=min(d,e)-h*h*uFuseK*.25;}}
-          float t=uFuseW.y;
-          d+=uFuseW.x*sin(p.x*5.3-t*21.0)*cos(p.z*4.1+t*13.0)*clamp(p.y/.9,0.0,1.0)
-            +uFuseW.z*sin(p.x*17.0+t*93.0)*sin(p.y*15.0-t*71.0)*cos(p.z*13.0+t*57.0);
-          return d;
-        }
-        float gelBoundary(vec3 p){if(p.y<0.0)return 1.0-p.y*8.0;return 1.0+fuseField(p)*5.0;}
-        float gelBoundaryOriginal(vec3 p){`);
-    };
-    material.customProgramCacheKey=()=>key()+'|fused-1';
-    material.userData.fuse=u;
     return material;
   }
 
   // `snap`: {n,k,ripple,rippleT,tremble,round,c:Float64Array(n*7)} (x,z,sx,sy,sz,bl,br)
   function syncUniforms(snap,material){
-    const u=material.userData.fuse,c=snap.c;u.uFuseN.value=snap.n;u.uFuseK.value=snap.k;u.uFuseR0.value=r0Texture;
+    const u=material.userData.fuse,c=snap.c;
+    // Comic shine: place the spot on the whole balloon's footprint.
+    const box=material.uniforms?.uBox?.value;
+    if(box&&snap.n){let lo=Infinity,hi=-Infinity,hz=0;
+      for(let i=0;i<snap.n;i++){const o=i*7,w=half*c[o+2];lo=Math.min(lo,c[o]-w);hi=Math.max(hi,c[o]+w);hz=Math.max(hz,half*c[o+4]);}
+      const hx=(hi-lo)/2;box.set((lo+hi)/2,c[1],Math.min(hx,hz*1.5),hz);}u.uFuseN.value=snap.n;u.uFuseK.value=snap.k;u.uFuseR0.value=r0Texture;
     u.uFuseW.value.set(snap.ripple,snap.rippleT,snap.tremble,snap.round);
     for(let i=0;i<snap.n;i++){const o=i*7;u.uFuseA.value[i].set(c[o],c[o+1],c[o+2],c[o+3]);u.uFuseB.value[i].set(c[o+4],c[o+5],c[o+6],0);}
   }
@@ -141,6 +122,8 @@ export function createFusion({internals:I,graphics}){
     s.group.name='HUD_fusion';s.group.visible=false;s.deformation={sway:0,swayZ:0,squash:0};
     s.group.remove(s.label);s.label.geometry.dispose();s.label.material.dispose();s.label=null;
     const geometry=new THREE.BufferGeometry();s.body.geometry.dispose();s.body.geometry=geometry;s.body.frustumCulled=false;
+    // The ink contour inflates with the balloon: same streamed geometry.
+    const hull=comicOutline(geometry,{push:.35});hull.frustumCulled=false;s.body.add(hull);
     I.bindGelOptics(s);s.bubbles.visible=false;
     const q=TIERS[ti];
     // Room for the widest line (five cushions) in one buffer set: no per-frame allocation.
@@ -162,7 +145,7 @@ export function createFusion({internals:I,graphics}){
     const {s}=blob,m=s.body.material;blob.inUse=false;
     s.group.visible=false;s.group.position.set(0,0,0);s.group.rotation.set(0,0,0);s.group.scale.set(1,1,1);
     blob.geometry.setDrawRange(0,0);blob.verts=blob.tris=0;
-    m.attenuationDistance=G.attenuationDistance;m.roughness=G.roughness;m.envMapIntensity=G.envMapIntensity;
+    if(m.uniforms?.uSpot)m.uniforms.uSpot.value=1;
     const key=blob.value+'|'+blob.ti,list=blobPool.get(key)||[];
     const keep=coarse?1:3;
     if(list.length<keep)list.push(blob);else later(()=>{blob.geometry.dispose();m.dispose();});
@@ -218,40 +201,66 @@ export function createFusion({internals:I,graphics}){
   }
 
   // ---------- debris: torn gel skin, droplets and a short flash ----------
-  const flashTexture=(()=>{const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');
-    const g=x.createRadialGradient(64,64,0,64,64,64);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.18,'rgba(255,250,240,.85)');g.addColorStop(.5,'rgba(255,240,230,.22)');g.addColorStop(1,'rgba(255,255,255,0)');
-    x.fillStyle=g;x.fillRect(0,0,128,128);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;})();
+  // Comic pop: a jagged burst with an ink outline, a spinning spark and a ring.
+  const flashTexture=comicBurstTexture(),sparkTexture=comicSparkTexture(),ringTexture=comicRingTexture();
   const dropGeometry=new THREE.SphereGeometry(1,14,10);
-  function skinMaterial(value,{thick=.12,side=THREE.DoubleSide}={}){
+  const toonFrag=`uniform vec3 uLight,uShade,uL,uInk;varying vec3 vN;varying float vEdge;
+float aastep(float e,float x){float w=max(fwidth(x),1e-4)*.75;return smoothstep(e-w,e+w,x);}
+void main(){
+  #ifdef SHARD
+  if(vEdge<0.0)discard;
+  #endif
+  vec3 N=normalize(vN);if(!gl_FrontFacing)N=-N;
+  vec3 c=mix(uShade,uLight,aastep(.5,dot(N,normalize(uL))*.5+.5));
+  #ifdef SHARD
+  c=mix(uInk,c,aastep(.03,vEdge));
+  #else
+  c=mix(c,vec3(1.),aastep(.93,dot(N,normalize(vec3(-.45,1.,-.35)))));
+  #endif
+  gl_FragColor=vec4(c,1.);
+  #include <tonemapping_fragment>
+  #include <colorspace_fragment>
+}`;
+  // Torn skin and drops: flat two-tone toon, skin pieces with an inked tear edge.
+  function skinMaterial(value,{side=THREE.FrontSide,gold=false}={}){
     I.ensureColor(value);
-    const tint=new THREE.Color(P.colors[value]||P.colors[1]);
-    const dye=tint.clone();const mx=Math.max(dye.r,dye.g,dye.b)||1;dye.multiplyScalar(1/mx);
-    return new THREE.MeshPhysicalMaterial({color:tint.clone().multiplyScalar(.82),metalness:0,roughness:.1,transmission:.32,thickness:thick,ior:1.42,
-      attenuationColor:new THREE.Color(Math.max(.02,dye.r**1.3),Math.max(.02,dye.g**1.3),Math.max(.02,dye.b**1.3)),attenuationDistance:.16,
-      clearcoat:1,clearcoatRoughness:.03,side,envMap:scene.environment,envMapIntensity:1.7,specularIntensity:1});
+    const m=new THREE.ShaderMaterial({side,toneMapped:true,uniforms:toonUniforms(value,{gold}),
+      vertexShader:`varying vec3 vN;varying float vEdge;void main(){vEdge=1.;
+        #ifdef USE_INSTANCING
+        mat4 w=modelMatrix*instanceMatrix;
+        #else
+        mat4 w=modelMatrix;
+        #endif
+        vN=normalize(mat3(w)*normal);gl_Position=projectionMatrix*viewMatrix*w*vec4(position,1.);}`,
+      fragmentShader:toonFrag});
+    m.customProgramCacheKey=()=>'comic-drop-1';return m;
+  }
+  function inkMaterial(){
+    return new THREE.ShaderMaterial({side:THREE.BackSide,toneMapped:false,uniforms:{uC:{value:new THREE.Color('#140a10')}},
+      vertexShader:`void main(){
+        #ifdef USE_INSTANCING
+        mat4 w=modelMatrix*instanceMatrix;
+        #else
+        mat4 w=modelMatrix;
+        #endif
+        float s=max(length(w[0].xyz),1e-4);gl_Position=projectionMatrix*viewMatrix*w*vec4(position*(1.+max(.2,.035/s)),1.);}`,
+      fragmentShader:'uniform vec3 uC;void main(){gl_FragColor=vec4(uC,1.);\n#include <colorspace_fragment>\n}'});
   }
   // Shard pieces are posed in the vertex shader: per shard, texel 0 holds the
   // position and scale, texel 1 the rotation, texel 2 the bend normal and amount.
   const blankShards=new THREE.DataTexture(new Float32Array(16),4,1,THREE.RGBAFormat,THREE.FloatType);blankShards.needsUpdate=true;
-  function edgeMaterial(value,shardTexture=blankShards){
-    const m=skinMaterial(value,{thick:.22});
-    const uniforms={uShard:{value:shardTexture},uGround:{value:floor+.012}};
-    m.onBeforeCompile=sh=>{
-      Object.assign(sh.uniforms,uniforms);
-      sh.vertexShader=sh.vertexShader.replace('#include <common>',`#include <common>
-attribute float aEdge;attribute float aShard;varying float vEdge;uniform highp sampler2D uShard;uniform float uGround;
-vec3 shardTurn(vec4 q,vec3 v){return v+2.0*cross(q.xyz,cross(q.xyz,v)+q.w*v);}`)
-        .replace('#include <beginnormal_vertex>',`int shardRow=int(aShard+.5);
+  function edgeMaterial(value,shardTexture=blankShards,{gold=false}={}){
+    const uniforms={...toonUniforms(value,{gold}),uShard:{value:shardTexture},uGround:{value:floor+.012}};
+    const m=new THREE.ShaderMaterial({side:THREE.DoubleSide,toneMapped:true,defines:{SHARD:1},uniforms,
+      vertexShader:`attribute float aEdge;attribute float aShard;varying float vEdge;varying vec3 vN;uniform highp sampler2D uShard;uniform float uGround;
+vec3 shardTurn(vec4 q,vec3 v){return v+2.0*cross(q.xyz,cross(q.xyz,v)+q.w*v);}
+void main(){int shardRow=int(aShard+.5);
 vec4 shardP=texelFetch(uShard,ivec2(0,shardRow),0),shardQ=texelFetch(uShard,ivec2(1,shardRow),0),shardN=texelFetch(uShard,ivec2(2,shardRow),0);
-vec3 objectNormal=shardTurn(shardQ,normal);
-#ifdef USE_TANGENT
-vec3 objectTangent=vec3(tangent.xyz);
-#endif`)
-        .replace('#include <begin_vertex>',`vec3 transformed=position*shardP.w-shardN.xyz*(shardN.w*min(dot(position,position),.35)*.8*shardP.w);
-transformed=shardTurn(shardQ,transformed)+shardP.xyz;transformed.y=max(uGround,transformed.y);vEdge=aEdge;`);
-      sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying float vEdge;').replace('void main() {','void main() {\nif(vEdge<0.0)discard;');
-    };
-    m.customProgramCacheKey=()=>'fusion-skin-gpu-2';m.userData.shard=uniforms;return m;
+vec3 transformed=position*shardP.w-shardN.xyz*(shardN.w*min(dot(position,position),.35)*.8*shardP.w);
+transformed=shardTurn(shardQ,transformed)+shardP.xyz;transformed.y=max(uGround,transformed.y);vEdge=aEdge;
+vN=normalize(mat3(modelMatrix)*shardTurn(shardQ,normal));gl_Position=projectionMatrix*viewMatrix*modelMatrix*vec4(transformed,1.);}`,
+      fragmentShader:toonFrag});
+    m.customProgramCacheKey=()=>'comic-skin-1';m.userData.shard=uniforms;return m;
   }
   const debrisSet=new Set();
   // `source`: the tear request (local positions, normals, triangles and the world
@@ -282,23 +291,25 @@ transformed=shardTurn(shardQ,transformed)+shardP.xyz;transformed.y=max(uGround,t
       sg.setAttribute('position',new THREE.BufferAttribute(out.rest,3));sg.setAttribute('normal',new THREE.BufferAttribute(out.restN,3));
       sg.setAttribute('aEdge',new THREE.BufferAttribute(out.aEdge,1));sg.setAttribute('aShard',new THREE.BufferAttribute(out.aShard,1));
       sg.boundingSphere=new THREE.Sphere(new THREE.Vector3(),40);
-      skinMat=edgeMaterial(value,shardTexture);
+      skinMat=edgeMaterial(value,shardTexture,{gold});
       skin=new THREE.Mesh(sg,skinMat);skin.frustumCulled=false;group.add(skin);
     }
     // Gel droplets: the inside of the balloon sprays out.
     const drops=[],Dn=out.drops.length/3;
-    const dm=skinMaterial(value,{thick:.5,side:THREE.FrontSide});dm.attenuationDistance=.35;
+    const dm=skinMaterial(value,{gold});
     const im=new THREE.InstancedMesh(dropGeometry,dm,Math.max(1,Dn));im.frustumCulled=false;group.add(im);
+    // Ink rim around every drop: a back-face copy sharing the instance poses.
+    const inkMat=inkMaterial(),ink=new THREE.InstancedMesh(dropGeometry,inkMat,Math.max(1,Dn));ink.instanceMatrix=im.instanceMatrix;ink.frustumCulled=false;group.add(ink);
     for(let d=0;d<Dn;d++){
       const p=new THREE.Vector3().fromArray(out.drops,d*3);
       const dir=p.clone().sub(center);dir.y*=.7;dir.normalize();const r=(.028+rand()**2*.09)*(1+power*.06);
       drops.push({p,v:dir.multiplyScalar(1.8+rand()*3).add(new THREE.Vector3((rand()-.5)*.8,1.8+rand()*2.4,(rand()-.5)*.8)),r,landed:0,life:.42+rand()*.4,delay:rand()*.04});
     }
-    const tint=new THREE.Color(P.colors[value]||P.colors[1]).lerp(new THREE.Color(1,1,1),.3);if(gold)tint.lerp(new THREE.Color('#ffd27a'),.6);
-    const flash=new THREE.Sprite(new THREE.SpriteMaterial({map:flashTexture,color:tint,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true}));
-    flash.position.copy(center);flash.renderOrder=5;group.add(flash);
-    const core=new THREE.Sprite(new THREE.SpriteMaterial({map:flashTexture,color:0xffffff,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true}));
-    core.position.copy(center);core.renderOrder=6;group.add(core);
+    const tint=comicColors(value).hi.clone().lerp(new THREE.Color(1,1,1),.45);if(gold)tint.set('#ffd34d');
+    const sprite=(map,color,order)=>{const m=new THREE.SpriteMaterial({map,color,depthWrite:false,depthTest:false,transparent:true,toneMapped:false});
+      m.rotation=rand()*Math.PI*2;const sp=new THREE.Sprite(m);sp.position.copy(center);sp.renderOrder=order;group.add(sp);return sp;};
+    const ring=sprite(ringTexture,0xffffff,5),flash=sprite(flashTexture,tint,6),core=sprite(sparkTexture,0xffffff,7);
+    core.position.y+=.35;
     const g=-17,ground=floor+.012,m4=new THREE.Matrix4(),q=new THREE.Quaternion(),qs=new THREE.Quaternion(),up=new THREE.Vector3(0,1,0),sc=new THREE.Vector3(),tmp=new THREE.Vector3();
     // Land on a neighbouring stone instead of passing through it.
     const surfaceAt=(x,z)=>{for(const o of obstacles)if(Math.abs(x-o.x)<o.hx&&Math.abs(z-o.z)<o.hz)return o.top;return ground;};
@@ -307,9 +318,12 @@ transformed=shardTurn(shardQ,transformed)+shardP.xyz;transformed.y=max(uGround,t
     function update(realDt){
       const dt=realDt*BURST;age+=dt;
       group.visible=age>=0;if(age<0)return true;
-      const fa=age/.2;flash.visible=withFlash&&fa<1;core.visible=withFlash&&age<.09;
-      if(flash.visible){const s=(1.4+4.2*easeOut(fa))*big;flash.scale.set(s,s,1);flash.material.opacity=(1-fa)**2*.8;}
-      if(core.visible){const s=(.9+2.2*easeOut(age/.09))*Math.sqrt(big);core.scale.set(s,s,1);core.material.opacity=1-age/.09;}
+      // Comic pop: the burst snaps open, holds a beat and shrinks away; the
+      // ring runs out, the spark spins. Flat colours, no additive glow.
+      const fa=age/.3;flash.visible=withFlash&&fa<1;core.visible=withFlash&&age<.26;ring.visible=withFlash&&age<.32;
+      if(flash.visible){const open=easeOut(clamp(fa/.28)),close=fa>.6?ease((fa-.6)/.4):0;const s=(.5+1.9*open)*(1-.85*close)*Math.sqrt(big);flash.scale.set(s,s,1);flash.material.opacity=1;}
+      if(core.visible){const k=age/.26,s=(.4+1.0*easeOut(clamp(k*2)))*(1-ease(clamp((k-.55)/.45)))*Math.sqrt(big);core.scale.set(s,s,1);core.material.rotation+=dt*5;}
+      if(ring.visible){const k=age/.32,s=(1.2+3.6*easeOut(k))*Math.sqrt(big);ring.scale.set(s,s,1);ring.material.opacity=1-ease(clamp((k-.35)/.65));}
       for(let k=0;k<shards.length;k++){const s=shards[k];
         const t=age-s.start;
         if(t<=0){s.scale=.985;}
@@ -351,7 +365,7 @@ transformed=shardTurn(shardQ,transformed)+shardP.xyz;transformed.y=max(uGround,t
       return age<1.8;
     }
     update(0);
-    function dispose(){if(!debrisSet.has(handle))return;scene.remove(group);debrisSet.delete(handle);later(()=>{sg?.dispose();skinMat?.dispose();shardTexture?.dispose();dm.dispose();im.dispose();flash.material.dispose();core.material.dispose();});}
+    function dispose(){if(!debrisSet.has(handle))return;scene.remove(group);debrisSet.delete(handle);later(()=>{sg?.dispose();skinMat?.dispose();shardTexture?.dispose();dm.dispose();im.dispose();inkMat.dispose();flash.material.dispose();core.material.dispose();ring.material.dispose();});}
     const handle={update,dispose,center};debrisSet.add(handle);
     I.job({update(time,dt){if(!debrisSet.has(handle))return true;const t1=now();const alive=update(dt);charge(t1);I.requestFrame();if(!alive){dispose();return true;}return false;},cancel(){dispose();}});
     charge(t0);
@@ -564,7 +578,8 @@ transformed=shardTurn(shardQ,transformed)+shardP.xyz;transformed.y=max(uGround,t
     });
     // Strays slide in as real bodies and are swallowed.
     for(const s of run.plan.strays){const tile=tileOf(s.cell.id);if(tile){const k=clamp(f/.3),snap=k*k*k;tile.group.scale.setScalar(1-.94*snap);if(k>=1)tile.group.visible=false;}}
-    const m=line.blob.s.body.material;m.attenuationDistance=G.attenuationDistance*(1+1.2*ease(inf));m.roughness=G.roughness*(1-.6*inf);m.envMapIntensity=G.envMapIntensity*(1+.5*inf);
+    // Comic balloon: the shine spot stretches as the skin gets tight.
+    const m=line.blob.s.body.material;if(m.uniforms?.uSpot)m.uniforms.uSpot.value=1+.55*ease(inf);
     line.remesh(1-ease(clamp((f-.18)/.42)));
     if(t>=T.pop)pop(run);
   }
@@ -693,10 +708,10 @@ transformed=shardTurn(shardQ,transformed)+shardP.xyz;transformed.y=max(uGround,t
         warmHolder=new THREE.Group();warmHolder.name='Fusion_warm';warmHolder.position.set(0,-80,0);
         const blob=createBlob(1,tierFor(1));blob.s.group.visible=true;blob.geometry.setDrawRange(0,3);
         blob.s.group.scale.setScalar(1e-3);warmHolder.add(blob.s.group);
-        const skin=new THREE.Mesh(dropGeometry,edgeMaterial(1)),drop=new THREE.InstancedMesh(dropGeometry,skinMaterial(1,{thick:.5,side:THREE.FrontSide}),1);
-        drop.setMatrixAt(0,new THREE.Matrix4().makeScale(1e-3,1e-3,1e-3));
-        const flash=new THREE.Sprite(new THREE.SpriteMaterial({map:flashTexture,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:0}));
-        for(const o of [skin,drop,flash]){o.frustumCulled=false;o.scale.multiplyScalar(1e-3);warmHolder.add(o);}
+        const skin=new THREE.Mesh(dropGeometry,edgeMaterial(1)),drop=new THREE.InstancedMesh(dropGeometry,skinMaterial(1),1),ink=new THREE.InstancedMesh(dropGeometry,inkMaterial(),1);
+        drop.setMatrixAt(0,new THREE.Matrix4().makeScale(1e-3,1e-3,1e-3));ink.instanceMatrix=drop.instanceMatrix;
+        const flash=new THREE.Sprite(new THREE.SpriteMaterial({map:flashTexture,depthWrite:false,depthTest:false,transparent:true,opacity:0}));
+        for(const o of [skin,drop,ink,flash]){o.frustumCulled=false;o.scale.multiplyScalar(1e-3);warmHolder.add(o);}
         blob.s.body.frustumCulled=false;
       }
       if(on)scene.add(warmHolder);

@@ -262,3 +262,15 @@ Spieldaten (Versuche pro Level) nachkalibriert werden.
 - Spiel-HUD: Ziel- und Züge-Karte als dunkle Navy-Panels mit Goldrand, Punkte-Box im Abenteuer ausgeblendet,
   Werkzeuge als Kacheln mit Zähler-Badge, Pause als blaue Kachel, Hinweis-Toast im gleichen Stil. Brett/Steine unverändert.
 - E2E offline: `node e2e-redesign.mjs <url> iphone <shots> --offline` blockiert alle Backend-Schreibzugriffe.
+
+## Squish-Stil C im Spiel (launch-6, Comic)
+- `game/comic-style.mjs`: alle Squish-Körper (Brett, Vorschau, Rekord-Stein, Fusions-Ballon) mit flachem Zweiton-Cel-Shading,
+  dicker dunkler Kontur (invertierte Hülle auf derselben CPU-verformten Geometrie, konstante Weltdicke), hartem weißem Glanzfleck + Punkt;
+  Ziffern weiß mit dunkler Kontur (Coverage-Dilatation in `crisp-labels.mjs`). Geometrie, Federn und Animationen unverändert.
+- Ballon-Merge bleibt: Kontur bläst sich mit auf, Glanzfleck wird beim Aufblasen größer; Pop = Comic-Stern + Ring + Funkel-Stern,
+  Hautfetzen als Zweiton mit Tinten-Rissrand, Tropfen mit Tintenrand (`fusion.mjs`). Hammer lässt den Stein genauso platzen.
+- 2D-Effektschicht (`vfx-flipbooks.mjs`): vorgerenderte Gel-Sprites werden posterisiert (zwei Töne, Tintenkontur); weiche Lichtkugeln werden Comic-Sterne.
+- Renderer: Bloom/HDR-Ziel, Gel-Maske und Lichtbrechungs-Pass entfallen; Szene direkt in den (MSAA-)Canvas.
+  `render-quality.mjs`: iPhone volle 3× (Minimum 2×), Absenkung nur bei anhaltender Last (gerenderte Frames > 28 ms über ~2 s, nicht während Bewegung);
+  nach einem Kontextverlust in der Sitzung eine Stufe niedriger. Test: `tests/render-quality.test.mjs`.
+- Glasplatte (Reflexionen, Rahmen) unverändert.
