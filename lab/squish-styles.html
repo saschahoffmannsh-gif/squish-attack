@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="robots" content="noindex,nofollow" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Squish Labor · Stil-Vergleich A/B/C</title>
+  <style>
+    @font-face {font-family:"AW Comic";src:url("../game/assets/fonts/fredoka-bold.woff2") format("woff2");font-weight:100 900;}
+    :root {color-scheme:dark;}
+    html,body {margin:0;height:100%;overflow:hidden;background:#08080a radial-gradient(ellipse at 80% 19%,#111114 0%,#08080a 62%,#060607 100%) fixed;}
+    .playfield {position:fixed;inset:0;}
+    #graphics {position:absolute;inset:0;}
+    #graphics canvas {display:block;width:100%!important;height:100%!important;}
+    .board-slot {position:absolute;pointer-events:none;}
+    .lab-head {position:fixed;left:0;right:0;top:max(14px,env(safe-area-inset-top));z-index:5;margin:0;text-align:center;
+      color:#c7cfdb;font:700 13px/1.3 "AW Comic",ui-rounded,system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;}
+    .lab-cols[hidden] {display:none;}
+    .lab-cols {position:fixed;left:0;right:0;z-index:5;display:grid;grid-template-columns:repeat(3,1fr);pointer-events:none;}
+    .lab-col {text-align:center;color:#fff7e8;font:700 15px/1.2 "AW Comic",ui-rounded,system-ui,sans-serif;}
+    .lab-col b {display:inline-grid;place-items:center;width:38px;height:38px;margin-bottom:6px;border:2px solid #3a1a05;border-radius:12px;
+      background:linear-gradient(180deg,#ffe07a,#f59a1e);color:#fff;font-size:24px;
+      text-shadow:1.5px 0 0 #6a3304,-1.5px 0 0 #6a3304,0 1.5px 0 #6a3304,0 -1.5px 0 #6a3304,0 2.5px 0 #6a3304;box-shadow:inset 0 2px 0 #fff8,inset 0 -3px 0 #b45a00;}
+    .lab-col small {display:block;margin-top:2px;color:#9aa3cc;font:600 11px/1.3 ui-rounded,system-ui,sans-serif;letter-spacing:.02em;}
+    .lab-stats {position:fixed;left:8px;right:8px;bottom:max(10px,env(safe-area-inset-bottom));z-index:5;margin:0;text-align:center;
+      color:#9aa3cc;font:600 11px/1.4 ui-monospace,Menlo,monospace;white-space:pre-wrap;}
+    .lab-bar {position:fixed;left:0;right:0;bottom:calc(max(10px,env(safe-area-inset-bottom)) + 34px);z-index:6;display:flex;justify-content:center;gap:6px;flex-wrap:wrap;}
+    .lab-bar a {padding:7px 11px;border:1px solid #ffffff2e;border-radius:999px;color:#fff;background:#ffffff12;font:700 12px/1 ui-rounded,system-ui,sans-serif;text-decoration:none;}
+    .lab-bar a[aria-current] {background:#f6dc7b;color:#1c1408;}
+    html.still .lab-bar,html.still .lab-stats {display:none;}
+  </style>
+</head>
+<body>
+  <section class="playfield" id="playfield" aria-label="Testfeld">
+    <div class="board-slot" id="slot" aria-hidden="true"></div>
+    <div id="graphics" aria-hidden="true"></div>
+  </section>
+  <p class="lab-head" id="head">Labor · Squish-Stile</p>
+  <div class="lab-cols" id="cols" hidden>
+    <div class="lab-col"><b>A</b><br>Heute<small>Gel · Glas · Lichtbrechung</small></div>
+    <div class="lab-col"><b>B</b><br>Dazwischen<small>weiche Toon-Stufen · Rim</small></div>
+    <div class="lab-col"><b>C</b><br>Comic<small>Cel 2 Stufen · Kontur</small></div>
+  </div>
+  <nav class="lab-bar" id="bar">
+    <a href="?">Vergleich</a><a href="?stress=A">25× A</a><a href="?stress=B">25× B</a><a href="?stress=C">25× C</a>
+  </nav>
+  <p class="lab-stats" id="stats">lädt …</p>
+  <script type="module" src="./squish-styles.mjs"></script>
+</body>
+</html>
