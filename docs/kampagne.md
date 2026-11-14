@@ -274,3 +274,14 @@ Spieldaten (Versuche pro Level) nachkalibriert werden.
   `render-quality.mjs`: iPhone volle 3× (Minimum 2×), Absenkung nur bei anhaltender Last (gerenderte Frames > 28 ms über ~2 s, nicht während Bewegung);
   nach einem Kontextverlust in der Sitzung eine Stufe niedriger. Test: `tests/render-quality.test.mjs`.
 - Glasplatte (Reflexionen, Rahmen) unverändert.
+
+## Leben im Ruhezustand (launch-7)
+- `game/idle-motion.mjs`: ruhende Steine (Brett + Vorschau) atmen leicht und unregelmäßig: volumenerhaltendes
+  Strecken/Stauchen am Fuß (±~3 %), winziges Kippen (≈1°), gelegentliches weiches Zucken. Pro Stein eigene Frequenzen/Phasen
+  (aus der ID), geschichtete inkommensurable Sinus + langsame Hüllkurve → kein sichtbarer Loop, keine zwei Steine gleich.
+- Reine Zeichen-Transformation der Gruppe in `clean-screen.mjs` (wie Brett-Skalierung, danach zurückgesetzt): Kontur, Ziffer und
+  Spiegelung folgen, keine Geometrie-Updates, kein zusätzlicher Pass.
+- Blendet bei Schieben, Drücken, Merge/Ballon, Einfallen, Druckwelle in 0,1 s aus und danach in ~0,9 s weich wieder ein.
+- Ruhendes Brett rendert dafür mit höchstens 30 fps (vorher 0); Menüs, Pause und Hintergrund-Tab bleiben bei 0.
+  `prefers-reduced-motion` oder `?noidle=1`: aus.
+- Fix Bewegung-reduzieren-Modus: Steine/Vorschau waren nach dem Start unsichtbar und neue Steine blieben außerhalb des Bretts liegen.

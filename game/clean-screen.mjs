@@ -4,6 +4,7 @@ import {createGlassReflections} from './glass-reflections.mjs?v=menu-1';
 import {createGlassShadows} from './glass-shadows.mjs?v=play-sharp-1';
 import {applyPressureContacts} from './pressure-contact.mjs?v=soft-gel-1';
 import {createChromeFrame} from './chrome-frame.mjs?v=play-sharp-1';
+import {applyIdlePose} from './idle-motion.mjs?v=launch-7';
 
 // Fit the original stone mesh, including its front edge, into the board slot.
 export function fitStoneBoard(camera,width,height,bounds,slot) {
@@ -96,7 +97,7 @@ export function installCleanScreen(graphics,host,{direct=false}={}) {
         if(group.userData.pressureWave)pressureOwners.set(key,tile);
         if(p!==undefined)entering.set(key,p);
       }
-      saved.push([group,group.position.clone(),group.scale.clone()]);
+      saved.push([group,group.position.clone(),group.scale.clone(),group.rotation.clone()]);
       if(p!==undefined&&p<1){
         const [x,y]=projectPoint(group.position),remaining=1-p*p;
         // Move straight down its screen column while also lowering the real
@@ -104,10 +105,11 @@ export function installCleanScreen(graphics,host,{direct=false}={}) {
         group.position.copy(screenToWorld(x,y-(y+.22)*remaining,5*remaining));
       }
       group.scale.multiply(boardScale);
+      applyIdlePose(group);
     }
     applyPressureContacts(tiles,transformPosition,P,projectionRevision);
     for(const object of scene.children)if(object.isGroup&&object.name.startsWith('HUD_')) {
-      saved.push([object,object.position.clone(),object.scale.clone()]);
+      saved.push([object,object.position.clone(),object.scale.clone(),object.rotation.clone()]);
       const p=object.userData.entryProgress;
       if(p!==undefined&&p<1){
         const [x,y]=projectPoint(object.position),remaining=1-p*p;
@@ -115,6 +117,7 @@ export function installCleanScreen(graphics,host,{direct=false}={}) {
       }
       if(object.userData.burstScale)object.scale.multiply(new THREE.Vector3(...object.userData.burstScale));
       object.scale.y*=inflatedHeight;
+      applyIdlePose(object);
     }
     for(const object of scene.children){
       if(object.name==='Contact_shadow'||object.name==='Refracted_key_light'){
@@ -133,7 +136,7 @@ export function installCleanScreen(graphics,host,{direct=false}={}) {
       }
     }
     try{scene.updateMatrixWorld(true);return callback(tiles);}
-    finally{for(const [object,position,scale] of saved){object.position.copy(position);object.scale.copy(scale);}for(const [object,visible] of effectVisibility)object.visible=visible;}
+    finally{for(const [object,position,scale,rotation] of saved){object.position.copy(position);object.scale.copy(scale);if(rotation)object.rotation.copy(rotation);}for(const [object,visible] of effectVisibility)object.visible=visible;}
   }
   const originalBloom=graphics.bloom.render;
   const previousSkipComposite=graphics.bloom.skipComposite;

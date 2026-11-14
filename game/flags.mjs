@@ -1,4 +1,4 @@
-export const BUILD='launch-6';
+export const BUILD='launch-7';
 // URL kill-switches and a conservative default for iOS/mobile.
 //   ?debug=1        on-screen heartbeat / fps / last error
 //   ?nofusion=1     skip the gel fusion (old short merge)
@@ -6,6 +6,7 @@ export const BUILD='launch-6';
 //   ?noprewarm=1    no off-screen blob priming / compileAsync
 //   ?prewarm=1      force prewarm even on phones
 //   ?nosound=1      mute and skip all audio fetch/decode
+//   ?noidle=1       no always-on idle breathing of resting stones
 const params=typeof location!=='undefined'?new URLSearchParams(location.search):new URLSearchParams();
 const has=name=>params.has(name);
 const ua=typeof navigator!=='undefined'?navigator.userAgent||'':'';
@@ -20,9 +21,10 @@ export const flags=Object.freeze({
   noworker:has('noworker'),
   noprewarm:has('noprewarm')||(!wantPrewarm&&mobile),
   nosound:has('nosound'),
+  noidle:has('noidle'),
   ios,safari,mobile,
 });
 export function flagSummary(){
-  return {build:BUILD,debug:flags.debug,nofusion:flags.nofusion,noworker:flags.noworker,noprewarm:flags.noprewarm,nosound:flags.nosound,ios,safari,mobile};
+  return {build:BUILD,debug:flags.debug,nofusion:flags.nofusion,noworker:flags.noworker,noprewarm:flags.noprewarm,nosound:flags.nosound,noidle:flags.noidle,ios,safari,mobile};
 }
 if(typeof window!=='undefined')window.SquishFlags=flagSummary();

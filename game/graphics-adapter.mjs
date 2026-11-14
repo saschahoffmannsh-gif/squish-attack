@@ -1,14 +1,15 @@
 import {createContactSolver} from './dense-contacts.mjs?v=dense-board-1';
-import {configureRenderQuality} from './render-quality.mjs?v=launch-6';
+import {configureRenderQuality} from './render-quality.mjs?v=launch-7';
 import {enqueueRippleImpulse} from './merge-ripple.mjs?v=swarm-fx-3';
 import {installPressureWave} from './pressure-wave.mjs?v=soft-gel-1';
 import {applyGelSoftness,softWobblePower} from './gel-softness.mjs?v=soft-gel-1';
 import {applyNeonGlassLighting} from './gel-lighting.mjs?v=menu-1';
-import {createCrispLabelFactory} from './crisp-labels.mjs?v=launch-6';
-import {applyComic,comicBodyMaterial,setComicValue} from './comic-style.mjs?v=launch-6';
-import {installCleanScreen} from './clean-screen.mjs?v=launch-6';
-import {createFusion} from './fusion.mjs?v=launch-6';
-import {flags} from './flags.mjs?v=launch-6';
+import {createCrispLabelFactory} from './crisp-labels.mjs?v=launch-7';
+import {applyComic,comicBodyMaterial,setComicValue} from './comic-style.mjs?v=launch-7';
+import {installCleanScreen} from './clean-screen.mjs?v=launch-7';
+import {createFusion} from './fusion.mjs?v=launch-7';
+import {flags} from './flags.mjs?v=launch-7';
+import {createIdleMotion,IDLE} from './idle-motion.mjs?v=launch-7';
 import {createSquishGraphics,THREE,PARAMETERS} from '../squish/squish-graphics.js?v=play-sharp-1';
 import {buildSquishy,createLabel,bindGelOptics,initializeMotion,updateSquishy,PARAMETERS as HUD_PARAMETERS} from './original-gel-models.js?v=menu-1';
 
@@ -58,6 +59,14 @@ export function createGameGraphics(host) {
   const characters=new WeakMap(),impulses=[],phoneImpulses=[],mergeJobs=[],dropJobs=[],waitJobs=[];
   const hud=new Map(),extras=new Set(),extraJobs=[];let renderedLast=false,last=null,raf=0,disposed=false,hudDirty=true,warming=false,fusion=null,contextLost=false,I_onLand=null;
   const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
+  // Always-on idle life of resting stones (off for reduced motion / ?noidle=1).
+  const idle=createIdleMotion({enabled:!flags.noidle&&!reducedMotion.matches});let idleClock=0;
+  reducedMotion.addEventListener?.('change',()=>{idle.enabled=!flags.noidle&&!reducedMotion.matches;});
+  const off1=v=>Math.abs(v-1)>.002;
+  const tileBusy=s=>{const p=s.press,g=s.group;return !g.visible||s.motion||p.held||p.releaseQueued||Math.abs(p.compression)>.02||s.amplitude>.06||
+    g.userData.entryProgress!==undefined||g.userData.pressureWave||off1(g.scale.x)||off1(g.scale.y)||off1(g.scale.z);};
+  const hudBusy=s=>{const p=s.press,g=s.group;return !g.visible||p?.held||Math.abs(p?.compression||0)>.02||s.amplitude>.06||
+    g.userData.entryProgress!==undefined||!!g.userData.burstScale;};
   const resetClock=()=>{last=null;requestFrame({shadows:true});};
   document.addEventListener('visibilitychange',resetClock);
   function screenRay(x,y) {
@@ -200,7 +209,13 @@ export function createGameGraphics(host) {
   }
   function dropIn(reducedMotion=false,options={}) {
     const bodies=[...graphics.tiles,...[...hud].filter(([key])=>key.startsWith('queue-')).map(([,entry])=>entry.s)];
-    if(reducedMotion||!bodies.length)return Promise.resolve();
+    if(reducedMotion||!bodies.length){
+      // No drop-in: present the stones directly. Without this the previews
+      // kept entryProgress=0 (hidden, and the loop never went idle).
+      for(const s of bodies){s.group.visible=true;delete s.group.userData.entryProgress;s.forceUpdate=true;}
+      delete graphics.scene.userData.entryAnimation;requestFrame({shadows:true});
+      return Promise.resolve();
+    }
     if(hudDirty)placeHud();
     const start=graphics.state.time;
     // Interleave the three previews among board stones. Each launch is clearly
@@ -290,8 +305,17 @@ export function createGameGraphics(host) {
         if(live||active||s.forceUpdate){s.forceUpdate=false;personalize(s,time,dt);updateSquishy(s,time,dt,!reducedMotion.matches);dirty=true;}
       }
     }
-    // Idle tables keep the last frame. Redraw only when a tile moves, a
-    // spring is live, the HUD shifts, or something else dirtied the view.
+    // Idle life: resting stones (and the preview queue) breathe at <=30 fps;
+    // a matrix-only change, no deformation and no extra pass.
+    if(!frameState.paused){
+      const queue=[];for(const [key,{s}] of hud)if(key.startsWith('queue-'))queue.push(s);
+      idle.update(graphics.tiles,frameState.time,dt,tileBusy);idle.update(queue,frameState.time,dt,hudBusy);
+      const posed=graphics.tiles.some(s=>s.group.userData.idlePose)||queue.some(s=>s.group.userData.idlePose);
+      idleClock+=wall;
+      if(dirty)idleClock=0;else if(posed&&idleClock>=1/IDLE.fps-.004){dirty=true;idleClock=0;}
+    }
+    // Otherwise idle tables keep the last frame: redraw only when a tile moves,
+    // a spring is live, the HUD shifts, or something else dirtied the view.
     renderedLast=dirty;
     if(dirty){graphics.render(dt);dirty=false;}
     const settledTime=waitJobs.length&&!frameState.paused?graphics.state.time:0;

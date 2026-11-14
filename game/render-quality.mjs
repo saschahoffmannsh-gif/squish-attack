@@ -1,4 +1,4 @@
-// Render density for the comic renderer (launch-6). Squishes are flat, opaque
+// Render density for the comic renderer (launch-7). Squishes are flat, opaque
 // and drawn straight into the canvas: no HDR target, no gel bloom mask and no
 // refraction pass any more. That budget goes into native resolution: iPhones
 // render at their full 3x, with the canvas' own multisampling (antialias).
