@@ -252,3 +252,13 @@ Spieldaten (Versuche pro Level) nachkalibriert werden.
 - Niederlage und Pause im selben Stil („+3 Züge“ als Hauptknopf, wenn möglich; sonst „Nochmal“).
 - Schriften lokal: Lilita One (unverändert, OFL) und Fredoka (Subset, OFL), Lizenzen in `game/assets/fonts/`.
 - `prefers-reduced-motion`: keine fallenden Blätter/Wackel-Animationen, kürzeres Konfetti, Sterne blenden nur ein.
+
+## UI (launch-5, Comic-Look nach Menü-Mockup)
+- `game/comic-ui.css` (nach `autumn-ui.css` geladen): Pillen-Knöpfe mit gemessenen Mockup-Farben (grün/orange/blau/lila),
+  dünner dunkler Kontur, dunkler Unterlippe, feiner Lichtkante oben (dezenter Glanz), weichem Farbschein; weiße Symbole mit Kontur.
+- Schrift: Fredoka Bold als statische Instanz `assets/fonts/fredoka-bold.woff2` (aus der OFL-Variable-Font erzeugt, kein Reserved Font Name).
+- Startbildschirm: Kopfleiste (★ Sterne, 🏆 Endlos-Rekord, Zahnrad oben rechts wie im Mockup), Abenteuer / Endlos / 2 Spieler,
+  Kacheln Levels / Bestenliste / Regeln (alle mit echter Funktion; kein Shop, keine Münzen). Neuer Bildschirm „Spielregeln“.
+- Spiel-HUD: Ziel- und Züge-Karte als dunkle Navy-Panels mit Goldrand, Punkte-Box im Abenteuer ausgeblendet,
+  Werkzeuge als Kacheln mit Zähler-Badge, Pause als blaue Kachel, Hinweis-Toast im gleichen Stil. Brett/Steine unverändert.
+- E2E offline: `node e2e-redesign.mjs <url> iphone <shots> --offline` blockiert alle Backend-Schreibzugriffe.

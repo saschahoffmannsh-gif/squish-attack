@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-title" content="Squish attack" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <link rel="preload" as="image" href="assets/squish-attack-logo-v1.png" fetchpriority="high" />
-    <link rel="preload" as="font" type="font/ttf" href="assets/fonts/LilitaOne-Regular.ttf" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="assets/fonts/fredoka-bold.woff2" crossorigin />
     <link rel="apple-touch-icon" sizes="180x180" href="icons/squishy-v1-180.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="icons/squishy-v1-32.png" />
     <link rel="icon" type="image/png" sizes="64x64" href="icons/squishy-v1-64.png" />
@@ -111,15 +111,16 @@
         </style>
     <link rel="stylesheet" href="graphics.css" />
     <link rel="stylesheet" href="fixed-screen.css?v=glass-menu-1" />
-    <link rel="stylesheet" href="duel.css?v=launch-4" />
+    <link rel="stylesheet" href="duel.css?v=launch-5" />
     <link rel="stylesheet" href="reward-effects.css?v=vfx-1" />
     <link rel="stylesheet" href="menu.css?v=glass-title-1" />
     <link rel="stylesheet" href="title-menu.css?v=3" />
-    <link rel="stylesheet" href="clean-screen.css?v=launch-4" />
+    <link rel="stylesheet" href="clean-screen.css?v=launch-5" />
     <link rel="stylesheet" href="combo.css?v=combo-1" />
-    <link rel="stylesheet" href="leaderboard.css?v=launch-4" />
-    <link rel="stylesheet" href="campaign.css?v=launch-4" />
-    <link rel="stylesheet" href="autumn-ui.css?v=launch-4" />
+    <link rel="stylesheet" href="leaderboard.css?v=launch-5" />
+    <link rel="stylesheet" href="campaign.css?v=launch-5" />
+    <link rel="stylesheet" href="autumn-ui.css?v=launch-5" />
+    <link rel="stylesheet" href="comic-ui.css?v=launch-5" />
   </head>
   <body>
     <div class="aw-bg" id="aw-bg" aria-hidden="true"></div>
@@ -174,11 +175,17 @@
         </div>
       </nav>
       <div class="aw-home" id="home-menu" data-screen="home" hidden>
+        <div class="aw-topbar">
+          <span class="aw-stat" id="home-stars" aria-label="Sterne im Abenteuer"><i class="aw-stat-ico aw-stat-star" aria-hidden="true"></i><b>0</b></span>
+          <span class="aw-topbar-gap"></span>
+          <span class="aw-stat" id="home-record" aria-label="Endlos-Rekord"><i class="aw-stat-ico aw-stat-cup" aria-hidden="true"></i><b>0</b></span>
+          <button class="aw-gear" id="home-settings" data-open-settings type="button" aria-label="Einstellungen"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M20.02 9.52 L22.98 9.77 L22.98 14.23 L20.02 14.48 L19.43 15.920 L21.34 18.19 L18.19 21.34 L15.92 19.43 L14.48 20.02 L14.23 22.98 L9.77 22.98 L9.52 20.02 L8.08 19.43 L5.81 21.34 L2.66 18.19 L4.57 15.92 L3.98 14.48 L1.02 14.23 L1.02 9.77 L3.98 9.52 L4.57 8.08 L2.66 5.81 L5.81 2.66 L8.08 4.57 L9.52 3.98 L9.77 1.02 L14.23 1.02 L14.48 3.98 L15.92 4.57 L18.19 2.66 L21.34 5.81 L19.43 8.08Z M12 8.2a3.8 3.8 0 1 0 0.001 0Z"/></svg></button>
+        </div>
         <div class="aw-logo-wrap"><img class="aw-logo" src="assets/squish-attack-logo-v1.png" alt="Squish Attack" width="1774" height="887" decoding="async" /></div>
         <p class="aw-tagline">Schieben. Quetschen. Ploppen.</p>
         <nav class="aw-screen" id="home-screen" aria-label="Menü"><p class="aw-status" id="home-status" role="status" aria-live="polite"></p></nav>
         <p class="aw-build" id="home-build" aria-hidden="true"></p>
-        <button class="aw-gear" id="home-settings" data-open-settings type="button" aria-label="Einstellungen"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M20.02 9.52 L22.98 9.77 L22.98 14.23 L20.02 14.48 L19.43 15.920 L21.34 18.19 L18.19 21.34 L15.92 19.43 L14.48 20.02 L14.23 22.98 L9.77 22.98 L9.52 20.02 L8.08 19.43 L5.81 21.34 L2.66 18.19 L4.57 15.92 L3.98 14.48 L1.02 14.23 L1.02 9.77 L3.98 9.52 L4.57 8.08 L2.66 5.81 L5.81 2.66 L8.08 4.57 L9.52 3.98 L9.77 1.02 L14.23 1.02 L14.48 3.98 L15.92 4.57 L18.19 2.66 L21.34 5.81 L19.43 8.08Z M12 8.2a3.8 3.8 0 1 0 0.001 0Z"/></svg></button>
+        
       </div>
     </section>
     <main class="game is-start" inert aria-hidden="true">
@@ -223,8 +230,8 @@
         <div class="campaign-moves"><span>ZÜGE</span><output id="campaign-moves" aria-live="polite">0</output></div>
       </section>
       <div class="campaign-tools" id="campaign-tools" hidden>
-        <button class="campaign-tool" id="tool-extra" type="button">+3<small>Züge</small><b data-count>0</b></button>
-        <button class="campaign-tool" id="tool-hammer" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4l6 6-3 3-6-6z"/><path d="M12.5 8.5 4 17a2 2 0 0 0 3 3l8.5-8.5"/></svg><small>Hammer</small><b data-count>0</b></button>
+        <button class="campaign-tool" id="tool-extra" type="button"><span class="ct-ico ct-plus" aria-hidden="true">+3</span><small>Züge</small><b data-count>0</b></button>
+        <button class="campaign-tool" id="tool-hammer" type="button" aria-pressed="false"><span class="ct-ico" aria-hidden="true"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M27 21 10.5 37.5a3.2 3.2 0 0 0 4.5 4.5L31.5 25.5" fill="#d98a3a" stroke="#4a2200" stroke-width="2.4" stroke-linejoin="round"/><path d="M24.5 23.5 13 35" stroke="#ffd09a" stroke-width="1.8" stroke-linecap="round" opacity=".7"/><path d="M19 13.5 28.5 4l5 2.5L45 18l-4.5 4.5-6-3-4.5 4.5L20.5 14.5z" fill="#c9d2e6" stroke="#252b45" stroke-width="2.4" stroke-linejoin="round"/><path d="M28.6 7.6 41 19.5" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".75"/></svg></span><small>Hammer</small><b data-count>0</b></button>
       </div>
       </div>
     </main>
@@ -355,10 +362,10 @@
         <button class="duel-back" id="board-close" type="button">Zurück zum Menü</button>
       </div>
     </section>
-    <script src="config.js?v=launch-4"></script>
+    <script src="config.js?v=launch-5"></script>
     <script>
     (function(){
-      var BUILD='launch-4';
+      var BUILD='launch-5';
       var key='squish-build-reload';
       fetch('build.txt?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.text();}).then(function(v){
         v=(v||'').trim();
@@ -369,7 +376,7 @@
       }).catch(function(){});
     })();
     </script>
-    <script type="module" src="debug-overlay.mjs?v=launch-4"></script>
-    <script type="module" src="loading-screen.mjs?v=launch-4"></script>
+    <script type="module" src="debug-overlay.mjs?v=launch-5"></script>
+    <script type="module" src="loading-screen.mjs?v=launch-5"></script>
   </body>
 </html>

@@ -1,6 +1,6 @@
 // Kampagne: DOM-Teile (Ziel-Anzeige, Züge, Hilfsmittel, Ergebnis-Dialog, Levelauswahl).
 // Reine Darstellung; Spiellogik und Speichern liegen in game.mjs / campaign.mjs.
-import {goalProgress,goalText,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName} from './campaign.mjs?v=launch-4';
+import {goalProgress,goalText,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName} from './campaign.mjs?v=launch-5';
 
 const $=id=>document.getElementById(id);
 const fmt=n=>Number(n||0).toLocaleString('de-DE');
@@ -46,6 +46,8 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
     tools.hidden=false;
     extraBtn.querySelector('[data-count]').textContent=String(inv.extraMoves);
     hammerBtn.querySelector('[data-count]').textContent=String(inv.hammer);
+    extraBtn.querySelector('[data-count]').classList.toggle('is-zero',!(inv.extraMoves>0));
+    hammerBtn.querySelector('[data-count]').classList.toggle('is-zero',!(inv.hammer>0));
     extraBtn.disabled=!(inv.extraMoves>0&&canExtra);
     hammerBtn.disabled=!(inv.hammer>0)&&!hammerArmed;
     hammerBtn.classList.toggle('is-armed',hammerArmed);
@@ -96,7 +98,7 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
     if(won)rStars.classList.add('is-playing');
     result.hidden=false;mark('dialog');
     if(won&&!stars)mark('nostars');
-    (won&&canNext?bNext:!bExtra.hidden?bExtra:bRetry).focus({preventScroll:true});
+    (won&&canNext?bNext:!bExtra.hidden?bExtra:bRetry).focus({preventScroll:true,focusVisible:false});
   }
   function hideResult(){result.hidden=true;starTimers.forEach(clearTimeout);starTimers=[];rStars.classList.remove('is-playing');}
   bNext.addEventListener('click',()=>onNext?.());

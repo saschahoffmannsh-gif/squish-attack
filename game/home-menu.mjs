@@ -1,8 +1,8 @@
 // Startbildschirm und Modus-Menüs im Herbst-Design (reines DOM, kein 3D).
 // Ersetzt das frühere 3D-Glastisch-Menü (world-menu.mjs) mit derselben
 // Schnittstelle, die game.mjs und start-menu.mjs erwarten.
-import {ICONS,leafSvg} from './aw-icons.mjs?v=launch-4';
-import {BUILD} from './flags.mjs?v=launch-4';
+import {ICONS,TILE_ICONS,leafSvg} from './aw-icons.mjs?v=launch-5';
+import {BUILD} from './flags.mjs?v=launch-5';
 
 const LEAF_COLORS=['#f07a1c','#e8541a','#c9301c','#f2a01e','#d94a17','#b8321a','#ffb030'];
 const fmt=n=>Number(n||0).toLocaleString('de-DE');
@@ -31,6 +31,9 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
   const statusEl=page.getElementById('home-status'),vibration=page.getElementById('vibration-toggle');
   let active=false,screen=null,busy=false,statusTimer=0,lastScreen='home';
   installBackdrop(page);
+  const starsEl=page.getElementById('home-stars'),recordEl=page.getElementById('home-record');
+  starsEl?.querySelector('i')?.insertAdjacentHTML('beforeend',TILE_ICONS.star);
+  recordEl?.querySelector('i')?.insertAdjacentHTML('beforeend',TILE_ICONS.trophy);
   const build=page.getElementById('settings-build');if(build)build.textContent='Squish '+BUILD;
   const homeBuild=page.getElementById('home-build');if(homeBuild)homeBuild.textContent=BUILD;
   const wait=ms=>new Promise(r=>setTimeout(r,ms));
@@ -69,6 +72,14 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
     b.addEventListener('click',()=>{if(busy||!active)return;action(b);});
     return b;
   }
+  function tile({label,icon,action,badge=0}){
+    const b=page.createElement('button');b.type='button';b.className='aw-tile';b.dataset.label=label;
+    b.innerHTML=`<span class="aw-tile-ico">${TILE_ICONS[icon]||''}</span><span class="aw-tile-label"></span>`;
+    b.querySelector('.aw-tile-label').textContent=label;
+    if(badge>0){const n=page.createElement('b');n.className='aw-badge';n.textContent=String(badge);b.append(n);}
+    b.addEventListener('click',()=>{if(busy||!active)return;action(b);});
+    return b;
+  }
   function ribbon(text,tone){const r=page.createElement('div');r.className=`aw-ribbon ${tone}`;r.textContent=text;r.setAttribute('role','heading');r.setAttribute('aria-level','2');return r;}
   function card(big,sub,chips){
     const c=page.createElement('div');c.className='aw-card';
@@ -84,15 +95,29 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
 
   // ---------- Bildschirme ----------
   function homeItems(){
-    const c=hooks.campaign?.summary?.()||{},e=hooks.endlessStats?.()||{};
+    const tiles=page.createElement('div');tiles.className='aw-tiles';
+    tiles.append(
+      tile({label:'Levels',icon:'star',action:()=>{tap();hooks.setMode?.('campaign');hooks.campaign?.openSelect?.();}}),
+      tile({label:'Bestenliste',icon:'trophy',action:()=>{tap();hooks.leaderboard?.();}}),
+      tile({label:'Regeln',icon:'cap',action:()=>{tap();void go('rules');}}));
     return [
-      button({label:'Abenteuer',sub:c.total!=null?`Level ${c.next||1} · ★ ${c.total} von ${(c.count||25)*3}`:'Rätsel-Level',icon:'flag',color:'aw-green',size:'aw-big',
+      button({label:'Abenteuer',icon:'play',color:'aw-green',size:'aw-big',
         action:()=>{tap();hooks.setMode?.('campaign');void go('campaign');}}),
-      button({label:'Endlos',sub:e.best?`Rekord ${fmt(e.best)} Punkte`:'Spiel so lange du kannst',icon:'infinity',color:'aw-blue',size:'aw-big',
+      button({label:'Endlos',icon:'infinity',color:'aw-orange',
         action:()=>{tap();hooks.setMode?.('endless');void go('endless');}}),
-      button({label:'2 Spieler',sub:'Online-Duell · 5 Minuten',icon:'duo',color:'aw-purple',size:'aw-big',
+      button({label:'2 Spieler',icon:'duo',color:'aw-blue',
         action:()=>{tap();hooks.gesture?.();void hooks.duel?.open?.();}}),
+      tiles,
     ];
+  }
+  function rulesItems(){
+    const box=page.createElement('div');box.className='aw-card aw-rules';box.tabIndex=0;
+    const src=[...page.querySelectorAll('#veil .rules p')];
+    const intro=page.createElement('p');intro.className='aw-rules-lead';
+    intro.textContent='Im Abenteuer zeigt jedes Level oben sein Ziel und die Züge, die du dafür hast.';
+    box.append(...src.map(p=>{const c=page.createElement('p');c.textContent=p.textContent;return c;}),intro);
+    return [ribbon('Spielregeln','aw-r-purple'),box,
+      button({label:'Zurück',icon:'back',color:'aw-slate',size:'aw-small',action:()=>{tap();void go('home');}})];
   }
   function campaignItems(){
     const info=hooks.campaign?.summary?.()||{next:1,ready:false};
@@ -103,27 +128,33 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
       if(!info.ready&&!hooks.campaign?.summary?.().ready){say('Level werden geladen …',2000);return;}
       tap('move');hooks.gesture?.();void play({campaign:hooks.campaign.summary().next});
     }}));
-    items.push(button({label:'Levelauswahl',icon:'grid',color:'aw-orange',action:()=>{tap();hooks.campaign?.openSelect?.();}}));
-    items.push(button({label:'Zurück',icon:'back',color:'aw-red',size:'aw-small',action:()=>{tap();void go('home');}}));
+    items.push(button({label:'Levelauswahl',icon:'grid',color:'aw-blue',action:()=>{tap();hooks.campaign?.openSelect?.();}}));
+    items.push(button({label:'Zurück',icon:'back',color:'aw-slate',size:'aw-small',action:()=>{tap();void go('home');}}));
     return items;
   }
   function endlessItems(){
     const e=hooks.endlessStats?.()||{},can=!!hooks.canContinue?.();
     const sub=e.bestTile?`Bester Stein: ${e.bestTile}`:'';
-    const items=[ribbon('Endlos','aw-r-blue'),card(e.best?`Rekord ${fmt(e.best)}`:'Noch kein Rekord',sub)];
-    const cont=button({label:'Weiterspielen',icon:'play',color:can?'aw-green':'aw-blue',size:can?'aw-big':'',dim:!can,action:b=>{
+    const items=[ribbon('Endlos','aw-r-orange'),card(e.best?`Rekord ${fmt(e.best)}`:'Noch kein Rekord',sub)];
+    const cont=button({label:'Weiterspielen',icon:'play',color:can?'aw-green':'aw-orange',size:can?'aw-big':'',dim:!can,action:b=>{
       if(!hooks.canContinue?.()){say('Noch kein Spielstand – starte ein neues Spiel.',2600);return;}
       tap('move');hooks.gesture?.();void play(false);
     }});
-    const fresh=button({label:'Neues Spiel',icon:'plus',color:can?'aw-blue':'aw-green',size:can?'':'aw-big',action:()=>{tap('move');hooks.gesture?.();void play(true);}});
+    const fresh=button({label:'Neues Spiel',icon:can?'plus':'play',color:can?'aw-orange':'aw-green',size:can?'':'aw-big',action:()=>{tap('move');hooks.gesture?.();void play(true);}});
     items.push(...(can?[cont,fresh]:[fresh,cont]));
-    items.push(button({label:'Bestenliste',icon:'trophy',color:'aw-gold',action:()=>{tap();hooks.leaderboard?.();}}));
-    items.push(button({label:'Zurück',icon:'back',color:'aw-red',size:'aw-small',action:()=>{tap();void go('home');}}));
+    items.push(button({label:'Bestenliste',icon:'bars',color:'aw-blue',action:()=>{tap();hooks.leaderboard?.();}}));
+    items.push(button({label:'Zurück',icon:'back',color:'aw-slate',size:'aw-small',action:()=>{tap();void go('home');}}));
     return items;
+  }
+  function updateTopbar(){
+    const c=hooks.campaign?.summary?.()||{},e=hooks.endlessStats?.()||{};
+    if(starsEl){starsEl.querySelector('b').textContent=`${c.total??0}/${(c.count||25)*3}`;starsEl.setAttribute('aria-label',`${c.total??0} von ${(c.count||25)*3} Sternen im Abenteuer`);}
+    if(recordEl){recordEl.querySelector('b').textContent=fmt(e.best||0);recordEl.setAttribute('aria-label',`Endlos-Rekord: ${fmt(e.best||0)} Punkte`);}
   }
   function render(name,{animate=true}={}){
     screen=name;lastScreen=name;root.dataset.screen=name;
-    const items=name==='campaign'?campaignItems():name==='endless'?endlessItems():homeItems();
+    const items=name==='campaign'?campaignItems():name==='endless'?endlessItems():name==='rules'?rulesItems():homeItems();
+    updateTopbar();
     items.forEach((el,i)=>el.style.setProperty('--i',String(i)));
     screenEl.classList.remove('is-leaving');
     screenEl.classList.toggle('no-anim',!animate);
@@ -174,7 +205,7 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
       if(keyboard)screenEl.querySelector('button')?.focus({preventScroll:true});
     },
     play,
-    refresh(){if(active&&!busy&&(screen==='campaign'||screen==='home'))render(screen,{animate:false});},
+    refresh(){if(active&&!busy&&(screen==='campaign'||screen==='home'))render(screen,{animate:false});else updateTopbar();},
     code(){},status(){},
     async dismiss(){active=false;hide();hooks.pauseScene?.(false);},
     dispose(){active=false;hide();},
