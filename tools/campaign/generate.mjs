@@ -12,7 +12,8 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { cpus } from 'node:os';
 import { evaluateCandidate, SEQ_LEN } from './candidates.mjs';
-import { replaySolution, validateLevel, ROCK } from '../../game/campaign.mjs';
+import { replaySolution, validateLevel, starThresholds } from '../../game/campaign.mjs';
+import { makeCandidate } from './candidates.mjs';
 import { createRng } from '../../game/ranked.mjs';
 
 export const RESERVE = 5; // Reserve-Steine hinter dem Zuglimit (für ein späteres „+Züge“-Hilfsmittel)
@@ -60,7 +61,10 @@ async function main() {
     console.log(`Bewertet: ${pool.length}, brauchbar: ${ok.length}, Zeit ${((Date.now() - t0) / 1000).toFixed(0)} s, Solver Median ${ms[ms.length >> 1].toFixed(0)} ms, p95 ${ms[Math.floor(ms.length * .95)].toFixed(0)} ms`);
   }
   const count = Number(arg('count', 25));
-  const levels = select(pool.filter(r => r.ok), count);
+  // Nur Kandidaten, die der heutige Kandidaten-Code exakt so erzeugt (z. B. keine Felsen mehr).
+  const reproducible = pool.filter(r => r.ok && JSON.stringify(makeCandidate(r.seed)) === JSON.stringify(r.level));
+  console.log(`Reproduzierbar mit aktuellem Code: ${reproducible.length} von ${pool.filter(r => r.ok).length}`);
+  const levels = select(reproducible, count);
   const outDir = join(root, 'levels'); mkdirSync(outDir, { recursive: true });
   const out = { version: 1, generator: { seed: base, candidates: N, seqLen: SEQ_LEN, reserve: RESERVE }, count: levels.length, levels };
   const file = `levels-001-${String(count).padStart(3, '0')}.json`;
@@ -70,8 +74,8 @@ async function main() {
 
 // ---------------- Auswahl ----------------
 // Einführung der Zielarten: [ab Level, Zielart]. Kurze Kampagne (≤ 40 Level) komprimiert.
-const SCHEDULE_LONG = [[1, 'tile'], [7, 'make'], [13, 'clear'], [19, 'street'], [25, 'score'], [31, 'combo'], [37, 'rocks'], [45, 'duo']];
-const SCHEDULE_SHORT = [[1, 'tile'], [5, 'make'], [9, 'clear'], [13, 'street'], [17, 'score'], [21, 'combo'], [23, 'rocks']];
+const SCHEDULE_LONG = [[1, 'tile'], [7, 'make'], [13, 'clear'], [19, 'street'], [25, 'score'], [31, 'combo'], [37, 'duo']];
+const SCHEDULE_SHORT = [[1, 'tile'], [5, 'make'], [9, 'clear'], [13, 'street'], [17, 'score'], [21, 'combo'], [23, 'duo']];
 let SCHEDULE = SCHEDULE_LONG, COUNT = 100;
 const smooth = (wins, n) => (wins + 0.5) / (n + 1);
 const lg = x => -Math.log10(x);
@@ -86,7 +90,9 @@ export function targetRate(i) {
   if (SCHEDULE.some(([at]) => at === i || at + 1 === i) && i > 1) p += 0.12; // neue Zielart erst sanft
   return Math.min(0.97, Math.max(0.05, p));
 }
-function slackRange(i) { const t = tOf(i); return t < 0.2 ? [3, 4] : t < 0.45 ? [2, 3] : t < 0.75 ? [1, 3] : [1, 2]; }
+// Spielraum über dem Optimum. Mindestens 3, damit alle drei Sterne-Stufen existieren
+// (3★ = Optimum + 1, 2★ = Mitte, 1★ = Limit).
+function slackRange(i) { const t = tOf(i); return t < 0.2 ? [4, 5] : t < 0.45 ? [3, 4] : [3, 3]; }
 function minMovesRange(i) { const t = tOf(i); return i === 1 ? [1, 1] : i === 2 ? [1, 2] : t < 0.3 ? [2, 4] : t < 0.6 ? [2, 5] : t < 0.8 ? [3, 6] : [4, 7]; }
 function segmentOf(i) {
   const starts = SCHEDULE.map(([at]) => at), last = starts[starts.length - 1];
@@ -154,7 +160,7 @@ function select(pool, count = 100) {
       sequence: withReserve(c, limit),
       moves: limit,
       goals: c.level.goals,
-      stars: { three: c.minMoves, two: c.minMoves + Math.ceil((limit - c.minMoves) / 2) },
+      stars: starThresholds(c.minMoves, limit),
       solution: c.solution,
       meta: {
         seed: c.seed,
@@ -181,7 +187,7 @@ function select(pool, count = 100) {
     };
     validateLevel(level);
     const rep = replaySolution(level, level.solution);
-    if (!rep.ok || rep.stars !== 3) throw new Error(`Level ${level.id}: gespeicherte Lösung ungültig`);
+    if (!rep.ok || rep.stars !== 3 || rep.run.moves !== c.minMoves) throw new Error(`Level ${level.id}: gespeicherte Lösung ungültig`);
     return level;
   });
 }
@@ -191,7 +197,7 @@ function select(pool, count = 100) {
 function withReserve(c, limit) {
   const seq = c.level.sequence.slice(0, limit + RESERVE);
   const rng = createRng((c.seed ^ 0xb005) >>> 0);
-  const values = c.level.sequence.filter(v => v !== ROCK);
+  const values = c.level.sequence;
   while (seq.length < limit + RESERVE) seq.push(values[Math.floor(rng() * values.length)]);
   return seq;
 }

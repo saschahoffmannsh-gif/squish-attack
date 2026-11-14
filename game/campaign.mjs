@@ -5,16 +5,8 @@
 import { SIZE, insertTile, settle, isGameOver } from './game-logic.mjs';
 
 export const DIRECTIONS = ['left', 'right', 'up', 'down'];
-export const ROCK = '#';
 export const QUEUE_PREVIEW = 3;
 export const GOAL_TYPES = ['tile', 'make', 'score', 'clear', 'street', 'combo'];
-
-// Felsen sind normale Steine mit einem Wert, der nie passt: jeder Fels bekommt
-// einen eigenen negativen Zehnerwert (-10, -20, ...). Damit bilden Felsen weder
-// Dreier noch Straßen (Abstand nie 1) und werden trotzdem wie Steine geschoben.
-// So bleibt game-logic.mjs unverändert.
-const ROCK_STEP = -10;
-export const isRock = tile => !!tile && tile.value < 0;
 
 /** Ein Zug als Buchstabe, identisch zu ranked.mjs: 'a'..'t'. */
 export function encodeMove(direction, line) {
@@ -29,7 +21,7 @@ export function decodeMove(ch) {
 }
 export const ALL_MOVES = Array.from({ length: DIRECTIONS.length * SIZE }, (_, i) => decodeMove(String.fromCharCode(97 + i)));
 
-const cellOk = v => v === null || v === ROCK || (Number.isInteger(v) && v >= 1 && v <= 30);
+const cellOk = v => v === null || (Number.isInteger(v) && v >= 1 && v <= 30);
 
 /** Prüft ein Level-Objekt und wirft bei Fehlern. Gibt das Level zurück. */
 export function validateLevel(level) {
@@ -45,19 +37,16 @@ export function validateLevel(level) {
     for (const k of need) if (!Number.isInteger(g[k]) || g[k] < 1) fail(`Ziel ${g.type}: ${k} fehlt`);
   }
   const s = level.stars;
-  if (!s || !Number.isInteger(s.three) || !Number.isInteger(s.two) || !(s.three <= s.two && s.two <= level.moves)) fail('stars ungültig');
+  if (!s || !Number.isInteger(s.three) || !Number.isInteger(s.two) || !(s.three >= 1 && s.three <= s.two && s.two <= level.moves)) fail('stars ungültig');
   return level;
 }
 
-function toTile(v, ctx) {
-  if (v === ROCK) { ctx.rocks += 1; return { id: ctx.nextId++, value: ROCK_STEP * ctx.rocks, rock: true }; }
-  return { id: ctx.nextId++, value: v };
-}
+const toTile = (v, ctx) => ({ id: ctx.nextId++, value: v });
 
 /** Neuer Spielzustand für ein Level. */
 export function createLevelRun(level) {
   validateLevel(level);
-  const ctx = { nextId: 1, rocks: 0 };
+  const ctx = { nextId: 1 };
   const board = level.board.map(row => row.map(v => (v === null ? null : toTile(v, ctx))));
   return {
     level, board, ctx,
@@ -65,16 +54,37 @@ export function createLevelRun(level) {
     moves: 0,                 // gemachte Züge
     score: 0, cleared: 0, merges: 0, streets: 0, bestCombo: 0,
     created: {},              // Wert -> Anzahl durch Fusion erzeugter Steine
+    extraMoves: 0,            // durch Hilfsmittel gewonnene Züge
+    toolsUsed: [],            // eingesetzte Hilfsmittel (Typen)
     status: 'playing',        // 'playing' | 'won' | 'lost'
     lostReason: null,
     log: '',
   };
 }
 
-export const movesLeft = run => run.level.moves - run.moves;
+/** Aktuelles Zuglimit inkl. Hilfsmittel „+Züge“. */
+export const moveLimit = run => run.level.moves + run.extraMoves;
+export const movesLeft = run => moveLimit(run) - run.moves;
 /** Die nächsten Steine (Vorschau), höchstens bis zum Zuglimit. */
 export function queueOf(run, n = QUEUE_PREVIEW) {
-  return run.level.sequence.slice(run.index, Math.min(run.level.moves, run.index + n));
+  return run.level.sequence.slice(run.index, Math.min(moveLimit(run), run.index + n));
+}
+
+/** Ein Hilfsmittel als benutzt markieren (deckelt das Ergebnis auf 2 Sterne). */
+export function markToolUsed(run, type) { run.toolsUsed.push(type); }
+
+/**
+ * Hilfsmittel „+N Züge“: nutzt die Reserve-Steine hinter dem Zuglimit.
+ * Darf auch nach einer Niederlage durch Zugmangel eingesetzt werden („Weiterspielen“).
+ */
+export function addExtraMoves(run, n = 3) {
+  const room = run.level.sequence.length - moveLimit(run);
+  const add = Math.min(n, room);
+  if (add <= 0 || run.status === 'won' || (run.status === 'lost' && run.lostReason !== 'moves')) return 0;
+  run.extraMoves += add;
+  markToolUsed(run, 'extraMoves');
+  if (run.status === 'lost') { run.status = 'playing'; run.lostReason = null; }
+  return add;
 }
 
 /** Zählt die Fortschritts-Werte eines settle()-Ergebnisses in den Zustand. */
@@ -114,7 +124,7 @@ export const goalsDone = run => run.level.goals.every(g => goalProgress(g, run).
 
 /** Kann der nächste Stein überhaupt irgendwo eingeschoben werden? */
 export function hasLegalMove(run) {
-  if (run.status !== 'playing' || run.index >= run.level.moves) return false;
+  if (run.status !== 'playing' || run.index >= moveLimit(run)) return false;
   return ALL_MOVES.some(({ direction, line }) => insertTile(run.board, direction, line, { value: 0 }).accepted);
 }
 
@@ -125,7 +135,7 @@ export function hasLegalMove(run) {
  */
 export function applyLevelMove(run, direction, line) {
   if (run.status !== 'playing') return { ok: false, reason: 'finished' };
-  if (run.index >= run.level.moves) return { ok: false, reason: 'no-moves' };
+  if (run.index >= moveLimit(run)) return { ok: false, reason: 'no-moves' };
   const value = run.level.sequence[run.index];
   const probe = insertTile(run.board, direction, line, { value: 0 });
   if (!probe.accepted) return { ok: false, reason: 'full-line' };
@@ -138,17 +148,30 @@ export function applyLevelMove(run, direction, line) {
   run.log += encodeMove(direction, line);
   tally(run, settled);
   if (goalsDone(run)) run.status = 'won';
-  else if (run.moves >= run.level.moves) { run.status = 'lost'; run.lostReason = 'moves'; }
+  else if (run.moves >= moveLimit(run)) { run.status = 'lost'; run.lostReason = 'moves'; }
   else if (isGameOver(run.board) || !hasLegalMove(run)) { run.status = 'lost'; run.lostReason = 'board-full'; }
   return { ok: true, settled, entry: inserted.entry, tile };
 }
 
-/** Sterne für einen gewonnenen Lauf (0 bei verloren). */
-export function starsFor(level, movesUsed, won = true) {
-  if (!won || movesUsed > level.moves) return 0;
-  if (movesUsed <= level.stars.three) return 3;
-  if (movesUsed <= level.stars.two) return 2;
-  return 1;
+/**
+ * Sterne für einen Lauf. Schwellen stehen im Level (`stars.three`, `stars.two`):
+ *   3★: Züge ≤ three (= Optimum + 1)   2★: Züge ≤ two   1★: gewonnen innerhalb des Zuglimits
+ * Mit Hilfsmittel höchstens 2★; gewonnen erst mit Extra-Zügen = 1★.
+ */
+export function starsFor(level, movesUsed, won = true, { toolsUsed = 0 } = {}) {
+  if (!won) return 0;
+  let stars = movesUsed <= level.stars.three ? 3 : movesUsed <= level.stars.two ? 2 : 1;
+  if (toolsUsed > 0) stars = Math.min(stars, MAX_STARS_WITH_TOOLS);
+  return stars;
+}
+export const MAX_STARS_WITH_TOOLS = 2;
+/** Sterne für einen fertigen Lauf (berücksichtigt Hilfsmittel). */
+export const starsOfRun = run => starsFor(run.level, run.moves, run.status === 'won', { toolsUsed: run.toolsUsed.length });
+
+/** Sterne-Schwellen aus Optimum und Zuglimit: 3★ = Optimum + 1, 2★ = Mitte bis zum Limit. */
+export function starThresholds(minMoves, limit) {
+  const three = Math.min(limit, minMoves + 1);
+  return { three, two: Math.min(limit, three + Math.ceil((limit - three) / 2)) };
 }
 
 /** Spielt eine Lösung (Zug-String) komplett durch. */
@@ -160,7 +183,7 @@ export function replaySolution(level, log) {
     const r = applyLevelMove(run, m.direction, m.line);
     if (!r.ok) return { ok: false, reason: r.reason, at: i, run };
   }
-  return { ok: run.status === 'won', run, stars: starsFor(run.level, run.moves, run.status === 'won') };
+  return { ok: run.status === 'won', run, stars: starsOfRun(run) };
 }
 
 /** Kurzer deutscher Zieltext für die UI. */
@@ -211,10 +234,41 @@ export function mergeProgress(a, b) {
 }
 
 export const totalStars = progress => Object.values(progress.levels).reduce((n, r) => n + r.stars, 0);
-/** Level n ist frei, wenn Level n-1 geschafft ist (Level 1 immer). */
-export const isUnlocked = (progress, n) => n <= 1 || !!progress.levels[String(n - 1)];
-/** Erstes noch nicht geschafftes Level (für „Weiterspielen“). */
+
+// ---------------- Kapitel und Sterne-Schranken ----------------
+// Kapitel à 10 Level. Für Kapitel k ≥ 2 braucht man insgesamt
+// STARS_PER_CHAPTER_GATE × (k − 1) Sterne (= Ø 1,8★ pro bisherigem Level,
+// also 60 % der möglichen Sterne; mit Hilfsmitteln (max. 2★) erreichbar).
+export const CHAPTER_SIZE = 10;
+export const STARS_PER_CHAPTER_GATE = 18;
+export const chapterOf = n => Math.floor((n - 1) / CHAPTER_SIZE) + 1;
+export const chapterStart = k => (k - 1) * CHAPTER_SIZE + 1;
+export const starGate = k => (k <= 1 ? 0 : STARS_PER_CHAPTER_GATE * (k - 1));
+
+/**
+ * Warum ist Level n gesperrt? null = frei.
+ * {reason:'previous'} – Vorgänger noch nicht geschafft
+ * {reason:'stars', need, have, chapter} – Sterne-Schranke am Kapitelanfang
+ */
+export function lockReason(progress, n) {
+  if (n <= 1) return null;
+  if (!progress.levels[String(n - 1)]) return { reason: 'previous' };
+  const k = chapterOf(n);
+  if (n === chapterStart(k)) {
+    const need = starGate(k), have = totalStars(progress);
+    if (have < need) return { reason: 'stars', need, have, chapter: k };
+  }
+  return null;
+}
+/** Level n ist frei: Vorgänger geschafft und ggf. Sterne-Schranke erreicht. Einmal frei = bleibt frei (Bestwerte sinken nie). */
+export const isUnlocked = (progress, n) => lockReason(progress, n) === null;
+/** Erstes freies, noch nicht geschafftes Level (für „Weiterspielen“); sonst das letzte freie. */
 export function nextLevel(progress, count) {
-  for (let n = 1; n <= count; n++) if (!progress.levels[String(n)]) return n;
-  return count;
+  let lastFree = 1;
+  for (let n = 1; n <= count; n++) {
+    if (!isUnlocked(progress, n)) break;
+    lastFree = n;
+    if (!progress.levels[String(n)]) return n;
+  }
+  return lastFree;
 }

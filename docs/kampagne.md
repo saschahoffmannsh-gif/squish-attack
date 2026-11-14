@@ -30,11 +30,11 @@ gewerteter Endlos-Runden bleibt damit gültig.
   "id": 17,
   "chapter": 2,
   "kind": "clear",
-  "board": [[1, null, "#", null, 2], [null, ...], ...],
+  "board": [[1, null, 3, null, 2], [null, ...], ...],
   "sequence": [1, 2, 2, 1, 3, 1, 2, 1, 1, 2],
   "moves": 6,
   "goals": [{ "type": "clear", "tiles": 7 }],
-  "stars": { "three": 3, "two": 5 },
+  "stars": { "three": 4, "two": 5 },
   "solution": "hbrc",
   "meta": { "minMoves": 3, "slack": 3, "optimalSolutions": 4, "difficulty": 23,
             "winRate": { "random": 0.04, "casual": 0.41, "good": 0.66 }, ... }
@@ -43,11 +43,11 @@ gewerteter Endlos-Runden bleibt damit gültig.
 
 | Feld | Bedeutung |
 |---|---|
-| `board` | 5×5, `null` = leer, Zahl = Stein, `"#"` = Fels |
-| `sequence` | feste Steinfolge (Zahl oder `"#"`). Länge = `moves` + 5 Reserve-Steine (für „+Züge“-Hilfsmittel). Die Vorschau zeigt 3 Steine, aber nie über das Zuglimit hinaus. |
+| `board` | 5×5, `null` = leer, Zahl = Stein |
+| `sequence` | feste Steinfolge (Zahlen). Länge = `moves` + 5 Reserve-Steine (für „+Züge“-Hilfsmittel). Die Vorschau zeigt 3 Steine, aber nie über das Zuglimit hinaus. |
 | `moves` | Zuglimit |
 | `goals` | ein oder mehrere Ziele, **alle** müssen erfüllt sein (UND) |
-| `stars` | `three`: höchstens so viele Züge für 3★ (= Optimum des Solvers), `two`: für 2★; gewonnen innerhalb `moves` = 1★ |
+| `stars` | `three`: höchstens so viele Züge für 3★ (= Optimum des Solvers + 1), `two`: für 2★; gewonnen innerhalb `moves` = 1★ |
 | `solution` | vom Solver gefundene optimale Lösung, gleiche Zugcodes wie `ranked.mjs` (`a`–`t` = Richtung × 5 + Linie) |
 | `meta` | Solver-Kennzahlen, nur für Balancing/Debug |
 
@@ -68,13 +68,8 @@ gezählt (`game/campaign.mjs`, `tally()`):
 | `score` | `points` | „Erreiche 400 Punkte“ | Punkte wie im Endlosmodus |
 | `combo` | `chain` | „Kettenreaktion: 2 Fusionen in einem Zug“ | längste Kette in einem Zug |
 
-**Hindernisse – Felsen (`"#"`):** Die Mechanik erlaubt sie ohne Logikänderung:
-Ein Fels ist ein Stein mit eigenem negativem Zehnerwert (-10, -20, …). Er
-fusioniert nie, bildet keine Straße, wird aber geschoben und blockiert Platz.
-Felsen können auf dem Startbrett liegen und in der Steinfolge vorkommen.
-Für die UI braucht es nur ein eigenes Modell (Stein-Optik, kein Wert).
-Später denkbar (bräuchten neue Logik, daher noch nicht drin): festgenagelte
-Felder, Eis um Steine (erst nach einer Fusion daneben frei), gesperrte Linien.
+**Keine Hindernisse** (Entscheidung Sascha, 14.11.2026): Felsen o. Ä. gibt es
+nicht, weder im Format noch im Generator noch in `campaign.mjs`.
 
 ## 4. Sterne und Schwierigkeitskurve
 
@@ -82,22 +77,44 @@ Erster Schritt: **25 Level** (`levels/levels-001-025.json`). Generator und Kurve
 skalieren über `--count` auf 100 (die Kurve wird dann über 100 Level gestreckt
 und die Zielarten werden langsamer eingeführt).
 
-- 3★ = in der minimalen Zugzahl gelöst (perfekte Lösung), 2★ = höchstens
-  Optimum + halber Spielraum, 1★ = innerhalb des Limits.
+- **Sterne** (Entscheidung Sascha): 3★ = höchstens Optimum + 1 Zug,
+  2★ = höchstens 3★-Schwelle + halber Rest bis zum Limit (aufgerundet),
+  1★ = gewonnen innerhalb des Limits (`starThresholds(min, limit)`).
+  Beispiel Optimum 4, Limit 7: 3★ ≤ 5, 2★ ≤ 6, 1★ ≤ 7.
+- **Hilfsmittel deckeln auf 2★** (egal welches). Wer erst mit „+3 Züge“ über
+  das Limit hinaus gewinnt, bekommt 1★ (`starsFor(..., {toolsUsed})`).
+- Damit alle drei Stufen existieren, ist der Spielraum (Limit − Optimum)
+  immer ≥ 3: erstes Fünftel 4–5, bis 45 % der Kampagne 3–4, danach 3.
+  Die Schwierigkeit kommt am Ende aus schwereren Rätseln (mehr Planung,
+  weniger Lösungen), nicht aus extrem knappen Limits.
 - Gesteuert wird über eine **Ziel-Gewinnrate eines Gelegenheitsspielers**
   (Spielermodell, s. u.): Level 1 ≈ 95 % (Tutorial, 1 Zug) bis zum letzten
   Level ≈ 12 %, mit Verschnaufpause nach jedem 10er-Block, etwas schwererem
   Block-Boss (Level 10, 20) und zwei leichteren Leveln, wenn eine neue Zielart kommt.
-- Spielraum (Limit − Minimum) sinkt über die Kampagne: erstes Fünftel 3–4 Züge,
-  dann 2–3, dann 1–3, letztes Viertel 1–2. Minimalzüge steigen von 1 auf 4–7.
+- Minimalzüge steigen von 1 (Level 1) auf 4–7.
   Ab dem ersten Fünftel darf ein gieriger Spieler (1 Zug Vorausschau) das Level
   nicht mehr schaffen → Planen ist nötig.
 - Einführung der Zielarten bei 25 Leveln: `tile` (1), `make` (5), `clear` (9),
-  `street` (13), `score` (17), `combo` (21), Felsen (23). Bei 100 Leveln:
-  1, 7, 13, 19, 25, 31, 37, Doppelziele ab 45.
+  `street` (13), `score` (17), `combo` (21), Doppelziele (23). Bei 100 Leveln:
+  1, 7, 13, 19, 25, 31, Doppelziele ab 37.
 - Innerhalb eines Abschnitts (zwischen zwei Einführungen) sind die Level nach
   Schwierigkeit sortiert; Einführungs-Level stehen vorn.
-- Kapitel = 10er-Blöcke (Feld `chapter`).
+- **Kapitel = 10 Level** (Feld `chapter`; 25 Level = Kapitel 1, 2 und halbes 3,
+  100 Level = 10 Kapitel).
+
+### Freischalten (umgesetzt in `campaign.mjs`)
+
+- Der Reihe nach: Level n ist frei, wenn n−1 geschafft ist (mind. 1★).
+- **Sterne-Schranke am Kapitelanfang:** Für Kapitel k ≥ 2 braucht man
+  insgesamt **18 × (k − 1) Sterne**: Kapitel 2 ab 18★, Kapitel 3 ab 36★, …,
+  Kapitel 10 ab 162★. Das sind 60 % der bis dahin möglichen Sterne, also Ø 1,8★
+  pro Level. Begründung: Mit Hilfsmitteln (max. 2★) ist die Schranke immer
+  erreichbar, wer nur knapp gewinnt (1★), muss ein paar Level verbessern;
+  da 3★ schon bei Optimum + 1 gibt, sind 2★ im Schnitt gut machbar.
+- `lockReason(progress, n)` liefert `{reason:'previous'}` oder
+  `{reason:'stars', need, have, chapter}` für die UI; `nextLevel()` für „Weiterspielen“.
+- Einmal frei bleibt frei (Bestwerte sinken nie). Werte stehen als Konstanten
+  `CHAPTER_SIZE` und `STARS_PER_CHAPTER_GATE` in `campaign.mjs`.
 
 Schwierigkeitswert `meta.difficulty` (0–100, feste Skala, also vergleichbar
 zwischen 25er- und 100er-Datei) kombiniert: Minimalzüge, Anteil optimaler
@@ -132,8 +149,8 @@ Gelegenheitsspielers, ohne und mit „+3 Züge“.
 
 **Lokal (fertig in `campaign.mjs`):** `localStorage['squish-campaign-v1']` =
 `{version:1, levels:{"1":{stars,moves,at}, …}, updatedAt}`. Pro Level bleibt das
-beste Ergebnis (mehr Sterne, bei Gleichstand weniger Züge). Level n ist frei,
-wenn n−1 geschafft ist. `mergeProgress()` führt zwei Stände zusammen.
+beste Ergebnis (mehr Sterne, bei Gleichstand weniger Züge). Freischalten siehe
+Abschnitt 4. `mergeProgress()` führt zwei Stände zusammen.
 
 **Backend (später, nicht umgesetzt):**
 - Tabelle `campaign_progress(player_id, level_id, stars, moves, solution_log, level_version, updated_at)`,
@@ -166,9 +183,11 @@ Ranked/Duell bleiben exklusiv im Endlosmodus.
 
 UI-Anbindung: `createLevelRun(level)`, `queueOf(run)`, `applyLevelMove(run, dir, line)`
 (liefert `settled` für die bestehenden Merge-Effekte), `goalProgress`, `goalText`,
-`movesLeft`, `starsFor`, `recordResult`/`saveProgress`.
+`movesLeft`, `starsOfRun`, `addExtraMoves`, `markToolUsed`, `lockReason`/`isUnlocked`, `nextLevel`, `recordResult`/`saveProgress`.
 
 ## 8. Ausblick: Hilfsmittel (Booster)
+
+Jedes Hilfsmittel deckelt das Ergebnis auf 2★ (`markToolUsed(run, typ)`).
 
 Ziel: Schwere Level sind mit **erspielten** Hilfsmitteln in vernünftig vielen
 Versuchen schaffbar; Kaufen ist eine Abkürzung, kein Zwang.
@@ -177,13 +196,12 @@ Hilfsmittel, die zu den echten Mechaniken passen:
 
 | Hilfsmittel | Wirkung | Modell im Solver |
 |---|---|---|
-| **+3 Züge** | Zuglimit +3 (nutzt die Reserve-Steine der Folge) | `toolEffect(level, {type:'extraMoves', count:3})` – schon umgesetzt |
-| **Hammer** | einen Stein (auch Fels) entfernen, kein Zug | Zusatzaktion „Feld leeren“ in `expand()`, danach `settle()` |
+| **+3 Züge** | Zuglimit +3 (nutzt die Reserve-Steine der Folge), auch zum „Weiterspielen“ nach verlorenem Level | `campaign.mjs`: `addExtraMoves(run, 3)`; Solver: `toolEffect(level, {type:'extraMoves', count:3})` – umgesetzt |
+| **Hammer** | einen Stein entfernen, kein Zug | Zusatzaktion „Feld leeren“ in `expand()`, danach `settle()` |
 | **Tausch** | nächsten Stein mit dem übernächsten tauschen | Zusatzaktion: Folge an Position d/d+1 tauschen |
 | **Wunschstein** | nächster Stein bekommt einen gewählten Wert (1–max) | Zusatzaktion: `sequence[d]` ersetzen |
 | **Überspringen** | nächsten Stein verwerfen (ans Ende der Folge) | Zusatzaktion: Index +1 ohne Zug |
 | **Rückgängig** | letzten Zug zurücknehmen | kein Solver-Effekt, wirkt nur auf Spielfehler (Spielermodell) |
-| **Felssprenger** | alle Felsen einer Linie entfernen | Zusatzaktion je Linie |
 
 So wird der Solver erweitert: ein Hilfsmittel = zusätzliche Aktionsart in
 `expand()`, ein Zähler „Hilfsmittel übrig“ wird Teil des Zustandsschlüssels.
@@ -200,15 +218,15 @@ Ziel laut Sascha: Level 25 klar lösbar, aber nur mit echtem Planen, evtl. mit
 einem oder zwei Hilfsmitteln, die man unterwegs gratis bekommen hat. Vorschlag:
 
 - **Geschenke unterwegs:** 1× „+3 Züge“ nach Level 10 (Kapitel 1 geschafft),
-  1× „Hammer“ beim Einführen der Felsen (Level 23), dazu 1 Hilfsmittel für je
-  10 gesammelte Sterne. Wer bis Level 20 ordentlich spielt, hat 2–4 Stück.
+  1× „Hammer“ nach Level 20, dazu 1 Hilfsmittel für je 10 gesammelte Sterne.
+  Wer bis Level 20 ordentlich spielt, hat 2–4 Stück.
 - **Wirkung laut Spielermodell** (`meta.expectedAttempts`, Gelegenheitsspieler):
-  Level 20–25 brauchen ohne Hilfsmittel ca. 3–8 Versuche, mit „+3 Züge“ ca.
-  1–3,5. Level 25: ca. 8 Versuche ohne, ca. 2 mit „+3 Züge“.
-- Der Hammer passt besonders zu den Fels-Leveln 23–24 (Fels entfernen schafft
-  Platz in einer vollen Linie).
-- 3 Sterne gibt es nur ohne Hilfsmittel (oder: Hilfsmittel kostet einen Stern) –
-  so bleibt die perfekte Lösung das Ziel für Knobler. Entscheidung offen.
+  Level 20–25 brauchen ohne Hilfsmittel ca. 2,5–8 Versuche, mit „+3 Züge“ ca.
+  1,2–3,5. Level 25: ca. 8 Versuche ohne, ca. 3 mit „+3 Züge“.
+- Der Hammer hilft vor allem bei Straßen- und Doppelziel-Leveln (23–25), wenn
+  ein einzelner falscher Stein eine Linie blockiert.
+- Mit Hilfsmittel gibt es höchstens 2★ – die Kapitel-Schranke (Ø 1,8★) bleibt
+  damit erreichbar, 3★ bleibt das Ziel für Knobler.
 - Kaufen bleibt Abkürzung: Kein Level der ersten 25 braucht im Modell mehr als
   ~8 Versuche ohne Hilfsmittel.
 

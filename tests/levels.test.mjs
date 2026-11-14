@@ -3,9 +3,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
-import { validateLevel, replaySolution, createLevelRun } from '../game/campaign.mjs';
+import { validateLevel, replaySolution, createLevelRun, starThresholds } from '../game/campaign.mjs';
 import { solveLevel } from '../tools/campaign/solver.mjs';
-import { canonicalKey } from '../tools/campaign/candidates.mjs';
+import { canonicalKey, makeCandidate } from '../tools/campaign/candidates.mjs';
 import { settle } from '../game/game-logic.mjs';
 
 // Prüft jede Leveldatei levels/levels-001-NNN.json (heute 025, später 100).
@@ -25,6 +25,25 @@ test(`${file}: ${expected} gültige, eindeutige Level mit fortlaufender ID`, () 
   assert.equal(new Set(levels.map(lv => JSON.stringify(lv.board))).size, expected);
 });
 
+test(`${file}: keine Felsen, Sterne-Schwellen = Optimum + 1 / Mitte, alle drei Stufen vorhanden`, () => {
+  for (const lv of levels) {
+    assert.ok(lv.board.flat().every(v => v === null || Number.isInteger(v)) && lv.sequence.every(Number.isInteger), `Level ${lv.id}`);
+    assert.deepEqual(lv.stars, starThresholds(lv.meta.minMoves, lv.moves), `Level ${lv.id}`);
+    assert.equal(lv.stars.three, lv.meta.minMoves + 1);
+    assert.ok(lv.stars.three < lv.stars.two && lv.stars.two < lv.moves, `Level ${lv.id}: drei Stufen`);
+  }
+});
+
+test(`${file}: Level sind aus ihrer Saat reproduzierbar`, () => {
+  for (const lv of levels) {
+    const c = makeCandidate(lv.meta.seed);
+    assert.ok(c, `Level ${lv.id}`);
+    assert.deepEqual(c.board, lv.board);
+    assert.deepEqual(c.goals, lv.goals);
+    assert.deepEqual(c.sequence.slice(0, lv.moves), lv.sequence.slice(0, lv.moves));
+  }
+});
+
 test(`${file}: Startbrett löst nichts von selbst auf`, () => {
   for (const lv of levels) assert.equal(settle(createLevelRun(lv).board).passes.length, 0, `Level ${lv.id}`);
 });
@@ -34,7 +53,7 @@ test(`${file}: gespeicherte Lösung erreicht das Ziel mit der echten Spiellogik,
     const r = replaySolution(lv, lv.solution);
     assert.ok(r.ok, `Level ${lv.id}: ${r.reason ?? r.run.status}`);
     assert.ok(lv.solution.length <= lv.moves);
-    assert.equal(lv.solution.length, lv.stars.three, `Level ${lv.id}`);
+    assert.equal(lv.solution.length, lv.meta.minMoves, `Level ${lv.id}`);
     assert.equal(r.stars, 3);
   }
 });

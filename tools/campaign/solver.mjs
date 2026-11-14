@@ -11,7 +11,7 @@
 // Wird eine Schicht zu groß, bricht die exakte Suche ab (oder läuft als
 // Beam-Suche weiter, dann ist das Ergebnis als ungenau markiert).
 import { SIZE, insertTile, settle } from '../../game/game-logic.mjs';
-import { ALL_MOVES, ROCK, encodeMove, createLevelRun, applyLevelMove } from '../../game/campaign.mjs';
+import { ALL_MOVES, encodeMove, createLevelRun, applyLevelMove } from '../../game/campaign.mjs';
 import { createRng } from '../../game/ranked.mjs';
 
 const MOVE_CHARS = ALL_MOVES.map(m => encodeMove(m.direction, m.line));
@@ -20,22 +20,21 @@ export function boardKey(board) {
   let s = '';
   for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
     const t = board[r][c];
-    s += t === null ? '.' : t.value < 0 ? '#' : t.value.toString(36);
+    s += t === null ? '.' : t.value.toString(36);
   }
   return s;
 }
 export function boardFromKey(key) {
   const board = [];
-  let rocks = 0;
   for (let r = 0; r < SIZE; r++) {
     const row = [];
     for (let c = 0; c < SIZE; c++) {
       const ch = key[r * SIZE + c];
-      row.push(ch === '.' ? null : ch === '#' ? { value: -10 * ++rocks } : { value: parseInt(ch, 36) });
+      row.push(ch === '.' ? null : { value: parseInt(ch, 36) });
     }
     board.push(row);
   }
-  return { board, rocks };
+  return { board };
 }
 
 const freshProgress = () => ({ score: 0, cleared: 0, merges: 0, streets: 0, bestCombo: 0, created: {} });
@@ -71,7 +70,7 @@ export function expand(level, board, vec, depth) {
   const out = [];
   for (let i = 0; i < ALL_MOVES.length; i++) {
     const { direction, line } = ALL_MOVES[i];
-    const tile = raw === ROCK ? { value: -10 * 1000 - depth * 10 } : { value: raw };
+    const tile = { value: raw };
     const ins = insertTile(board, direction, line, tile);
     if (!ins.accepted) continue;
     const settled = settle(ins.board);
@@ -211,9 +210,8 @@ export function boardShape(board) {
   let pairs = 0, tiles = 0;
   for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
     const t = board[r][c]; if (!t) continue; tiles++;
-    if (t.value < 0) continue;
     for (const [dr, dc] of [[0, 1], [1, 0]]) {
-      const u = board[r + dr]?.[c + dc]; if (!u || u.value < 0) continue;
+      const u = board[r + dr]?.[c + dc]; if (!u) continue;
       if (u.value === t.value) pairs += 1; else if (Math.abs(u.value - t.value) === 1) pairs += 0.4;
     }
   }

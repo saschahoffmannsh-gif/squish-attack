@@ -2,12 +2,14 @@
 // damit die Ergebnisse reproduzierbar sind.
 import { SIZE, settle } from '../../game/game-logic.mjs';
 import { createRng } from '../../game/ranked.mjs';
-import { ROCK, createLevelRun } from '../../game/campaign.mjs';
+import { createLevelRun } from '../../game/campaign.mjs';
 import { solveLevel, randomPlayouts, greedy, boardKey, playerModel } from './solver.mjs';
 
 export const SEQ_LEN = 12;          // Länge der gespeicherten Steinfolge im Pool
 export const SOLVE_DEPTH = 7;       // max. Optimal-Zugzahl, die wir suchen
-export const KINDS = ['tile', 'make', 'clear', 'street', 'score', 'combo', 'rocks', 'duo'];
+// Slot 6 war früher „Felsen“ (entfernt). Er bleibt als Lücke stehen, damit die
+// Zuordnung Saat → Zielart und damit alle bisherigen Kandidaten reproduzierbar bleiben.
+export const KINDS = ['tile', 'make', 'clear', 'street', 'score', 'combo', null, 'duo'];
 
 const pick = (rng, list) => list[Math.floor(rng() * list.length)];
 const int = (rng, lo, hi) => lo + Math.floor(rng() * (hi - lo + 1));
@@ -30,26 +32,28 @@ function makeGoal(rng, type, maxBoard, maxV) {
 export function makeCandidate(seed) {
   const rng = createRng(seed);
   const kind = KINDS[seed % KINDS.length];
+  if (!kind) return null;
   for (let attempt = 0; attempt < 50; attempt++) {
     const maxV = int(rng, 2, 5);
     const nTiles = int(rng, 3, 14);
-    const rocks = kind === 'rocks' ? int(rng, 1, 4) : (rng() < 0.08 ? 1 : 0);
+    // Früher: 8 % Chance auf einen Fels. Der Zufallswert wird weiter gezogen (gleiche
+    // Zufallsfolge wie bisher); solche Kandidaten werden jetzt verworfen.
+    if (rng() < 0.08) return null;
     const cells = Array.from({ length: SIZE * SIZE }, (_, i) => i);
     for (let i = cells.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [cells[i], cells[j]] = [cells[j], cells[i]]; }
     const board = Array.from({ length: SIZE }, () => Array(SIZE).fill(null));
     cells.slice(0, nTiles).forEach(i => { board[Math.floor(i / SIZE)][i % SIZE] = weighted(rng, maxV); });
-    cells.slice(nTiles, nTiles + rocks).forEach(i => { board[Math.floor(i / SIZE)][i % SIZE] = ROCK; });
     // Startbrett darf nichts auflösen.
-    const tiles = board.map(r => r.map(v => v === null ? null : { value: v === ROCK ? -10 * (1 + Math.floor(rng() * 1e6)) * 10 : v }));
+    const tiles = board.map(r => r.map(v => v === null ? null : { value: v }));
     if (settle(tiles).passes.length) continue;
     const seqMax = Math.max(2, Math.min(maxV, int(rng, 2, 4)));
-    const sequence = Array.from({ length: SEQ_LEN }, () => (kind === 'rocks' && rng() < 0.12 ? ROCK : weighted(rng, seqMax)));
+    const sequence = Array.from({ length: SEQ_LEN }, () => weighted(rng, seqMax));
     const maxBoard = Math.max(0, ...board.flat().filter(v => typeof v === 'number'));
     let goals;
     if (kind === 'duo') {
       const a = pick(rng, ['tile', 'make', 'clear', 'score']), b = pick(rng, ['street', 'combo', 'clear', 'tile'].filter(t => t !== a));
       goals = [makeGoal(rng, a, maxBoard, maxV), makeGoal(rng, b, maxBoard, maxV)];
-    } else goals = [makeGoal(rng, kind === 'rocks' ? pick(rng, ['tile', 'make', 'clear', 'score']) : kind, maxBoard, maxV)];
+    } else goals = [makeGoal(rng, kind, maxBoard, maxV)];
     return { seed, kind, board, sequence, goals, moves: SEQ_LEN, stars: { three: SEQ_LEN, two: SEQ_LEN } };
   }
   return null;
@@ -83,6 +87,6 @@ export function canonicalKey(lv) {
   const rot = m => m[0].map((_, c) => m.map(row => row[c]).reverse());
   const flip = m => m.map(r => r.slice().reverse());
   for (let k = 0; k < 4; k++) { variants.push(b, flip(b)); b = rot(b); }
-  const ks = variants.map(v => boardKey(v.map(r => r.map(x => x === null ? null : { value: x === ROCK ? -1 : x }))));
+  const ks = variants.map(v => boardKey(v.map(r => r.map(x => x === null ? null : { value: x }))));
   return ks.sort()[0] + '|' + lv.sequence.join('') + '|' + JSON.stringify(lv.goals);
 }

@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import {
   createLevelRun, applyLevelMove, starsFor, replaySolution, goalProgress, queueOf, movesLeft,
   validateLevel, encodeMove, decodeMove, recordResult, mergeProgress, emptyProgress, isUnlocked,
-  nextLevel, totalStars, loadProgress, saveProgress, goalText, isRock, ROCK,
+  nextLevel, totalStars, loadProgress, saveProgress, goalText, starThresholds, starsOfRun, addExtraMoves,
+  markToolUsed, moveLimit, lockReason, chapterOf, starGate, CHAPTER_SIZE, STARS_PER_CHAPTER_GATE,
 } from '../game/campaign.mjs';
 
 const E = null;
@@ -52,18 +53,44 @@ test('volle Reihe wird abgelehnt und kostet keinen Zug', () => {
   assert.equal(run.moves, 0);
 });
 
-test('Sterne', () => {
-  const lv = base({ moves: 6, stars: { three: 2, two: 4 } });
-  assert.deepEqual([1, 2, 3, 4, 5, 6, 7].map(m => starsFor(lv, m)), [3, 3, 2, 2, 1, 1, 0]);
-  assert.equal(starsFor(lv, 2, false), 0);
+test('Sterne: 3★ = Optimum + 1, 2★ = Mitte, 1★ = im Limit', () => {
+  assert.deepEqual(starThresholds(3, 6), { three: 4, two: 5 });
+  assert.deepEqual(starThresholds(2, 7), { three: 3, two: 5 });
+  assert.deepEqual(starThresholds(1, 5), { three: 2, two: 4 });
+  const lv = base({ moves: 6, stars: starThresholds(3, 6) });
+  assert.deepEqual([3, 4, 5, 6].map(m => starsFor(lv, m)), [3, 3, 2, 1]);
+  assert.equal(starsFor(lv, 3, false), 0);
 });
 
-test('Felsen fusionieren nie, auch nicht drei nebeneinander', () => {
-  const lv = base({ board: [[ROCK, ROCK, E, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E]], sequence: [ROCK, 1, 1], goals: [{ type: 'clear', tiles: 1 }] });
-  const run = createLevelRun(lv);
+test('Hilfsmittel deckeln auf 2 Sterne', () => {
+  const lv = base({ moves: 6, stars: starThresholds(3, 6) });
+  assert.equal(starsFor(lv, 3, true, { toolsUsed: 1 }), 2);
+  assert.equal(starsFor(lv, 5, true, { toolsUsed: 1 }), 2);
+  assert.equal(starsFor(lv, 6, true, { toolsUsed: 2 }), 1);
+  const run = createLevelRun(base());
+  markToolUsed(run, 'hammer');
   applyLevelMove(run, 'right', 0);
-  assert.equal(run.board[0].filter(isRock).length, 3);
-  assert.equal(run.cleared, 0);
+  assert.equal(run.status, 'won');
+  assert.equal(starsOfRun(run), 2);
+});
+
+test('+3 Züge: nutzt Reserve-Steine, rettet eine Niederlage, max. 2★, gewonnen nach Limit = 1★', () => {
+  // Ziel braucht 2 Züge (zwei 1er von links in Reihe 0), Limit aber nur 1.
+  const lv = base({ board: [[1, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E]],
+    sequence: [1, 1, 2, 2], moves: 1, stars: { three: 1, two: 1 } });
+  const run = createLevelRun(lv);
+  assert.deepEqual(queueOf(run), [1]);
+  applyLevelMove(run, 'right', 0);
+  assert.equal(run.status, 'lost'); assert.equal(run.lostReason, 'moves');
+  assert.equal(addExtraMoves(run, 3), 3);
+  assert.equal(moveLimit(run), 4); assert.equal(run.status, 'playing');
+  assert.deepEqual(queueOf(run), [1, 2, 2]);
+  applyLevelMove(run, 'right', 0);
+  assert.equal(run.status, 'won');
+  assert.equal(starsOfRun(run), 1);
+  assert.equal(addExtraMoves(run, 3), 0);               // nach dem Sieg nicht mehr
+  const run2 = createLevelRun({ ...lv, sequence: [1, 1] });
+  assert.equal(addExtraMoves(run2, 3), 1);              // nur so viele wie Reserve-Steine
 });
 
 test('Ziele: make, score, clear, street, combo', () => {
@@ -95,16 +122,14 @@ test('validateLevel lehnt kaputte Level ab', () => {
   assert.ok(goalText({ type: 'tile', value: 3 }).includes('3'));
 });
 
-test('Fortschritt: bestes Ergebnis bleibt, Freischalten, Zusammenführen', () => {
+test('Fortschritt: bestes Ergebnis bleibt, Zusammenführen, Speichern', () => {
   let p = emptyProgress();
-  assert.ok(isUnlocked(p, 1)); assert.ok(!isUnlocked(p, 2));
   p = recordResult(p, 1, { stars: 2, moves: 5, now: 1 });
   p = recordResult(p, 1, { stars: 1, moves: 3, now: 2 });
   assert.deepEqual(p.levels['1'], { stars: 2, moves: 5, at: 1 });
   p = recordResult(p, 1, { stars: 2, moves: 4, now: 3 });
   assert.equal(p.levels['1'].moves, 4);
-  assert.ok(isUnlocked(p, 2));
-  assert.equal(nextLevel(p, 100), 2);
+  assert.equal(recordResult(p, 2, { stars: 0, moves: 4 }), p);
   const other = recordResult(recordResult(emptyProgress(), 1, { stars: 3, moves: 3, now: 5 }), 2, { stars: 1, moves: 9, now: 6 });
   const m = mergeProgress(p, other);
   assert.equal(m.levels['1'].stars, 3); assert.equal(m.levels['2'].stars, 1);
@@ -113,4 +138,34 @@ test('Fortschritt: bestes Ergebnis bleibt, Freischalten, Zusammenführen', () =>
   assert.ok(saveProgress(m, storage));
   assert.deepEqual(loadProgress(storage), m);
   assert.deepEqual(loadProgress({ getItem: () => '{kaputt' }), emptyProgress());
+});
+
+const withStars = list => list.reduce((p, stars, i) => (stars ? recordResult(p, i + 1, { stars, moves: 5, now: 1 }) : p), emptyProgress());
+
+test('Kapitel: 10 Level, Schranke 18★ je Kapitel', () => {
+  assert.equal(CHAPTER_SIZE, 10); assert.equal(STARS_PER_CHAPTER_GATE, 18);
+  assert.deepEqual([1, 10, 11, 20, 21, 25, 100].map(chapterOf), [1, 1, 2, 2, 3, 3, 10]);
+  assert.deepEqual([1, 2, 3, 10].map(starGate), [0, 18, 36, 162]);
+});
+
+test('Freischalten: der Reihe nach', () => {
+  const p = withStars([3, 2]);
+  assert.ok(isUnlocked(p, 1)); assert.ok(isUnlocked(p, 2)); assert.ok(isUnlocked(p, 3));
+  assert.deepEqual(lockReason(p, 4), { reason: 'previous' });
+  assert.equal(nextLevel(p, 25), 3);
+  assert.equal(nextLevel(emptyProgress(), 25), 1);
+});
+
+test('Freischalten: Sterne-Schranke am Kapitelanfang', () => {
+  const low = withStars(Array(10).fill(1));                 // 10★ < 18★
+  assert.deepEqual(lockReason(low, 11), { reason: 'stars', need: 18, have: 10, chapter: 2 });
+  assert.equal(nextLevel(low, 25), 10);                     // alles geschafft, Kapitel 2 noch zu
+  const ok = withStars([2, 2, 2, 2, 2, 2, 2, 2, 1, 1]);     // 18★, z. B. alles mit Hilfsmitteln (max. 2★)
+  assert.ok(isUnlocked(ok, 11));
+  assert.ok(!isUnlocked(ok, 12));                           // innerhalb des Kapitels weiter der Reihe nach
+  const ch3 = withStars([...Array(10).fill(2), ...Array(9).fill(2), 1]); // 39★ ≥ 36★
+  assert.ok(isUnlocked(ch3, 21));
+  const ch3low = withStars([...Array(10).fill(2), ...Array(10).fill(1)]); // 30★ < 36★
+  assert.equal(lockReason(ch3low, 21).reason, 'stars');
+  assert.ok(isUnlocked(ch3low, 20));                        // gesperrt wird nur der Kapitelanfang
 });
