@@ -5,7 +5,7 @@ const controllerKey=Symbol.for('squish.start-menu-controller');
 // assistive technology, plus the loading status and retry for failures.
 export function installStartMenu({
   page=document,
-  loadGame=()=>import('./game.mjs?v=launch-1'),
+  loadGame=()=>import('./game.mjs?v=launch-2'),
   paint=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))),
   delay=ms=>new Promise(resolve=>setTimeout(resolve,ms)),
   splashMs=4000,timeoutMs=30000,

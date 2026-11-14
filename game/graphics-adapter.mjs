@@ -8,7 +8,7 @@ import {installNeonBands} from './neon-bands.mjs?v=gel-clarity-c-1';
 import {createCrispLabelFactory} from './crisp-labels.mjs?v=menu-1';
 import {installCleanScreen} from './clean-screen.mjs?v=menu-1';
 import {createFusion} from './fusion.mjs?v=fuse-6';
-import {flags} from './flags.mjs?v=launch-1';
+import {flags} from './flags.mjs?v=launch-2';
 import {createSquishGraphics,THREE,PARAMETERS} from '../squish/squish-graphics.js?v=play-sharp-1';
 import {buildSquishy,createLabel,createGelMaterial,installGelOptics,bindGelOptics,initializeMotion,updateSquishy,PARAMETERS as HUD_PARAMETERS} from './original-gel-models.js?v=menu-1';
 

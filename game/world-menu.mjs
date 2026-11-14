@@ -1,5 +1,5 @@
 import {getLabelShapes,pillowTopHeight} from './original-gel-models.js?v=menu-1';
-import {BUILD} from './flags.mjs?v=launch-1';
+import {BUILD} from './flags.mjs?v=launch-2';
 
 // In-world start menu: wide gel cushions (the original squish body with a
 // lengthened straight middle) drop onto the glass, one per grid row, and burst
@@ -312,6 +312,7 @@ export function createWorldMenu({visual,effects,sound,page=document,reduceMotion
       },{dim:!canContinue,explodes:true}),
       wide(2,'Mehrspieler',C.violet,it=>void transition(it,showMulti),{explodes:true}),
       wide(3,'Einstellungen',C.orange,it=>void transition(it,showSettings),{explodes:true}),
+      wide(4,'Bestenliste',C.yellow,it=>{kick(it,.35);hooks.leaderboard?.();}),
     ];
     await drop(list);focusFirst();
   }

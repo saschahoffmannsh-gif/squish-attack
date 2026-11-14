@@ -1,16 +1,18 @@
-import {apiFetch} from './api.mjs?v=sq-2';
+import {apiFetch,hasSaveToken} from './api.mjs?v=launch-2';
+import {createRng,encodeMove,replayRun,MAX_LOG} from './ranked.mjs?v=launch-2';
+import {createLeaderboard} from './leaderboard.mjs?v=launch-2';
 import { SIZE, START_VALUES, createStartValues, insertTile, nextMergePass, settle, isGameOver } from './game-logic.mjs?v=automatic-streets-2';
 import { nextSpawn, spawnProfile } from './balance.mjs';
 import {canContinueRun} from './run-availability.mjs?v=splash-plate-1';
 import { createMergeEffects } from './merge-effects.mjs?v=fuse-3';
 import { createGameGraphics } from './graphics-adapter.mjs?v=fuse-6';
 import { installDeviceMotion } from './device-motion.mjs';
-import { createGameSound } from './sound.mjs?v=launch-1';
+import { createGameSound } from './sound.mjs?v=launch-2';
 import { installSettings } from './settings.mjs?v=woodland-menu-1';
-import { createDuelClient } from './duel-client.mjs?v=launch-1';
+import { createDuelClient } from './duel-client.mjs?v=launch-2';
 import {installFullscreen} from './fullscreen.mjs?v=timed-duel-1';
-import {createWorldMenu} from './world-menu.mjs?v=launch-1';
-import {createHaptics} from './haptics.mjs?v=launch-1';
+import {createWorldMenu} from './world-menu.mjs?v=launch-2';
+import {createHaptics} from './haptics.mjs?v=launch-2';
 import {planMergeRipple} from './merge-ripple.mjs?v=swarm-fx-3';
 const playfield = document.getElementById('playfield');
 const gameElement = document.querySelector('.game');
@@ -83,13 +85,22 @@ const phoneMotion = installDeviceMotion({
 // The start menu lives on the glass: wide cushions for buttons, standard
 // squishes for the duel code. It drives the same save, settings and duel logic.
 const haptics=createHaptics();
+const leaderboard=createLeaderboard({
+  get ranked(){return !!run;},
+  get playing(){return started&&moves>0;},
+  name:storedName,
+  setName(name){try{localStorage.setItem(NAME_KEY,name);}catch{}},
+  ranks(){try{return JSON.parse(localStorage.getItem(RANK_KEY));}catch{return null;}},
+  storeRanks,
+});
 let moveCombo=0;
 const worldMenu=createWorldMenu({visual,effects:mergeEffects,sound,reduceMotion,hooks:{
   haptics,
   canContinue:()=>canContinueRun(hasSavedGame,board),
-  gesture:()=>{void fullscreen.enter();sound.unlock();phoneMotion.restoreFromGesture();},
+  gesture:()=>{void fullscreen.enter();sound.unlock();phoneMotion.restoreFromGesture();void prefetchRun();},
   launch:async()=>{},
   duel,
+  leaderboard:()=>leaderboard.open(),
   soundButton:document.getElementById('sound-toggle'),
   motionButton:document.getElementById('phone-motion'),
   motionStatus:document.getElementById('phone-motion-status'),
@@ -97,6 +108,50 @@ const worldMenu=createWorldMenu({visual,effects:mergeEffects,sound,reduceMotion,
 
 
 const newTile = value => ({ id: nextId++, value });
+
+// ---------- Ranked runs (leaderboard) ----------
+// A ranked run starts from a server-issued seed; every accepted move is logged
+// as one character. The server replays seed + log to verify the score, so the
+// leaderboard only ever shows results that the real game rules produce.
+const RUN_KEY='squish-next-run-v1',RANK_KEY='squish-rank-v1',NAME_KEY='squish-name-v1';
+const SUBMIT_EVERY_MS=5*60*1000;
+let run=null,rng=null,lastSubmit=0,prefetching=null;
+const random=()=>rng||Math.random;
+function takeTicket(){
+  try{const t=JSON.parse(localStorage.getItem(RUN_KEY));localStorage.removeItem(RUN_KEY);
+    if(t&&typeof t.id==='string'&&Number.isSafeInteger(t.seed))return t;}catch{}
+  return null;
+}
+// Tickets are only fetched once someone actually plays (menu gesture / new game),
+// so people who just open the page or the leaderboard cost no function call.
+function prefetchRun(){
+  if(duelMode)return Promise.resolve();
+  try{if(localStorage.getItem(RUN_KEY))return Promise.resolve();}catch{return Promise.resolve();}
+  return prefetching||=(async()=>{
+    try{
+      const r=await apiFetch('/run',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}',signal:AbortSignal.timeout(8000)});
+      if(r.ok){const t=await r.json();if(t?.id&&Number.isSafeInteger(t.seed))localStorage.setItem(RUN_KEY,JSON.stringify({id:t.id,seed:t.seed}));}
+    }catch{}finally{prefetching=null;}
+  })();
+}
+const ensureTicket=(ms=2000)=>Promise.race([prefetchRun(),new Promise(r=>setTimeout(r,ms))]);
+function storedName(){try{return localStorage.getItem(NAME_KEY)||'';}catch{return '';}}
+function storeRanks(ranks){try{localStorage.setItem(RANK_KEY,JSON.stringify({...ranks,at:Date.now()}));}catch{}}
+async function submitScore({keepalive=false}={}){
+  if(duelMode||!run||!run.log.length||score<=run.sub)return;
+  const target=run,body=JSON.stringify({run:run.id,log:run.log,score,name:storedName()||undefined});
+  lastSubmit=Date.now();
+  try{
+    const r=await apiFetch('/score',{method:'POST',headers:{'Content-Type':'application/json'},body,keepalive});
+    if(r.ok){const data=await r.json();target.sub=Math.max(target.sub,data.verified?.score||0);if(data.ranks)storeRanks(data.ranks);return;}
+    if(r.status===404&&run===target){run=null;return;}
+    if(r.status===422){
+      const msg=(await r.json().catch(()=>({}))).error||'';
+      // "zu schnell" heals itself later; anything else means this run cannot be verified.
+      if(!/schnell/.test(msg)&&run===target){console.warn('[ranked] run rejected:',msg);run=null;}
+    }
+  }catch{}
+}
 const wait = ms => reduceMotion.matches ? Promise.resolve() : visual.wait(ms / 1000);
 const format = value => value.toLocaleString('de-DE');
 
@@ -104,9 +159,14 @@ function freshState() {
   generation++;pendingMove=null;
   moveCombo=0;mergeEffects.streak?.(0,{silent:true});
   nextId = 1;
-  const values=createStartValues();
+  const ticket=takeTicket();
+  run=ticket?{id:ticket.id,seed:ticket.seed,log:'',sub:0}:null;
+  rng=ticket?createRng(ticket.seed):null;
+  lastSubmit=Date.now();
+  const values=createStartValues(random());
   board = values.map(row => row.map(value => value === null ? null : newTile(value)));
-  queue = Array.from({length:3},()=>nextSpawn({board,moves:0,highest:4}));
+  queue = Array.from({length:3},()=>nextSpawn({board,moves:0,highest:4,random:random()}));
+  if(!booting)setTimeout(()=>void prefetchRun(),0);
   score = 0;
   moves = 0;
   peak = Math.max(...values.flat().filter(value => value !== null));
@@ -139,12 +199,28 @@ function loadState(saved) {
     bestTile = Math.max(bestTile, peak,
       Number.isSafeInteger(saved.bestTile) && saved.bestTile > 0 ? saved.bestTile : 0);
     revision = Number.isSafeInteger(saved.revision) && saved.revision > 0 ? saved.revision : 0;
+    resumeRun(saved.run);
     return true;
   } catch {
     freshState();
     return false;
   }
 }
+
+// Re-derive the RNG by replaying the logged moves; only resume the ranked run if
+// the replay lands on exactly the saved board (otherwise keep playing unranked).
+function resumeRun(saved) {
+  run=null;rng=null;
+  if(!saved||typeof saved.id!=='string'||typeof saved.log!=='string')return;
+  const rep=replayRun(saved.seed,saved.log);
+  if(!rep.ok)return;
+  const vals=b=>b.map(row=>row.map(t=>t?t.value:0).join(',')).join(';');
+  if(vals(rep.state.board)!==vals(board)||rep.state.queue.join()!==queue.join()||rep.state.score!==score||rep.state.moves!==moves)return;
+  run={id:saved.id,seed:saved.seed,log:saved.log,sub:Number.isSafeInteger(saved.sub)?saved.sub:0};
+  rng=rep.run.random;
+  lastSubmit=Date.now();
+}
+const runSnapshot=()=>run?{id:run.id,seed:run.seed,log:run.log,sub:run.sub}:undefined;
 
 function snapshot() {
   // A tab can close in the middle of a merge animation. Finish that turn in
@@ -154,20 +230,21 @@ function snapshot() {
     const futurePeak = Math.max(peak, ...resolved.board.flat().filter(Boolean).map(tile => tile.value));
     const futureMoves = moves + 1;
     const futureScore = score + resolved.points;
+    // Draw the preview from a clone so the live RNG stays in step with the replay.
     return { board: resolved.board, queue: [...queue, nextSpawn({
-      board: resolved.board, moves: futureMoves, highest: futurePeak,
+      board: resolved.board, moves: futureMoves, highest: futurePeak, random: rng ? rng.clone() : Math.random,
     })], score: futureScore, best: Math.max(best, futureScore),
       bestTile: Math.max(bestTile, futurePeak), moves: futureMoves,
-      peak: futurePeak, revision: ++revision };
+      peak: futurePeak, revision: ++revision, run: runSnapshot() };
   }
   return { board, queue, score, best, bestTile: Math.max(bestTile, peak),
-    moves, peak, revision: ++revision };
+    moves, peak, revision: ++revision, run: runSnapshot() };
 }
 
 // Server saves are batched: every move still lands in localStorage right away,
-// but the cloud copy is sent at most once per SAVE_DEBOUNCE_MS, plus immediately
+// but the cloud copy is sent at most once per SAVE_DEBOUNCE_MS (60 s), plus immediately
 // when the tab is hidden or closed (fetch keepalive). Cuts Edge Function calls ~10x.
-const SAVE_DEBOUNCE_MS = 20000;
+const SAVE_DEBOUNCE_MS = 60000;
 let saveTimer = 0;
 let cloudDirty = false;
 
@@ -223,6 +300,11 @@ async function start() {
   renderBest();
   await visual.ready;
   try {
+    // The cloud copy is keyed by this browser's token, so it can only hold something
+    // the local copy lacks when there is a token but no local save. Everyone else
+    // (new visitors, returning players) boots without any function call.
+    sync: {
+    if (hadLocal || !hasSaveToken()) break sync;
     const response = await apiFetch('/save', { cache: 'no-store', credentials: 'same-origin', signal: AbortSignal.timeout(6000) });
     if (!response.ok) throw new Error('Save unavailable');
     const remote = await response.json();
@@ -236,9 +318,9 @@ async function start() {
       try { localStorage.setItem(storageKey, JSON.stringify({ ...remote, bestTile })); } catch {}
       renderBest();
       if (!Number.isSafeInteger(remote.bestTile) || bestTile > remote.bestTile) saveState();
-    } else if (hadLocal || !remote) {
+    } else {
       renderBest();
-      saveState();
+    }
     }
   } catch {
     if (hadLocal) {
@@ -370,6 +452,7 @@ function resume() {
 
 async function restart() {
   if(duelMode){void duel.exit();return;}
+  void submitScore();
   releaseGesture();pendingMove=null;
   mergeEffects.clear();
   visual.clear();
@@ -471,7 +554,7 @@ function reconcileDuelState(state) {
 }
 async function prepareDuel(state) {
   if(worldMenu.active||worldMenu.stats.items)await worldMenu.dismiss();
-  duelMode=true;pendingSave=null;generation++;busy=true;moveCombo=0;mergeEffects.streak?.(0,{silent:true});
+  duelMode=true;pendingSave=null;generation++;busy=true;moveCombo=0;run=null;rng=null;mergeEffects.streak?.(0,{silent:true});
   releaseGesture();phoneMotion.reset();mergeEffects.clear();visual.clear();
   try{applyDuelState(state);renderBest();await prepareEntryScene();}finally{busy=false;}
 }
@@ -595,6 +678,7 @@ async function move(direction, line) {
     return;
   }
   const turn=generation;
+  if(run){run.log+=encodeMove(direction,line);if(run.log.length>=MAX_LOG){void submitScore();run=null;}}
   let previousProfile=spawnProfile(moves, peak);
   busy = true;
   try {
@@ -617,7 +701,7 @@ async function move(direction, line) {
   peak = Math.max(peak, ...board.flat().filter(Boolean).map(tile => tile.value));
   bestTile = Math.max(bestTile, peak);
   renderBest();
-  queue.push(nextSpawn({ board, moves, highest: peak }));
+  queue.push(nextSpawn({ board, moves, highest: peak, random: random() }));
   renderQueue();
   saveState();
   } finally {
@@ -629,7 +713,8 @@ async function move(direction, line) {
   if (currentProfile.floor > previousProfile.floor || currentProfile.ceiling > previousProfile.ceiling) {
     showNote('Neue Steinwerte freigeschaltet', 2200);
   }
-  if (isGameOver(board)) {showDialog(true);return;}
+  if (isGameOver(board)) {void submitScore();showDialog(true);return;}
+  if (run && score > run.sub && Date.now() - lastSubmit > SUBMIT_EVERY_MS) void submitScore();
   if(queued)void move(queued.direction,queued.line).catch(()=>{});
 }
 
@@ -672,7 +757,7 @@ resumeButton.addEventListener('click', resume);
 restartButton.addEventListener('click', restart);
 
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden && !booting && !duelMode) { saveState(); void flushPending({ keepalive: true }); }
+  if (document.hidden && !booting && !duelMode) { saveState(); void flushPending({ keepalive: true }); void submitScore({ keepalive: true }); }
   else if (!document.hidden && pendingSave) scheduleFlush(2000);
 });
 window.addEventListener('pagehide', event => {
@@ -686,12 +771,12 @@ window.addEventListener('pagehide', event => {
 });
 window.addEventListener('online', () => void flushPending());
 // Read-only inspection for integration checks; game state still belongs here.
-window.SquishGame={graphics,move,restart,get state(){return {board,queue,score,best,bestTile,moves,peak,busy,paused,booting,started,hasSavedGame,duelMode,duelRevision};},get effects(){return mergeEffects.stats;},get sound(){return sound.stats;},get menu(){return worldMenu.stats;},get fusion(){return visual.fusion?.stats||null;}};
+window.SquishGame={graphics,move,restart,get state(){return {board,queue,score,best,bestTile,moves,peak,busy,paused,booting,started,hasSavedGame,duelMode,duelRevision,ranked:run?{id:run.id,logLength:run.log.length,submitted:run.sub}:null};},get effects(){return mergeEffects.stats;},get sound(){return sound.stats;},get menu(){return worldMenu.stats;},get fusion(){return visual.fusion?.stats||null;}};
 // QA only (?vfxdemo=1): stage a board, then swipe with SquishGame.move().
 if(new URLSearchParams(globalThis.location.search).has('vfxdemo'))window.SquishVFX={
   setBoard(grid,next=[1,2,3]){
     if(busy)return false;
-    board=grid.map(row=>row.map(value=>value?{id:nextId++,value}:null));queue=next.slice(0,3);
+    board=grid.map(row=>row.map(value=>value?{id:nextId++,value}:null));queue=next.slice(0,3);run=null;rng=null;
     renderBoard();renderQueue();renderBest();return true;
   },
   slow(v=1){mergeEffects.vfx.timeScale=v;},
@@ -710,6 +795,8 @@ export const menuActions={
   async select(newGame=false) {
     if (booting || started || busy) return;
     if (newGame) {
+      void submitScore();
+      await ensureTicket();
       mergeEffects.clear();visual.clear();freshState();renderBest();saveState();
       await prepareEntryScene();
     }

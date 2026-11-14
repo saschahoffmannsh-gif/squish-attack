@@ -110,13 +110,14 @@
         </style>
     <link rel="stylesheet" href="graphics.css" />
     <link rel="stylesheet" href="fixed-screen.css?v=glass-menu-1" />
-    <link rel="stylesheet" href="duel.css?v=launch-1" />
+    <link rel="stylesheet" href="duel.css?v=launch-2" />
     <link rel="stylesheet" href="reward-effects.css?v=vfx-1" />
     <link rel="stylesheet" href="menu.css?v=glass-title-1" />
     <link rel="stylesheet" href="title-menu.css?v=3" />
-    <link rel="stylesheet" href="clean-screen.css?v=launch-1" />
-    <link rel="stylesheet" href="world-menu.css?v=launch-1" />
+    <link rel="stylesheet" href="clean-screen.css?v=launch-2" />
+    <link rel="stylesheet" href="world-menu.css?v=launch-2" />
     <link rel="stylesheet" href="combo.css?v=combo-1" />
+    <link rel="stylesheet" href="leaderboard.css?v=launch-2" />
   </head>
   <body>
     <section class="brand-splash" id="brand-splash" aria-label="Squish attack wird geladen">
@@ -258,7 +259,7 @@
         </div>
         <div id="duel-host">
           <p>Dein Spielcode</p>
-          <output class="duel-code" id="duel-code" aria-label="Vierstelliger Spielcode">····</output>
+          <output class="duel-code" id="duel-code" aria-label="Sechsstelliger Spielcode">····</output>
           <p>Der zweite Spieler öffnet Mehrspieler → Beitreten und gibt diesen Code ein.</p>
           <button class="duel-action" id="duel-host-retry" type="button" hidden>Neuen Code erstellen</button>
         </div>
@@ -277,10 +278,33 @@
         <button class="duel-back" id="duel-close" type="button">Zurück zum Menü</button>
       </div>
     </section>
+    <section class="duel-screen board-screen" id="board-screen" hidden>
+      <div class="duel-panel classic-panel board-panel" id="board-panel" role="dialog" aria-modal="true" aria-labelledby="board-title" tabindex="-1">
+        <p class="duel-eyebrow">SQUISH ATTACK · BESTENLISTE</p>
+        <h2 id="board-title">Bestenliste</h2>
+        <div class="duel-tabs" aria-label="Zeitraum">
+          <button type="button" id="board-tab-week" aria-pressed="true">Diese Woche</button>
+          <button type="button" id="board-tab-alltime" aria-pressed="false">Allzeit</button>
+        </div>
+        <p class="board-me" id="board-me" role="status" aria-live="polite"></p>
+        <ol class="board-list" id="board-list" aria-label="Top 100"></ol>
+        <p class="board-updated" id="board-updated"></p>
+        <form class="board-name" id="board-name-form" autocomplete="off">
+          <label for="board-name">Dein Name in der Liste</label>
+          <div class="board-name-row">
+            <input id="board-name" name="name" type="text" minlength="3" maxlength="16" placeholder="z.&nbsp;B. Squishmeister" spellcheck="false" />
+            <button class="duel-action" type="submit">Speichern</button>
+          </div>
+          <p class="board-name-hint" id="board-name-status" aria-live="polite">3–16 Zeichen: Buchstaben, Ziffern, Leerzeichen, . _ -</p>
+        </form>
+        <p class="duel-fair">Es zählen nur Runden, die der Server Zug für Zug nachspielt. Die Liste wird höchstens jede Minute neu geladen. Keine Anmeldung, keine persönlichen Daten.</p>
+        <button class="duel-back" id="board-close" type="button">Zurück zum Menü</button>
+      </div>
+    </section>
     <script src="config.js"></script>
     <script>
     (function(){
-      var BUILD='launch-1';
+      var BUILD='launch-2';
       var key='squish-build-reload';
       fetch('build.txt?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.text();}).then(function(v){
         v=(v||'').trim();
@@ -291,7 +315,7 @@
       }).catch(function(){});
     })();
     </script>
-    <script type="module" src="debug-overlay.mjs?v=launch-1"></script>
-    <script type="module" src="loading-screen.mjs?v=launch-1"></script>
+    <script type="module" src="debug-overlay.mjs?v=launch-2"></script>
+    <script type="module" src="loading-screen.mjs?v=launch-2"></script>
   </body>
 </html>
