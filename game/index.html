@@ -110,14 +110,15 @@
         </style>
     <link rel="stylesheet" href="graphics.css" />
     <link rel="stylesheet" href="fixed-screen.css?v=glass-menu-1" />
-    <link rel="stylesheet" href="duel.css?v=launch-2" />
+    <link rel="stylesheet" href="duel.css?v=launch-3" />
     <link rel="stylesheet" href="reward-effects.css?v=vfx-1" />
     <link rel="stylesheet" href="menu.css?v=glass-title-1" />
     <link rel="stylesheet" href="title-menu.css?v=3" />
-    <link rel="stylesheet" href="clean-screen.css?v=launch-2" />
-    <link rel="stylesheet" href="world-menu.css?v=launch-2" />
+    <link rel="stylesheet" href="clean-screen.css?v=launch-3" />
+    <link rel="stylesheet" href="world-menu.css?v=launch-3" />
     <link rel="stylesheet" href="combo.css?v=combo-1" />
-    <link rel="stylesheet" href="leaderboard.css?v=launch-2" />
+    <link rel="stylesheet" href="leaderboard.css?v=launch-3" />
+    <link rel="stylesheet" href="campaign.css?v=launch-3" />
   </head>
   <body>
     <section class="brand-splash" id="brand-splash" aria-label="Squish attack wird geladen">
@@ -212,6 +213,14 @@
       <section class="preview" aria-label="Die nächsten drei Spielsteine">
         <div class="queue" id="queue"></div>
       </section>
+      <section class="campaign-hud" id="campaign-hud" aria-label="Level-Ziel" hidden>
+        <div class="campaign-goal"><span class="campaign-level" id="campaign-level">LEVEL 1</span><ul id="campaign-goals" aria-live="polite"></ul></div>
+        <div class="campaign-moves"><span>ZÜGE</span><output id="campaign-moves" aria-live="polite">0</output></div>
+      </section>
+      <div class="campaign-tools" id="campaign-tools" hidden>
+        <button class="campaign-tool" id="tool-extra" type="button">+3<small>Züge</small><b data-count>0</b></button>
+        <button class="campaign-tool" id="tool-hammer" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4l6 6-3 3-6-6z"/><path d="M12.5 8.5 4 17a2 2 0 0 0 3 3l8.5-8.5"/></svg><small>Hammer</small><b data-count>0</b></button>
+      </div>
       </div>
     </main>
     <div class="veil" id="veil" hidden>
@@ -223,6 +232,7 @@
           <button class="menu-button primary" id="resume" type="button">Weiterspielen</button>
           <button class="menu-button" id="restart" type="button">Neues Spiel</button>
           <button class="menu-button" data-open-settings type="button">Einstellungen</button>
+          <button class="menu-button" id="to-menu" type="button">Zum Menü</button>
         </div>
         <details class="rules">
           <summary>Spielregeln</summary>
@@ -235,6 +245,31 @@
         </details>
       </div>
     </div>
+    <div class="veil campaign-result" id="campaign-result" hidden>
+      <div class="dialog classic-panel" role="dialog" aria-modal="true" aria-labelledby="campaign-result-title">
+        <span class="menu-kicker" id="campaign-result-kicker">LEVEL 1</span>
+        <h2 id="campaign-result-title">Geschafft!</h2>
+        <p class="campaign-stars" id="campaign-result-stars" role="img" aria-label="">★★★</p>
+        <p id="campaign-result-message"></p>
+        <p class="campaign-gift" id="campaign-result-gift" role="status" hidden></p>
+        <div class="dialog-actions">
+          <button class="menu-button primary" id="campaign-next" type="button">Nächstes Level</button>
+          <button class="menu-button primary" id="campaign-extra" type="button" hidden>+3 Züge einsetzen</button>
+          <button class="menu-button" id="campaign-retry" type="button">Nochmal</button>
+          <button class="menu-button" id="campaign-menu" type="button">Zum Menü</button>
+        </div>
+      </div>
+    </div>
+    <section class="duel-screen campaign-screen" id="campaign-screen" hidden>
+      <div class="duel-panel classic-panel campaign-panel" id="campaign-panel" role="dialog" aria-modal="true" aria-labelledby="campaign-title" tabindex="-1">
+        <p class="duel-eyebrow">SQUISH ATTACK · KAMPAGNE</p>
+        <h2 id="campaign-title">Levelauswahl</h2>
+        <p class="campaign-total" id="campaign-total">★ 0</p>
+        <div id="campaign-chapters"></div>
+        <p class="campaign-lock-note" id="campaign-lock-note" role="status" aria-live="polite"></p>
+        <button class="duel-back" id="campaign-close" type="button">Zurück zum Menü</button>
+      </div>
+    </section>
     <section class="settings-screen" id="settings-screen" hidden>
       <div class="settings-panel classic-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
         <div class="settings-sheet">
@@ -301,10 +336,10 @@
         <button class="duel-back" id="board-close" type="button">Zurück zum Menü</button>
       </div>
     </section>
-    <script src="config.js?v=launch-2"></script>
+    <script src="config.js?v=launch-3"></script>
     <script>
     (function(){
-      var BUILD='launch-2';
+      var BUILD='launch-3';
       var key='squish-build-reload';
       fetch('build.txt?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.text();}).then(function(v){
         v=(v||'').trim();
@@ -315,7 +350,7 @@
       }).catch(function(){});
     })();
     </script>
-    <script type="module" src="debug-overlay.mjs?v=launch-2"></script>
-    <script type="module" src="loading-screen.mjs?v=launch-2"></script>
+    <script type="module" src="debug-overlay.mjs?v=launch-3"></script>
+    <script type="module" src="loading-screen.mjs?v=launch-3"></script>
   </body>
 </html>

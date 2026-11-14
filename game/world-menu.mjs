@@ -1,5 +1,5 @@
 import {getLabelShapes,pillowTopHeight} from './original-gel-models.js?v=menu-1';
-import {BUILD} from './flags.mjs?v=launch-2';
+import {BUILD} from './flags.mjs?v=launch-3';
 
 // In-world start menu: wide gel cushions (the original squish body with a
 // lengthened straight middle) drop onto the glass, one per grid row, and burst
@@ -238,7 +238,7 @@ export function createWorldMenu({visual,effects,sound,page=document,reduceMotion
   }
   function down(event) {
     if(!active||!event.isPrimary||(event.pointerType==='mouse'&&event.button!==0))return;
-    if(event.target?.closest?.('dialog,.settings-screen:not([hidden]),.veil:not([hidden])'))return;
+    if(event.target?.closest?.('dialog,.settings-screen:not([hidden]),.veil:not([hidden]),.duel-screen:not([hidden])'))return;
     // HTML keypad slots handle their own pointer stream.
     if(event.target?.closest?.('#world-keypad'))return;
     const it=pick(event.clientX,event.clientY);if(!it)return;
@@ -300,9 +300,38 @@ export function createWorldMenu({visual,effects,sound,page=document,reduceMotion
     finally{busy=false;}
   }
   function focusFirst(){a11y.querySelector('button')?.focus({preventScroll:true});}
+  // Start screen: choose the mode. The chosen mode is remembered (hooks.setMode).
+  let home='mode';
+  async function showMode() {
+    showBuild(false);
+    screen='mode';home='mode';multi=null;keypadElement?.classList.remove('is-active');
+    const list=[
+      wide(1,'Kampagne',C.green,it=>{hooks.setMode?.('campaign');void transition(it,showCampaign);},{explodes:true}),
+      wide(2,'Endlos',C.blue,it=>{hooks.setMode?.('endless');void transition(it,showMain);},{explodes:true}),
+      wide(3,'Einstellungen',C.orange,it=>void transition(it,showSettings),{explodes:true}),
+    ];
+    say('Rätsel-Level oder endlos spielen?');
+    await drop(list);focusFirst();
+  }
+  async function showCampaign() {
+    showBuild(false);
+    screen='campaign';home='campaign';multi=null;keypadElement?.classList.remove('is-active');
+    const info=hooks.campaign?.summary?.()||{next:1,ready:false};
+    const list=[
+      wide(0,`Level ${info.next} spielen`,C.green,it=>{
+        if(!info.ready){kick(it,.5);say('Level werden geladen …',2000);return;}
+        hooks.gesture();void launch(it,{campaign:info.next});
+      },{explodes:true}),
+      wide(1,'Levelauswahl',C.blue,it=>{kick(it,.35);hooks.campaign?.openSelect?.();}),
+      wide(2,'Einstellungen',C.orange,it=>void transition(it,showSettings),{explodes:true}),
+      wide(3,'Zurück',C.red,it=>void transition(it,showMode),{explodes:true}),
+    ];
+    if(info.caption)say(info.caption);
+    await drop(list);focusFirst();
+  }
   async function showMain() {
     showBuild(false);
-    screen='main';multi=null;keypadElement?.classList.remove('is-active');
+    screen='main';home='main';multi=null;keypadElement?.classList.remove('is-active');
     const canContinue=hooks.canContinue();
     const list=[
       wide(0,'Neues Spiel',C.green,it=>{hooks.gesture();void launch(it,true);},{explodes:true}),
@@ -311,11 +340,12 @@ export function createWorldMenu({visual,effects,sound,page=document,reduceMotion
         hooks.gesture();void launch(it,false);
       },{dim:!canContinue,explodes:true}),
       wide(2,'Mehrspieler',C.violet,it=>void transition(it,showMulti),{explodes:true}),
-      wide(3,'Einstellungen',C.orange,it=>void transition(it,showSettings),{explodes:true}),
-      wide(4,'Bestenliste',C.yellow,it=>{kick(it,.35);hooks.leaderboard?.();}),
+      wide(3,'Bestenliste',C.yellow,it=>{kick(it,.35);hooks.leaderboard?.();}),
+      wide(4,'Zurück',C.red,it=>void transition(it,showMode),{explodes:true}),
     ];
     await drop(list);focusFirst();
   }
+  const showHome=()=>home==='campaign'?showCampaign():home==='main'?showMain():showMode();
   async function launch(it,newGame) {
     if(busy)return;busy=true;cancelPress();
     try{await burstAll(it);active=false;page.documentElement.classList.remove('world-menu-open');say('');await hooks.launch(newGame);}
@@ -357,7 +387,7 @@ export function createWorldMenu({visual,effects,sound,page=document,reduceMotion
       }),
       vibration:wide(2,toggleText.vibration(),C.violet,it=>{if(hooks.haptics)hooks.haptics.toggle();kick(it,.45);}),
     };
-    const back=wide(3,'Zurück',C.red,it=>void transition(it,showMain),{explodes:true});
+    const back=wide(3,'Zurück',C.red,it=>void transition(it,showHome),{explodes:true});
     await drop([toggles.sound,toggles.motion,toggles.vibration,back]);focusFirst();
   }
   // ---------- duel lobby ----------
@@ -519,13 +549,23 @@ export function createWorldMenu({visual,effects,sound,page=document,reduceMotion
         try{await I.compile(probe.map(it=>it.s));}catch{}finally{probe.forEach(remove);}
       })();
     },
-    async open({launch}={}) {
+    async open({launch,screen:target}={}) {
       if(launch)hooks.launch=launch;
       if(active)return;active=true;page.documentElement.classList.add('world-menu-open');
       if(visual.graphics.state.paused)visual.graphics.pause(false);
       await this.preload();
-      await showMain();
+      const want=target||hooks.initialScreen?.()||'mode';
+      await (want==='campaign'?showCampaign():want==='main'?showMain():showMode());
     },
+    // Leave the menu and launch (used by the DOM level select).
+    async play(arg) {
+      if(!active||busy)return;
+      busy=true;cancelPress();
+      try{await burstAll(null);active=false;page.documentElement.classList.remove('world-menu-open');say('');await hooks.launch(arg);}
+      finally{busy=false;}
+    },
+    // Re-drop the current campaign screen (e.g. after progress changed).
+    async refresh(){if(active&&screen==='campaign'&&!busy){busy=true;try{await burstAll(null);await showCampaign();}finally{busy=false;}}},
     code:showCode,
     status(text){if(!active||screen!=='multi'||!text)return;if(multi?.mode==='host'&&multi.room){say('Dein Code: '+multi.room+' · Warte auf Mitspieler (10 Min.)');return;}say(SHORT[text]||text);},
     // A duel partner connected: clear the lobby with the same bursts.

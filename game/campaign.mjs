@@ -272,3 +272,52 @@ export function nextLevel(progress, count) {
   }
   return lastFree;
 }
+
+// ---------------- Hilfsmittel ----------------
+/** Hammer: entfernt einen Stein (kein Zug). Gibt true zurück, wenn etwas entfernt wurde. */
+export function useHammer(run, row, col) {
+  if (run.status !== 'playing' || !run.board[row]?.[col]) return false;
+  run.board = run.board.map(r => r.slice());
+  run.board[row][col] = null;
+  markToolUsed(run, 'hammer');
+  return true;
+}
+
+export const TOOLS_KEY = 'squish-campaign-tools-v1';
+export const TOOL_TYPES = ['extraMoves', 'hammer'];
+export const emptyInventory = () => ({ version: 1, extraMoves: 0, hammer: 0, gifts: [] });
+
+export function loadInventory(storage = globalThis.localStorage) {
+  try {
+    const v = JSON.parse(storage?.getItem(TOOLS_KEY) ?? 'null');
+    if (v && v.version === 1 && Array.isArray(v.gifts)) {
+      return { ...emptyInventory(), ...v, extraMoves: Math.max(0, v.extraMoves | 0), hammer: Math.max(0, v.hammer | 0) };
+    }
+  } catch {}
+  return emptyInventory();
+}
+export function saveInventory(inv, storage = globalThis.localStorage) {
+  try { storage?.setItem(TOOLS_KEY, JSON.stringify(inv)); return true; } catch { return false; }
+}
+/** Ein Hilfsmittel verbrauchen. Gibt das neue Inventar zurück oder null, wenn keins da ist. */
+export function spendTool(inv, type) {
+  if (!TOOL_TYPES.includes(type) || !(inv[type] > 0)) return null;
+  return { ...inv, [type]: inv[type] - 1 };
+}
+
+/**
+ * Gratis-Geschenke (docs/kampagne.md): 1× „+3 Züge“ nach Level 10, 1× Hammer nach Level 20,
+ * dazu je 10 Sterne ein Hilfsmittel (abwechselnd +3 Züge, Hammer). Jedes Geschenk nur einmal.
+ * Rückgabe: {inventory, granted:[{id, type}]}.
+ */
+export const STARS_PER_GIFT = 10;
+export function grantGifts(inv, progress) {
+  const out = { ...inv, gifts: [...inv.gifts] }, granted = [];
+  const give = (id, type) => { if (out.gifts.includes(id)) return; out.gifts.push(id); out[type] += 1; granted.push({ id, type }); };
+  if (progress.levels['10']) give('level-10', 'extraMoves');
+  if (progress.levels['20']) give('level-20', 'hammer');
+  const blocks = Math.floor(totalStars(progress) / STARS_PER_GIFT);
+  for (let b = 1; b <= blocks; b++) give(`stars-${b * STARS_PER_GIFT}`, b % 2 ? 'extraMoves' : 'hammer');
+  return { inventory: out, granted };
+}
+export const toolName = type => ({ extraMoves: '+3 Züge', hammer: 'Hammer' })[type] ?? type;

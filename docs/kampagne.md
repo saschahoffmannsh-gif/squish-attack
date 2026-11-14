@@ -232,3 +232,13 @@ einem oder zwei Hilfsmitteln, die man unterwegs gratis bekommen hat. Vorschlag:
 
 Hinweis: Das Spielermodell ist eine grobe Heuristik und muss mit echten
 Spieldaten (Versuche pro Level) nachkalibriert werden.
+
+## UI (launch-3)
+
+- **Startbildschirm** (3D-Gel-Menü): Kampagne · Endlos · Einstellungen. Der gewählte Modus wird in `localStorage['squish-mode-v1']` gemerkt; beim nächsten Öffnen startet das Menü direkt im zuletzt gewählten Modus, „Zurück“ führt zum Startbildschirm. Erstbesucher sehen den Startbildschirm.
+- **Endlos**: unverändert (Neues Spiel, Weiterspielen, Mehrspieler, Bestenliste) plus „Zurück“. Endlos-Spielstand (`shift3-play-v1`) und gewertete Runden bleiben unberührt; während der Kampagne wird nichts davon gespeichert oder eingereicht.
+- **Kampagne**: „Level N spielen“ (nächstes offenes Level), Levelauswahl (DOM-Dialog, Kapitel à 10, Sterne pro Level, Schloss + Grund, Sterne-Tor pro Kapitel, Gesamtsterne).
+- **Spielansicht**: gleiches Brett/Rendering; Zielkarte mit Fortschritt, Zug-Zähler, Vorschau aus der festen Steinfolge, Hilfsmittel-Leiste (+3 Züge, Hammer). Pause-Menü hat „Zum Menü“ und „Level neu starten“.
+- **Ergebnis**: Sterne, Nächstes Level / Nochmal / Zum Menü; bei Niederlage durch Zugende „+3 Züge einsetzen“, wenn vorhanden.
+- **Hilfsmittel** (`squish-campaign-tools-v1`, nur Geschenke, keine Käufe): +3 Züge nach Level 10, Hammer nach Level 20, je 10 Sterne ein Hilfsmittel (abwechselnd +3 Züge und Hammer). Jedes Hilfsmittel deckelt das Level auf 2 ★.
+- Fortschritt: `squish-campaign-v1` (campaign.mjs). Kein Backend.

@@ -1,19 +1,21 @@
-import {apiFetch,hasSaveToken} from './api.mjs?v=launch-2';
-import {createRng,encodeMove,replayRun,MAX_LOG} from './ranked.mjs?v=launch-2';
-import {createLeaderboard} from './leaderboard.mjs?v=launch-2';
+import {apiFetch,hasSaveToken} from './api.mjs?v=launch-3';
+import {createRng,encodeMove,replayRun,MAX_LOG} from './ranked.mjs?v=launch-3';
+import {createLeaderboard} from './leaderboard.mjs?v=launch-3';
 import { SIZE, START_VALUES, createStartValues, insertTile, nextMergePass, settle, isGameOver } from './game-logic.mjs?v=automatic-streets-2';
 import { nextSpawn, spawnProfile } from './balance.mjs';
 import {canContinueRun} from './run-availability.mjs?v=splash-plate-1';
 import { createMergeEffects } from './merge-effects.mjs?v=fuse-3';
 import { createGameGraphics } from './graphics-adapter.mjs?v=fuse-6';
 import { installDeviceMotion } from './device-motion.mjs';
-import { createGameSound } from './sound.mjs?v=launch-2';
+import { createGameSound } from './sound.mjs?v=launch-3';
 import { installSettings } from './settings.mjs?v=woodland-menu-1';
-import { createDuelClient } from './duel-client.mjs?v=launch-2';
+import { createDuelClient } from './duel-client.mjs?v=launch-3';
 import {installFullscreen} from './fullscreen.mjs?v=timed-duel-1';
-import {createWorldMenu} from './world-menu.mjs?v=launch-2';
-import {createHaptics} from './haptics.mjs?v=launch-2';
+import {createWorldMenu} from './world-menu.mjs?v=launch-3';
+import {createHaptics} from './haptics.mjs?v=launch-3';
 import {planMergeRipple} from './merge-ripple.mjs?v=swarm-fx-3';
+import * as Camp from './campaign.mjs?v=launch-3';
+import {createCampaignUI} from './campaign-ui.mjs?v=launch-3';
 const playfield = document.getElementById('playfield');
 const gameElement = document.querySelector('.game');
 const visual = createGameGraphics(document.getElementById('graphics'));
@@ -27,6 +29,7 @@ const dialogTitle = document.getElementById('dialog-title');
 const dialogMessage = document.getElementById('dialog-message');
 const resumeButton = document.getElementById('resume');
 const restartButton = document.getElementById('restart');
+const toMenuButton = document.getElementById('to-menu');
 const storageKey = 'shift3-play-v1';
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const mergeEffects = createMergeEffects(document.getElementById('effects'), reduceMotion,{
@@ -101,6 +104,12 @@ const worldMenu=createWorldMenu({visual,effects:mergeEffects,sound,reduceMotion,
   launch:async()=>{},
   duel,
   leaderboard:()=>leaderboard.open(),
+  initialScreen:()=>{const m=storedMode();return m==='campaign'?'campaign':m==='endless'?'main':'mode';},
+  setMode:mode=>{try{localStorage.setItem(MODE_KEY,mode);}catch{}},
+  campaign:{
+    summary:()=>campaignSummary(),
+    openSelect:()=>{if(levels)campaignUI.openSelect({levels,progress:campaignProgress});else void loadLevels().then(()=>campaignUI.openSelect({levels,progress:campaignProgress})).catch(()=>showNote('Level konnten nicht geladen werden.',3000));},
+  },
   soundButton:document.getElementById('sound-toggle'),
   motionButton:document.getElementById('phone-motion'),
   motionStatus:document.getElementById('phone-motion-status'),
@@ -108,6 +117,184 @@ const worldMenu=createWorldMenu({visual,effects:mergeEffects,sound,reduceMotion,
 
 
 const newTile = value => ({ id: nextId++, value });
+
+// ---------- Kampagne ----------
+// Feste Rätsel-Level (levels/levels-001-025.json). Der Endlos-Spielstand bleibt
+// in localStorage unangetastet: während der Kampagne wird nichts davon gespeichert,
+// beim Verlassen wird er wieder geladen.
+const MODE_KEY='squish-mode-v1';
+const LEVELS_URL=new URL('../levels/levels-001-025.json?v=launch-3',import.meta.url);
+function storedMode(){try{return localStorage.getItem(MODE_KEY)||'';}catch{return '';}}
+let campaignMode=false,camp=null,levels=null,levelsLoading=null,stashedBestTile=null,needsEntry=false,hammerArmed=false;
+let campaignProgress=Camp.loadProgress(),inventory=Camp.loadInventory();
+function loadLevels(){
+  return levelsLoading||=fetch(LEVELS_URL,{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('levels '+r.status);return r.json();})
+    .then(data=>{data.levels.forEach(Camp.validateLevel);levels=data.levels;void worldMenu.refresh?.();return levels;})
+    .catch(error=>{levelsLoading=null;throw error;});
+}
+function campaignSummary(){
+  const count=levels?.length||25,next=Camp.nextLevel(campaignProgress,count),total=Camp.totalStars(campaignProgress);
+  let caption=`★ ${total} von ${count*3} Sternen`;
+  const open=Array.from({length:count},(_,i)=>i+1).find(n=>!campaignProgress.levels[String(n)]);
+  const lock=open?Camp.lockReason(campaignProgress,open):null;
+  if(lock?.reason==='stars')caption+=` · Kapitel ${lock.chapter} ab ${lock.need} ★`;
+  else if(!open&&levels)caption+=' · Alle Level geschafft!';
+  return {next,ready:!!levels,caption};
+}
+const campaignUI=createCampaignUI({
+  onPlay:n=>{void worldMenu.play({campaign:n});},
+  onNext:()=>{if(camp)void playLevel(camp.n+1);},
+  onRetry:()=>{if(camp)void playLevel(camp.n);},
+  onExtra:()=>useExtraMoves(),
+  onMenu:()=>void backToMenu(),
+  onTool:type=>type==='extraMoves'?useExtraMoves():toggleHammer(),
+});
+function renderCampaign(){
+  if(!campaignMode||!camp)return;
+  campaignUI.renderHud(camp.run,camp.n);
+  const room=camp.run.level.sequence.length-Camp.moveLimit(camp.run);
+  campaignUI.renderTools(inventory,{canExtra:room>0&&camp.run.status!=='won',hammerArmed});
+}
+async function prepareLevel(n){
+  await loadLevels();
+  const level=levels[n-1];
+  if(!level)throw new Error('Level fehlt: '+n);
+  if(!campaignMode){stashedBestTile=bestTile;campaignMode=true;}
+  generation++;pendingMove=null;hammerArmed=false;run=null;rng=null;
+  moveCombo=0;mergeEffects.streak?.(0,{silent:true});
+  camp={n,level,run:Camp.createLevelRun(level)};
+  board=camp.run.board.map(row=>row.map(tile=>tile?{...tile}:null));
+  nextId=camp.run.ctx.nextId;queue=Camp.queueOf(camp.run);score=0;moves=0;
+  gameElement.classList.add('is-campaign');
+  mergeEffects.clear();visual.clear();renderBest();visual.hideHud('best',true);
+  renderCampaign();
+  await prepareEntryScene();
+  needsEntry=false;
+}
+function leaveCampaign(){
+  if(!campaignMode)return;
+  campaignMode=false;camp=null;hammerArmed=false;
+  gameElement.classList.remove('is-campaign');campaignUI.hide();visual.hideHud('best',false);
+  if(stashedBestTile!=null)bestTile=stashedBestTile;
+  hasSavedGame=loadState()||hasSavedGame;
+  renderBest();
+  needsEntry=true;
+}
+async function playLevel(n){
+  if(!campaignMode||busy)return;
+  if(levels&&n>levels.length)return;
+  const lock=Camp.lockReason(campaignProgress,n);
+  if(lock){showNote(lock.reason==='stars'?`Kapitel ${lock.chapter} braucht ${lock.need} ★`:'Level noch gesperrt',3000);return;}
+  campaignUI.hideResult();veil.hidden=true;paused=false;gameElement.classList.remove('is-paused');
+  pauseButton.textContent='Ⅱ';pauseButton.setAttribute('aria-pressed','false');pauseButton.setAttribute('aria-label','Spiel pausieren');
+  graphics.pause(false);sound.resume();
+  started=false;
+  await prepareLevel(n);
+  await enterGame();
+  showNote(`Level ${n}: ${camp.level.goals.map(Camp.goalText).join(' + ')}`,2600);
+}
+async function moveCampaign(direction,line){
+  const r=camp.run;
+  if(r.status!=='playing')return;
+  if(hammerArmed){toggleHammer(false);}
+  const value=Camp.queueOf(r)[0];
+  if(value==null)return;
+  const tile={id:nextId,value};
+  const inserted=insertTile(board,direction,line,tile);
+  if(!inserted.accepted){showNote('Diese Reihe ist voll');haptics.pulse('tap');return;}
+  const result=Camp.applyLevelMove(r,direction,line);
+  if(!result.ok)return;
+  const turn=generation;busy=true;
+  try{
+    sound.play('slide');haptics.pulse('move');phoneMotion.reset();
+    nextId++;board=inserted.board;queue=Camp.queueOf(r);note.hidden=true;
+    renderBoard({id:tile.id,direction});
+    if(!reduceMotion.matches)await new Promise(resolve=>{
+      function done(){if(graphics.tiles.some(t=>t.motion))requestAnimationFrame(done);else resolve();}
+      requestAnimationFrame(done);
+    });
+    if(turn!==generation)return;
+    await resolveMerges(turn,{streak:true});
+    if(turn!==generation)return;
+    moves=r.moves;
+    // The animated board and campaign.mjs use the same rules; keep campaign.mjs authoritative.
+    const vals=b=>b.map(row=>row.map(t=>t?t.id+':'+t.value:'.').join(',')).join(';');
+    if(vals(board)!==vals(r.board)){console.warn('[campaign] board resync');board=r.board.map(row=>row.map(t=>t?{...t}:null));renderBoard();}
+    renderQueue();renderCampaign();
+  }finally{if(turn===generation)busy=false;}
+  if(turn!==generation)return;
+  if(r.status!=='playing'){await finishLevel();return;}
+  const queued=pendingMove;pendingMove=null;
+  if(queued)void move(queued.direction,queued.line).catch(()=>{});
+}
+async function finishLevel(){
+  const r=camp.run,won=r.status==='won',n=camp.n,turn=generation;
+  let stars=0,gifts=[];
+  if(won){
+    stars=Camp.starsOfRun(r);
+    campaignProgress=Camp.recordResult(campaignProgress,camp.level.id,{stars,moves:r.moves});
+    Camp.saveProgress(campaignProgress);
+    const g=Camp.grantGifts(inventory,campaignProgress);inventory=g.inventory;gifts=g.granted;Camp.saveInventory(inventory);
+    sound.play('record');haptics.pulse('big');
+    if(!reduceMotion.matches)visual.celebrateHud?.('queue-0',.3);
+  } else haptics.pulse('tap');
+  await wait(won?650:350);
+  if(turn!==generation||!campaignMode)return;
+  paused=true;releaseGesture();phoneMotion.reset();
+  const count=levels.length,nextLock=n<count?Camp.lockReason(campaignProgress,n+1):null;
+  campaignUI.showResult({n,won,stars,moves:r.moves,limit:Camp.moveLimit(r),lostReason:r.lostReason,
+    canNext:won&&n<count&&!nextLock,nextLock,gifts,extraAvailable:inventory.extraMoves,toolsUsed:r.toolsUsed.length});
+  renderCampaign();
+}
+function useExtraMoves(){
+  if(!campaignMode||!camp||busy)return;
+  const r=camp.run;
+  if(r.status==='won')return;
+  const spent=Camp.spendTool(inventory,'extraMoves');
+  if(!spent){showNote('Kein „+3 Züge“ vorhanden',2200);return;}
+  const added=Camp.addExtraMoves(r,3);
+  if(!added){showNote(r.status==='lost'?'Hier hilft „+3 Züge“ nicht – das Brett ist voll.':'Keine weiteren Steine für dieses Level',2600);return;}
+  inventory=spent;Camp.saveInventory(inventory);
+  queue=Camp.queueOf(r);renderQueue();
+  if(campaignUI.resultOpen){campaignUI.hideResult();paused=false;}
+  renderCampaign();haptics.pulse('merge');sound.play('record');
+  showNote(`+${added} Züge – jetzt höchstens 2 ★`,2200);
+}
+function toggleHammer(on=!hammerArmed){
+  if(!campaignMode||!camp||camp.run.status!=='playing')return;
+  if(on&&!(inventory.hammer>0)){showNote('Kein Hammer vorhanden',2200);return;}
+  hammerArmed=on;renderCampaign();
+  if(on)showNote('Tippe auf einen Stein, um ihn zu entfernen (höchstens 2 ★)',0);else note.hidden=true;
+}
+function hammerAt(tileId){
+  let cell=null;
+  board.forEach((row,r)=>row.forEach((t,c)=>{if(t&&t.id===tileId)cell=[r,c];}));
+  if(!cell)return false;
+  const spent=Camp.spendTool(inventory,'hammer');
+  if(!spent||!Camp.useHammer(camp.run,cell[0],cell[1]))return false;
+  inventory=spent;Camp.saveInventory(inventory);hammerArmed=false;
+  board=board.map(row=>row.slice());board[cell[0]][cell[1]]=null;
+  renderBoard();sound.play('merge',3);haptics.pulse('big');note.hidden=true;
+  renderCampaign();
+  return true;
+}
+async function backToMenu(){
+  if(booting||!started||duelMode)return;
+  if(busy&&!paused)return;
+  campaignUI.hideResult();
+  if(campaignMode)leaveCampaign();
+  else{void submitScore();saveState({now:true});hasSavedGame=board.flat().some(Boolean);}
+  generation++;pendingMove=null;releaseGesture();hammerArmed=false;busy=false;
+  paused=false;veil.hidden=true;gameElement.classList.remove('is-paused');
+  pauseButton.textContent='Ⅱ';pauseButton.setAttribute('aria-pressed','false');pauseButton.setAttribute('aria-label','Spiel pausieren');
+  started=false;mergeEffects.clear();visual.clear();needsEntry=true;note.hidden=true;
+  for(let index=0;index<3;index++)visual.hideHud('queue-'+index,true);
+  gameElement.classList.add('is-start');gameElement.inert=true;gameElement.setAttribute('aria-hidden','true');
+  graphics.pause(false);sound.resume();
+  const overlay=document.getElementById('loading-screen');
+  overlay.hidden=false;overlay.inert=false;overlay.dataset.phase='menu';
+  await worldMenu.open({screen:storedMode()==='campaign'?'campaign':'main'});
+}
 
 // ---------- Ranked runs (leaderboard) ----------
 // A ranked run starts from a server-issued seed; every accepted move is logged
@@ -138,7 +325,7 @@ const ensureTicket=(ms=2000)=>Promise.race([prefetchRun(),new Promise(r=>setTime
 function storedName(){try{return localStorage.getItem(NAME_KEY)||'';}catch{return '';}}
 function storeRanks(ranks){try{localStorage.setItem(RANK_KEY,JSON.stringify({...ranks,at:Date.now()}));}catch{}}
 async function submitScore({keepalive=false}={}){
-  if(duelMode||!run||!run.log.length||score<=run.sub)return;
+  if(duelMode||campaignMode||!run||!run.log.length||score<=run.sub)return;
   const target=run,body=JSON.stringify({run:run.id,log:run.log,score,name:storedName()||undefined});
   lastSubmit=Date.now();
   try{
@@ -287,7 +474,7 @@ async function flushPending({ keepalive = false } = {}) {
 }
 
 function saveState({ now = false } = {}) {
-  if(duelMode)return;
+  if(duelMode||campaignMode)return;
   const state = snapshot();
   try { localStorage.setItem(storageKey, JSON.stringify(state)); } catch { /* browser storage can be blocked */ }
   pendingSave = state; cloudDirty = true;
@@ -366,7 +553,7 @@ async function enterGame() {
   if (turn === generation) {
   busy = false;
   gameElement.classList.remove('is-entering');
-  if (isGameOver(board)) showDialog(true);
+  if (!campaignMode && isGameOver(board)) showDialog(true);
   }
   }
 }
@@ -431,6 +618,9 @@ function showDialog(over) {
   pauseButton.setAttribute('aria-label', 'Spiel fortsetzen');
   dialogTitle.textContent = over ? 'Kein Platz mehr' : 'Pause';
   dialogMessage.textContent = over ? `Höchster Stein in diesem Spiel: ${format(peak)}.` : 'Dein Spielfeld wartet auf dich.';
+  restartButton.textContent=campaignMode?'Level neu starten':'Neues Spiel';
+  toMenuButton.hidden=duelMode;
+  if(campaignMode&&over)return;
   if(duelMode){dialogTitle.textContent='Duell läuft weiter';dialogMessage.textContent='Die fünf Minuten laufen auch bei geöffnetem Menü weiter.';restartButton.textContent='Duell verlassen';}
   resumeButton.hidden = over;
   (over ? restartButton : resumeButton).focus();
@@ -452,6 +642,7 @@ function resume() {
 
 async function restart() {
   if(duelMode){void duel.exit();return;}
+  if(campaignMode&&camp){void playLevel(camp.n);return;}
   void submitScore();
   releaseGesture();pendingMove=null;
   mergeEffects.clear();
@@ -488,7 +679,7 @@ async function applyMerge(pass,turn,combo) {
   board=pass.board;score+=pass.points;best=Math.max(best,score);
   const lead=pass.groups.reduce((a,b)=>b.cells.length>a.cells.length?b:a);
   sound.play(lead.street?'flow':'merge',lead.cells.length,{combo,pan:(lead.target[1]-2)*.13});
-  bestTile=Math.max(bestTile,...board.flat().filter(Boolean).map(t=>t.value));
+  if(!campaignMode)bestTile=Math.max(bestTile,...board.flat().filter(Boolean).map(t=>t.value));
   const rewards=pass.groups.map((group,index)=>({...group,position:location(...group.target),sources:sources[index],combo}));
   mergeEffects.award(rewards,previousScore,score);
   renderBoard();renderBest();mergeEffects.combo(combo);
@@ -664,6 +855,7 @@ async function move(direction, line) {
     pendingMove={direction,line};visual.hurryMerges();return;
   }
   if (!started || booting || busy || paused) return;
+  if(campaignMode&&camp){await moveCampaign(direction,line);return;}
   if(duelMode) {
     await moveDuel(direction,line);
     const queued=pendingMove;pendingMove=null;
@@ -723,6 +915,10 @@ function releaseGesture() {
   pointerStart=null;
 }
 playfield.addEventListener('pointerdown',event=> {
+  if(hammerArmed&&campaignMode&&started&&!busy&&!paused&&event.isPrimary){
+    const id=visual.pick(event);
+    if(id!=null){event.preventDefault();hammerAt(id);return;}
+  }
   const merging=busy&&!duelMode&&visual.fusion?.active;
   if(!started||booting||(busy&&!merging)||paused||!event.isPrimary)return;
   sound.unlock();
@@ -750,11 +946,12 @@ playfield.addEventListener('lostpointercapture',releaseGesture);
 window.addEventListener('blur',releaseGesture);
 
 pauseButton.addEventListener('click', () => {
-  if (!started || booting || busy || duelFinished) return;
+  if (!started || booting || busy || duelFinished || campaignUI.resultOpen) return;
   if (paused) resume(); else showDialog(false);
 });
 resumeButton.addEventListener('click', resume);
 restartButton.addEventListener('click', restart);
+toMenuButton.addEventListener('click', () => void backToMenu());
 
 document.addEventListener('visibilitychange', () => {
   if (document.hidden && !booting && !duelMode) { saveState(); void flushPending({ keepalive: true }); void submitScore({ keepalive: true }); }
@@ -771,7 +968,11 @@ window.addEventListener('pagehide', event => {
 });
 window.addEventListener('online', () => void flushPending());
 // Read-only inspection for integration checks; game state still belongs here.
-window.SquishGame={graphics,move,restart,get state(){return {board,queue,score,best,bestTile,moves,peak,busy,paused,booting,started,hasSavedGame,duelMode,duelRevision,ranked:run?{id:run.id,logLength:run.log.length,submitted:run.sub}:null};},get effects(){return mergeEffects.stats;},get sound(){return sound.stats;},get menu(){return worldMenu.stats;},get fusion(){return visual.fusion?.stats||null;}};
+window.SquishGame={graphics,move,restart,get state(){return {board,queue,score,best,bestTile,moves,peak,busy,paused,booting,started,hasSavedGame,duelMode,duelRevision,ranked:run?{id:run.id,logLength:run.log.length,submitted:run.sub}:null};},get effects(){return mergeEffects.stats;},get sound(){return sound.stats;},get menu(){return worldMenu.stats;},get fusion(){return visual.fusion?.stats||null;},
+  get campaign(){return {mode:campaignMode,level:camp?.n??null,status:camp?.run.status??null,moves:camp?.run.moves??0,movesLeft:camp?Camp.movesLeft(camp.run):null,
+    toolsUsed:camp?.run.toolsUsed.slice()??[],progress:campaignProgress,inventory,levelsLoaded:!!levels,resultOpen:campaignUI.resultOpen,hammerArmed};},
+  // Screen point of a board cell (for input tests).
+  cellPoint(row,col){const host=document.getElementById('graphics').getBoundingClientRect(),loc=location(row,col);return {x:host.left+loc.x/100*host.width,y:host.top+(loc.y+1.5)/100*host.height};}};
 // QA only (?vfxdemo=1): stage a board, then swipe with SquishGame.move().
 if(new URLSearchParams(globalThis.location.search).has('vfxdemo'))window.SquishVFX={
   setBoard(grid,next=[1,2,3]){
@@ -791,16 +992,29 @@ export const menuActions={
   prepare() {void fullscreen.enter();sound.unlock();phoneMotion.restoreFromGesture();},
   multiplayer(){return duel.open();},
   world:worldMenu,
-  start(){return enterGame();},
+  async start(){
+    await enterGame();
+    if(campaignMode&&camp)showNote(`Level ${camp.n}: ${camp.level.goals.map(Camp.goalText).join(' + ')}`,2600);
+  },
   async select(newGame=false) {
     if (booting || started || busy) return;
+    if (newGame && typeof newGame === 'object' && newGame.campaign) {
+      await prepareLevel(newGame.campaign);
+      return;
+    }
+    if (campaignMode) leaveCampaign();
     if (newGame) {
       void submitScore();
       await ensureTicket();
       mergeEffects.clear();visual.clear();freshState();renderBest();saveState();
       await prepareEntryScene();
+    } else if (needsEntry) {
+      mergeEffects.clear();visual.clear();renderBest();
+      await prepareEntryScene();
     }
+    needsEntry=false;
   },
 };
 export const ready=start();
+void ready.then(()=>loadLevels()).catch(()=>{});
 void ready.catch(()=> {booting=true;showNote('Die 3D-Grafik konnte nicht geladen werden. Bitte lade die Seite neu.',60000);});

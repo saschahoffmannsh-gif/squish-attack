@@ -169,3 +169,42 @@ test('Freischalten: Sterne-Schranke am Kapitelanfang', () => {
   assert.equal(lockReason(ch3low, 21).reason, 'stars');
   assert.ok(isUnlocked(ch3low, 20));                        // gesperrt wird nur der Kapitelanfang
 });
+
+import { useHammer, emptyInventory, loadInventory, saveInventory, spendTool, grantGifts } from '../game/campaign.mjs';
+
+test('Hammer entfernt einen Stein, kostet keinen Zug, deckelt auf 2★', () => {
+  const run = createLevelRun(base());
+  assert.equal(useHammer(run, 2, 2), false);            // leeres Feld
+  assert.equal(useHammer(run, 0, 1), true);
+  assert.equal(run.board[0][1], null);
+  assert.equal(run.moves, 0);
+  assert.deepEqual(run.toolsUsed, ['hammer']);
+  assert.equal(run.level.board[0][1], 1);                // Level-Daten unverändert
+});
+
+test('Inventar: laden, speichern, verbrauchen', () => {
+  const mem = new Map(); const storage = { getItem: k => mem.get(k) ?? null, setItem: (k, v) => mem.set(k, v) };
+  assert.deepEqual(loadInventory(storage), emptyInventory());
+  const inv = { ...emptyInventory(), extraMoves: 1 };
+  saveInventory(inv, storage);
+  assert.deepEqual(loadInventory(storage), inv);
+  assert.equal(spendTool(inv, 'hammer'), null);
+  assert.equal(spendTool(inv, 'extraMoves').extraMoves, 0);
+  assert.deepEqual(loadInventory({ getItem: () => '{"version":1,"gifts":[],"extraMoves":-3}' }).extraMoves, 0);
+});
+
+test('Geschenke: Level 10, Level 20, je 10 Sterne – jeweils nur einmal', () => {
+  let p = emptyProgress();
+  for (let n = 1; n <= 9; n++) p = recordResult(p, n, { stars: 1, moves: 5, now: 1 });   // 9★
+  let r = grantGifts(emptyInventory(), p);
+  assert.deepEqual(r.granted, []);
+  p = recordResult(p, 10, { stars: 2, moves: 5, now: 1 });                                // 11★, Level 10
+  r = grantGifts(r.inventory, p);
+  assert.deepEqual(r.granted.map(g => g.id), ['level-10', 'stars-10']);
+  assert.equal(r.inventory.extraMoves, 2);
+  assert.deepEqual(grantGifts(r.inventory, p).granted, []);                               // nicht doppelt
+  for (let n = 11; n <= 20; n++) p = recordResult(p, n, { stars: 1, moves: 5, now: 1 });  // 21★, Level 20
+  r = grantGifts(r.inventory, p);
+  assert.deepEqual(r.granted.map(g => g.id), ['level-20', 'stars-20']);
+  assert.equal(r.inventory.hammer, 2);
+});

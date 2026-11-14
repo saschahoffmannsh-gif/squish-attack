@@ -5,7 +5,7 @@ const controllerKey=Symbol.for('squish.start-menu-controller');
 // assistive technology, plus the loading status and retry for failures.
 export function installStartMenu({
   page=document,
-  loadGame=()=>import('./game.mjs?v=launch-2'),
+  loadGame=()=>import('./game.mjs?v=launch-3'),
   paint=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))),
   delay=ms=>new Promise(resolve=>setTimeout(resolve,ms)),
   splashMs=4000,timeoutMs=30000,
@@ -67,6 +67,7 @@ export function installStartMenu({
       game.inert=false;game.removeAttribute('aria-hidden');
       await app.menuActions.start();
       page.getElementById('playfield').focus({preventScroll:true});
+      launching=false;
     }catch{failure('Das Spiel konnte nicht gestartet werden. Bitte erneut laden.');}
   }
   retry.addEventListener('click',()=>page.defaultView.location.reload());
