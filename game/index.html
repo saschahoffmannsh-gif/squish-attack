@@ -2,7 +2,6 @@
 <html lang="de" class="is-boot-splash">
   <head>
     <meta charset="UTF-8" />
-    <meta name="robots" content="noindex,nofollow" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta id="theme-color" name="theme-color" content="#08080a" />
     <meta name="description" content="Squish – ein entspannendes Merge-Spiel." />
@@ -111,12 +110,12 @@
         </style>
     <link rel="stylesheet" href="graphics.css" />
     <link rel="stylesheet" href="fixed-screen.css?v=glass-menu-1" />
-    <link rel="stylesheet" href="duel.css?v=speed-2" />
+    <link rel="stylesheet" href="duel.css?v=launch-1" />
     <link rel="stylesheet" href="reward-effects.css?v=vfx-1" />
     <link rel="stylesheet" href="menu.css?v=glass-title-1" />
     <link rel="stylesheet" href="title-menu.css?v=3" />
-    <link rel="stylesheet" href="clean-screen.css?v=speed-2" />
-    <link rel="stylesheet" href="world-menu.css?v=speed-2" />
+    <link rel="stylesheet" href="clean-screen.css?v=launch-1" />
+    <link rel="stylesheet" href="world-menu.css?v=launch-1" />
     <link rel="stylesheet" href="combo.css?v=combo-1" />
   </head>
   <body>
@@ -245,11 +244,6 @@
         <p class="setting-description">Saugnapf beim Schieben, Ballonplatzer beim Merge.</p>
         <button class="setting-toggle" id="phone-motion" type="button" role="switch" aria-checked="false" aria-pressed="false" aria-describedby="phone-motion-status"><span class="setting-label"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 17h2M3 8l-2 4 2 4m18-8 2 4-2 4"/></svg>Handybewegung</span><span data-toggle-state>Aus</span></button>
         <p class="setting-description" id="phone-motion-status" role="status" aria-live="polite"></p>
-        <details class="menu-support">
-          <summary>Darstellung & Hilfe</summary>
-          <button class="setting-toggle" id="display-check" type="button">Bildschirmprüfung senden</button>
-          <p class="setting-description" id="display-check-status" role="status">Bildschirmdarstellung prüfen.</p>
-        </details>
         <button class="menu-button primary" id="settings-close" type="button">Zurück</button>
         </div>
       </div>
@@ -271,7 +265,7 @@
         <div id="duel-join" hidden>
           <form id="duel-join-form">
             <label for="duel-input">Code des Hosts</label>
-            <input id="duel-input" type="text" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" placeholder="0000" required aria-describedby="duel-status" />
+            <input id="duel-input" type="text" inputmode="numeric" pattern="[0-9]{4}|[0-9]{6}" maxlength="6" autocomplete="off" placeholder="000000" required aria-describedby="duel-status" />
             <button class="duel-action" type="submit">Verbinden & spielen</button>
           </form>
         </div>
@@ -284,10 +278,9 @@
       </div>
     </section>
     <script src="config.js"></script>
-    <script type="module" src="display-audit.mjs?v=display-99"></script>
     <script>
     (function(){
-      var BUILD='speed-2';
+      var BUILD='launch-1';
       var key='squish-build-reload';
       fetch('build.txt?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.text();}).then(function(v){
         v=(v||'').trim();
@@ -298,7 +291,7 @@
       }).catch(function(){});
     })();
     </script>
-    <script type="module" src="debug-overlay.mjs?v=speed-2"></script>
-    <script type="module" src="loading-screen.mjs?v=speed-2"></script>
+    <script type="module" src="debug-overlay.mjs?v=launch-1"></script>
+    <script type="module" src="loading-screen.mjs?v=launch-1"></script>
   </body>
 </html>

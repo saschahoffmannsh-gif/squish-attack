@@ -1,4 +1,4 @@
-import {apiFetch} from './api.mjs?v=sq-1';
+import {apiFetch} from './api.mjs?v=sq-2';
 // All commands share one channel; polling can never overtake a player's move.
 export function createDuelClient({canSync,onView,onPrepare,onBegin,onConnection,onStatus=()=>{},onCode=()=>{}}) {
   const overlay=document.getElementById('duel-screen'),panel=document.getElementById('duel-panel');
@@ -8,6 +8,12 @@ export function createDuelClient({canSync,onView,onPrepare,onBegin,onConnection,
   const hostTab=document.getElementById('duel-host-tab'),joinTab=document.getElementById('duel-join-tab');
   let session=null,view=null,flight=false,syncing=false,moving=false,connected=false,prepared=false,begun=false,opening=false,stopped=false,retryMove=null,offset=0,lastGood=0,mode='host';
   const sessionKey='squish-duel-session-v1';
+  // Room codes are 6 digits now; 4-digit codes of rooms opened before the update still work.
+  const CODE_LEN=6,CODE_RE=/^(\d{4}|\d{6})$/;
+  // Adaptive polling (ms between requests). Any request - including moves - resets the clock,
+  // and errors back off exponentially. Polls are read-only on the server.
+  const POLL={playing:1500,lobby:2500,finished:6000,maxBackoff:15000};
+  let lastRequest=0,failures=0;
   const makeToken=()=>Array.from(crypto.getRandomValues(new Uint8Array(32)),v=>v.toString(16).padStart(2,'0')).join('');
   // Every status line also reaches the in-world menu caption.
   function say(text){status.textContent=text;onStatus(text);}
@@ -26,12 +32,14 @@ export function createDuelClient({canSync,onView,onPrepare,onBegin,onConnection,
     return m||'Verbindung fehlgeschlagen';
   }
   async function request(action,extra={}) {
+    lastRequest=Date.now();
     const response=await apiFetch('/duel',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${session.token}`},
       body:JSON.stringify({action,room:session.room,...extra}),cache:'no-store',signal:abortAfter(8000)});
     const raw=await response.text();
     let data={};
     try{data=raw?JSON.parse(raw):{};}catch{throw new Error('Serverantwort ungültig. Bitte die Seite neu laden.');}
     if(!response.ok){const error=new Error(data.error||'Verbindung fehlgeschlagen');error.status=response.status;throw error;}
+    failures=0;
     session.room=data.room;remember();offset=data.serverNow-Date.now();lastGood=Date.now();connected=true;onConnection(true);
     session.action='sync';remember();
     return data;
@@ -55,6 +63,7 @@ export function createDuelClient({canSync,onView,onPrepare,onBegin,onConnection,
     if(notify&&begun)await onView(data);
   }
   function failed(error) {
+    failures++;
     connected=false;onConnection(false);
     say(friendly(error));
     if([400,401,404,409,410].includes(error.status)) {
@@ -96,9 +105,9 @@ export function createDuelClient({canSync,onView,onPrepare,onBegin,onConnection,
   hostTab.addEventListener('click',()=>void changeMode('host'));
   joinTab.addEventListener('click',()=>void changeMode('join'));
   document.getElementById('duel-host-retry').addEventListener('click',()=>void create());
-  input.addEventListener('input',()=>{input.value=input.value.replace(/\D/g,'').slice(0,4);});
+  input.addEventListener('input',()=>{input.value=input.value.replace(/\D/g,'').slice(0,CODE_LEN);});
   form.addEventListener('submit',async event=>{
-    event.preventDefault();if(flight||!/^\d{4}$/.test(input.value))return;
+    event.preventDefault();if(flight||!CODE_RE.test(input.value))return;
     flight=true;session={token:makeToken(),room:input.value,action:'join'};remember();say('Verbindung wird hergestellt …');
     const button=form.querySelector('button');button.disabled=true;
     try{await accept(await request('join'));}catch(e){failed(e);}finally{flight=false;button.disabled=false;}
@@ -137,7 +146,7 @@ export function createDuelClient({canSync,onView,onPrepare,onBegin,onConnection,
   }
   async function joinMode(){await idle();if(begun)return;await changeMode('join');}
   async function joinRoom(room) {
-    await idle();if(begun||!/^\d{4}$/.test(room))return false;
+    await idle();if(begun||!CODE_RE.test(room))return false;
     flight=true;mode='join';session={token:makeToken(),room,action:'join'};remember();say('Verbindung wird hergestellt …');
     try{await accept(await request('join'));return true;}catch(e){failed(e);return false;}finally{flight=false;}
   }
@@ -164,16 +173,22 @@ export function createDuelClient({canSync,onView,onPrepare,onBegin,onConnection,
       else if(!e.shiftKey&&document.activeElement===items.at(-1)){e.preventDefault();items[0]?.focus();}
     }
   });
+  function pollDelay(){
+    const s=view?.status;
+    const base=s==='playing'?POLL.playing:s==='finished'?POLL.finished:POLL.lobby;
+    return failures?Math.min(POLL.maxBackoff,base*2**Math.min(failures,4)):base;
+  }
   setInterval(async()=>{
     if(stopped||!session||flight||moving||syncing||opening||document.hidden||(begun&&!canSync()))return;
     if(!session.room&&mode!=='host')return;
+    if(Date.now()-lastRequest<pollDelay())return;
     syncing=true;
     try{
       const data=retryMove?await request('move',retryMove):await request(session.room?(session.action||'sync'):'create');
       if(retryMove&&data)retryMove=null;
       await accept(data);
     }catch(e){failed(e);}finally{syncing=false;}
-  },1000);
+  },250);
   return {open,exit,enter,host:hostRoom,joinMode,join:joinRoom,cancel,get mode(){return mode;},get room(){return session?.room||null;},get waiting(){return view?.status==='waiting';},get active(){return begun;},get view(){return view;},get serverNow(){return Date.now()+offset;},
     get canMove(){const now=Date.now()+offset;return begun&&!moving&&connected&&Date.now()-lastGood<10000&&view?.status==='playing'&&now>=view.startsAt&&now<view.endsAt;},
     async move(direction,line) {

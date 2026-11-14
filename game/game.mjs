@@ -1,16 +1,16 @@
-import {apiFetch} from './api.mjs?v=sq-1';
+import {apiFetch} from './api.mjs?v=sq-2';
 import { SIZE, START_VALUES, createStartValues, insertTile, nextMergePass, settle, isGameOver } from './game-logic.mjs?v=automatic-streets-2';
 import { nextSpawn, spawnProfile } from './balance.mjs';
 import {canContinueRun} from './run-availability.mjs?v=splash-plate-1';
 import { createMergeEffects } from './merge-effects.mjs?v=fuse-3';
 import { createGameGraphics } from './graphics-adapter.mjs?v=fuse-6';
 import { installDeviceMotion } from './device-motion.mjs';
-import { createGameSound } from './sound.mjs?v=speed-2';
+import { createGameSound } from './sound.mjs?v=launch-1';
 import { installSettings } from './settings.mjs?v=woodland-menu-1';
-import { createDuelClient } from './duel-client.mjs?v=speed-2';
+import { createDuelClient } from './duel-client.mjs?v=launch-1';
 import {installFullscreen} from './fullscreen.mjs?v=timed-duel-1';
-import {createWorldMenu} from './world-menu.mjs?v=speed-2';
-import {createHaptics} from './haptics.mjs?v=speed-2';
+import {createWorldMenu} from './world-menu.mjs?v=launch-1';
+import {createHaptics} from './haptics.mjs?v=launch-1';
 import {planMergeRipple} from './merge-ripple.mjs?v=swarm-fx-3';
 const playfield = document.getElementById('playfield');
 const gameElement = document.querySelector('.game');
@@ -164,9 +164,31 @@ function snapshot() {
     moves, peak, revision: ++revision };
 }
 
-async function flushPending() {
+// Server saves are batched: every move still lands in localStorage right away,
+// but the cloud copy is sent at most once per SAVE_DEBOUNCE_MS, plus immediately
+// when the tab is hidden or closed (fetch keepalive). Cuts Edge Function calls ~10x.
+const SAVE_DEBOUNCE_MS = 20000;
+let saveTimer = 0;
+let cloudDirty = false;
+
+function scheduleFlush(delay = SAVE_DEBOUNCE_MS) {
+  if (saveTimer) return;
+  saveTimer = setTimeout(() => { saveTimer = 0; void flushPending(); }, delay);
+}
+
+async function flushPending({ keepalive = false } = {}) {
   if(duelMode)return;
-  if (saving || !pendingSave) return;
+  if (saveTimer) { clearTimeout(saveTimer); saveTimer = 0; }
+  if (!pendingSave) return;
+  if (keepalive) {
+    // Page is going away: fire and forget, do not wait for a running request.
+    const current = pendingSave;
+    pendingSave = null; cloudDirty = false;
+    apiFetch('/save', { method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(current), keepalive: true }).catch(() => {});
+    return;
+  }
+  if (saving) return;
   saving = true;
   try {
     while (pendingSave) {
@@ -175,8 +197,9 @@ async function flushPending() {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(current), credentials: 'same-origin',
       });
+      if (result.status === 429) { scheduleFlush(60000); return; } // rate limited: retry quietly later
       if (!result.ok) throw new Error('Save unavailable');
-      if (pendingSave === current) pendingSave = null;
+      if (pendingSave === current) { pendingSave = null; cloudDirty = false; }
     }
   } catch {
     // The local copy stays available; reconnecting retries the newest state.
@@ -186,12 +209,12 @@ async function flushPending() {
   }
 }
 
-function saveState() {
+function saveState({ now = false } = {}) {
   if(duelMode)return;
   const state = snapshot();
   try { localStorage.setItem(storageKey, JSON.stringify(state)); } catch { /* browser storage can be blocked */ }
-  pendingSave = state;
-  void flushPending();
+  pendingSave = state; cloudDirty = true;
+  if (now) void flushPending(); else scheduleFlush();
 }
 
 async function start() {
@@ -649,16 +672,17 @@ resumeButton.addEventListener('click', resume);
 restartButton.addEventListener('click', restart);
 
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden && !booting) saveState();
-  else if (!document.hidden) void flushPending();
+  if (document.hidden && !booting && !duelMode) { saveState(); void flushPending({ keepalive: true }); }
+  else if (!document.hidden && pendingSave) scheduleFlush(2000);
 });
 window.addEventListener('pagehide', event => {
   if (!event.persisted) {phoneMotion.dispose();sound.dispose();}
   if (booting || duelMode) return;
-  const state = snapshot();
-  try { localStorage.setItem(storageKey, JSON.stringify(state)); } catch {}
-  apiFetch('/save', { method: 'PUT', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(state), credentials: 'same-origin', keepalive: true }).catch(() => {});
+  // visibilitychange usually fired just before and already sent everything;
+  // only send again if something changed since (or a move is mid-animation).
+  if (!cloudDirty && !pendingSave && !busy) return;
+  saveState();
+  void flushPending({ keepalive: true });
 });
 window.addEventListener('online', () => void flushPending());
 // Read-only inspection for integration checks; game state still belongs here.

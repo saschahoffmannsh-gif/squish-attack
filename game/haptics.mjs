@@ -3,7 +3,7 @@
 // label also plays the iOS system "switch" click. That click is gated by
 // enabled (Einstellungen > Vibration). On iPhone the default is off, because
 // the system click is easy to mistake for a game sound.
-import {ios} from './flags.mjs?v=speed-2';
+import {ios} from './flags.mjs?v=launch-1';
 const KEY='squish-haptics-v1';
 const PATTERNS={tap:[6],move:[9],merge:[16,60,16],big:[24,60,24,60,34]};
 const TICKS={tap:1,move:1,merge:2,big:3};

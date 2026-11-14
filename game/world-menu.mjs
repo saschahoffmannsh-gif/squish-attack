@@ -1,5 +1,5 @@
 import {getLabelShapes,pillowTopHeight} from './original-gel-models.js?v=menu-1';
-import {BUILD} from './flags.mjs?v=speed-2';
+import {BUILD} from './flags.mjs?v=launch-1';
 
 // In-world start menu: wide gel cushions (the original squish body with a
 // lengthened straight middle) drop onto the glass, one per grid row, and burst
@@ -360,11 +360,18 @@ export function createWorldMenu({visual,effects,sound,page=document,reduceMotion
     await drop([toggles.sound,toggles.motion,toggles.vibration,back]);focusFirst();
   }
   // ---------- duel lobby ----------
-  const codeX=i=>(i-1.5)*pitch;
+  // 6-digit codes: tiles sit a bit closer and smaller so the row stays on the 5-wide board.
+  const CODE_LEN=6,CODE_GAP=.82,CODE_SCALE=.8;
+  const codeX=(i,n=CODE_LEN)=>(i-(n-1)/2)*pitch*(n>4?CODE_GAP:1);
+  function codeTile(opts,n=CODE_LEN){
+    const it=add('digit',opts);
+    if(n>4){it.base.multiplyScalar(CODE_SCALE);it.s.group.scale.copy(it.base);}
+    return it;
+  }
   function showCode(room) {
     if(screen!=='multi'||multi.mode!=='host'||!room||room===multi.room)return;
     const old=multi.code;multi.room=room;
-    multi.code=[...room].map((d,i)=>add('digit',{row:3,x:codeX(i),digit:+d,label:`Code-Ziffer ${d}`}));
+    multi.code=[...room].map((d,i)=>codeTile({row:3,x:codeX(i,room.length),digit:+d,label:`Code-Ziffer ${d}`},room.length));
     void burstAll(null,old||[]).then(()=>drop(multi.code,{spacing:.11}));
     say('Dein Code: '+room+' · Warte auf Mitspieler (10 Min.)');
   }
@@ -407,12 +414,12 @@ export function createWorldMenu({visual,effects,sound,page=document,reduceMotion
   bindKeypad();
   function typeDigit(d) {
     if(!multi||multi.mode!=='join'||multi.connecting)return;
-    if(multi.typed.length>=4){kick(multi.connect,.4);return;}
-    const i=multi.typed.length,it=add('digit',{row:3,x:codeX(i),digit:d,label:'Letzte Ziffer löschen',action:()=>eraseDigit()});
+    if(multi.typed.length>=CODE_LEN){kick(multi.connect,.4);return;}
+    const i=multi.typed.length,it=codeTile({row:3,x:codeX(i),digit:d,label:'Letzte Ziffer löschen',action:()=>eraseDigit()});
     multi.typed.push(it);void drop([it]);
     const typed=multi.typed.map(tile=>tile.digit).join('');
-    if(multi.typed.length===4){say('Code '+typed+' – tippe auf Verbinden.');setTimeout(()=>multi?.connect&&kick(multi.connect,.35),700);}
-    else say('Code '+typed+'·'.repeat(4-typed.length)+' – weiter tippen.');
+    if(multi.typed.length===CODE_LEN){say('Code '+typed+' – tippe auf Verbinden.');setTimeout(()=>multi?.connect&&kick(multi.connect,.35),700);}
+    else say('Code '+typed+'·'.repeat(CODE_LEN-typed.length)+' – weiter tippen.');
   }
   function eraseDigit() {
     if(!multi||multi.mode!=='join'||multi.connecting||!multi.typed.length)return;
@@ -477,7 +484,7 @@ export function createWorldMenu({visual,effects,sound,page=document,reduceMotion
   }
   async function connect(it) {
     if(multi.connecting)return;
-    if(multi.typed.length<4){kick(it,.5);say('Bitte den vierstelligen Code eingeben.',2600);return;}
+    if(multi.typed.length<CODE_LEN){kick(it,.5);say('Bitte den sechsstelligen Code eingeben.',2600);return;}
     multi.connecting=true;kick(it,.3);
     let ok=false;
     try{ok=await hooks.duel.join(multi.typed.map(tile=>tile.digit).join(''));}
