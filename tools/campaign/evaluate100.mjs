@@ -99,11 +99,12 @@ function plant(rng, spec, maxV, sequence) {
     // Fast fertige Straße aus 5 entlang der ganzen Reihe, eine Lücke für den Auslöser.
     const order = lineCells(direction, line);
     const up = rng() < 0.5, s0 = int(rng, 1, Math.max(1, maxV - 3)), f = [0, 1, 2, 3, 4].map(i => s0 + (up ? i : 4 - i));
+    // Der Auslöser kommt am Einschub-Feld herein und schiebt die Steine bis zur Lücke weiter (wie bei der Straße aus 4).
     const g = int(rng, 1, 3);
-    trigger = f[g];
+    trigger = f[0];
     for (let i = 0; i < 5; i++) {
       if (i === g) { taken.add(K(order[i])); continue; }
-      const [r, c] = order[i]; board[r][c] = f[i]; taken.add(K([r, c]));
+      const [r, c] = order[i]; board[r][c] = i < g ? f[i + 1] : f[i]; taken.add(K([r, c]));
     }
   } else {
     // Straße aus 4 entlang der Einschub-Reihe: der Auslöser schiebt die Steine bis zur Lücke (g = 1 oder 2) weiter.
