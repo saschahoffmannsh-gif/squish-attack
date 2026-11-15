@@ -1,23 +1,22 @@
 #!/usr/bin/env node
-// Baut levels/levels-001-100.json (launch-15).
+// Baut levels/levels-001-100.json (launch-18).
 //   node tools/campaign/build100.mjs [--workers 7] [--only 26,27] [--assemble]
-// Phase 1 (Suche, parallel, mit Cache je Level in tools/campaign/.cache/build100/):
-//   für jedes neu zu bauende Level Kandidaten k = 0, 1, 2 … bewerten (evaluate100.mjs) und den
-//   besten zur Zielkurve (plan100.mjs) behalten.
-// Phase 2 (Zusammenbau): 1–10, 13, 14 unverändert; 11/12/16/17/18/20/24 mit mehr Zügen; Rest aus der Suche.
+// Phase 1 (Suche, parallel, Cache in tools/campaign/.cache/build18/):
+//   Level 11–100 neu bewerten (evaluate100.mjs), besten Kandidaten zur Zielkurve behalten.
+// Phase 2 (Zusammenbau): Level 1–10 unverändert aus levels-001-100.json / v1; 11–100 aus der Suche.
 import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { evaluate, makeLevel, RESERVE } from './evaluate100.mjs';
-import { MISSIONS, RETUNE, TOOL_LEVELS, targetD, roleOf } from './plan100.mjs';
+import { MISSIONS, KEEP, TOOL_LEVELS, targetD, roleOf, moveWindow } from './plan100.mjs';
 import { validateLevel, starThresholds, replaySolution, chapterOf, toolStars } from '../../game/campaign.mjs';
 import { solveLevel } from './solver.mjs';
 import { createRng } from '../../game/ranked.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url)), root = join(here, '..', '..');
-const cacheDir = join(here, '.cache', 'build100');
-const BUILD = Object.keys(MISSIONS).map(Number).sort((a, b) => a - b);
+const cacheDir = join(here, '.cache', 'build18');
+const BUILD = Object.keys(MISSIONS).map(Number).filter(id => id > 10).sort((a, b) => a - b);
 
 function search(id, { budgetMs, kMax }) {
   const file = join(cacheDir, `L${id}.json`);
@@ -72,20 +71,14 @@ function extendSequence(seq, len, seed) {
 }
 
 function assemble() {
-  const old = JSON.parse(readFileSync(join(root, 'levels', 'levels-001-025.json'), 'utf8')).levels;
+  const v1 = JSON.parse(readFileSync(join(root, 'levels', 'levels-001-025.json'), 'utf8')).levels;
+  const prev = JSON.parse(readFileSync(join(root, 'levels', 'levels-001-100.json'), 'utf8')).levels;
   const levels = [];
   for (let id = 1; id <= 100; id++) {
     const kindOf = goals => goals.length === 1 ? goals[0].type : goals.length === 2 ? 'duo' : 'trio';
-    if (id <= 25 && !MISSIONS[id]) {
-      const lv = structuredClone(old[id - 1]);
-      if (RETUNE[id]) {
-        const m = lv.meta.minMoves, L = RETUNE[id];
-        lv.sequence = extendSequence(lv.sequence, L + RESERVE, lv.meta.seed);
-        lv.moves = L; lv.stars = starThresholds(m, L);
-        lv.meta.slack = L - m; lv.meta.retuned = { from: old[id - 1].moves, to: L };
-      }
+    if (KEEP.includes(id)) {
+      const lv = structuredClone(prev[id - 1] || v1[id - 1]);
       lv.chapter = chapterOf(id);
-      lv.meta.generator = 'v1';
       levels.push(lv);
       continue;
     }
@@ -97,17 +90,17 @@ function assemble() {
     const c = makeLevel(id, b.k), L = b.limit, tool = TOOL_LEVELS[id] || null;
     const lv = {
       id, chapter: chapterOf(id), kind: kindOf(c.goals), board: c.board, sequence: c.sequence.slice(0, L + RESERVE), moves: L, goals: c.goals,
-      stars: tool ? toolStars(b.toolMin, L, tool) : starThresholds(b.min, L),
-      solution: tool ? b.toolSolution : b.solution,
+      stars: starThresholds(b.min, L),
+      solution: b.solution,
     };
     if (tool) lv.tool = tool;
     lv.meta = {
-      generator: 'build100', k: b.k, seed: b.seed, role: roleOf(id), note: MISSIONS[id].note || null,
+      generator: 'build18', k: b.k, seed: b.seed, role: roleOf(id), note: MISSIONS[id].note || null,
       minMoves: b.min, slack: b.min != null ? L - b.min : null, toolMin: b.toolMin ?? null,
       optimalSolutions: b.optimal ?? null, pOptimal: b.pOpt != null ? +b.pOpt.toPrecision(3) : null,
       target: targetD(id), estimate: { D: b.D, Dfelt: b.Dfelt, casual: +b.cas.toFixed(3), good: +b.good.toFixed(3), random: +b.rnd.toPrecision(3), greedy: !!b.greedy,
         ...(tool ? { casualTool: +b.casTool.toFixed(3), goodTool: +b.goodTool.toFixed(3) } : {}), ...(b.goodStarts != null ? { goodStarts: b.goodStarts } : {}) },
-      ...(b.hintMoves ? { hintMoves: b.hintMoves } : {}),
+      ...(b.hintMoves ? { hintMoves: b.hintMoves } : {}), ...(b.toolSolution ? { toolSolution: b.toolSolution } : {}),
       searched: { tried: st.tried, usable: st.ok },
     };
     validateLevel(lv);
@@ -117,7 +110,7 @@ function assemble() {
     }
     levels.push(lv);
   }
-  const out = { version: 2, generator: { tool: 'tools/campaign/build100.mjs', plan: 'tools/campaign/plan100.mjs', reserve: RESERVE, v1: 'Level 1–25 aus Generator v1 (Saat 20261114)' }, count: levels.length, levels };
+  const out = { version: 2, generator: { tool: 'tools/campaign/build100.mjs', plan: 'tools/campaign/plan100.mjs', reserve: RESERVE, v1: 'Level 1–10 unverändert aus Generator v1 (Saat 20261114)', launch: 'launch-18' }, count: levels.length, levels };
   writeFileSync(process.env.PARTIAL === '1' ? '/tmp/levels-partial.json' : join(root, 'levels', 'levels-001-100.json'), JSON.stringify(out, null, 1) + '\n');
   console.log(`Geschrieben: levels/levels-001-100.json (${levels.length} Level)`);
 }

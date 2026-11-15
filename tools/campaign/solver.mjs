@@ -32,18 +32,72 @@ export function expand(level, board, vec, depth) {
     const settled = stepBoard(board, direction, line, { value: raw });
     if (!settled) continue;
     const a = advanceVec(level.goals, vec, settled);
-    out.push({ move: MOVE_CHARS[i], board: settled.board, vec: a.vec, win: a.win });
+    let createdMax = 0, merges = 0;
+    for (const pass of settled.passes || []) for (const g of pass) { merges++; if (g.nextValue > createdMax) createdMax = g.nextValue; }
+    out.push({ move: MOVE_CHARS[i], board: settled.board, vec: a.vec, win: a.win, points: settled.points || 0, createdMax, merges });
   }
   return out;
 }
+
+/** Längste aufsteigende Nachbar-Kette (für Straßen-Ziele). */
+function streetPotential(board) {
+  let best = 1;
+  for (const [dr, dc] of [[0, 1], [1, 0]]) {
+    for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
+      const t = board[r][c]; if (!t) continue;
+      let n = 1, v = t.value, rr = r + dr, cc = c + dc;
+      while (board[rr]?.[cc] && board[rr][cc].value === v + 1) { n++; v++; rr += dr; cc += dc; }
+      if (n > best) best = n;
+    }
+  }
+  return best;
+}
+
+/**
+ * Brett-Potenzial zusätzlich zum Zielfortschritt. Wichtig für lange Aufbau-Ziele
+ * (z. B. eine 8 bauen): der reine vec bleibt 0, bis der Zielwert entsteht.
+ */
+export function potential(board, goals, vec = goals.map(() => 0)) {
+  const counts = Object.create(null);
+  let tiles = 0, mass = 0;
+  for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
+    const t = board[r][c]; if (!t) continue;
+    const v = t.value; tiles++; counts[v] = (counts[v] || 0) + 1; mass += 2 ** Math.min(16, v);
+  }
+  let s = 0;
+  for (let i = 0; i < goals.length; i++) {
+    const g = goals[i], tgt = targetOf(g), have = vec[i] || 0, done = have / Math.max(1, tgt);
+    s += 2 * done;
+    if (done >= 1) continue;
+    if (g.type === 'tile' || g.type === 'make') {
+      const V = g.value;
+      for (let v = 1; v <= V; v++) s += (counts[v] || 0) * (2 ** (v - V));
+    } else if (g.type === 'score') {
+      s += Math.min(1.2, have / g.points + 0.0004 * mass);
+    } else if (g.type === 'clear') {
+      s += have / g.tiles + 0.03 * tiles;
+    } else if (g.type === 'street' || g.type === 'long') {
+      s += streetPotential(board) / (g.type === 'long' ? 5 : 4);
+    } else if (g.type === 'empty') {
+      s += (25 - tiles) / 25;
+      if (tiles <= g.max) s += 1;
+    } else if (g.type === 'purge') {
+      s += 0.3 * (counts[g.value] || 0);
+    }
+  }
+  return s;
+}
+
+const kidScore = (level, k) => (k.win ? 8 : 0) + 3 * k.vec.reduce((s, v, i) => s + v / targetOf(level.goals[i]), 0) + 1.4 * potential(k.board, level.goals, k.vec) + boardShape(k.board) + 0.9 * (k.createdMax || 0) + 0.25 * (k.merges || 0) + 0.008 * (k.points || 0);
 
 /**
  * Exakte Lösung per BFS. Optionen:
  *  maxDepth  – Suchtiefe (Standard: Zuglimit)
  *  maxLayer  – max. Zustände pro Schicht; darüber Abbruch (exact) bzw. Beam
  *  beam      – true: bei Überlauf die besten maxLayer Zustände behalten
+ *  maxMs     – Zeitbudget (danach Abbruch, bei beam: bisher bestes Ergebnis oder unlösbar)
  */
-export function solveLevel(level, { maxDepth = level.moves, maxLayer = 400000, beam = false } = {}) {
+export function solveLevel(level, { maxDepth = level.moves, maxLayer = 400000, beam = false, maxMs = Infinity, jitter = 0 } = {}) {
   const t0 = performance.now();
   const goals = level.goals;
   const startRun = createLevelRun(level);
@@ -55,7 +109,9 @@ export function solveLevel(level, { maxDepth = level.moves, maxLayer = 400000, b
   for (let depth = 0; depth < maxDepth; depth++) {
     const next = new Map();
     let wins = null, winPaths = 0, totalPaths = 0, winStates = 0, firstMoves = new Set();
+    let timedOut = false;
     for (const [key, node] of layer) {
+      if ((expanded & 255) === 0 && performance.now() - t0 > maxMs) { timedOut = true; break; }
       const { board } = boardFromKey(key.slice(0, SIZE * SIZE));
       const kids = expand(level, board, node.vec, depth);
       expanded++; edges += kids.length;
@@ -69,7 +125,7 @@ export function solveLevel(level, { maxDepth = level.moves, maxLayer = 400000, b
         const ck = boardKey(k.board) + '|' + k.vec.join(',');
         const ex = next.get(ck);
         if (ex) ex.count += node.count;
-        else next.set(ck, { count: node.count, parent: node, move: k.move, vec: k.vec });
+        else next.set(ck, { count: node.count, parent: node, move: k.move, vec: k.vec, pot: potential(k.board, goals, k.vec) + (jitter ? Math.sin((depth + 1) * 12.9898 + jitter * 78.233) * 0.15 : 0) });
       }
     }
     if (wins) {
@@ -81,15 +137,20 @@ export function solveLevel(level, { maxDepth = level.moves, maxLayer = 400000, b
         winStates, states, layers, avgBranching: edges / Math.max(1, expanded), ms: performance.now() - t0,
       };
     }
+    if (timedOut && !next.size) return { solvable: false, exact: !approximate, reason: 'budget', depth, states, layers, ms: performance.now() - t0 };
     if (!next.size) return { solvable: false, exact: !approximate, reason: 'dead-end', states, layers, ms: performance.now() - t0 };
+    if (timedOut) {
+      if (!beam) return { solvable: false, exact: false, reason: 'budget', depth: depth + 1, states, layers: [...layers, next.size], ms: performance.now() - t0 };
+      approximate = true;
+    }
     if (next.size > maxLayer) {
       if (!beam) return { solvable: false, exact: false, reason: 'too-large', depth: depth + 1, states, layers: [...layers, next.size], ms: performance.now() - t0 };
       approximate = true;
-      const ranked = [...next].sort((a, b) => score(b[1].vec) - score(a[1].vec)).slice(0, maxLayer);
+      const ranked = [...next].sort((a, b) => (b[1].pot ?? 0) - (a[1].pot ?? 0)).slice(0, maxLayer);
       layer = new Map(ranked);
     } else layer = next;
     states += layer.size; layers.push(layer.size);
-    function score(vec) { return vec.reduce((s, v, i) => s + v / targetOf(goals[i]), 0); }
+    if (performance.now() - t0 > maxMs) return { solvable: false, exact: !approximate, reason: 'budget', depth: depth + 1, states, layers, ms: performance.now() - t0 };
   }
   return { solvable: false, exact: !approximate, reason: 'limit', states, layers, ms: performance.now() - t0 };
 }
@@ -124,7 +185,7 @@ export function greedy(level, limit = level.moves) {
     if (!kids.length) return { won: false, moves: d };
     const win = kids.find(k => k.win);
     if (win) return { won: true, moves: d + 1 };
-    const val = k => k.vec.reduce((s, v, i) => s + v / targetOf(level.goals[i]), 0) - k.board.flat().filter(Boolean).length * 1e-3;
+    const val = k => kidScore(level, k);
     let best = kids[0];
     for (const k of kids) if (val(k) > val(best)) best = k;
     board = best.board; vec = best.vec;
@@ -150,7 +211,7 @@ export function playerModel(level, { n = 100, seed = 7, skill = 0.6, depth = lev
       if (!kids.length) break;
       const win = kids.find(x => x.win);
       if (win && rng() < 0.5 + skill / 2) { for (let j = d + 1; j <= depth; j++) winsBy[j]++; board = null; break; }
-      const vals = kids.map(x => (x.win ? 3 : 0) + 3 * x.vec.reduce((s, v, i) => s + v / targetOf(level.goals[i]), 0) + boardShape(x.board));
+      const vals = kids.map(x => kidScore(level, x));
       const m = Math.max(...vals), w = vals.map(v => Math.exp((v - m) / temp)), sum = w.reduce((a, b) => a + b);
       let r = rng() * sum, pickI = 0;
       for (; pickI < w.length - 1; pickI++) { r -= w[pickI]; if (r < 0) break; }
@@ -207,7 +268,7 @@ export function simulateRealtime(level, { n = 200, seed = 5, skill = 0.6, secMin
     while (run.status === 'playing') {
       const kids = expand(level, run.board, vec, run.index).map((x, i) => ({ ...x, i }));
       if (!kids.length) break;
-      const vals = kids.map(x => (x.win ? 3 : 0) + 3 * x.vec.reduce((s, v, i) => s + v / targetOf(level.goals[i]), 0) + boardShape(x.board));
+      const vals = kids.map(x => kidScore(level, x));
       const m = Math.max(...vals), w = vals.map(v => Math.exp((v - m) / temp)), sum = w.reduce((a, b) => a + b);
       let r = rng() * sum, pick = 0;
       for (; pick < w.length - 1; pick++) { r -= w[pick]; if (r < 0) break; }
@@ -219,4 +280,42 @@ export function simulateRealtime(level, { n = 200, seed = 5, skill = 0.6, secMin
     if (run.status === 'won') wins++;
   }
   return { n, winRate: wins / n, explodedRate: boom / n };
+}
+
+/**
+ * Mehrere geleitete Partien (wie playerModel, aber mit Pfad). Liefert die kürzeste
+ * gefundene Gewinnfolge oder {won:false}. Gut als schnelle Oberschranke für lange Level.
+ */
+export function bestPlay(level, { n = 8, seed = 1, skill = 0.95, depth = level.moves, ply = 1 } = {}) {
+  const rng = createRng(seed);
+  const temp = 0.05 + (1 - skill) * 1.5;
+  let best = null;
+  for (let k = 0; k < n; k++) {
+    let board = createLevelRun(level).board, vec = level.goals.map(() => 0), path = '';
+    for (let d = 0; d < depth; d++) {
+      const kids = expand(level, board, vec, d);
+      if (!kids.length) break;
+      const win = kids.find(x => x.win);
+      if (win) {
+        const moves = d + 1, solution = path + win.move;
+        if (!best || moves < best.minMoves) best = { won: true, solvable: true, exact: false, approximate: true, minMoves: moves, solution };
+        break;
+      }
+      const vals = kids.map((x, i) => {
+        let s = kidScore(level, x);
+        if (ply >= 2 && d + 1 < depth && !x.win) {
+          const grand = expand(level, x.board, x.vec, d + 1);
+          if (grand.some(g => g.win)) s += 6;
+          else if (grand.length) s += 0.55 * Math.max(...grand.map(g => kidScore(level, g)));
+        }
+        return s;
+      });
+      const m = Math.max(...vals), w = vals.map(v => Math.exp((v - m) / temp)), sum = w.reduce((a, b) => a + b);
+      let r = rng() * sum, pickI = 0;
+      for (; pickI < w.length - 1; pickI++) { r -= w[pickI]; if (r < 0) break; }
+      const ch = kids[pickI];
+      path += ch.move; board = ch.board; vec = ch.vec;
+    }
+  }
+  return best || { won: false, solvable: false, reason: 'play' };
 }

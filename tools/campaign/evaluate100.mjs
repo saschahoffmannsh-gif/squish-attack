@@ -4,9 +4,9 @@ import { settle, insertTile } from '../../game/game-logic.mjs';
 import { createRng } from '../../game/ranked.mjs';
 import { validateLevel, starThresholds, tilesOn, goalTarget } from '../../game/campaign.mjs';
 import { findHint } from '../../game/hint-solver.mjs';
-import { solveLevel, randomPlayouts, playerModel, greedy, expand } from './solver.mjs';
+import { solveLevel, randomPlayouts, playerModel, greedy, expand, bestPlay } from './solver.mjs';
 import { solveWithTool, playerFrom, startBoard, toolVariants, stateAfter } from './tools-solver.mjs';
-import { MISSIONS, TOOL_LEVELS, GEN, targetD, roleOf, RETIRED_GOALS } from './plan100.mjs';
+import { MISSIONS, TOOL_LEVELS, GEN, VARIETY, targetD, roleOf, RETIRED_GOALS, moveWindow, minMovesWanted } from './plan100.mjs';
 
 export const RESERVE = 5;
 export const STATS = {};
@@ -21,9 +21,11 @@ const weighted = (rng, max, focus) => {
 };
 const log2 = x => Math.log2(x);
 /** Schwierigkeit D (wie Planungsseite): 12·log2(1/pGel)+6·log2(1/pGut)+2·log2(1/pZufall)+3·(Min−1)+5·[gierig scheitert]+4·(Ziele−1). */
-export function difficulty({ pCas, pGood, pRand, min, greedyFails, goals }, n = 400) {
+export function difficulty({ pCas, pGood, pRand, min, greedyFails, goals, window }, n = 400) {
   const sm = p => (p * n + 0.5) / (n + 1);
-  const d = 12 * log2(1 / sm(pCas)) + 6 * log2(1 / sm(pGood)) + 2 * log2(1 / Math.max(2e-5, pRand)) + 3 * (min - 1) + (greedyFails ? 5 : 0) + 4 * (goals - 1);
+  const length = window ? 40 * (min / window) : 3 * (min - 1);
+  const att = p => Math.min(16, 1 / sm(p));
+  const d = 8 * log2(att(pCas)) + 4 * log2(att(pGood)) + 1.5 * log2(1 / Math.max(2e-5, pRand)) + length + (greedyFails ? 5 : 0) + 4 * (goals - 1);
   return Math.max(0, Math.min(100, Math.round(d)));
 }
 
@@ -31,10 +33,14 @@ export function difficulty({ pCas, pGood, pRand, min, greedyFails, goals }, n = 
 function params(goals, id) {
   const P = [];
   for (const g of goals) switch (g.type) {
-    case 'tile': case 'make': P.push({ tiles: [5, 12], maxV: [Math.max(2, g.value - 2), g.value - 1], seq: [2, Math.min(4, g.value - 1)] }); break;
-    case 'score': P.push({ tiles: [5, 13], maxV: [2, 5], seq: [2, 4] }); break;
-    case 'clear': P.push({ tiles: [6, 14], maxV: [2, 4], seq: [2, 3] }); break;
-    case 'street': case 'long': P.push({ tiles: [5, 12], maxV: [3, 5], seq: [3, 4] }); break;
+    case 'tile': case 'make': {
+      const cap = Math.max(2, Math.min(4, (g.value ?? 4) - 2));
+      const many = (g.value ?? 4) >= 5;
+      P.push({ tiles: many ? [8, 16] : [6, 14], maxV: [2, cap], seq: [2, Math.min(4, cap)] }); break;
+    }
+    case 'score': P.push({ tiles: [6, 14], maxV: [2, 4], seq: [2, 4] }); break;
+    case 'clear': P.push({ tiles: [6, 16], maxV: [2, 4], seq: [2, 3] }); break;
+    case 'street': case 'long': P.push({ tiles: [6, 14], maxV: [2, 4], seq: [2, 4] }); break;
     case 'combo': P.push({ tiles: [7, 16], maxV: [2, 4], seq: [2, 3] }); break;
     case 'empty': P.push({ tiles: [g.max + 4, g.max + 10], maxV: [2, 3], seq: [2, 3] }); break;
     case 'purge': P.push({ tiles: [6, 13], maxV: [g.value, g.value + 1], seq: [Math.max(2, g.value), g.value + 1], focus: g.value }); break;
@@ -89,6 +95,16 @@ function plant(rng, spec, maxV, sequence) {
       for (const c of l) if (K(c) !== K(X)) { board[c[0]][c[1]] = cur; taken.add(K(c)); }
       X = l[1]; cur++;
     }
+  } else if (spec.kind === 'long5') {
+    // Fast fertige Straße aus 5 entlang der ganzen Reihe, eine Lücke für den Auslöser.
+    const order = lineCells(direction, line);
+    const up = rng() < 0.5, s0 = int(rng, 1, Math.max(1, maxV - 3)), f = [0, 1, 2, 3, 4].map(i => s0 + (up ? i : 4 - i));
+    const g = int(rng, 1, 3);
+    trigger = f[g];
+    for (let i = 0; i < 5; i++) {
+      if (i === g) { taken.add(K(order[i])); continue; }
+      const [r, c] = order[i]; board[r][c] = f[i]; taken.add(K([r, c]));
+    }
   } else {
     // Straße aus 4 entlang der Einschub-Reihe: der Auslöser schiebt die Steine bis zur Lücke (g = 1 oder 2) weiter.
     const order = lineCells(direction, line);
@@ -101,13 +117,24 @@ function plant(rng, spec, maxV, sequence) {
   return { board, trigger, move: { direction, line }, taken, E };
 }
 /** Kandidat (Brett + Steinfolge) für Level id aus Saat k. */
-export function makeLevel(id, k, seqLen = 18) {
+export function makeLevel(id, k, seqLen) {
+  if (seqLen == null) seqLen = (moveWindow(id) ?? 12) + RESERVE;
   if (MISSIONS[id].goals.some(g => RETIRED_GOALS.includes(g.type))) throw new Error(`L${id}: Zielart nicht mehr im Pool`);
-  const goals = MISSIONS[id].goals, rng = createRng(seedFor(id, k)), p = params(goals, id), gen = GEN[id] || {};
+  const goals = MISSIONS[id].goals, rng = createRng(seedFor(id, k)), p = params(goals, id), gen = GEN[id] || {}, variety = VARIETY[id] || {};
+  if (variety.climb) {
+    const top = Math.max(5, ...goals.filter(g => g.type === 'tile' || g.type === 'make').map(g => g.value || 5));
+    p.maxV = [3, 4]; p.seq = [3, 4];
+    p.tiles = top >= 7 ? [12, 16] : top === 6 ? [8, 13] : [8, 12];
+    p.climbTop = top;
+  }
+
   const tilesR = gen.tiles || p.tiles, P = gen.plant;
   for (let attempt = 0; attempt < 400; attempt++) {
     const maxV = int(rng, ...p.maxV), seqMax = int(rng, ...p.seq);
-    const sequence = Array.from({ length: seqLen }, () => weighted(rng, seqMax, p.focus));
+    const top = variety.climb ? (p.climbTop || 5) : 0;
+    const climbSeq = () => top >= 7 ? (rng() < 0.1 ? 2 : rng() < 0.6 ? 3 : 4) : (rng() < 0.2 ? 2 : rng() < 0.8 ? 3 : 4);
+    const climbTile = () => top >= 7 ? (rng() < 0.06 ? 2 : rng() < 0.62 ? 3 : 4) : (rng() < 0.15 ? 2 : rng() < 0.82 ? 3 : 4);
+    const sequence = Array.from({ length: seqLen }, () => variety.climb ? climbSeq() : weighted(rng, seqMax, p.focus));
     let board = Array.from({ length: 5 }, () => Array(5).fill(null)), planted = null, missingVals = [];
     const protect = new Set();
     if (P) {
@@ -117,7 +144,8 @@ export function makeLevel(id, k, seqLen = 18) {
       if (P.kind !== 'pairs') {
         const probe = insertTile(board.map(r => r.map(v => (v == null ? null : { value: v }))), planted.move.direction, planted.move.line, { value: planted.trigger });
         const st = settle(probe.board);
-        if (P.kind === 'chain' ? st.passes.length < P.len : !st.passes.some(ps => ps.some(g => g.street && g.cells.length >= 4))) continue;
+        const longOk = st.passes.some(ps => ps.some(g => g.street && g.cells.length >= (P.kind === 'long5' ? 5 : 4)));
+        if (P.kind === 'chain' ? st.passes.length < P.len : !longOk) continue;
         const cells = [...planted.taken].filter(x => board[Math.floor(x / 5)][x % 5] != null);
         const miss = int(rng, ...(P.missing || [0, 0]));
         for (let m = 0; m < miss && cells.length; m++) { const x = cells.splice(int(rng, 0, cells.length - 1), 1)[0]; missingVals.push(board[Math.floor(x / 5)][x % 5]); board[Math.floor(x / 5)][x % 5] = null; }
@@ -136,16 +164,61 @@ export function makeLevel(id, k, seqLen = 18) {
     const n = int(rng, ...tilesR) - tilesOn(board);
     const free = Array.from({ length: 25 }, (_, i) => i).filter(i => board[Math.floor(i / 5)][i % 5] == null && !(planted && planted.taken.has(i)));
     for (let i = free.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [free[i], free[j]] = [free[j], free[i]]; }
-    free.slice(0, Math.max(0, n)).forEach(i => { board[Math.floor(i / 5)][i % 5] = weighted(rng, maxV, p.focus); });
+    free.slice(0, Math.max(0, n)).forEach(i => { board[Math.floor(i / 5)][i % 5] = variety.climb ? climbTile() : weighted(rng, maxV, p.focus); });
+    if (variety.climb) {
+      for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) {
+        if (board[r][c] == null) continue;
+        if (board[r][c] > 4) board[r][c] = 4;
+        if (board[r][c] === 1) board[r][c] = climbTile();
+      }
+    }
+    const free2 = () => Array.from({ length: 25 }, (_, i) => i).filter(i => board[Math.floor(i / 5)][i % 5] == null);
+    if (variety.has5 && !board.some(r => r.includes(5))) {
+      const spots = free2();
+      if (spots.length) { const i = spots[int(rng, 0, spots.length - 1)]; board[Math.floor(i / 5)][i % 5] = 5; }
+      else {
+        const lows = Array.from({ length: 25 }, (_, i) => i).filter(i => { const v = board[Math.floor(i / 5)][i % 5]; return v && v <= 4; });
+        if (lows.length) { const i = lows[int(rng, 0, lows.length - 1)]; board[Math.floor(i / 5)][i % 5] = 5; }
+      }
+    }
+    // Ziel 8: ein 6er und ein 7er als Zwischenstufen, sonst ist 40 Züge oft zu knapp.
+    // Weit auseinander setzen, damit sie nicht in wenigen Zügen zur 8 ketten.
+    if (variety.climb && (p.climbTop || 0) >= 8) {
+      const placeFar = (v, avoid) => {
+        if (board.some(r => r.includes(v))) return;
+        const score = i => {
+          const r = Math.floor(i / 5), c = i % 5;
+          return avoid.reduce((s, j) => s + Math.abs(r - Math.floor(j / 5)) + Math.abs(c - (j % 5)), 0);
+        };
+        let spots = free2();
+        if (!spots.length) spots = Array.from({ length: 25 }, (_, i) => i).filter(i => { const x = board[Math.floor(i / 5)][i % 5]; return x && x <= 4; });
+        if (!spots.length) return;
+        spots.sort((a, b) => score(b) - score(a));
+        const i = spots[0];
+        board[Math.floor(i / 5)][i % 5] = v;
+        return i;
+      };
+      const a5 = board.flat().findIndex((v, i) => v === 5);
+      const i6 = placeFar(6, a5 >= 0 ? [a5] : []);
+      placeFar(7, [a5, i6].filter(x => x != null && x >= 0));
+    }
+    if (variety.high) {
+      const [lo, hi] = variety.high, hv = int(rng, lo, hi);
+      const spots = free2();
+      const i = spots.length ? spots[int(rng, 0, spots.length - 1)] : int(rng, 0, 24);
+      board[Math.floor(i / 5)][i % 5] = hv;
+    }
     const tiles = board.map(r => r.map(v => (v == null ? null : { value: v })));
     if (settle(tiles).passes.length) continue;
     if (goals.some(g => g.type === 'empty' && tilesOn(tiles) <= g.max + 1)) continue;
+    if (variety.has5 && !board.some(r => r.includes(5))) continue;
+    if (variety.high && !board.some(r => r.some(v => v >= 20))) continue;
     if (planted && P.kind !== 'pairs') {
       const at = int(rng, ...(P.at || [0, 0]));
       missingVals.forEach((v, i) => { sequence[i] = v; });
       sequence[Math.max(at, missingVals.length)] = planted.trigger;
     }
-    return { board, sequence, goals: goals.map(g => ({ ...g })) };
+    return { board, sequence, goals: goals.map(g => ({ ...g })), variety };
   }
   return null;
 }
@@ -159,168 +232,127 @@ function minRange(id, role) {
 const asLevel = (id, c, moves) => ({ id, board: c.board, sequence: c.sequence, goals: c.goals, moves, stars: { three: 1, two: moves } });
 
 /** Kennzahlen eines (Teil-)Levels ab einem Zustand: Gelegenheits-/Gut-/Zufallsspieler + Gieriger, je Zuglimit. */
-export function metricsFrom(lv, board, vec, depth0, maxDepth, seed) {
-  const cas = playerFrom(lv, board, vec, depth0, maxDepth, { n: N_MODEL, seed: seed ^ 0xca5, skill: 0.4 });
-  const good = playerFrom(lv, board, vec, depth0, maxDepth, { n: N_MODEL, seed: seed ^ 0x600d, skill: 0.8 });
+export function metricsFrom(lv, board, vec, depth0, maxDepth, seed, { nModel = N_MODEL, nRand = N_RAND } = {}) {
+  const cas = playerFrom(lv, board, vec, depth0, maxDepth, { n: nModel, seed: seed ^ 0xca5, skill: 0.4 });
+  const good = playerFrom(lv, board, vec, depth0, maxDepth, { n: nModel, seed: seed ^ 0x600d, skill: 0.8 });
   const sub = { ...lv, board: board.map(r => r.map(t => (t ? t.value : null))), sequence: lv.sequence.slice(depth0), moves: maxDepth - depth0, stars: { three: 1, two: maxDepth - depth0 } };
-  const rnd = randomPlayouts(sub, { n: N_RAND, seed: seed ^ 0x5eed, depth: maxDepth - depth0 });
+  const rnd = randomPlayouts(sub, { n: nRand, seed: seed ^ 0x5eed, depth: maxDepth - depth0 });
   const gr = L => greedy(sub, L - depth0).won;
-  return { cas: L => cas.rate(L), good: L => good.rate(L), rnd: L => { const r = rnd.rate(L - depth0); return r > 0 ? r : 0.5 / N_RAND; }, greedy: gr };
+  return { cas: L => cas.rate(L), good: L => good.rate(L), rnd: L => { const r = rnd.rate(L - depth0); return r > 0 ? r : 0.5 / nRand; }, greedy: gr, nModel };
 }
-export const Dat = (m, L, min, goals) => difficulty({ pCas: m.cas(L), pGood: m.good(L), pRand: m.rnd(L), min, greedyFails: !m.greedy(L), goals }, N_MODEL);
+export const Dat = (m, L, min, goals, window) => difficulty({ pCas: m.cas(L), pGood: m.good(L), pRand: m.rnd(L), min, greedyFails: !m.greedy(L), goals, window }, m.nModel || N_MODEL);
+const metricOpts = W => W > 24 ? { nModel: 24, nRand: 80 } : W > 16 ? { nModel: 36, nRand: 120 } : {};
+const toolCasMin = (role, W) => W > 24 ? (role === 'boss' ? 0.15 : 0.2) : (role === 'boss' ? 0.25 : 0.35);
+
+
+function bestOf(cands) {
+  const ok = cands.filter(s => s && s.solvable && s.solution);
+  if (!ok.length) return cands.find(s => s) || { solvable: false, reason: 'none' };
+  ok.sort((a, b) => a.minMoves - b.minMoves);
+  const best = ok[0];
+  return { ...best, exact: !!best.exact, approximate: !best.exact, solvable: true };
+}
+
+/** Lösung im Zugfenster: kurze Level exakt (BFS), lange per geleitetem Spiel + Beam. */
+export function solveCandidate(lv, maxDepth, { minLo = 0 } = {}) {
+  if (maxDepth <= 12) return solveLevel(lv, { maxDepth, maxLayer: 200000, maxMs: 4000 });
+  const shortCap = Math.min(12, maxDepth);
+  const short = solveLevel(lv, { maxDepth: shortCap, maxLayer: 40000, beam: true, maxMs: 1600 });
+  if (short.solvable && short.minMoves < Math.max(4, minLo - 3)) return { ...short, tooEasy: true };
+  const plays = [];
+  const seeds = maxDepth >= 24 ? [0x51f0, 7, 99, 4242, 13, 111] : [0x51f0, 7, 99];
+  const nPlay = maxDepth >= 24 ? 4 : 8, ply = maxDepth >= 20 ? 2 : 1;
+  for (const seed of seeds) {
+    const p = bestPlay(lv, { n: nPlay, seed, skill: 0.99, depth: maxDepth, ply });
+    plays.push(p);
+    if (p.solvable) break;
+  }
+  const playHit = plays.find(p => p.solvable);
+  if (playHit) {
+    const beam = solveLevel(lv, { maxDepth: Math.min(maxDepth, playHit.minMoves), maxLayer: 7000, beam: true, maxMs: 1800 });
+    return bestOf([short, playHit, beam]);
+  }
+  const b1 = solveLevel(lv, { maxDepth, maxLayer: 7000, beam: true, maxMs: 2000 });
+  const b2 = solveLevel(lv, { maxDepth, maxLayer: 7000, beam: true, maxMs: 1600, jitter: 3 });
+  return bestOf([short, ...plays, b1, b2]);
+}
 
 /**
- * Bewertet Kandidat k für Level id. Rückgabe null (unbrauchbar) oder
- * {k, limit, D, Dfelt, raw, ...} – D = ohne Werkzeug, Dfelt = mit Schlüssel-Werkzeug (sonst = D).
+ * Bewertet Kandidat k für Level id (launch-18). Ohne Werkzeug immer lösbar im Zugfenster.
+ * Werkzeug-Spitzen: Limit = Optimum (sehr eng), mit dem Schlüssel-Werkzeug deutlich leichter.
  */
 export function evaluate(id, k) {
   const role = roleOf(id), tool = TOOL_LEVELS[id], target = targetD(id), seed = seedFor(id, k);
-  const c = makeLevel(id, k);
+  const W = moveWindow(id);
+  if (!W) return why('r0');
+  const [mlo, mhi] = minMovesWanted(id);
+  const c = makeLevel(id, k, W + RESERVE);
   if (!c) return why('r1');
-  const G = c.goals.length;
+  const G = c.goals.length, lv = asLevel(id, c, W);
+  const sol = solveCandidate(lv, W, { minLo: mlo });
+  const hardLo = Math.max(4, mlo - 5);
+  if (!sol.solvable || !sol.solution) return why('r2n');
+  if (sol.tooEasy || sol.minMoves < hardLo) return why('r2e');
+  if (sol.minMoves > W) return why('r2l');
+  const m = sol.minMoves;
+  const midWant = Math.round((mlo + mhi) / 2);
+  const lengthCost = Math.abs(m - midWant) * 1.2 + Math.max(0, mlo - m) * 3;
+  const opts = metricOpts(W);
   if (!tool) {
-    const [mlo, mhi] = minRange(id, role);
-    const sol = solveLevel(asLevel(id, c, mhi), { maxDepth: mhi, maxLayer: 120000 });
-    if (!sol.solvable || !sol.exact || sol.minMoves < mlo) return why('r2');
-    const m = sol.minMoves, top = m + 6;
-    const lv = asLevel(id, c, top), M = metricsFrom(lv, startBoard(lv), lv.goals.map(() => 0), 0, top, seed);
-    let best = null;
-    for (let slack = 3; slack <= 6; slack++) {
-      const L = m + slack, D = Dat(M, L, m, G);
-      const cost = Math.abs(D - target) + (slack - 3) * 0.15;
-      if (!best || cost < best.cost) best = { cost, L, D };
-    }
-    const L = best.L;
-    return { id, k, seed, role, tool: null, limit: L, min: m, D: best.D, Dfelt: best.D, cost: best.cost, solution: sol.solution,
-      optimal: sol.optimalSolutions, pOpt: sol.pOpt, cas: M.cas(L), good: M.good(L), rnd: M.rnd(L), greedy: M.greedy(L) };
+    const L = W;
+    const M = metricsFrom(lv, startBoard(lv), lv.goals.map(() => 0), 0, L, seed, opts);
+    const D = Dat(M, L, m, G, W);
+    return { id, k, seed, role, tool: null, limit: L, min: m, D, Dfelt: D, cost: Math.abs(D - target) + lengthCost,
+      solution: sol.solution, exact: !!sol.exact, approximate: !sol.exact,
+      optimal: sol.optimalSolutions ?? null, pOpt: sol.pOpt ?? null,
+      cas: M.cas(L), good: M.good(L), rnd: M.rnd(L), greedy: M.greedy(L) };
   }
+  // Werkzeug-Spitze: ohne Werkzeug lösbar, Limit = Optimum (höchstens 1 Zug Luft, falls Optimum unter der Wunsch-Untergrenze + 1).
+  const L = m;
+  const top = tool === 'extraMoves' ? m + 3 : m;
+  const full = asLevel(id, c, top);
+  const M = metricsFrom(full, startBoard(full), full.goals.map(() => 0), 0, top, seed, opts);
+  const Dno = Dat(M, L, m, G, W);
+  let Dfelt, casTool, goodTool, toolMin = m, toolSolution = sol.solution, goodStarts = null, hintMoves = null;
   if (tool === 'extraMoves') {
-    // Ohne Werkzeug unlösbar im Limit (Min = Limit + 1 … + 2), mit +3 bequem.
-    const hi = id >= 60 ? 7 : 6;
-    const sol = solveLevel(asLevel(id, c, hi), { maxDepth: hi, maxLayer: 120000 });
-    if (!sol.solvable || !sol.exact || sol.minMoves < 4) return why('r3');
-    const m = sol.minMoves, lv = asLevel(id, c, m + 4), M = metricsFrom(lv, startBoard(lv), lv.goals.map(() => 0), 0, m + 4, seed);
-    let best = null;
-    for (const L of [m - 1, m - 2]) {
-      if (L < 3) continue;
-      const Dfelt = Dat(M, L + 3, m, G), casTool = M.cas(L + 3);
-      if (casTool < CAS_TOOL) continue;
-      const cost = Math.abs(Dfelt - target) + (m - L - 1) * 0.5;
-      if (!best || cost < best.cost) best = { cost, L, Dfelt, casTool };
-    }
-    if (!best) return why('r4');
-    const L = best.L;
-    return { id, k, seed, role, tool, limit: L, min: m, toolMin: m, D: Dat(M, L, m, G), Dfelt: best.Dfelt, cost: best.cost, solution: sol.solution,
-      toolSolution: sol.solution, optimal: sol.optimalSolutions, pOpt: sol.pOpt, cas: M.cas(L), good: M.good(L), rnd: M.rnd(L), greedy: M.greedy(L),
-      casTool: best.casTool, goodTool: M.good(L + 3) };
-  }
-  if (tool === 'hint') {
-    // Lösbar, aber eng: Gelegenheitsspieler ≤ 12 %; der Hinweis (2 Züge, wie im Spiel) macht es bequem.
-    const sol = solveLevel(asLevel(id, c, 6), { maxDepth: 6, maxLayer: 150000 });
-    if (!sol.solvable || !sol.exact || sol.minMoves < 4) return why('r5');
-    const m = sol.minMoves;
-    let best = null;
-    for (const L of [m, m + 1]) {
-      const lv = asLevel(id, c, L);
-      const M = metricsFrom(lv, startBoard(lv), lv.goals.map(() => 0), 0, L, seed);
-      if (M.cas(L) > 0.2 || M.good(L) > 0.6) continue;
-      const h = findHint({ board: c.board, goals: c.goals, sequence: c.sequence, index: 0, movesLeft: L, vec: c.goals.map(() => 0) }, { want: 2, maxMs: 4000, now: () => 0 });
-      if (!h.found || h.moves.length < 2) continue;
-      const st = stateAfter(lv, h.moves, L);
-      if (!st || st.win) continue;
-      const H = metricsFrom(lv, st.board, st.vec, 2, L, seed ^ 0x41);
-      const casTool = H.cas(L);
-      if (casTool < CAS_TOOL) continue;
-      const Dfelt = Dat(H, L, Math.max(1, m - 2), G);
-      const cost = Math.abs(Dfelt - target) + (L - m) * 0.3;
-      if (!best || cost < best.cost) best = { cost, L, Dfelt, casTool, goodTool: H.good(L), hint: h.moves, M };
-    }
-    if (!best) return why('r6');
-    const L = best.L, M = best.M;
-    return { id, k, seed, role, tool, limit: L, min: m, toolMin: m, D: Dat(M, L, m, G), Dfelt: best.Dfelt, cost: best.cost, solution: sol.solution,
-      toolSolution: sol.solution, hintMoves: best.hint, optimal: sol.optimalSolutions, pOpt: sol.pOpt, cas: M.cas(L), good: M.good(L), rnd: M.rnd(L), greedy: M.greedy(L),
-      casTool: best.casTool, goodTool: best.goodTool };
-  }
-  // Rakete / Zauberstab: Werkzeug am Anfang → lösbar mit Min tm; ohne Werkzeug nicht im Limit.
-  const T = tool === 'rocket' ? 'rocket' : 'wand';
-  const Lmax = 7;
-  const probe = asLevel(id, c, Lmax);
-  const raw = solveLevel(probe, { maxDepth: Lmax, maxLayer: 150000 });
-  if (!raw.exact || (raw.solvable && raw.minMoves < 3)) return why('r7');
-  const noToolMin = raw.solvable ? raw.minMoves : Infinity;
-  const wt = solveWithTool(probe, Math.min(Lmax - 1, noToolMin - 2), T, { startOnly: true, maxLayer: 60000 });
-  if (wt.min == null || wt.min < 1) return why('r8');
-  const tm = wt.min;
-  const act = wt.path.trim().split(' ')[0];
-  const after = toolVariants(probe, startBoard(probe), probe.goals.map(() => 0), 0, Lmax, T).find(v => v.act === act);
-  let best = null;
-  for (let L = Math.max(3, tm + 1); L <= tm + 4; L++) {
-    if (L >= noToolMin || L > Lmax) continue;
-    const lv = asLevel(id, c, L);
-    const Mt = metricsFrom(lv, after.board, after.vec, 0, L, seed ^ 0x70);
-    const casTool = Mt.cas(L);
-    if (casTool < CAS_TOOL) continue;
-    const Dfelt = Dat(Mt, L, tm, G);
-    const cost = Math.abs(Dfelt - target);
-    if (!best || cost < best.cost) best = { cost, L, Dfelt, casTool, goodTool: Mt.good(L) };
-  }
-  if (!best) return why('r9');
-  const L = best.L, lv = asLevel(id, c, L);
-  // Wie viele Start-Einsätze führen zum Ziel im Limit? (Fairness: nicht nur ein einziger Trick)
-  let goodStarts = 0;
-  for (const v of toolVariants(lv, startBoard(lv), lv.goals.map(() => 0), 0, L, T)) {
-    if (v.win) { goodStarts++; continue; }
-    const s = solveLevel({ ...lv, board: v.board.map(r => r.map(t => (t ? t.value : null))) }, { maxDepth: L, maxLayer: 8000, beam: true });
-    if (s.solvable) goodStarts++;
-    if (goodStarts >= 12) break;
-  }
-  if (goodStarts < 2) return why('r10');
-  const M = metricsFrom(lv, startBoard(lv), lv.goals.map(() => 0), 0, L, seed);
-  return { id, k, seed, role, tool, limit: L, min: Number.isFinite(noToolMin) ? noToolMin : null, toolMin: tm, D: Dat(M, L, Number.isFinite(noToolMin) ? noToolMin : L + 1, G),
-    Dfelt: best.Dfelt, cost: best.cost + (goodStarts < 4 ? 2 : 0), solution: null, toolSolution: wt.path.trim().replace(' ', ' '), goodStarts,
-    cas: M.cas(L), good: M.good(L), rnd: M.rnd(L), greedy: M.greedy(L), casTool: best.casTool, goodTool: best.goodTool };
-}
-
-/**
- * launch-16: Werkzeug-Spitze nach neuer Regel – ohne Werkzeug lösbar, Zuglimit = Optimum (sehr eng),
- * mit dem Schlüssel-Werkzeug deutlich leichter. Rückgabe im selben Format wie evaluate().
- *   +3: Limit = Optimum m, gefühlt = bei m + 3 Zügen.  Rakete/Zauberstab: Werkzeug-Optimum ≤ m − 2, gefühlt nach dem Einsatz.
- * cost = |gefühlt − Soll| + Strafe, wenn die Spitze ohne Werkzeug nicht deutlich über dem Soll liegt (D ohne < Soll + 15).
- */
-export function evaluatePeak(id, k) {
-  const role = roleOf(id), tool = TOOL_LEVELS[id], target = targetD(id), seed = seedFor(id, k);
-  if (!tool || tool === 'hint') return evaluate(id, k);
-  const c = makeLevel(id, k);
-  if (!c) return why('p1');
-  const G = c.goals.length, Lmax = 7;
-  const sol = solveLevel(asLevel(id, c, Lmax), { maxDepth: Lmax, maxLayer: 150000 });
-  if (!sol.solvable || !sol.exact || sol.minMoves < 4) return why('p2');
-  const m = sol.minMoves, L = m, top = m + (tool === 'extraMoves' ? 3 : 0);
-  const lv = asLevel(id, c, top), M = metricsFrom(lv, startBoard(lv), lv.goals.map(() => 0), 0, top, seed);
-  const Dno = Dat(M, L, m, G);
-  let Dfelt, casTool, goodTool, toolMin = m, toolSolution = sol.solution, goodStarts = null;
-  if (tool === 'extraMoves') { Dfelt = Dat(M, L + 3, m, G); casTool = M.cas(L + 3); goodTool = M.good(L + 3); }
-  else {
+    Dfelt = Dat(M, L + 3, m, G, W); casTool = M.cas(L + 3); goodTool = M.good(L + 3);
+    if (casTool < toolCasMin(role, W)) return why('t1');
+  } else if (tool === 'hint') {
+    const h = findHint({ board: c.board, goals: c.goals, sequence: c.sequence, index: 0, movesLeft: L, vec: c.goals.map(() => 0) }, { want: 2, maxMs: 4000, now: () => 0 });
+    if (!h.found || h.moves.length < 2) return why('t2');
+    const st = stateAfter(asLevel(id, c, L), h.moves, L);
+    if (!st || st.win) return why('t3');
+    const H = metricsFrom(asLevel(id, c, L), st.board, st.vec, 2, L, seed ^ 0x41, opts);
+    casTool = H.cas(L); goodTool = H.good(L); Dfelt = Dat(H, L, Math.max(1, m - 2), G, W); hintMoves = h.moves;
+    if (casTool < toolCasMin(role, W)) return why('t4');
+  } else {
     const T = tool === 'rocket' ? 'rocket' : 'wand', probe = asLevel(id, c, L);
-    const wt = solveWithTool(probe, L - 2, T, { startOnly: true, maxLayer: 60000 });
-    if (wt.min == null || wt.min < 1 || wt.min > m - 2) return why('p3');
+    const cap = Math.max(1, m - 2);
+    const wt = solveWithTool(probe, cap, T, { startOnly: true, maxLayer: 40000 });
+    if (wt.min == null || wt.min < 1 || wt.min > cap) return why('t5');
     toolMin = wt.min; toolSolution = wt.path.trim();
     const act = toolSolution.split(' ')[0];
     const after = toolVariants(probe, startBoard(probe), probe.goals.map(() => 0), 0, L, T).find(v => v.act === act);
-    if (!after) return why('p4');
-    const Mt = metricsFrom(probe, after.board, after.vec, 0, L, seed ^ 0x70);
-    Dfelt = Dat(Mt, L, toolMin, G); casTool = Mt.cas(L); goodTool = Mt.good(L);
+    if (!after) return why('t6');
+    const Mt = metricsFrom(probe, after.board, after.vec, 0, L, seed ^ 0x70, opts);
+    Dfelt = Dat(Mt, L, toolMin, G, W); casTool = Mt.cas(L); goodTool = Mt.good(L);
+    if (casTool < toolCasMin(role, W)) return why('t7');
     goodStarts = 0;
     for (const v of toolVariants(probe, startBoard(probe), probe.goals.map(() => 0), 0, L, T)) {
       if (v.win) { goodStarts++; continue; }
-      const s = solveLevel({ ...probe, board: v.board.map(r => r.map(t => (t ? t.value : null))) }, { maxDepth: L, maxLayer: 8000, beam: true });
+      const s = solveCandidate({ ...probe, board: v.board.map(r => r.map(t => (t ? t.value : null))) }, L);
       if (s.solvable) goodStarts++;
-      if (goodStarts >= 12) break;
+      if (goodStarts >= 8) break;
     }
-    if (goodStarts < 2) return why('p5');
+    if (goodStarts < 2) return why('t8');
   }
-  if (casTool < (role === 'boss' ? 0.25 : 0.35)) return why('p6');
-  const cost = Math.abs(Dfelt - target) + Math.max(0, target + 15 - Dno) * 0.5;
-  return { id, k, seed, role, tool, limit: L, min: m, toolMin, D: Dno, Dfelt, cost, solution: sol.solution, toolSolution,
-    optimal: sol.optimalSolutions, pOpt: sol.pOpt, cas: M.cas(L), good: M.good(L), rnd: M.rnd(L), greedy: M.greedy(L), casTool, goodTool, ...(goodStarts != null ? { goodStarts } : {}) };
+  const cost = Math.abs(Dfelt - target) + Math.max(0, target + 10 - Dno) * 0.4 + lengthCost;
+  return { id, k, seed, role, tool, limit: L, min: m, toolMin, D: Dno, Dfelt, cost,
+    solution: sol.solution, toolSolution, exact: !!sol.exact, approximate: !sol.exact,
+    optimal: sol.optimalSolutions ?? null, pOpt: sol.pOpt ?? null,
+    cas: M.cas(L), good: M.good(L), rnd: M.rnd(L), greedy: M.greedy(L), casTool, goodTool,
+    ...(goodStarts != null ? { goodStarts } : {}), ...(hintMoves ? { hintMoves } : {}) };
 }
+
+/** Wie evaluate() – in launch-18 gelten dieselben Werkzeug-Regeln. */
+export function evaluatePeak(id, k) { return evaluate(id, k); }
