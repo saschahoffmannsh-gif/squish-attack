@@ -170,6 +170,7 @@ test('Freischalten: Sterne-Schranke am Kapitelanfang', () => {
   assert.ok(isUnlocked(ch3low, 20));                        // gesperrt wird nur der Kapitelanfang
 });
 
+import { FREE_TOOLS_PER_LEVEL, TOOL_STOCK, freeToolCharges, toolsAvailable, spendCharge } from '../game/campaign.mjs';
 import { useRocket, useWand, wandChoices, wandCap, progressVector, emptyInventory, loadInventory, saveInventory, spendTool, grantGifts, toolName } from '../game/campaign.mjs';
 import { findHint, hintState } from '../game/hint-solver.mjs';
 import { readFileSync } from 'node:fs';
@@ -283,4 +284,28 @@ test('Hinweis-Suche: kürzester Weg wie der Solver, Züge gewinnen wirklich; kei
   // Budget: Beam statt Absturz
   const tight = findHint(hintState(run, { movesLeft: movesLeft(run), vec: progressVector(run) }), { maxStates: 50, beamWidth: 30 });
   assert.equal(tight.exact, false);
+});
+
+test('Test-Einstellung launch-11: je Versuch 1× jedes Hilfsmittel, kein Vorrat', () => {
+  assert.equal(FREE_TOOLS_PER_LEVEL, 1); assert.equal(TOOL_STOCK, false);
+  const free = freeToolCharges();
+  assert.deepEqual(free, { extraMoves: 1, rocket: 1, hint: 1, wand: 1 });
+  const stock = { ...emptyInventory(), rocket: 3, hint: 2 };
+  // ohne Vorrat: nur die Ladungen des Versuchs zählen, Inventar bleibt unberührt
+  assert.deepEqual(toolsAvailable(stock, free), { extraMoves: 1, rocket: 1, hint: 1, wand: 1 });
+  const a = spendCharge(stock, free, 'rocket');
+  assert.equal(a.fromFree, true); assert.equal(a.inventory, stock); assert.equal(a.free.rocket, 0);
+  assert.equal(spendCharge(stock, a.free, 'rocket'), null);
+  assert.deepEqual(toolsAvailable(stock, a.free).rocket, 0);
+  assert.equal(spendCharge(stock, free, 'hammer'), null);
+  // neuer Versuch = wieder volle Ladungen
+  assert.deepEqual(freeToolCharges(), free);
+  // Schalter zurück (Vorrat an, 0 gratis): altes Verhalten
+  const none = freeToolCharges(0);
+  assert.deepEqual(toolsAvailable(stock, none, true), { extraMoves: 0, rocket: 3, hint: 2, wand: 0 });
+  const b = spendCharge(stock, none, 'hint', true);
+  assert.equal(b.fromFree, false); assert.equal(b.inventory.hint, 1);
+  // beides an: erst gratis, dann Vorrat
+  assert.equal(toolsAvailable(stock, free, true).rocket, 4);
+  assert.equal(spendCharge(stock, free, 'rocket', true).fromFree, true);
 });

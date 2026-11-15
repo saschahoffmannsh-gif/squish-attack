@@ -1,4 +1,4 @@
-/* Hilfsmittel (launch-10): Werkzeugleiste mit 4 Kacheln, Comic-Effekte, Zahlen-Auswahl. */
+/* Hilfsmittel (launch-11): Werkzeugleiste mit 4 Kacheln, Comic-Effekte, Zahlen-Auswahl. */
 /* Leiste: je zwei Kacheln links und rechts der (schmaleren) Vorschau – passt ab 375 px. */
 .aw .is-campaign .preview {left:29%;width:42%;}
 .aw .campaign-tool {width:12.6%;border-radius:15px;gap:.2cqw;}

@@ -1,8 +1,8 @@
 // Startbildschirm und Modus-Menüs im Herbst-Design (reines DOM, kein 3D).
 // Ersetzt das frühere 3D-Glastisch-Menü (world-menu.mjs) mit derselben
 // Schnittstelle, die game.mjs und start-menu.mjs erwarten.
-import {ICONS,TILE_ICONS,leafSvg} from './aw-icons.mjs?v=launch-10';
-import {BUILD} from './flags.mjs?v=launch-10';
+import {ICONS,TILE_ICONS,leafSvg} from './aw-icons.mjs?v=launch-11';
+import {BUILD} from './flags.mjs?v=launch-11';
 
 const LEAF_COLORS=['#f07a1c','#e8541a','#c9301c','#f2a01e','#d94a17','#b8321a','#ffb030'];
 const fmt=n=>Number(n||0).toLocaleString('de-DE');
@@ -121,9 +121,9 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
   }
   function campaignItems(){
     const info=hooks.campaign?.summary?.()||{next:1,ready:false};
-    const inv=info.inventory||{};
+    const inv=info.inventory;   // null = kein Vorrat (TOOL_STOCK aus) → keine Chips
     const items=[ribbon('Abenteuer','aw-r-green'),
-      card(`★ ${info.total??0} / ${(info.count||25)*3}`,info.caption||'',[{n:inv.extraMoves||0,label:'+3 Züge'},{n:inv.hint||0,label:'Hinweis'},{n:inv.rocket||0,label:'Rakete'},{n:inv.wand||0,label:'Zauberstab'}])];
+      card(`★ ${info.total??0} / ${(info.count||25)*3}`,info.caption||'',inv?[{n:inv.extraMoves||0,label:'+3 Züge'},{n:inv.hint||0,label:'Hinweis'},{n:inv.rocket||0,label:'Rakete'},{n:inv.wand||0,label:'Zauberstab'}]:null)];
     items.push(button({label:`Level ${info.next} spielen`,icon:'play',color:'aw-green',size:'aw-big',id:'home-play-level',action:()=>{
       if(!info.ready&&!hooks.campaign?.summary?.().ready){say('Level werden geladen …',2000);return;}
       tap('move');hooks.gesture?.();void play({campaign:hooks.campaign.summary().next});

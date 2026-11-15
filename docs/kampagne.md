@@ -331,3 +331,23 @@ das Level auf **höchstens 2 ★**. Nur Geschenke, keine Käufe.
 - **Spielstand**: `squish-campaign-tools-v1` jetzt `version: 2`
   (`extraMoves, rocket, hint, wand, gifts`); alte Stände (v1) werden beim Laden
   übernommen, Hammer-Anzahl → Raketen.
+
+## Test-Einstellung (launch-11, temporär): je Level 1× jedes Hilfsmittel, kein Vorrat
+
+Wunsch Sascha („Mach mir erstmal in jedes Level eines von jedem Werkzeug rein“,
+dann „Vorrat machen wir raus“):
+
+- Jeder Level-Versuch – auch Neustart, „Nochmal“ und „Weiter“ – hat genau
+  **1× +3 Züge, 1× Hinweis, 1× Rakete, 1× Zauberstab**. Die Knöpfe zeigen 1 oder 0.
+  Nichts wird gespeichert oder ins nächste Level/den nächsten Versuch übertragen.
+- **Kein Vorrat:** Der gespeicherte Vorrat (`squish-campaign-tools-v1`) wird weder
+  angeboten noch verändert, die Abenteuer-Karte zeigt keine Vorrats-Chips.
+- **Keine Geschenke:** Level-Geschenke (3/6/10/20) und „je 10 Sterne ein
+  Hilfsmittel“ sind ausgeschaltet (Code bleibt, siehe oben).
+- Unverändert: Wer ein Hilfsmittel benutzt, bekommt höchstens 2 ★; „+3 Züge“
+  erscheint nach verlorenem Level im Ergebnis-Dialog, solange die Ladung des
+  Versuchs noch da ist.
+- **Schalter** in `game/campaign.mjs`:
+  `FREE_TOOLS_PER_LEVEL = 1` (Ladungen pro Versuch) und `TOOL_STOCK = false`
+  (Vorrat + Geschenke + Chips). Altes Verhalten (launch-10): `FREE_TOOLS_PER_LEVEL = 0`,
+  `TOOL_STOCK = true`. Beides an geht auch (erst Gratis-Ladung, dann Vorrat).

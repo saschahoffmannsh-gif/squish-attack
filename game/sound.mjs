@@ -1,4 +1,4 @@
-import {flags,ios,safari,BUILD} from './flags.mjs?v=launch-10';
+import {flags,ios,safari,BUILD} from './flags.mjs?v=launch-11';
 // Sampled gel foley. Fetching is optional and never holds up the splash;
 // the AudioContext is created/resumed only by a real player gesture.
 // Slide/land use ralph.whitehead's CC0 Plunger Pop (#05); merge/pop use Gniffelbaf's CC0 balloon burst.
@@ -300,7 +300,7 @@ export function createGameSound(button,{
       return;
     }
     if(kind==='star'){
-      // Win-dialog stars (launch-10): the soft squish slide sound instead of
+      // Win-dialog stars (launch-11): the soft squish slide sound instead of
       // the balloon bang, a little higher for each star. size = star 1..3.
       const index=Math.max(0,Math.min(2,(size|0)-1));
       const rate=STAR_RATES[index],volume=STAR_VOLUMES[index];

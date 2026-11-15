@@ -274,7 +274,7 @@ export function nextLevel(progress, count) {
 }
 
 // ---------------- Hilfsmittel ----------------
-// launch-10: Rakete (ersetzt den Hammer), Hinweis, Zauberstab, +3 Züge.
+// launch-11: Rakete (ersetzt den Hammer), Hinweis, Zauberstab, +3 Züge.
 // Jedes Hilfsmittel deckelt das Ergebnis auf höchstens 2 Sterne.
 
 /** Rakete: entfernt einen Stein (kein Zug, keine Fusion). true, wenn etwas entfernt wurde. */
@@ -357,6 +357,30 @@ export function saveInventory(inv, storage = globalThis.localStorage) {
   try { storage?.setItem(TOOLS_KEY, JSON.stringify(inv)); return true; } catch { return false; }
 }
 /** Ein Hilfsmittel verbrauchen. Gibt das neue Inventar zurück oder null, wenn keins da ist. */
+/**
+ * TEMPORÄRE TEST-EINSTELLUNG (launch-11, Wunsch Sascha: „Vorrat machen wir raus“):
+ *  - FREE_TOOLS_PER_LEVEL: jeder Level-Versuch (auch Neustart/Nochmal) hat genau so viele
+ *    Ladungen pro Hilfsmittel; nichts wird gespeichert oder übertragen.
+ *  - TOOL_STOCK: gespeicherter Vorrat (squish-campaign-tools-v1) samt Geschenken
+ *    (Level 3/6/10/20, je 10 Sterne). Aus = kein Vorrat, keine Geschenke, keine Vorrats-Chips.
+ * Zurück zum alten Verhalten: FREE_TOOLS_PER_LEVEL = 0, TOOL_STOCK = true.
+ */
+export const FREE_TOOLS_PER_LEVEL = 1;
+export const TOOL_STOCK = false;
+export function freeToolCharges(count = FREE_TOOLS_PER_LEVEL) {
+  return Object.fromEntries(TOOL_TYPES.map(t => [t, Math.max(0, count | 0)]));
+}
+/** Verfügbare Anzahl je Hilfsmittel = Ladungen des Versuchs (+ Vorrat, wenn TOOL_STOCK). */
+export function toolsAvailable(inv, free, stock = TOOL_STOCK) {
+  return Object.fromEntries(TOOL_TYPES.map(t => [t, (stock ? Math.max(0, inv?.[t] | 0) : 0) + Math.max(0, free?.[t] | 0)]));
+}
+/** Verbraucht eine Ladung: zuerst die des Versuchs, dann (nur mit TOOL_STOCK) den Vorrat. → {inventory, free, fromFree} oder null. */
+export function spendCharge(inv, free, type, stock = TOOL_STOCK) {
+  if (!TOOL_TYPES.includes(type)) return null;
+  if (free?.[type] > 0) return { inventory: inv, free: { ...free, [type]: free[type] - 1 }, fromFree: true };
+  const next = stock ? spendTool(inv, type) : null;
+  return next ? { inventory: next, free, fromFree: false } : null;
+}
 export function spendTool(inv, type) {
   if (!TOOL_TYPES.includes(type) || !(inv[type] > 0)) return null;
   return { ...inv, [type]: inv[type] - 1 };

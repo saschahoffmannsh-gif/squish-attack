@@ -1,4 +1,4 @@
-// Comic-Symbole für die Hilfsmittel (launch-10): flache Farben, dicke dunkle
+// Comic-Symbole für die Hilfsmittel (launch-11): flache Farben, dicke dunkle
 // Kontur, weißer Glanz – passend zu den Menü-Kacheln. Eigene Pfade.
 const INK='#1b1030';
 export const TOOL_ICONS={

@@ -1,10 +1,10 @@
-// Hinweis-Suche (launch-10): kürzester Gewinnweg ab dem aktuellen Kampagnen-
+// Hinweis-Suche (launch-11): kürzester Gewinnweg ab dem aktuellen Kampagnen-
 // Zustand, gleiche Regeln wie tools/campaign/solver.mjs (Breitensuche über die
 // Zugtiefe mit Transpositionstabelle; Zustand = Brett + gedeckelter
 // Zielfortschritt, Steinfolge-Position = Tiefe). Liefert nur die ersten
 // Züge (Standard 2). Reine Logik ohne DOM – läuft im Worker oder direkt.
 import { SIZE, insertTile, settle } from './game-logic.mjs';
-import { ALL_MOVES, encodeMove } from './campaign.mjs?v=launch-10';
+import { ALL_MOVES, encodeMove } from './campaign.mjs?v=launch-11';
 
 const MOVE_CHARS = ALL_MOVES.map(m => encodeMove(m.direction, m.line));
 export const targetOf = g => ({ tile: g.value, make: g.count, score: g.points, clear: g.tiles, street: g.count, combo: g.chain })[g.type];
