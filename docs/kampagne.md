@@ -496,3 +496,57 @@ Ziel: sehen, wie viele Hilfsmittel beim echten Spielen wann und wo gebraucht wer
 **Ruhe im Level:** Nach dem Levelstart werden Fusions-Blobs vorgewärmt (`fusion.mjs prime`, je 1 Frame im Abstand ~1 s, wie in launch-14); danach 0 Renders/s. Der e2e misst deshalb erst nach dem Einschwingen.
 
 **Tests launch-15:** `node --test tests/*.test.mjs` (67). e2e in `/workspace/squish-e2e/campaign/`: `e2e-launch15.mjs` (Levelauswahl 100, Scrollen, HUD neue Missionen, drei Ziele 390/375 px, Rakete-Level 2★), `e2e-launch15b.mjs [--small]` (L1, 31/41/51/71 durchgespielt, Boss 50 Zauberstab + Boss 100 +3 mit 2★, Ruhe 0 Renders/s, Endlos-Reload, Sterne-Schranke K2), `e2e-launch14-on15.mjs`, `e2e-reset14-on15.mjs`.
+
+## Neue Squishes: Eis, Kette, Bombe (launch-16)
+
+Wunsch Sascha: drei neue Squish-Arten. Zuerst nur Spiellogik, Aussehen, Solver und Test-Level –
+die 100 Kampagnen-Level sind dafür (noch) nicht umgebaut.
+
+**Regeln** (`game/game-logic.mjs`, gemeinsam für Spiel, Solver, Hinweis und Tests):
+
+- **Eis** (`tile.ice`): rutscht beim Einschieben normal mit, verschmilzt aber nicht (weder Fusion
+  noch Straße; zählt in Linien wie eine Lücke). Passiert direkt daneben (waagerecht/senkrecht) eine
+  Fusion oder Straße, taut er im selben Durchgang auf (`pass.thawed`) und ist ab dem nächsten
+  Durchgang ein normaler Stein. Diagonal taut nichts.
+- **Kette** (`tile.bound`, `value 0`, keine Zahl): bewegt sich nie. Ein Einschub rückt nur bis zur
+  ersten Kette nach; ist die Strecke davor voll (oder steht die Kette am Rand), nimmt die Reihe
+  nichts auf. Verschmilzt nie und trennt Linien. Rakete und Zauberstab wirken nicht auf Ketten.
+  „Höchstens N Steine“ zählt Ketten nicht mit.
+- **Bombe** (`tile.bomb` = Restzeit in ms, Standard 20 s, je Level `specials.bombSeconds`): Countdown
+  in Echtzeit ab dem ersten Zug. Läuft er ab, verschwinden die Bombe und alle 8 Nachbarn (Ketten
+  bleiben; mitgerissene Bomben explodieren nicht weiter – keine Kettenreaktion). Wird die Bombe vorher
+  in einer Fusion/Straße verschmolzen, ist sie entschärft (Ergebnisstein normal). Explosionen zählen
+  für keine Mission. Die Uhr steht bei Pause, verdeckter Seite, offenem Dialog/Menü/Shop/Werbung/
+  Statistik/Zauberstab-Auswahl, während Animationen und der Hinweis-Vorführung.
+
+**Level-Format:** `specials: { ice: [[r,c]…], bomb: [[r,c]…], bound: [[r,c]…], bombSeconds?: 20 }`.
+Eis- und Bombenfelder brauchen im `board` einen Stein, Kettenfelder müssen dort `null` sein
+(`validateLevel` prüft das). `createLevelRun` setzt die Arten; `tickLevelBombs(run, ms)` dreht die
+Uhr (ab `run.bombClock`, also nach dem ersten Zug), `nextBombMs`, `specialOf`, `hasBomb`.
+
+**Solver / Hinweis / Simulation:** Brett-Schlüssel mit einem Zeichen je Zelle (`boardCode`: Eis,
+Kette, Bombe mit Restzeit in 2,5-s-Einheiten). `stepBoard` = einschieben + fusionieren + Bomben-Uhr
+um `BOMB_MS_PER_MOVE` = 2,5 s weiter (Modell eines zügigen Spielers, Bombe also nach 8 Zügen).
+Weil die echte Uhr Echtzeit ist, prüft `simulateRealtime` (tools/campaign/solver.mjs) Bomben-Level
+zusätzlich mit simulierten Partien: Spielermodell mit Bedenkzeit 1,5–5 s („normal“) bzw. 3–8 s
+(„langsam“) je Zug, die Uhr läuft wie im Spiel. Bomben-Level großzügig halten.
+
+**Aussehen** (`game/special-squish.mjs`, Comic-Stil wie die übrigen Squishes; die Deko folgt der
+Verformung des Körpers wie die Zahl):
+- Eis: Körper in seiner Farbe, stark eisblau aufgehellt; Frost-Kappe mit weißen Rissen (Tinten-Kontur)
+  und Glitzersternen am Rand; die Zahl bleibt lesbar. Beim Auftauen verschwindet beides.
+- Kette: stahlgrauer Körper ohne Zahl, zwei gekreuzte Ketten und ein gelbes Vorhängeschloss.
+- Bombe: Körper und Zahl normal, schwarzer Bomben-Ring mit Nieten am Rand und eine Lunte mit Funke
+  oben rechts. Die Sekunden zeigt ein kleines Comic-Abzeichen (DOM, `.bomb-badge`) über dem Stein:
+  weiß vor dem ersten Zug, gelb während des Countdowns, rot ab 5 s (blinkt, außer bei reduzierter
+  Bewegung). Das Abzeichen kostet keine WebGL-Frames: im Countdown 0 Renders/s.
+- Explosion: Comic-BOOM, die Steine platzen wie bei der Rakete (bei reduzierter Bewegung ohne Platzen).
+
+**Ausprobieren:** Hauptmenü → **Regeln** → **„Neue Squishes testen“**. Vier Test-Level
+(`levels/levels-lab.json`, gebaut von `node tools/campaign/lab.mjs`, Solver-geprüft, 3★ = Optimum + 1):
+1 Eis (Optimum 2, Limit 5) · 2 Ketten (5/8) · 3 Bombe 20 s (4/9) · 4 Eis + Ketten + Bombe 25 s (4/9).
+Test-Level speichern keinen Abenteuer-Fortschritt und schreiben nichts ins Werkzeug-Protokoll.
+Die Regeln-Seite erklärt die drei Arten.
+
+**Tests:** `tests/specials.test.mjs` (Logik, Level-Format, Uhr, Schlüssel, Test-Level per Solver und
+Hinweis); E2E `squish-e2e/campaign/e2e-squish16.mjs` (iPhone 390×844 und 375×667, offline).

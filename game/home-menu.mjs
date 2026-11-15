@@ -117,6 +117,7 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
     intro.textContent='Im Abenteuer zeigt jedes Level oben sein Ziel und die Züge, die du dafür hast.';
     box.append(...src.map(p=>{const c=page.createElement('p');c.textContent=p.textContent;return c;}),intro);
     return [ribbon('Spielregeln','aw-r-purple'),box,
+      button({label:'Neue Squishes testen',icon:'play',color:'aw-blue',size:'aw-small',action:()=>{tap('move');hooks.gesture?.();hooks.campaign?.openLab?.();}}),
       button({label:'Zurück',icon:'back',color:'aw-slate',size:'aw-small',action:()=>{tap();void go('home');}})];
   }
   function campaignItems(){

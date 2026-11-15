@@ -1,7 +1,7 @@
 import {apiFetch,hasSaveToken} from './api.mjs?v=launch-16';
 import {createRng,encodeMove,replayRun,MAX_LOG} from './ranked.mjs?v=launch-16';
 import {createLeaderboard} from './leaderboard.mjs?v=launch-16';
-import { SIZE, START_VALUES, createStartValues, insertTile, nextMergePass, settle, isGameOver } from './game-logic.mjs?v=automatic-streets-2';
+import { SIZE, START_VALUES, createStartValues, insertTile, nextMergePass, settle, isGameOver } from './game-logic.mjs?v=launch-16';
 import { nextSpawn, spawnProfile } from './balance.mjs';
 import {canContinueRun} from './run-availability.mjs?v=splash-plate-1';
 import { createMergeEffects } from './merge-effects.mjs?v=launch-16';
@@ -127,6 +127,7 @@ const worldMenu=createHomeMenu({sound,reduceMotion,hooks:{
     summary:()=>campaignSummary(),
     openShop:()=>openShop(null),
     openGift:()=>void openGift(),
+    openLab:()=>{void loadLab().then(()=>worldMenu.play({campaign:1,lab:true})).catch(()=>showNote('Test-Level konnten nicht geladen werden.',3000));},
     openSelect:()=>{if(levels)campaignUI.openSelect({levels,progress:campaignProgress});else void loadLevels().then(()=>campaignUI.openSelect({levels,progress:campaignProgress})).catch(()=>showNote('Level konnten nicht geladen werden.',3000));},
   },
   soundButton:document.getElementById('sound-toggle'),
@@ -143,6 +144,22 @@ const newTile = value => ({ id: nextId++, value });
 // beim Verlassen wird er wieder geladen.
 const MODE_KEY='squish-mode-v1';
 const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-16',import.meta.url);
+// launch-16: Test-Level für die neuen Squishes (Eis, Ketten, Bombe) – eigener kleiner Satz, kein Fortschritt/Protokoll.
+const LAB_URL=new URL('../levels/levels-lab.json?v=launch-16',import.meta.url);
+let labMode=false,labLevels=null,labLoading=null;
+function loadLab(){
+  return labLoading||=fetch(LAB_URL,{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('lab '+r.status);return r.json();})
+    .then(data=>{data.levels.forEach(Camp.validateLevel);labLevels=data.levels;return labLevels;})
+    .catch(error=>{labLoading=null;throw error;});
+}
+const levelList=()=>labMode?labLevels:levels;
+function levelNote(){
+  if(!camp)return '';
+  const goals=camp.level.goals.map(Camp.goalText).join(' + ');
+  if(labMode)return `Test ${camp.n} · ${camp.level.title}: ${camp.level.meta?.note??''} Ziel: ${goals}`;
+  const tl=camp.level.tool;
+  return `Level ${camp.n}: ${goals}`+(tl?` · Sehr schwer – ${tl==='extraMoves'?'mit +3 Zügen wird es leichter':TOOL_NOM[tl][0].toUpperCase()+TOOL_NOM[tl].slice(1)+' hilft'} (mit Hilfsmittel höchstens 2 ★)`:'');
+}
 function storedMode(){try{return localStorage.getItem(MODE_KEY)||'';}catch{return '';}}
 let campaignMode=false,camp=null,levels=null,levelsLoading=null,stashedBestTile=null,needsEntry=false,armedTool=null,hintBusy=false,wandPicker=null;
 let campaignProgress=Camp.loadProgress(),inventory=Camp.loadInventory();
@@ -198,6 +215,7 @@ function logCtx(where){
 }
 function logTool(kind,type,ctx){ToolLog.logEvent(toolLog,logAttempt?.id,kind,type,ctx);ToolLog.saveLog(toolLog);}
 function beginAttempt(){
+  if(labMode){logAttempt=null;return;}   // Test-Level: kein Werkzeug-Protokoll
   if(logAttempt)ToolLog.endAttempt(toolLog,logAttempt.id,{outcome:'quit',moves:camp?.run?.moves??0});   // nur wenn noch offen
   logAttempt=ToolLog.startAttempt(toolLog,camp.n,{limit:camp.run.level.moves});ToolLog.saveLog(toolLog);
 }
@@ -263,16 +281,16 @@ async function openGift(){
 }
 function renderCampaign(){
   if(!campaignMode||!camp)return;
-  campaignUI.renderHud(camp.run,camp.n);
+  campaignUI.renderHud(camp.run,camp.n,labMode?`TEST ${camp.n} · ${camp.level.title.toUpperCase()}`:null);
   const room=camp.run.level.sequence.length-Camp.moveLimit(camp.run);
   campaignUI.renderTools(availableTools(),{refill:refillMode(),canExtra:room>0&&camp.run.status!=='won'&&!hintBusy,armed:armedTool,busy:hintBusy?'hint':null,locked:hintBusy||camp.run.status!=='playing'});
 }
 async function prepareLevel(n){
-  await loadLevels();
-  const level=levels[n-1];
+  if(labMode)await loadLab();else await loadLevels();
+  const level=levelList()[n-1];
   if(!level)throw new Error('Level fehlt: '+n);
   if(!campaignMode){stashedBestTile=bestTile;campaignMode=true;}
-  generation++;pendingMove=null;disarmTools();run=null;rng=null;
+  generation++;pendingMove=null;disarmTools();run=null;rng=null;bombLast=0;
   moveCombo=0;mergeEffects.streak?.(0,{silent:true});
   camp={n,level,run:Camp.createLevelRun(level),free:Camp.freeToolCharges()};   // Gratis-Ladungen je Versuch (FREE_TOOLS_PER_LEVEL)
   beginAttempt();
@@ -283,11 +301,12 @@ async function prepareLevel(n){
   renderCampaign();
   await prepareEntryScene();
   needsEntry=false;
+  scheduleBombTick();
 }
 function leaveCampaign(){
   if(!campaignMode)return;
   endLogAttempt('quit',{moves:camp?.run?.moves??0});logAttempt=null;adUI.close({silent:true});
-  disarmTools();campaignMode=false;camp=null;
+  disarmTools();campaignMode=false;camp=null;labMode=false;renderBombBadges();
   gameElement.classList.remove('is-campaign');campaignUI.hide();visual.hideHud('best',false);
   if(stashedBestTile!=null)bestTile=stashedBestTile;
   hasSavedGame=loadState()||hasSavedGame;
@@ -296,8 +315,9 @@ function leaveCampaign(){
 }
 async function playLevel(n){
   if(!campaignMode||busy)return;
-  if(levels&&n>levels.length)return;
-  const lock=Camp.lockReason(campaignProgress,n);
+  const list=levelList();
+  if(list&&n>list.length)return;
+  const lock=labMode?null:Camp.lockReason(campaignProgress,n);
   if(lock){showNote(lock.reason==='stars'?`Kapitel ${lock.chapter} braucht ${lock.need} ★`:'Level noch gesperrt',3000);return;}
   campaignUI.hideResult();confetti.stop();veil.hidden=true;paused=false;gameElement.classList.remove('is-paused');
   pauseButton.textContent='Ⅱ';pauseButton.setAttribute('aria-pressed','false');pauseButton.setAttribute('aria-label','Spiel pausieren');
@@ -305,8 +325,8 @@ async function playLevel(n){
   started=false;
   await prepareLevel(n);
   await enterGame();
-  const tl=camp.level.tool;
-  showNote(`Level ${n}: ${camp.level.goals.map(Camp.goalText).join(' + ')}`+(tl?` · Sehr schwer – ${tl==='extraMoves'?'mit +3 Zügen wird es leichter':TOOL_NOM[tl][0].toUpperCase()+TOOL_NOM[tl].slice(1)+' hilft'} (mit Hilfsmittel höchstens 2 ★)`:''),tl?4200:2600);
+  showNote(levelNote(),labMode?5200:camp.level.tool?4200:2600);
+  scheduleBombTick();
 }
 async function moveCampaign(direction,line){
   const r=camp.run;
@@ -319,6 +339,7 @@ async function moveCampaign(direction,line){
   if(!inserted.accepted){showNote('Diese Reihe ist voll');haptics.pulse('tap');return;}
   const result=Camp.applyLevelMove(r,direction,line);
   if(!result.ok)return;
+  scheduleBombTick();
   const turn=generation;busy=true;
   try{
     sound.play('slide');haptics.pulse('move');phoneMotion.reset();
@@ -348,9 +369,8 @@ async function finishLevel(){
   endLogAttempt(won?'won':'lost',{moves:r.moves,stars:won?Camp.starsOfRun(r):0,lostReason:r.lostReason});
   if(won){
     stars=Camp.starsOfRun(r);
-    campaignProgress=Camp.recordResult(campaignProgress,camp.level.id,{stars,moves:r.moves});
-    Camp.saveProgress(campaignProgress);
-    if(Camp.TOOL_STOCK&&Camp.TOOL_GIFTS){const g=Camp.queueGifts(inventory,campaignProgress);inventory=g.inventory;Camp.saveInventory(inventory);}
+    if(!labMode){campaignProgress=Camp.recordResult(campaignProgress,camp.level.id,{stars,moves:r.moves});Camp.saveProgress(campaignProgress);}
+    if(!labMode&&Camp.TOOL_STOCK&&Camp.TOOL_GIFTS){const g=Camp.queueGifts(inventory,campaignProgress);inventory=g.inventory;Camp.saveInventory(inventory);}
     sound.play('record');haptics.pulse('big');
     if(!reduceMotion.matches)visual.celebrateHud?.('queue-0',.3);
     // Erst kurz Konfetti über dem Brett, dann der Dialog mit den Sternen.
@@ -360,7 +380,7 @@ async function finishLevel(){
   } else {haptics.pulse('tap');await wait(350);}
   if(turn!==generation||!campaignMode){confetti.stop();return;}
   paused=true;releaseGesture();phoneMotion.reset();
-  const count=levels.length,nextLock=n<count?Camp.lockReason(campaignProgress,n+1):null;
+  const count=levelList().length,nextLock=n<count&&!labMode?Camp.lockReason(campaignProgress,n+1):null;
   campaignUI.showResult({n,won,stars,moves:r.moves,limit:Camp.moveLimit(r),lostReason:r.lostReason,toolLevel:r.level.tool||null,
     canNext:won&&n<count&&!nextLock,nextLock,gifts:Camp.TOOL_STOCK&&Camp.TOOL_GIFTS?inventory.pending.slice():gifts,extraAvailable:availableTools().extraMoves,extraAd:adsEnabled(),toolsUsed:r.toolsUsed.length});
   renderCampaign();
@@ -404,6 +424,7 @@ function toolOrigin(type){const r=campaignUI.toolButton(type)?.getBoundingClient
 async function rocketAt(tileId){
   const cell=cellOf(tileId);
   if(!cell||!camp||busy)return false;
+  if(camp.run.board[cell[0]][cell[1]]?.bound){showNote('Ketten halten der Rakete stand',2200);return false;}
   const spent=takeTool('rocket');
   if(!spent||!Camp.useRocket(camp.run,cell[0],cell[1]))return false;
   spent();armedTool=null;note.hidden=true;
@@ -430,7 +451,7 @@ function wandAt(tileId){
   const cell=cellOf(tileId);
   if(!cell||!camp||busy)return;
   const r=camp.run,choices=Camp.wandChoices(r,cell[0],cell[1]);
-  if(!choices.length){showNote('Für diesen Stein gibt es keine passende Zahl',2400);return;}
+  if(!choices.length){showNote(r.board[cell[0]][cell[1]]?.bound?'Angekettete Squishes lassen sich nicht verzaubern':'Für diesen Stein gibt es keine passende Zahl',2400);return;}
   const tile=board[cell[0]][cell[1]],at=cellPoint(cell[0],cell[1]),turn=generation;
   wandPicker?.close();note.hidden=true;
   wandPicker=toolFx.picker({anchor:at,choices,current:tile.value,colors:v=>comicColors(v).hex,
@@ -810,7 +831,8 @@ function boardRect(){
 function graphicsTiles(incoming) {
   return board.flatMap((line,row)=>line.flatMap((tile,col)=> {
     if(!tile)return [];
-    const data={...tile,row,col};
+    // launch-16: besondere Squishes – angekettete haben keine Zahl (value 0), die Grafik braucht ≥ 1.
+    const data={id:tile.id,value:Math.max(1,tile.value),row,col,special:tile.bound?'bound':tile.ice?'ice':tile.bomb!=null?'bomb':null};
     if(incoming?.id===tile.id) {
       const pitch=graphics.parameters.board.pitch;
       data.fromPosition=[(col-2)*pitch,.08,(row-2)*pitch];
@@ -827,7 +849,67 @@ function renderBoard(incoming) {
   // (the new stone used to stay outside the board at its entry point).
   const animate=!!incoming&&!reduceMotion.matches;
   visual.sync(graphicsTiles(animate?incoming:null),{animate,duration:.12,incoming:animate?incoming:null});
+  if(campaignMode||bombBadges.size)renderBombBadges();
 }
+// ---------- launch-16: Bomben-Countdown ----------
+// Echtzeit, 20 s ab dem ersten Zug. Die Uhr steht bei Pause, verdeckter Seite, offenem Dialog/Menü/Shop/
+// Werbung/Statistik/Zauberstab-Auswahl, während Animationen (busy) und Hinweis-Vorführung.
+// Anzeige: kleine DOM-Abzeichen über den Bomben (Text ändert sich 1×/s) – kein WebGL-Frame nötig.
+const bombBadges=new Map();let bombLayer=null,bombTimer=0,bombLast=0,bombBlast=false;
+function bombPaused(){
+  return paused||document.hidden||busy||hintBusy||celebrating||!started||!!wandPicker||campaignUI.resultOpen||shopUI.isOpen||adUI.isOpen||giftFx.active||statsUI.isOpen||worldMenu.active;
+}
+function renderBombBadges(){
+  const list=[];
+  if(campaignMode&&camp&&!worldMenu.active&&started)camp.run.board.forEach((row,r)=>row.forEach((t,c)=>{if(t&&t.bomb!=null)list.push({t,r,c});}));
+  const keep=new Set(list.map(x=>x.t.id));
+  for(const [id,el] of bombBadges)if(!keep.has(id)){el.remove();bombBadges.delete(id);}
+  if(!list.length)return;
+  if(!bombLayer){bombLayer=document.createElement('div');bombLayer.className='bomb-layer';bombLayer.setAttribute('aria-hidden','true');document.body.append(bombLayer);}
+  const hide=paused||campaignUI.resultOpen||shopUI.isOpen||adUI.isOpen||statsUI.isOpen||giftFx.active;
+  if(bombLayer.hidden!==hide)bombLayer.hidden=hide;
+  for(const {t,r,c} of list){
+    let el=bombBadges.get(t.id);
+    if(!el){el=document.createElement('span');el.className='bomb-badge';el.innerHTML='<b></b>';bombLayer.append(el);bombBadges.set(t.id,el);}
+    const sec=String(Math.ceil(t.bomb/1000));if(el.firstChild.textContent!==sec)el.firstChild.textContent=sec;
+    el.classList.toggle('is-low',t.bomb<=5000);el.classList.toggle('is-waiting',!camp.run.bombClock);
+    const p=cellPoint(r,c),k=p.size||40;
+    const x=Math.round(p.x+k*.3),y=Math.round(p.y-k*.42);
+    if(el.dataset.at!==x+','+y){el.dataset.at=x+','+y;el.style.transform=`translate(${x}px,${y}px)`;}
+  }
+}
+function scheduleBombTick(){if(!bombTimer)bombTimer=setTimeout(bombTick,200);}
+function bombTick(){
+  bombTimer=0;
+  if(!campaignMode||!camp||!Camp.hasBomb(camp.run.board)){bombLast=0;renderBombBadges();return;}
+  const r=camp.run,now=performance.now(),running=r.status==='playing'&&r.bombClock&&!bombPaused()&&!bombBlast;
+  if(running&&bombLast){
+    const ex=Camp.tickLevelBombs(r,Math.min(1000,now-bombLast));
+    if(ex.length)void explodeBombs(ex);
+  }
+  bombLast=running?now:0;
+  renderBombBadges();
+  bombTimer=setTimeout(bombTick,running?200:400);
+}
+async function explodeBombs(list){
+  const turn=generation;bombBlast=true;busy=true;
+  try{
+    for(const e of list){
+      const at=cellPoint(e.at[0],e.at[1]);
+      for(const [rr,cc] of e.removed){const t=board[rr]?.[cc];if(t)visual.popTile?.(t.id);}
+      toolFx.boom(at,at.size*1.5);
+    }
+    sound.play('boom');haptics.pulse('big');
+    if(!reduceMotion.matches)for(const e of list)for(const [dr,dc] of [[0,2],[0,-2],[2,0],[-2,0]]){const n=board[e.at[0]+dr]?.[e.at[1]+dc];if(n)visual.scheduleWobble?.(n.id,.5,.05);}
+    board=camp.run.board.map(row=>row.map(t=>t?{...t}:null));
+    renderBoard();renderCampaign();
+    showNote(list.length>1?`${list.length} Bomben explodiert!`:'Bombe explodiert!',1800);
+    await wait(reduceMotion.matches?150:420);
+  }finally{bombBlast=false;if(turn===generation)busy=false;}
+  if(turn!==generation)return;
+  if(camp?.run.status!=='playing')await finishLevel();
+}
+addEventListener('resize',()=>{if(bombBadges.size)renderBombBadges();});
 function renderQueue() {
   if(queueElement.children.length!==3) {
     queueElement.replaceChildren(...Array.from({length:3},()=> {
@@ -1223,7 +1305,7 @@ window.addEventListener('pagehide', event => {
 window.addEventListener('online', () => void flushPending());
 // Read-only inspection for integration checks; game state still belongs here.
 window.SquishGame={graphics,move,restart,get state(){return {board,queue,score,best,bestTile,moves,peak,busy,paused,booting,started,hasSavedGame,duelMode,duelRevision,ranked:run?{id:run.id,logLength:run.log.length,submitted:run.sub}:null};},get effects(){return mergeEffects.stats;},get sound(){return sound.stats;},get menu(){return worldMenu.stats;},get fusion(){return visual.fusion?.stats||null;},
-  get campaign(){return {mode:campaignMode,level:camp?.n??null,status:camp?.run.status??null,moves:camp?.run.moves??0,movesLeft:camp?Camp.movesLeft(camp.run):null,
+  get campaign(){return {mode:campaignMode,lab:labMode,bombMs:camp?Camp.nextBombMs(camp.run):null,bombClock:!!camp?.run.bombClock,exploded:camp?.run.exploded??0,specials:camp?camp.run.board.flatMap((row,r)=>row.map((t,c)=>t&&Camp.specialOf(t)?{kind:Camp.specialOf(t),r,c,value:t.value,id:t.id}:null)).filter(Boolean):[],bombBadges:[...bombBadges.values()].map(e=>e.textContent),level:camp?.n??null,status:camp?.run.status??null,moves:camp?.run.moves??0,movesLeft:camp?Camp.movesLeft(camp.run):null,
     toolsUsed:camp?.run.toolsUsed.slice()??[],progress:campaignProgress,inventory,shopOpen:shopUI.isOpen,shopStats:shopUI.stats,gift:{active:giftFx.active,phase:giftFx.phase,...giftFx.stats},lastPurchase,adOpen:adUI.isOpen,adType:adUI.type,adStats:adUI.stats,lastAd,statsOpen:statsUI.isOpen,statsStats:{opens:statsUI.stats.opens,exports:statsUI.stats.exports,resets:statsUI.stats.resets,lastExportMode:statsUI.stats.lastExportMode},toolLog:{attempts:toolLog.attempts.length,events:toolLog.events.length,current:logAttempt?{...logAttempt}:null,summary:ToolLog.summarize(toolLog)},freeTools:camp?.free?{...camp.free}:null,available:camp?availableTools():null,levelsLoaded:!!levels,resultOpen:campaignUI.resultOpen,armedTool,hintBusy,lastHint,toolFx:toolFx.stats,celebrating,timeline:campaignUI.timeline.slice()};},
   // Screen point of a board cell (for input tests).
   cellPoint(row,col){const host=document.getElementById('graphics').getBoundingClientRect(),loc=location(row,col);return {x:host.left+loc.x/100*host.width,y:host.top+(loc.y+1.5)/100*host.height};}};
@@ -1252,11 +1334,13 @@ export const menuActions={
   world:worldMenu,
   async start(){
     await enterGame();
-    if(campaignMode&&camp)showNote(`Level ${camp.n}: ${camp.level.goals.map(Camp.goalText).join(' + ')}`,2600);
+    if(campaignMode&&camp){showNote(levelNote(),labMode?5200:2600);scheduleBombTick();}
   },
   async select(newGame=false) {
     if (booting || started || busy) return;
     if (newGame && typeof newGame === 'object' && newGame.campaign) {
+      if(campaignMode&&!!newGame.lab!==labMode)leaveCampaign();
+      labMode=!!newGame.lab;
       await prepareLevel(newGame.campaign);
       return;
     }

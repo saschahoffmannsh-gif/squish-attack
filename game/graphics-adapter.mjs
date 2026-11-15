@@ -7,6 +7,7 @@ import {applyNeonGlassLighting} from './gel-lighting.mjs?v=menu-1';
 import {createCrispLabelFactory} from './crisp-labels.mjs?v=launch-16';
 import {applyComic,comicBodyMaterial,setComicValue} from './comic-style.mjs?v=launch-16';
 import {installCleanScreen} from './clean-screen.mjs?v=launch-16';
+import {applySpecial} from './special-squish.mjs?v=launch-16';
 import {createFusion} from './fusion.mjs?v=launch-16';
 import {flags} from './flags.mjs?v=launch-16';
 import {createSquishGraphics,THREE,PARAMETERS} from '../squish/squish-graphics.js?v=play-sharp-1';
@@ -336,6 +337,8 @@ export function createGameGraphics(host) {
       tiles.forEach(t=>ensureColor(t.value));graphics.syncTiles(tiles,options);
       requestFrame({shadows:true});
       for(const tile of graphics.tiles)applyComic(tile,tile.value);
+      // launch-16: Eis / Kette / Bombe (Deko + Farbe), nach applyComic.
+      for(const t of tiles){let s=null;try{s=graphics.getTile(t.id);}catch{}if(s)applySpecial(s,t.special||null);}
       const pressure=options?.animate&&options.incoming
         ?installPressureWave(graphics.tiles,options.incoming,graphics.state.time,options.onPop):0;
       if(options?.animate&&!pressure)for(const tile of graphics.tiles)if(tile.motion)graphics.wobble(tile.id,.25);
