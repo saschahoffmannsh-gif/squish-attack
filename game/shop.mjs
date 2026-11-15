@@ -5,11 +5,11 @@
 // ohne Zahlungsanbieter, ohne Backend, ohne Geld.
 // Später (App): ein natives Store-Modul (StoreKit / Play Billing über Capacitor) registriert sich
 // mit registerNativeStore({...}) und liefert dieselbe Schnittstelle (products/purchase).
-import { TOOL_TYPES, toolName } from './campaign.mjs?v=launch-12';
+import { TOOL_TYPES, toolName } from './campaign.mjs?v=launch-13';
 
 /** Eine Stelle für alle Angebote und Platzhalter-Preise (EUR). */
 export const SHOP_CONFIG = Object.freeze({
-  enabled: true,          // Shop überhaupt anzeigen (grünes Plus, Shop-Knopf)
+  enabled: false,         // Shop überhaupt anzeigen (grünes Plus, Shop-Knopf). launch-13 Testphase: aus (Werbung statt Shop), zurück: true
   testPurchases: true,    // Web: Testkauf ohne Bezahlung. false = nur nativer Store (sonst „nicht verfügbar“)
   currency: 'EUR',
   // Pakete je Hilfsmittel: Anzahl → Preis

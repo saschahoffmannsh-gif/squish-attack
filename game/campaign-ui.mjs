@@ -1,7 +1,7 @@
 // Kampagne: DOM-Teile (Ziel-Anzeige, Züge, Hilfsmittel, Ergebnis-Dialog, Levelauswahl).
 // Reine Darstellung; Spiellogik und Speichern liegen in game.mjs / campaign.mjs.
-import {TOOL_ICONS,GIFT_SVG} from './tool-icons.mjs?v=launch-12';
-import {goalProgress,goalText,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName} from './campaign.mjs?v=launch-12';
+import {TOOL_ICONS,GIFT_SVG} from './tool-icons.mjs?v=launch-13';
+import {goalProgress,goalText,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName} from './campaign.mjs?v=launch-13';
 
 const $=id=>document.getElementById(id);
 const fmt=n=>Number(n||0).toLocaleString('de-DE');
@@ -46,14 +46,15 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
   }
   // armed: 'rocket' | 'wand' | null; busy: 'hint' während der Suche/Vorführung.
   // shop: bei 0 zeigt die Kachel ein grünes Plus und öffnet beim Antippen den Shop.
-  function renderTools(inv,{canExtra=true,armed=null,busy=null,locked=false,shop=false}={}){
+  // refill: 'ad' (launch-13: Dummy-Werbung) | 'shop' | null – bestimmt, was das grüne Plus bei 0 öffnet.
+  function renderTools(inv,{canExtra=true,armed=null,busy=null,locked=false,shop=false,refill=shop?'shop':null}={}){
     tools.hidden=false;
     const set=(btn,n,enabled,label)=>{
-      const empty=!(n>0),toShop=empty&&shop;
-      const c=btn.querySelector('[data-count]');c.textContent=toShop?'+':String(n|0);c.classList.toggle('is-zero',empty&&!shop);
-      btn.classList.toggle('is-empty',toShop);btn.dataset.shop=toShop?'1':'';
+      const empty=!(n>0),toShop=empty&&!!refill;
+      const c=btn.querySelector('[data-count]');c.textContent=toShop?'+':String(n|0);c.classList.toggle('is-zero',empty&&!refill);
+      btn.classList.toggle('is-empty',toShop);btn.dataset.shop=toShop?'1':'';btn.dataset.refill=toShop?refill:'';
       btn.disabled=toShop?!!locked:!enabled;
-      btn.setAttribute('aria-label',toShop?`${label}: keine mehr – Shop öffnen`:`${label}, ${n|0} vorhanden`);
+      btn.setAttribute('aria-label',toShop?`${label}: keine mehr – ${refill==='ad'?'Werbung ansehen':'Shop öffnen'}`:`${label}, ${n|0} vorhanden`);
     };
     set(extraBtn,inv.extraMoves,inv.extraMoves>0&&canExtra&&!locked,'Hilfsmittel +3 Züge');
     set(hintBtn,inv.hint,(inv.hint>0&&!locked)||busy==='hint','Hilfsmittel Hinweis: spielt 2 Züge zum Ziel');
@@ -69,7 +70,8 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
   wandBtn.addEventListener('click',()=>onTool?.('wand'));
 
   // ---------- Ergebnis ----------
-  function showResult({n,won,stars,moves,limit,lostReason,canNext,nextLock,gifts=[],extraAvailable=0,toolsUsed=0}){
+  function showResult({n,won,stars,moves,limit,lostReason,canNext,nextLock,gifts=[],extraAvailable=0,extraAd=false,toolsUsed=0}){
+    const extraOffer=extraAvailable>0||extraAd;
     result.dataset.outcome=won?'won':'lost';
     rKicker.textContent=`LEVEL ${n}`;
     rTitle.textContent=won?(stars===3?'Perfekt!':'Level geschafft!'):lostReason==='board-full'?'Kein Platz mehr':'Keine Züge mehr';
@@ -79,16 +81,17 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
     rStarCount.textContent=won?`${stars} / 3`:'–';
     rMessage.textContent=won
       ?(toolsUsed?'Mit Hilfsmittel gibt es höchstens 2 ★.':stars<3?'Mit weniger Zügen gibt es mehr Sterne.':'Bestmöglich gelöst!')
-      :(lostReason==='board-full'?'Das Brett ist voll.':'Das Ziel ist noch nicht erreicht.')+(extraAvailable&&lostReason==='moves'?' Mit +3 Zügen kannst du weiterspielen (dann höchstens 2 ★).':' Versuch es noch einmal!');
+      :(lostReason==='board-full'?'Das Brett ist voll.':'Das Ziel ist noch nicht erreicht.')+(extraOffer&&lostReason==='moves'?' Mit +3 Zügen kannst du weiterspielen (dann höchstens 2 ★).':' Versuch es noch einmal!');
     if(won&&!canNext&&nextLock)rMessage.textContent+=' '+lockText(nextLock);
     else if(won&&!canNext)rMessage.textContent+=' Alle Level geschafft!';
     setGifts(gifts);
     bNext.hidden=!won;bNext.disabled=!canNext;
     setLabel(bNext,canNext?'Weiter':nextLock?'Gesperrt':'Geschafft');
     bNext.title=nextLock?lockText(nextLock):'';
-    bExtra.hidden=won||!extraAvailable||lostReason!=='moves';
-    setLabel(bExtra,`+3 Züge (${extraAvailable})`);
-    bExtra.setAttribute('aria-label',`+3 Züge einsetzen, ${extraAvailable} vorhanden`);
+    bExtra.hidden=won||!extraOffer||lostReason!=='moves';
+    const viaAd=!(extraAvailable>0);bExtra.dataset.refill=viaAd?'ad':'';
+    setLabel(bExtra,viaAd?'+3 Züge · Werbung':`+3 Züge (${extraAvailable})`);
+    bExtra.setAttribute('aria-label',viaAd?'Werbung ansehen für +3 Züge':`+3 Züge einsetzen, ${extraAvailable} vorhanden`);
     // Verloren ohne +3: "Nochmal" wird der große Hauptknopf.
     const retryMain=!won&&bExtra.hidden;
     bRetry.classList.toggle('aw-big',retryMain);bRetry.classList.toggle('aw-green',retryMain);bRetry.classList.toggle('aw-purple',!retryMain);

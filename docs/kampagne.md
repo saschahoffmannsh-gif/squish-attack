@@ -399,3 +399,47 @@ bisher verteilt), lassen sich aber antippen und kommen in einer Blase hoch.
   Ton aus: kein Sound.
 - **Spielstand** `squish-campaign-tools-v1` jetzt `version: 3`
   (`extraMoves, rocket, hint, wand, gifts, pending`); ältere Stände werden übernommen.
+
+## Testphase: Werkzeuge per Dummy-Werbung + Werkzeug-Protokoll (launch-13, temporär)
+
+Ziel: sehen, wie viele Hilfsmittel beim echten Spielen wann und wo gebraucht werden.
+
+- **Vorrat einmalig geleert:** Beim ersten Laden von launch-13 werden alle Hilfsmittel
+  auf 0 gesetzt und offene Geschenke verworfen (`resetStockOnce`, Merker
+  `squish-campaign-tools-reset = launch-13`). Bereits vergebene Geschenk-ids bleiben
+  gespeichert, damit später nichts doppelt verschenkt wird. Danach geholte Werkzeuge
+  bleiben erhalten.
+- **Keine Gratis-Ladungen:** `FREE_TOOLS_PER_LEVEL = 0`; jedes Level startet mit 0.
+- **Werbung statt Shop:** Ist ein Hilfsmittel leer, zeigt die Kachel das grüne Plus;
+  Antippen öffnet den Comic-Dialog „Werbeclip (Dummy)“. „Ansehen“ gibt **sofort**
+  1 Stück (kein Video, kein Warten, kein Netz), „Nein danke“ gibt nichts.
+  Leiste: das Stück liegt danach in der Kachel und wird per Tipp eingesetzt.
+  Ergebnis-Dialog nach Niederlage durch Zugmangel: „+3 Züge · Werbung“ → nach
+  „Ansehen“ wird +3 direkt eingesetzt (man wollte ja weiterspielen).
+- **Shop versteckt:** `SHOP_CONFIG.enabled = false` (Plus führt zur Werbung, der
+  Shop-Knopf in der Karte ist weg). Grund: Testkäufe würden das Protokoll verfälschen.
+- **Geschenke aus:** `TOOL_GIFTS = false` (keine Level-/Sterne-Geschenke).
+- **Sterne:** unverändert, mit Hilfsmittel höchstens 2 ★.
+- **Werkzeug-Protokoll** (`game/tool-log.mjs`, nur `localStorage`
+  `squish-tool-log-v1`, nie ans Backend):
+  - je Level-Versuch: Level, Versuch-Nr. (pro Level), Start/Ende, Ausgang
+    (`won` / `lost` / `quit`), Züge, Zuglimit, Sterne, Niederlagengrund, eingesetzte
+    Werkzeuge, Anzahl Werbung. Nochmal/Neustart/nächstes Level = neuer Versuch;
+    Menü oder geschlossene Seite = `quit`. „+3“ nach Niederlage öffnet den Versuch
+    wieder (`reopened`).
+  - je Ereignis (`ad` = Werbung angesehen, `use` = eingesetzt): Zeit, Werkzeug, Level,
+    Versuch, Zug-Nr., Restzüge, Zielfortschritt (je Ziel current/target, Stand vor dem
+    Einsatz), Ort (`level` / `result`) und der Ausgang des Versuchs (wird beim Ende
+    nachgetragen).
+  - Begrenzung: 4000 Ereignisse, 3000 Versuche (älteste fallen raus).
+- **Einstellungen → „Werkzeug-Statistik“:** Comic-Übersicht mit Summen (Versuche,
+  Siege, Einsätze, Werbung), je Werkzeug, und Tabelle je Level (Versuche, Siege,
+  Einsätze je Werkzeug, ▶ = per Werbung). „Exportieren“ kopiert das JSON
+  (Zusammenfassung + Rohprotokoll) in die Zwischenablage und bietet Teilen
+  (iPhone-Teilen-Blatt mit Datei) bzw. Download an. „Zurücksetzen“ fragt einmal nach
+  („Wirklich löschen?“).
+- **Zurück zum Stand launch-12** (nach der Testphase):
+  `FREE_TOOLS_PER_LEVEL = 1` (oder 0 für reinen Vorrat), `AD_TOOLS = false`,
+  `TOOL_GIFTS = true`, `TOOL_STOCK_RESET = null` in `game/campaign.mjs`;
+  `SHOP_CONFIG.enabled = true` in `game/shop.mjs`. Protokoll und Statistik können
+  bleiben oder mit dem Knopf in den Einstellungen entfernt werden.

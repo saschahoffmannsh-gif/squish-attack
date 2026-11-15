@@ -111,18 +111,19 @@
         </style>
     <link rel="stylesheet" href="graphics.css" />
     <link rel="stylesheet" href="fixed-screen.css?v=glass-menu-1" />
-    <link rel="stylesheet" href="duel.css?v=launch-12" />
+    <link rel="stylesheet" href="duel.css?v=launch-13" />
     <link rel="stylesheet" href="reward-effects.css?v=vfx-1" />
     <link rel="stylesheet" href="menu.css?v=glass-title-1" />
     <link rel="stylesheet" href="title-menu.css?v=3" />
-    <link rel="stylesheet" href="clean-screen.css?v=launch-12" />
+    <link rel="stylesheet" href="clean-screen.css?v=launch-13" />
     <link rel="stylesheet" href="combo.css?v=combo-1" />
-    <link rel="stylesheet" href="leaderboard.css?v=launch-12" />
-    <link rel="stylesheet" href="campaign.css?v=launch-12" />
-    <link rel="stylesheet" href="autumn-ui.css?v=launch-12" />
-    <link rel="stylesheet" href="comic-ui.css?v=launch-12" />
-    <link rel="stylesheet" href="tools.css?v=launch-12" />
-    <link rel="stylesheet" href="store.css?v=launch-12" />
+    <link rel="stylesheet" href="leaderboard.css?v=launch-13" />
+    <link rel="stylesheet" href="campaign.css?v=launch-13" />
+    <link rel="stylesheet" href="autumn-ui.css?v=launch-13" />
+    <link rel="stylesheet" href="comic-ui.css?v=launch-13" />
+    <link rel="stylesheet" href="tools.css?v=launch-13" />
+    <link rel="stylesheet" href="store.css?v=launch-13" />
+    <link rel="stylesheet" href="ads.css?v=launch-13" />
   </head>
   <body>
     <div class="aw-bg" id="aw-bg" aria-hidden="true"></div>
@@ -309,6 +310,8 @@
         <button class="setting-toggle" id="phone-motion" type="button" role="switch" aria-checked="false" aria-pressed="false" aria-describedby="phone-motion-status"><span class="setting-label"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 17h2M3 8l-2 4 2 4m18-8 2 4-2 4"/></svg>Handybewegung</span><span data-toggle-state>Aus</span></button>
         <p class="setting-description" id="phone-motion-status" role="status" aria-live="polite"></p>
         <button class="setting-toggle" id="vibration-toggle" type="button" role="switch" aria-checked="true"><span class="setting-label"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7.5" y="3" width="9" height="18" rx="2"/><path d="M3.5 8v8M20.5 8v8"/></svg>Vibration</span><span data-toggle-state>An</span></button>
+        <button class="setting-toggle setting-stats" id="tool-stats-open" type="button"><span class="setting-label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/></svg>Werkzeug-Statistik</span><span class="setting-chev" aria-hidden="true">›</span></button>
+        <p class="setting-description">Testphase: wann und wo du Hilfsmittel gebraucht hast. Export zum Verschicken.</p>
         <p class="settings-build" id="settings-build"></p>
         <button class="menu-button primary" id="settings-close" type="button">Zurück</button>
         </div>
@@ -366,10 +369,10 @@
         <button class="duel-back" id="board-close" type="button">Zurück zum Menü</button>
       </div>
     </section>
-    <script src="config.js?v=launch-12"></script>
+    <script src="config.js?v=launch-13"></script>
     <script>
     (function(){
-      var BUILD='launch-12';
+      var BUILD='launch-13';
       var key='squish-build-reload';
       fetch('build.txt?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.text();}).then(function(v){
         v=(v||'').trim();
@@ -380,7 +383,7 @@
       }).catch(function(){});
     })();
     </script>
-    <script type="module" src="debug-overlay.mjs?v=launch-12"></script>
-    <script type="module" src="loading-screen.mjs?v=launch-12"></script>
+    <script type="module" src="debug-overlay.mjs?v=launch-13"></script>
+    <script type="module" src="loading-screen.mjs?v=launch-13"></script>
   </body>
 </html>

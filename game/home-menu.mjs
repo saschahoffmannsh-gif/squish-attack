@@ -1,8 +1,8 @@
 // Startbildschirm und Modus-Menüs im Herbst-Design (reines DOM, kein 3D).
 // Ersetzt das frühere 3D-Glastisch-Menü (world-menu.mjs) mit derselben
 // Schnittstelle, die game.mjs und start-menu.mjs erwarten.
-import {ICONS,TILE_ICONS,leafSvg} from './aw-icons.mjs?v=launch-12';
-import {BUILD} from './flags.mjs?v=launch-12';
+import {ICONS,TILE_ICONS,leafSvg} from './aw-icons.mjs?v=launch-13';
+import {BUILD} from './flags.mjs?v=launch-13';
 
 const LEAF_COLORS=['#f07a1c','#e8541a','#c9301c','#f2a01e','#d94a17','#b8321a','#ffb030'];
 const fmt=n=>Number(n||0).toLocaleString('de-DE');
@@ -203,7 +203,7 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
   page.addEventListener('keydown',ev=>{if(ev.key==='Tab'||ev.key==='Enter'||ev.key===' ')keyboard=true;},true);
   page.addEventListener('keydown',ev=>{
     if(!active||ev.key!=='Escape'||screen==='home')return;
-    if(page.querySelector('.duel-screen:not([hidden]),.settings-screen:not([hidden]),.shop-veil,.gift-fx'))return;
+    if(page.querySelector('.duel-screen:not([hidden]),.settings-screen:not([hidden]),.shop-veil,.gift-fx,.ad-veil'))return;
     ev.preventDefault();void go('home');
   });
 

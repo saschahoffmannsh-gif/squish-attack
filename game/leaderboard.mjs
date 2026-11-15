@@ -1,7 +1,7 @@
 // Leaderboard overlay. Reads the public snapshot (top 100) at most once per
 // minute per board; the player's own rank comes from the last verified submit.
-import {apiFetch,fetchLeaderboard,publicId} from './api.mjs?v=launch-12';
-import {checkName} from './names.mjs?v=launch-12';
+import {apiFetch,fetchLeaderboard,publicId} from './api.mjs?v=launch-13';
+import {checkName} from './names.mjs?v=launch-13';
 
 const CACHE_MS=60*1000,CACHE_KEY='squish-board-cache-v1';
 const fmt=n=>Number(n||0).toLocaleString('de-DE');

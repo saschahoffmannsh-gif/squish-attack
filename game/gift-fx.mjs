@@ -1,8 +1,8 @@
 // Geschenk öffnen (launch-12): Paket springt auf, der Inhalt steigt in einer Comic-Seifenblase
 // hoch, Antippen lässt sie platzen (Plopp, Vibration) und die Hilfsmittel fliegen in die Leiste.
 // prefers-reduced-motion: nur Ein-/Ausblenden, kein Schweben/Flug. Ton aus wird von sound.mjs beachtet.
-import { TOOL_ICONS, GIFT_LID_SVG, GIFT_BOX_SVG } from './tool-icons.mjs?v=launch-12';
-import { toolName } from './campaign.mjs?v=launch-12';
+import { TOOL_ICONS, GIFT_LID_SVG, GIFT_BOX_SVG } from './tool-icons.mjs?v=launch-13';
+import { toolName } from './campaign.mjs?v=launch-13';
 
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 const wait = ms => new Promise(r => setTimeout(r, ms));

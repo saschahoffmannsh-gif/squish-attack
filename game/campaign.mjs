@@ -365,9 +365,31 @@ export function saveInventory(inv, storage = globalThis.localStorage) {
  *  - TOOL_STOCK (launch-12 wieder an): gespeicherter Vorrat, gefüllt nur durch Geschenke
  *    und Shop-Käufe. Aus = kein Vorrat, keine Geschenke, kein Shop.
  * Altes Verhalten (launch-10): FREE_TOOLS_PER_LEVEL = 0, TOOL_STOCK = true.
+ *  - AD_TOOLS (launch-13, Testphase): leeres Hilfsmittel → Dummy-Werbung „Ansehen“ gibt 1 Stück.
+ *  - TOOL_GIFTS (launch-13 aus): Level-/Sterne-Geschenke. Aus, damit das Protokoll echten Bedarf zeigt.
+ *  - TOOL_STOCK_RESET (launch-13): einmalig beim Laden Vorrat + offene Geschenke leeren.
+ * Zurück zu launch-12: FREE_TOOLS_PER_LEVEL = 1, AD_TOOLS = false, TOOL_GIFTS = true, SHOP_CONFIG.enabled = true.
  */
-export const FREE_TOOLS_PER_LEVEL = 1;
+export const FREE_TOOLS_PER_LEVEL = 0;
 export const TOOL_STOCK = true;
+export const AD_TOOLS = true;
+export const TOOL_GIFTS = false;
+export const TOOL_STOCK_RESET = 'launch-13';
+export const TOOL_RESET_KEY = 'squish-campaign-tools-reset';
+/**
+ * Einmalige Leerung (launch-13): Anzahl aller Hilfsmittel = 0, offene Geschenke weg.
+ * Bereits vergebene Geschenk-ids bleiben gemerkt (nichts wird später doppelt verschenkt).
+ * Rückgabe {inventory, reset:boolean}; ein zweiter Aufruf ändert nichts mehr.
+ */
+export function resetStockOnce(inv, storage = globalThis.localStorage, tag = TOOL_STOCK_RESET) {
+  let done = null;
+  try { done = storage?.getItem(TOOL_RESET_KEY); } catch {}
+  if (!tag || done === tag) return { inventory: inv, reset: false };
+  const out = { ...emptyInventory(), gifts: [...(inv?.gifts || [])], pending: [] };
+  saveInventory(out, storage);
+  try { storage?.setItem(TOOL_RESET_KEY, tag); } catch {}
+  return { inventory: out, reset: true };
+}
 export function freeToolCharges(count = FREE_TOOLS_PER_LEVEL) {
   return Object.fromEntries(TOOL_TYPES.map(t => [t, Math.max(0, count | 0)]));
 }

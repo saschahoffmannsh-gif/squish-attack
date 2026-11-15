@@ -288,8 +288,8 @@ test('Hinweis-Suche: kürzester Weg wie der Solver, Züge gewinnen wirklich; kei
 });
 
 test('Ladungen je Versuch (launch-11) + Vorrat (launch-12): zuerst gratis, dann Vorrat', () => {
-  assert.equal(FREE_TOOLS_PER_LEVEL, 1); assert.equal(TOOL_STOCK, true);
-  const free = freeToolCharges();
+  assert.equal(TOOL_STOCK, true);
+  const free = freeToolCharges(1);
   assert.deepEqual(free, { extraMoves: 1, rocket: 1, hint: 1, wand: 1 });
   const stock = { ...emptyInventory(), rocket: 3, hint: 2 };
   assert.deepEqual(toolsAvailable(stock, free), { extraMoves: 1, rocket: 4, hint: 3, wand: 1 });
@@ -301,7 +301,7 @@ test('Ladungen je Versuch (launch-11) + Vorrat (launch-12): zuerst gratis, dann 
   const w = spendCharge(stock, { ...free, wand: 0 }, 'wand');
   assert.equal(w, null);                                        // weder gratis noch Vorrat
   assert.equal(spendCharge(stock, free, 'hammer'), null);
-  assert.deepEqual(freeToolCharges(), free);                    // neuer Versuch = wieder volle Ladungen
+  assert.deepEqual(freeToolCharges(1), free);                   // neuer Versuch = wieder volle Ladungen
   // Schalter: ohne Vorrat zählt nur gratis
   assert.deepEqual(toolsAvailable(stock, free, false), { extraMoves: 1, rocket: 1, hint: 1, wand: 1 });
   assert.equal(spendCharge(stock, a.free, 'rocket', false), null);
@@ -337,27 +337,103 @@ test('Geschenke als offene Pakete: einreihen, einzeln einsammeln, gespeichert, n
 
 test('Shop: eine Preistabelle, Testkauf legt in den Vorrat, Schnittstelle für nativen Store', async () => {
   assert.equal(SHOP_CONFIG.testPurchases, true);
+  assert.equal(SHOP_CONFIG.enabled, false);                     // launch-13 Testphase: Shop versteckt
+  assert.equal((await purchase('hint-3')).ok, false);           // ausgeschaltet = kein Kauf
+  const on = { ...SHOP_CONFIG, enabled: true };
   const ps = shopProducts();
   assert.equal(ps.length, 4 * SHOP_CONFIG.packs.length + SHOP_CONFIG.bundles.length);
   assert.deepEqual(ps.filter(p => p.type === 'rocket').map(p => [p.id, p.items.rocket, p.price]), [['rocket-1', 1, 0.99], ['rocket-3', 3, 2.49], ['rocket-5', 5, 3.99]]);
   assert.match(formatPrice(2.49), /^2,49\s?€$/);
-  const r = await purchase('hint-3');
+  const r = await purchase('hint-3', { config: on });
   assert.ok(r.ok && r.test); assert.deepEqual(r.items, { hint: 3 });
   assert.equal(addToStock(emptyInventory(), r.items).hint, 3);
-  const mix = await purchase('bundle-mix');
+  const mix = await purchase('bundle-mix', { config: on });
   assert.deepEqual(mix.items, { extraMoves: 2, hint: 2, rocket: 2, wand: 2 });
-  assert.equal((await purchase('gibts-nicht')).ok, false);
+  assert.equal((await purchase('gibts-nicht', { config: on })).ok, false);
   // ohne Testkauf und ohne nativen Store: nichts verfügbar
-  const off = { ...SHOP_CONFIG, testPurchases: false };
+  const off = { ...on, testPurchases: false };
   assert.equal(activeStore(off).kind, 'none');
   assert.equal((await purchase('hint-1', { config: off })).ok, false);
   // nativer Store (später Capacitor): wird bevorzugt, Abbruch gibt nichts
   registerNativeStore({ name: 'fake', purchase: async p => (p.id === 'wand-1' ? { ok: true, transactionId: 't1' } : { ok: false, reason: 'cancelled' }) });
   try {
-    assert.equal(activeStore().kind, 'native');
-    const n = await purchase('wand-1');
+    assert.equal(activeStore(on).kind, 'native');
+    const n = await purchase('wand-1', { config: on });
     assert.ok(n.ok && !n.test && n.transactionId === 't1');
-    assert.equal((await purchase('wand-3')).ok, false);
+    assert.equal((await purchase('wand-3', { config: on })).ok, false);
   } finally { registerNativeStore(null); }
   assert.equal(activeStore().kind, 'test');
+});
+
+import { AD_TOOLS, TOOL_GIFTS, resetStockOnce, TOOL_RESET_KEY, loadInventory as loadInv13 } from '../game/campaign.mjs';
+import { loadLog, saveLog, startAttempt, logEvent, endAttempt, reopenAttempt, summarize, exportLog, emptyLog, TOOL_LOG_KEY } from '../game/tool-log.mjs';
+const memStore = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k), m }; };
+
+test('launch-13: Testphase-Schalter – keine Gratis-Ladungen, Werbung an, Geschenke aus', () => {
+  assert.equal(FREE_TOOLS_PER_LEVEL, 0);
+  assert.deepEqual(freeToolCharges(), { extraMoves: 0, rocket: 0, hint: 0, wand: 0 });
+  assert.equal(AD_TOOLS, true); assert.equal(TOOL_GIFTS, false);
+  assert.deepEqual(toolsAvailable(emptyInventory(), freeToolCharges()), { extraMoves: 0, rocket: 0, hint: 0, wand: 0 });
+});
+
+test('launch-13: Vorrat wird einmalig geleert (auch offene Geschenke), vergebene Geschenk-ids bleiben', () => {
+  const st = memStore();
+  const inv = { ...emptyInventory(), rocket: 4, hint: 2, wand: 1, extraMoves: 3, gifts: ['level-3', 'stars-10'], pending: [{ id: 'stars-10', type: 'wand' }] };
+  saveInventory(inv, st);
+  const a = resetStockOnce(loadInv13(st), st);
+  assert.equal(a.reset, true);
+  assert.deepEqual([a.inventory.extraMoves, a.inventory.rocket, a.inventory.hint, a.inventory.wand], [0, 0, 0, 0]);
+  assert.deepEqual(a.inventory.pending, []); assert.deepEqual(a.inventory.gifts, ['level-3', 'stars-10']);
+  assert.equal(loadInv13(st).rocket, 0);                         // gespeichert
+  assert.equal(st.getItem(TOOL_RESET_KEY), 'launch-13');
+  // danach per Werbung geholt → bleibt beim nächsten Laden erhalten
+  saveInventory(addToStock(a.inventory, { hint: 1 }), st);
+  const b = resetStockOnce(loadInv13(st), st);
+  assert.equal(b.reset, false); assert.equal(b.inventory.hint, 1);
+});
+
+test('launch-13: Werkzeug-Protokoll – Versuche, Werbung, Einsatz mit Kontext, Ausgang nachgetragen', () => {
+  const st = memStore();
+  const log = loadLog(st);
+  assert.deepEqual([log.attempts.length, log.events.length], [0, 0]);
+  const a1 = startAttempt(log, 7, { limit: 7, t: 't0' });
+  assert.equal(a1.attempt, 1);
+  const ctx = { move: 3, movesLeft: 4, progress: [{ type: 'tile', current: 4, target: 5 }], where: 'level' };
+  const ad = logEvent(log, a1.id, 'ad', 'wand', ctx, 't1');
+  const use = logEvent(log, a1.id, 'use', 'wand', ctx, 't2');
+  assert.equal(logEvent(log, a1.id, 'use', 'hammer', ctx), null);  // unbekannt
+  assert.deepEqual([ad.level, ad.attempt, ad.move, ad.movesLeft, ad.outcome], [7, 1, 3, 4, null]);
+  endAttempt(log, a1.id, { outcome: 'lost', moves: 7, lostReason: 'moves', t: 't3' });
+  assert.equal(use.outcome, 'lost'); assert.equal(ad.outcome, 'lost');
+  // Weiterspielen mit +3 nach Niederlage: wieder offen, dann gewonnen
+  reopenAttempt(log, a1.id);
+  assert.equal(use.outcome, null); assert.equal(a1.outcome, null);
+  logEvent(log, a1.id, 'ad', 'extraMoves', { ...ctx, where: 'result' });
+  logEvent(log, a1.id, 'use', 'extraMoves', ctx);
+  endAttempt(log, a1.id, { outcome: 'won', moves: 9, stars: 1 });
+  endAttempt(log, a1.id, { outcome: 'lost' });                    // zweites Ende ändert nichts
+  assert.equal(a1.outcome, 'won'); assert.ok(log.events.every(e => e.outcome === 'won'));
+  const a2 = startAttempt(log, 7); assert.equal(a2.attempt, 2);
+  endAttempt(log, a2.id, { outcome: 'quit' });
+  const a3 = startAttempt(log, 8); endAttempt(log, a3.id, { outcome: 'won', moves: 4, stars: 3 });
+  const sm = summarize(log);
+  assert.deepEqual(sm.levels.map(l => [l.level, l.attempts, l.wins, l.losses, l.quits]), [[7, 2, 1, 0, 1], [8, 1, 1, 0, 0]]);
+  assert.deepEqual(sm.levels[0].use, { extraMoves: 1, rocket: 0, hint: 0, wand: 1 });
+  assert.deepEqual(sm.levels[0].ads, { extraMoves: 1, rocket: 0, hint: 0, wand: 1 });
+  assert.equal(sm.total.attempts, 3); assert.equal(sm.levels[1].bestStars, 3);
+  assert.deepEqual(a1.tools, ['wand', 'extraMoves']); assert.equal(a1.ads, 2);
+  // speichern / laden / exportieren / zurücksetzen
+  assert.ok(saveLog(log, st));
+  const back = loadLog(st);
+  assert.equal(back.events.length, 4); assert.equal(back.attempts.length, 3);
+  const ex = JSON.parse(exportLog(back, { build: 'launch-13' }));
+  assert.equal(ex.kind, 'tool-log'); assert.equal(ex.build, 'launch-13'); assert.equal(ex.summary.total.attempts, 3); assert.equal(ex.log.events.length, 4);
+  saveLog(emptyLog(), st);
+  assert.equal(loadLog(st).attempts.length, 0);
+  st.setItem(TOOL_LOG_KEY, '{kaputt'); assert.equal(loadLog(st).events.length, 0);
+});
+
+test('launch-13: Werkzeuge deckeln weiterhin auf 2 Sterne', () => {
+  assert.equal(starsFor({ stars: { three: 3, two: 5 } }, 3, true, { toolsUsed: 1 }), 2);
+  assert.equal(starsFor({ stars: { three: 3, two: 5 } }, 3, true, { toolsUsed: 0 }), 3);
 });
