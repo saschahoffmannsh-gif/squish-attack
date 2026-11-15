@@ -1,7 +1,7 @@
 import {apiFetch,hasSaveToken} from './api.mjs?v=launch-16';
 import {createRng,encodeMove,replayRun,MAX_LOG} from './ranked.mjs?v=launch-16';
 import {createLeaderboard} from './leaderboard.mjs?v=launch-16';
-import { SIZE, START_VALUES, createStartValues, insertTile, nextMergePass, settle, isGameOver } from './game-logic.mjs?v=launch-16';
+import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-16';
 import { nextSpawn, spawnProfile } from './balance.mjs';
 import {canContinueRun} from './run-availability.mjs?v=launch-16';
 import { createMergeEffects } from './merge-effects.mjs?v=launch-16';
@@ -833,6 +833,7 @@ function graphicsTiles(incoming) {
     if(!tile)return [];
     // launch-16: besondere Squishes – angekettete haben keine Zahl (value 0), die Grafik braucht ≥ 1.
     const data={id:tile.id,value:Math.max(1,tile.value),row,col,special:tile.bound?'bound':tile.ice?'ice':tile.bomb!=null?'bomb':null};
+    if(freedNow.has(tile.id))data.freed=true;   // launch-17: gerade befreit → Eis zerspringt / Ketten reißen
     if(incoming?.id===tile.id) {
       const pitch=graphics.parameters.board.pitch;
       data.fromPosition=[(col-2)*pitch,.08,(row-2)*pitch];
@@ -844,6 +845,7 @@ function graphicsTiles(incoming) {
     return [data];
   }));
 }
+let freedNow=new Set();
 function renderBoard(incoming) {
   // Reduced motion: no slide-in, so no off-board start position either
   // (the new stone used to stay outside the board at its entry point).
@@ -994,7 +996,7 @@ function wobbleMergeNeighbors(groups,combo=1) {
   for(const pulse of planMergeRipple(board,groups,{combo,moves}))visual.scheduleWobble(pulse.id,pulse.power,pulse.delay);
 }
 
-async function applyMerge(pass,turn,combo) {
+async function applyMerge(pass,turn,combo,hold=new Set()) {
   const sources=pass.groups.map(group=>group.cells.map(([r,c])=>({...location(r,c),value:board[r][c].value})));
   const upgraded=pass.groups.filter(g=>!g.street&&g.cells.length>=5);
   // The group's real cushions melt into one gel body, swell and pop; the
@@ -1010,12 +1012,17 @@ async function applyMerge(pass,turn,combo) {
   const previousPeak=Math.max(peak,...board.flat().filter(Boolean).map(t=>t.value));
   const previousScore=score,previousRecord=bestTile;
   board=pass.board;score+=pass.points;best=Math.max(best,score);
+  // launch-17: befreite Squishes (aufgetaut / entkettet) bleiben liegen – nur ihre Hülle geht ab.
+  const freedCells=[...(pass.thawed||[]),...(pass.unchained||[])];
+  freedNow=new Set(freedCells.map(([r,c])=>board[r][c]?.id).filter(id=>id!=null));
+  if(freedCells.length){haptics.pulse('merge');for(const [r,c] of freedCells){const t=board[r][c];if(t&&!reduceMotion.matches)visual.scheduleWobble?.(t.id,.55,.06);}}
   const lead=pass.groups.reduce((a,b)=>b.cells.length>a.cells.length?b:a);
   sound.play(lead.street?'flow':'merge',lead.cells.length,{combo,pan:(lead.target[1]-2)*.13});
   if(!campaignMode)bestTile=Math.max(bestTile,...board.flat().filter(Boolean).map(t=>t.value));
   const rewards=pass.groups.map((group,index)=>({...group,position:location(...group.target),sources:sources[index],combo}));
   mergeEffects.award(rewards,previousScore,score);
-  renderBoard();renderBest();mergeEffects.combo(combo);
+  try{renderBoard();}finally{freedNow=new Set();}
+  renderBest();mergeEffects.combo(combo);
   if(bestTile>previousRecord){const record=rewards.find(group=>group.nextValue===bestTile);if(record)mergeEffects.record(record.position,bestTile,record);}
   haptics.pulse(upgraded.length||lead.cells.length>=4||bestTile>previousRecord||moveCombo>=4||combo>=3?'big':'merge');
   for(const group of pass.groups) {
@@ -1032,7 +1039,7 @@ async function applyMerge(pass,turn,combo) {
   wobbleMergeNeighbors(pass.groups,combo);
   // Wait only if another pass will follow, so the next swipe is accepted
   // as soon as this pop has updated the board.
-  const more=nextMergePass(board);
+  const more=settlePass(board,new Set(hold));
   if(more.groups.length)await wait(upgraded.length?110:80);
   if(turn!==generation)return;
 }
@@ -1046,13 +1053,14 @@ function updateCombo(merged) {
 
 async function resolveMerges(turn,{streak=false}={}) {
   let chains=0,totalMerges=0,hadUpgrade=false,hadStreet=false;
+  const hold=new Set();   // launch-17: in diesem Zug befreite Zellen verschmelzen erst im nächsten Zug
   for(let count=0;count<SIZE*SIZE;count++) {
-    const pass=nextMergePass(board);if(!pass.groups.length)break;
+    const pass=settlePass(board,hold);if(!pass.groups.length)break;
     chains++;totalMerges+=pass.groups.length;
     if(streak&&chains===1)updateCombo(true);
     if(pass.groups.some(g=>!g.street&&g.cells.length>=5))hadUpgrade=true;
     if(pass.groups.some(g=>g.street))hadStreet=true;
-    await applyMerge(pass,turn,totalMerges);
+    await applyMerge(pass,turn,totalMerges,hold);
     if(turn!==generation)return;
   }
   if(streak&&!chains)updateCombo(false);
@@ -1313,7 +1321,7 @@ window.SquishGame={graphics,move,restart,get state(){return {board,queue,score,b
 if(new URLSearchParams(globalThis.location.search).has('vfxdemo'))window.SquishVFX={
   setBoard(grid,next=[1,2,3]){
     if(busy)return false;
-    board=grid.map(row=>row.map(value=>value?{id:nextId++,value}:null));queue=next.slice(0,3);run=null;rng=null;
+    board=grid.map(row=>row.map(value=>value&&typeof value==='object'?{id:nextId++,...value}:value?{id:nextId++,value}:null));queue=next.slice(0,3);run=null;rng=null;
     renderBoard();renderQueue();renderBest();return true;
   },
   slow(v=1){mergeEffects.vfx.timeScale=v;},
