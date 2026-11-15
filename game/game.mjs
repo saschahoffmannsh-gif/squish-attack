@@ -1,25 +1,29 @@
-import {apiFetch,hasSaveToken} from './api.mjs?v=launch-11';
-import {createRng,encodeMove,replayRun,MAX_LOG} from './ranked.mjs?v=launch-11';
-import {createLeaderboard} from './leaderboard.mjs?v=launch-11';
+import {apiFetch,hasSaveToken} from './api.mjs?v=launch-12';
+import {createRng,encodeMove,replayRun,MAX_LOG} from './ranked.mjs?v=launch-12';
+import {createLeaderboard} from './leaderboard.mjs?v=launch-12';
 import { SIZE, START_VALUES, createStartValues, insertTile, nextMergePass, settle, isGameOver } from './game-logic.mjs?v=automatic-streets-2';
 import { nextSpawn, spawnProfile } from './balance.mjs';
 import {canContinueRun} from './run-availability.mjs?v=splash-plate-1';
-import { createMergeEffects } from './merge-effects.mjs?v=launch-11';
-import { createGameGraphics } from './graphics-adapter.mjs?v=launch-11';
+import { createMergeEffects } from './merge-effects.mjs?v=launch-12';
+import { createGameGraphics } from './graphics-adapter.mjs?v=launch-12';
 import { installDeviceMotion } from './device-motion.mjs';
-import { createGameSound } from './sound.mjs?v=launch-11';
+import { createGameSound } from './sound.mjs?v=launch-12';
 import { installSettings } from './settings.mjs?v=woodland-menu-1';
-import { createDuelClient } from './duel-client.mjs?v=launch-11';
+import { createDuelClient } from './duel-client.mjs?v=launch-12';
 import {installFullscreen} from './fullscreen.mjs?v=timed-duel-1';
-import {createHomeMenu} from './home-menu.mjs?v=launch-11';
-import {createConfetti} from './confetti.mjs?v=launch-11';
-import {createHaptics} from './haptics.mjs?v=launch-11';
+import {createHomeMenu} from './home-menu.mjs?v=launch-12';
+import {createConfetti} from './confetti.mjs?v=launch-12';
+import {createHaptics} from './haptics.mjs?v=launch-12';
 import {planMergeRipple} from './merge-ripple.mjs?v=swarm-fx-3';
-import * as Camp from './campaign.mjs?v=launch-11';
-import {createCampaignUI} from './campaign-ui.mjs?v=launch-11';
-import {createToolFx} from './tool-fx.mjs?v=launch-11';
-import {hintState,findHint} from './hint-solver.mjs?v=launch-11';
-import {comicColors} from './comic-style.mjs?v=launch-11';
+import * as Camp from './campaign.mjs?v=launch-12';
+import {createCampaignUI} from './campaign-ui.mjs?v=launch-12';
+import {createToolFx} from './tool-fx.mjs?v=launch-12';
+import {hintState,findHint} from './hint-solver.mjs?v=launch-12';
+import {comicColors} from './comic-style.mjs?v=launch-12';
+import * as Shop from './shop.mjs?v=launch-12';
+import {createShopUI} from './shop-ui.mjs?v=launch-12';
+import {createGiftFx} from './gift-fx.mjs?v=launch-12';
+import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-12';
 const playfield = document.getElementById('playfield');
 const gameElement = document.querySelector('.game');
 const visual = createGameGraphics(document.getElementById('graphics'));
@@ -115,8 +119,11 @@ const worldMenu=createHomeMenu({sound,reduceMotion,hooks:{
   duel,
   leaderboard:()=>leaderboard.open(),
   setMode:mode=>{try{localStorage.setItem(MODE_KEY,mode);}catch{}},
+  icons:{gift:GIFT_SVG,shop:SHOP_SVG},
   campaign:{
     summary:()=>campaignSummary(),
+    openShop:()=>openShop(null),
+    openGift:()=>void openGift(),
     openSelect:()=>{if(levels)campaignUI.openSelect({levels,progress:campaignProgress});else void loadLevels().then(()=>campaignUI.openSelect({levels,progress:campaignProgress})).catch(()=>showNote('Level konnten nicht geladen werden.',3000));},
   },
   soundButton:document.getElementById('sound-toggle'),
@@ -132,7 +139,7 @@ const newTile = value => ({ id: nextId++, value });
 // in localStorage unangetastet: während der Kampagne wird nichts davon gespeichert,
 // beim Verlassen wird er wieder geladen.
 const MODE_KEY='squish-mode-v1';
-const LEVELS_URL=new URL('../levels/levels-001-025.json?v=launch-11',import.meta.url);
+const LEVELS_URL=new URL('../levels/levels-001-025.json?v=launch-12',import.meta.url);
 function storedMode(){try{return localStorage.getItem(MODE_KEY)||'';}catch{return '';}}
 let campaignMode=false,camp=null,levels=null,levelsLoading=null,stashedBestTile=null,needsEntry=false,armedTool=null,hintBusy=false,wandPicker=null;
 let campaignProgress=Camp.loadProgress(),inventory=Camp.loadInventory();
@@ -149,7 +156,7 @@ function campaignSummary(){
   if(lock?.reason==='stars')caption=`Kapitel ${lock.chapter} öffnet ab ${lock.need} ★`;
   else if(!open&&levels)caption='Alle Level geschafft!';
   else caption=`Kapitel ${Camp.chapterOf(next)} · Level ${next}`;
-  return {next,ready:!!levels,caption,total,count,inventory:Camp.TOOL_STOCK?inventory:null,allDone:!open&&!!levels};
+  return {next,ready:!!levels,caption,total,count,inventory:Camp.TOOL_STOCK?inventory:null,pendingGifts:Camp.TOOL_STOCK?inventory.pending.length:0,shop:shopEnabled(),allDone:!open&&!!levels};
 }
 const campaignUI=createCampaignUI({
   onPlay:n=>{void worldMenu.play({campaign:n});},
@@ -157,7 +164,8 @@ const campaignUI=createCampaignUI({
   onRetry:()=>{if(camp)void playLevel(camp.n);},
   onExtra:()=>useExtraMoves(),
   onMenu:()=>void backToMenu(),
-  onTool:type=>type==='extraMoves'?useExtraMoves():type==='hint'?void useHint():toggleTool(type),
+  onTool:type=>{if(campaignMode&&camp&&!(availableTools()[type]>0)&&shopEnabled()){openShop(type);return;}type==='extraMoves'?useExtraMoves():type==='hint'?void useHint():toggleTool(type);},
+  onGift:()=>void openGift(),
   onStar:i=>{sound.play('star',i+1);haptics.pulse(i===2?'big':'merge');},
   reduceMotion,
 });
@@ -169,11 +177,47 @@ function takeTool(type){
   const c=camp;
   return ()=>{c.free=s.free;if(!s.fromFree){inventory=s.inventory;Camp.saveInventory(inventory);}};
 }
+// ---------- Shop + Geschenke (launch-12) ----------
+const shopEnabled=()=>Camp.TOOL_STOCK&&Shop.SHOP_CONFIG.enabled;
+const shopUI=createShopUI({
+  getStock:()=>inventory,sound,haptics,reduceMotion,
+  onBuy:async id=>{
+    const r=await Shop.purchase(id);
+    if(r.ok){inventory=Camp.addToStock(inventory,r.items);Camp.saveInventory(inventory);lastPurchase={id,items:r.items,test:r.test};renderCampaign();}
+    return r;
+  },
+  onClose:()=>{renderCampaign();void worldMenu.refresh?.();},
+});
+let lastPurchase=null;
+function openShop(type){
+  if(!shopEnabled())return;
+  if(armedTool)toggleTool(null);
+  shopUI.open({focus:type});
+}
+const giftFx=createGiftFx({reduceMotion,sound,haptics});
+/** Ältestes offenes Geschenk öffnen: Blase → Platzen → Gutschrift → Symbole fliegen in Leiste/Karte. */
+async function openGift(){
+  if(!Camp.TOOL_STOCK||giftFx.active||!inventory.pending.length)return false;
+  const gift=inventory.pending[0];
+  const target=type=>{
+    const b=campaignMode&&!campaignUI.resultOpen?campaignUI.toolButton(type):null;
+    if(b&&b.offsetWidth)return b;
+    return document.querySelector(`#home-menu:not([hidden]) .aw-chip[data-type="${type}"]`)||(campaignUI.resultOpen?campaignUI.giftButton:null);
+  };
+  await giftFx.open({items:[{type:gift.type,count:1}],targetFor:target,onPop:()=>{
+    const c=Camp.collectGift(inventory,gift.id);if(!c)return;
+    inventory=c.inventory;Camp.saveInventory(inventory);
+    renderCampaign();if(campaignUI.resultOpen)campaignUI.setGifts(inventory.pending);
+  }});
+  if(campaignUI.resultOpen)campaignUI.setGifts(inventory.pending);
+  void worldMenu.refresh?.();
+  return true;
+}
 function renderCampaign(){
   if(!campaignMode||!camp)return;
   campaignUI.renderHud(camp.run,camp.n);
   const room=camp.run.level.sequence.length-Camp.moveLimit(camp.run);
-  campaignUI.renderTools(availableTools(),{canExtra:room>0&&camp.run.status!=='won'&&!hintBusy,armed:armedTool,busy:hintBusy?'hint':null,locked:hintBusy||camp.run.status!=='playing'});
+  campaignUI.renderTools(availableTools(),{shop:shopEnabled(),canExtra:room>0&&camp.run.status!=='won'&&!hintBusy,armed:armedTool,busy:hintBusy?'hint':null,locked:hintBusy||camp.run.status!=='playing'});
 }
 async function prepareLevel(n){
   await loadLevels();
@@ -254,7 +298,7 @@ async function finishLevel(){
     stars=Camp.starsOfRun(r);
     campaignProgress=Camp.recordResult(campaignProgress,camp.level.id,{stars,moves:r.moves});
     Camp.saveProgress(campaignProgress);
-    if(Camp.TOOL_STOCK){const g=Camp.grantGifts(inventory,campaignProgress);inventory=g.inventory;gifts=g.granted;Camp.saveInventory(inventory);}
+    if(Camp.TOOL_STOCK){const g=Camp.queueGifts(inventory,campaignProgress);inventory=g.inventory;Camp.saveInventory(inventory);}
     sound.play('record');haptics.pulse('big');
     if(!reduceMotion.matches)visual.celebrateHud?.('queue-0',.3);
     // Erst kurz Konfetti über dem Brett, dann der Dialog mit den Sternen.
@@ -266,7 +310,7 @@ async function finishLevel(){
   paused=true;releaseGesture();phoneMotion.reset();
   const count=levels.length,nextLock=n<count?Camp.lockReason(campaignProgress,n+1):null;
   campaignUI.showResult({n,won,stars,moves:r.moves,limit:Camp.moveLimit(r),lostReason:r.lostReason,
-    canNext:won&&n<count&&!nextLock,nextLock,gifts,extraAvailable:availableTools().extraMoves,toolsUsed:r.toolsUsed.length});
+    canNext:won&&n<count&&!nextLock,nextLock,gifts:Camp.TOOL_STOCK?inventory.pending.slice():gifts,extraAvailable:availableTools().extraMoves,toolsUsed:r.toolsUsed.length});
   renderCampaign();
 }
 function useExtraMoves(){
@@ -283,7 +327,7 @@ function useExtraMoves(){
   renderCampaign();haptics.pulse('merge');sound.play('record');
   showNote(`+${added} Züge – jetzt höchstens 2 ★`,2200);
 }
-// ---------- Hilfsmittel (launch-11): Rakete, Zauberstab, Hinweis ----------
+// ---------- Hilfsmittel (launch-12): Rakete, Zauberstab, Hinweis ----------
 const toolFx=createToolFx({reduceMotion,shakeTarget:()=>document.getElementById('playfield')});
 const TOOL_NOTES={rocket:'Tippe auf einen Stein – die Rakete sprengt ihn weg (höchstens 2 ★)',wand:'Tippe auf einen Stein und wähle seine neue Zahl (höchstens 2 ★)'};
 function disarmTools(){armedTool=null;hintBusy=false;wandPicker?.close();wandPicker=null;}
@@ -366,7 +410,7 @@ let hintWorker=null,hintSeq=0;
 function searchHint(state){
   const budget={want:2,maxStates:160000,maxMs:2500};
   try{
-    hintWorker||=new Worker(new URL('./hint-worker.mjs?v=launch-11',import.meta.url),{type:'module'});
+    hintWorker||=new Worker(new URL('./hint-worker.mjs?v=launch-12',import.meta.url),{type:'module'});
   }catch{hintWorker=null;}
   if(!hintWorker)return Promise.resolve(findHint(state,{...budget,maxMs:900}));
   const id=++hintSeq;
@@ -1002,6 +1046,7 @@ async function moveDuel(direction,line) {
 
 async function move(direction, line, {fromHint=false}={}) {
   if(hintBusy&&!fromHint)return;
+  if(shopUI.isOpen||giftFx.active)return;
   if(busy&&started&&!booting&&!paused&&visual.fusion?.active){
     // A swipe during a merge speeds the gel up and plays right after it.
     pendingMove={direction,line};visual.hurryMerges();return;
@@ -1123,7 +1168,7 @@ window.addEventListener('online', () => void flushPending());
 // Read-only inspection for integration checks; game state still belongs here.
 window.SquishGame={graphics,move,restart,get state(){return {board,queue,score,best,bestTile,moves,peak,busy,paused,booting,started,hasSavedGame,duelMode,duelRevision,ranked:run?{id:run.id,logLength:run.log.length,submitted:run.sub}:null};},get effects(){return mergeEffects.stats;},get sound(){return sound.stats;},get menu(){return worldMenu.stats;},get fusion(){return visual.fusion?.stats||null;},
   get campaign(){return {mode:campaignMode,level:camp?.n??null,status:camp?.run.status??null,moves:camp?.run.moves??0,movesLeft:camp?Camp.movesLeft(camp.run):null,
-    toolsUsed:camp?.run.toolsUsed.slice()??[],progress:campaignProgress,inventory,freeTools:camp?.free?{...camp.free}:null,available:camp?availableTools():null,levelsLoaded:!!levels,resultOpen:campaignUI.resultOpen,armedTool,hintBusy,lastHint,toolFx:toolFx.stats,celebrating,timeline:campaignUI.timeline.slice()};},
+    toolsUsed:camp?.run.toolsUsed.slice()??[],progress:campaignProgress,inventory,shopOpen:shopUI.isOpen,shopStats:shopUI.stats,gift:{active:giftFx.active,phase:giftFx.phase,...giftFx.stats},lastPurchase,freeTools:camp?.free?{...camp.free}:null,available:camp?availableTools():null,levelsLoaded:!!levels,resultOpen:campaignUI.resultOpen,armedTool,hintBusy,lastHint,toolFx:toolFx.stats,celebrating,timeline:campaignUI.timeline.slice()};},
   // Screen point of a board cell (for input tests).
   cellPoint(row,col){const host=document.getElementById('graphics').getBoundingClientRect(),loc=location(row,col);return {x:host.left+loc.x/100*host.width,y:host.top+(loc.y+1.5)/100*host.height};}};
 // QA only (?vfxdemo=1): stage a board, then swipe with SquishGame.move().

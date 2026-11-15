@@ -351,3 +351,51 @@ dann „Vorrat machen wir raus“):
   `FREE_TOOLS_PER_LEVEL = 1` (Ladungen pro Versuch) und `TOOL_STOCK = false`
   (Vorrat + Geschenke + Chips). Altes Verhalten (launch-10): `FREE_TOOLS_PER_LEVEL = 0`,
   `TOOL_STOCK = true`. Beides an geht auch (erst Gratis-Ladung, dann Vorrat).
+
+## Shop, Vorrat und Geschenk-Blase (launch-12)
+
+Wunsch Sascha: grünes Plus an leeren Werkzeugen → Shop; Geschenke bleiben (wie
+bisher verteilt), lassen sich aber antippen und kommen in einer Blase hoch.
+
+- **Ladungen + Vorrat:** Die 1 Gratis-Ladung je Werkzeug und Level-Versuch
+  (launch-11) bleibt und wird **zuerst** verbraucht. Dazu gibt es wieder den
+  gespeicherten **Vorrat** (`TOOL_STOCK = true`), den nur Geschenke und Shop-Käufe
+  füllen. Die Kacheln zeigen die Summe (Gratis + Vorrat). Jedes Werkzeug –
+  gratis, geschenkt oder gekauft – deckelt das Level auf höchstens 2 ★.
+- **Grünes Plus:** Ist ein Werkzeug auf 0, zeigt seine Kachel statt der Zahl ein
+  kleines grünes Comic-Plus; Antippen öffnet den Shop direkt bei diesem Werkzeug.
+- **Shop** (`shop-ui.mjs`, Stil `store.css`): Comic-Panel in Navy/Gold mit
+  Fredoka, dicken Konturen und Pillen-Knöpfen. Pro Werkzeug 1×/3×/5×, dazu die
+  „Werkzeugkiste“ (je 2× alle vier). Erreichbar über das grüne Plus und über den
+  gelben „Shop“-Knopf in der Abenteuer-Karte (neben „Geschenk“, wenn eins offen ist).
+  Esc, ✕ oder Tippen daneben schließt. Unten der Hinweis zur 2-★-Grenze.
+- **Preise (Platzhalter) – eine Tabelle** in `game/shop.mjs` → `SHOP_CONFIG`:
+  `packs: [[1, 0.99], [3, 2.49], [5, 3.99]]` (für jedes Werkzeug gleich),
+  `bundles: [{ id: 'bundle-mix', title: 'Werkzeugkiste', items: je 2×, price: 4.99 }]`.
+  Produkt-ids: `<werkzeug>-<anzahl>` (z. B. `rocket-3`) und `bundle-mix` – später
+  die ids im App-Store.
+- **Testkauf-Schalter:** `SHOP_CONFIG.testPurchases = true` → im Web ist jeder
+  Kauf ein deutlich markierter **„Testkauf – keine Bezahlung“**: Er legt nur in den
+  lokalen Vorrat. Kein Zahlungsanbieter, kein Backend, kein Geld.
+  `testPurchases = false` ohne nativen Store → „Käufe sind hier noch nicht
+  verfügbar“. `SHOP_CONFIG.enabled = false` blendet Shop und Plus aus.
+- **Schnittstelle für echte In-App-Käufe (später):**
+  `registerNativeStore({ name, purchase(product) })` aus `shop.mjs`, z. B. aus der
+  Capacitor-Brücke (StoreKit / Play Billing). `purchase` liefert erst nach
+  bestätigter Zahlung `{ ok: true, transactionId }`; `purchase(productId)` gibt
+  dann `{ ok, items, test:false, transactionId }` zurück und das Spiel legt `items`
+  in den Vorrat (`addToStock`). Ein angemeldeter nativer Store hat Vorrang vor dem
+  Testkauf.
+- **Geschenke:** Verteilung unverändert (Level 3 Hinweis, 6 Zauberstab, 10 +3 Züge,
+  20 Rakete, je 10 Sterne eins im Wechsel). Neu: Sie werden **nicht sofort**
+  gutgeschrieben, sondern als offene Pakete gespeichert (`inventory.pending`,
+  `queueGifts`) und bleiben, bis man sie einsammelt. Antippbar im Ergebnis-Dialog
+  („Geschenk: Hinweis – öffnen!“) und in der Abenteuer-Karte („Geschenk“ mit Anzahl).
+- **Geschenk-Blase** (`gift-fx.mjs`): Paket hüpft, Deckel fliegt weg, der Inhalt
+  steigt in einer Comic-Seifenblase hoch (Regenbogen-Rand, Glanzbogen, sanftes
+  Schweben/Wabbeln). Antippen → Blase platzt („PLOPP!“, Tropfen, Plopp-Sound,
+  Vibration), das Werkzeug fliegt in die Leiste bzw. auf seinen Chip und wird
+  gutgeschrieben (`collectGift`). Reduzierte Bewegung: nur Ein-/Ausblenden.
+  Ton aus: kein Sound.
+- **Spielstand** `squish-campaign-tools-v1` jetzt `version: 3`
+  (`extraMoves, rocket, hint, wand, gifts, pending`); ältere Stände werden übernommen.

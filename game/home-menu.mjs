@@ -1,8 +1,8 @@
 // Startbildschirm und Modus-Menüs im Herbst-Design (reines DOM, kein 3D).
 // Ersetzt das frühere 3D-Glastisch-Menü (world-menu.mjs) mit derselben
 // Schnittstelle, die game.mjs und start-menu.mjs erwarten.
-import {ICONS,TILE_ICONS,leafSvg} from './aw-icons.mjs?v=launch-11';
-import {BUILD} from './flags.mjs?v=launch-11';
+import {ICONS,TILE_ICONS,leafSvg} from './aw-icons.mjs?v=launch-12';
+import {BUILD} from './flags.mjs?v=launch-12';
 
 const LEAF_COLORS=['#f07a1c','#e8541a','#c9301c','#f2a01e','#d94a17','#b8321a','#ffb030'];
 const fmt=n=>Number(n||0).toLocaleString('de-DE');
@@ -87,7 +87,7 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
     if(sub){const s=page.createElement('span');s.className='aw-card-sub';s.textContent=sub;c.append(s);}
     if(chips?.length){
       const row=page.createElement('div');row.className='aw-chips';
-      for(const ch of chips){const e=page.createElement('span');e.className='aw-chip'+(ch.n?'':' is-zero');e.innerHTML='<i></i><span></span>';e.querySelector('i').textContent=String(ch.n);e.lastChild.textContent=ch.label;row.append(e);}
+      for(const ch of chips){const e=page.createElement('span');e.className='aw-chip'+(ch.n?'':' is-zero');if(ch.type)e.dataset.type=ch.type;e.innerHTML='<i></i><span></span>';e.querySelector('i').textContent=String(ch.n);e.lastChild.textContent=ch.label;row.append(e);}
       c.append(row);
     }
     return c;
@@ -122,8 +122,22 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
   function campaignItems(){
     const info=hooks.campaign?.summary?.()||{next:1,ready:false};
     const inv=info.inventory;   // null = kein Vorrat (TOOL_STOCK aus) → keine Chips
-    const items=[ribbon('Abenteuer','aw-r-green'),
-      card(`★ ${info.total??0} / ${(info.count||25)*3}`,info.caption||'',inv?[{n:inv.extraMoves||0,label:'+3 Züge'},{n:inv.hint||0,label:'Hinweis'},{n:inv.rocket||0,label:'Rakete'},{n:inv.wand||0,label:'Zauberstab'}]:null)];
+    const c=card(`★ ${info.total??0} / ${(info.count||25)*3}`,info.caption||'',inv?[{n:inv.extraMoves||0,label:'+3 Züge',type:'extraMoves'},{n:inv.hint||0,label:'Hinweis',type:'hint'},{n:inv.rocket||0,label:'Rakete',type:'rocket'},{n:inv.wand||0,label:'Zauber',type:'wand'}]:null);
+    // Vorrat-Aktionen in der Karte: offene Geschenke öffnen, Werkzeug-Shop.
+    const acts=page.createElement('div');acts.className='aw-card-actions';
+    if(info.pendingGifts>0){
+      const g=page.createElement('button');g.type='button';g.className='gift-btn';g.id='home-gift';g.dataset.label='Geschenk';
+      g.innerHTML=(hooks.icons?.gift||'')+'<span>Geschenk</span>'+(info.pendingGifts>1?`<b class="gift-n">${info.pendingGifts}</b>`:'');
+      g.setAttribute('aria-label',`${info.pendingGifts} Geschenk${info.pendingGifts>1?'e':''} öffnen`);
+      g.addEventListener('click',()=>{tap();hooks.campaign?.openGift?.();});acts.append(g);
+    }
+    if(info.shop){
+      const b=page.createElement('button');b.type='button';b.className='shop-pill';b.id='home-shop';b.dataset.label='Shop';
+      b.innerHTML=(hooks.icons?.shop||'')+'<span>Shop</span>';b.setAttribute('aria-label','Werkzeug-Shop öffnen');
+      b.addEventListener('click',()=>{tap();hooks.campaign?.openShop?.();});acts.append(b);
+    }
+    if(acts.childElementCount)c.append(acts);
+    const items=[ribbon('Abenteuer','aw-r-green'),c];
     items.push(button({label:`Level ${info.next} spielen`,icon:'play',color:'aw-green',size:'aw-big',id:'home-play-level',action:()=>{
       if(!info.ready&&!hooks.campaign?.summary?.().ready){say('Level werden geladen …',2000);return;}
       tap('move');hooks.gesture?.();void play({campaign:hooks.campaign.summary().next});
@@ -189,7 +203,7 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
   page.addEventListener('keydown',ev=>{if(ev.key==='Tab'||ev.key==='Enter'||ev.key===' ')keyboard=true;},true);
   page.addEventListener('keydown',ev=>{
     if(!active||ev.key!=='Escape'||screen==='home')return;
-    if(page.querySelector('.duel-screen:not([hidden]),.settings-screen:not([hidden])'))return;
+    if(page.querySelector('.duel-screen:not([hidden]),.settings-screen:not([hidden]),.shop-veil,.gift-fx'))return;
     ev.preventDefault();void go('home');
   });
 

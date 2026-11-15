@@ -1,7 +1,7 @@
 // Kampagne: DOM-Teile (Ziel-Anzeige, Züge, Hilfsmittel, Ergebnis-Dialog, Levelauswahl).
 // Reine Darstellung; Spiellogik und Speichern liegen in game.mjs / campaign.mjs.
-import {TOOL_ICONS} from './tool-icons.mjs?v=launch-11';
-import {goalProgress,goalText,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName} from './campaign.mjs?v=launch-11';
+import {TOOL_ICONS,GIFT_SVG} from './tool-icons.mjs?v=launch-12';
+import {goalProgress,goalText,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName} from './campaign.mjs?v=launch-12';
 
 const $=id=>document.getElementById(id);
 const fmt=n=>Number(n||0).toLocaleString('de-DE');
@@ -13,7 +13,7 @@ export function lockText(lock){
   return 'Schaff zuerst das Level davor.';
 }
 
-export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,onCloseSelect,onStar,reduceMotion}={}){
+export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,onGift,onCloseSelect,onStar,reduceMotion}={}){
   const hud=$('campaign-hud'),levelEl=$('campaign-level'),goalsEl=$('campaign-goals'),movesEl=$('campaign-moves');
   const tools=$('campaign-tools'),extraBtn=$('tool-extra'),hintBtn=$('tool-hint'),rocketBtn=$('tool-rocket'),wandBtn=$('tool-wand');
   for(const b of [hintBtn,rocketBtn,wandBtn]){const ico=b.querySelector('[data-icon]');if(ico&&!ico.firstChild)ico.innerHTML=TOOL_ICONS[ico.dataset.icon];}
@@ -45,11 +45,15 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
     movesEl.setAttribute('aria-label',`Noch ${left} Züge`);
   }
   // armed: 'rocket' | 'wand' | null; busy: 'hint' während der Suche/Vorführung.
-  function renderTools(inv,{canExtra=true,armed=null,busy=null,locked=false}={}){
+  // shop: bei 0 zeigt die Kachel ein grünes Plus und öffnet beim Antippen den Shop.
+  function renderTools(inv,{canExtra=true,armed=null,busy=null,locked=false,shop=false}={}){
     tools.hidden=false;
     const set=(btn,n,enabled,label)=>{
-      const c=btn.querySelector('[data-count]');c.textContent=String(n|0);c.classList.toggle('is-zero',!(n>0));
-      btn.disabled=!enabled;btn.setAttribute('aria-label',`${label}, ${n|0} vorhanden`);
+      const empty=!(n>0),toShop=empty&&shop;
+      const c=btn.querySelector('[data-count]');c.textContent=toShop?'+':String(n|0);c.classList.toggle('is-zero',empty&&!shop);
+      btn.classList.toggle('is-empty',toShop);btn.dataset.shop=toShop?'1':'';
+      btn.disabled=toShop?!!locked:!enabled;
+      btn.setAttribute('aria-label',toShop?`${label}: keine mehr – Shop öffnen`:`${label}, ${n|0} vorhanden`);
     };
     set(extraBtn,inv.extraMoves,inv.extraMoves>0&&canExtra&&!locked,'Hilfsmittel +3 Züge');
     set(hintBtn,inv.hint,(inv.hint>0&&!locked)||busy==='hint','Hilfsmittel Hinweis: spielt 2 Züge zum Ziel');
@@ -78,8 +82,7 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
       :(lostReason==='board-full'?'Das Brett ist voll.':'Das Ziel ist noch nicht erreicht.')+(extraAvailable&&lostReason==='moves'?' Mit +3 Zügen kannst du weiterspielen (dann höchstens 2 ★).':' Versuch es noch einmal!');
     if(won&&!canNext&&nextLock)rMessage.textContent+=' '+lockText(nextLock);
     else if(won&&!canNext)rMessage.textContent+=' Alle Level geschafft!';
-    rGift.hidden=!gifts.length;
-    rGift.textContent=gifts.length?`🎁 Geschenk: ${gifts.map(g=>toolName(g.type)).join(' + ')}!`:'';
+    setGifts(gifts);
     bNext.hidden=!won;bNext.disabled=!canNext;
     setLabel(bNext,canNext?'Weiter':nextLock?'Gesperrt':'Geschafft');
     bNext.title=nextLock?lockText(nextLock):'';
@@ -106,6 +109,18 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
     (won&&canNext?bNext:!bExtra.hidden?bExtra:bRetry).focus({preventScroll:true,focusVisible:false});
   }
   function hideResult(){result.hidden=true;starTimers.forEach(clearTimeout);starTimers=[];rStars.classList.remove('is-playing');}
+  // Offene Geschenke als antippbarer Knopf (Geschenk-Hinweis bleibt): öffnet die Blase.
+  function setGifts(gifts=[]){
+    rGift.hidden=!gifts.length;
+    rGift.innerHTML='';
+    if(!gifts.length)return;
+    const ico=document.createElement('span');ico.innerHTML=GIFT_SVG;
+    const t=document.createElement('span');t.textContent=`Geschenk: ${toolName(gifts[0].type)}${gifts.length>1?' …':''} – öffnen!`;
+    rGift.append(ico.firstChild,t);
+    if(gifts.length>1){const n=document.createElement('b');n.className='gift-n';n.textContent=String(gifts.length);rGift.append(n);}
+    rGift.setAttribute('aria-label',`${gifts.length} Geschenk${gifts.length>1?'e':''} öffnen`);
+  }
+  rGift.addEventListener('click',()=>onGift?.());
   bNext.addEventListener('click',()=>onNext?.());
   bExtra.addEventListener('click',()=>onExtra?.());
   bRetry.addEventListener('click',()=>onRetry?.());
@@ -158,6 +173,6 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
   $('campaign-close').addEventListener('click',()=>closeSelect());
   select.addEventListener('click',ev=>{if(ev.target===select)closeSelect();});
 
-  return {toolButton:type=>({extraMoves:extraBtn,hint:hintBtn,rocket:rocketBtn,wand:wandBtn})[type],renderHud,renderTools,hide,showResult,hideResult,openSelect,closeSelect,mark,timeline,
+  return {toolButton:type=>({extraMoves:extraBtn,hint:hintBtn,rocket:rocketBtn,wand:wandBtn})[type],renderHud,renderTools,setGifts,giftButton:rGift,hide,showResult,hideResult,openSelect,closeSelect,mark,timeline,
     get resultOpen(){return !result.hidden;},get selectOpen(){return !select.hidden;}};
 }

@@ -1,14 +1,14 @@
 import {createContactSolver} from './dense-contacts.mjs?v=dense-board-1';
-import {configureRenderQuality} from './render-quality.mjs?v=launch-11';
+import {configureRenderQuality} from './render-quality.mjs?v=launch-12';
 import {enqueueRippleImpulse} from './merge-ripple.mjs?v=swarm-fx-3';
 import {installPressureWave} from './pressure-wave.mjs?v=soft-gel-1';
-import {applyGelSoftness,softWobblePower,wobbleDecayFactor} from './gel-softness.mjs?v=launch-11';
+import {applyGelSoftness,softWobblePower,wobbleDecayFactor} from './gel-softness.mjs?v=launch-12';
 import {applyNeonGlassLighting} from './gel-lighting.mjs?v=menu-1';
-import {createCrispLabelFactory} from './crisp-labels.mjs?v=launch-11';
-import {applyComic,comicBodyMaterial,setComicValue} from './comic-style.mjs?v=launch-11';
-import {installCleanScreen} from './clean-screen.mjs?v=launch-11';
-import {createFusion} from './fusion.mjs?v=launch-11';
-import {flags} from './flags.mjs?v=launch-11';
+import {createCrispLabelFactory} from './crisp-labels.mjs?v=launch-12';
+import {applyComic,comicBodyMaterial,setComicValue} from './comic-style.mjs?v=launch-12';
+import {installCleanScreen} from './clean-screen.mjs?v=launch-12';
+import {createFusion} from './fusion.mjs?v=launch-12';
+import {flags} from './flags.mjs?v=launch-12';
 import {createSquishGraphics,THREE,PARAMETERS} from '../squish/squish-graphics.js?v=play-sharp-1';
 import {buildSquishy,createLabel,bindGelOptics,initializeMotion,updateSquishy,PARAMETERS as HUD_PARAMETERS} from './original-gel-models.js?v=menu-1';
 
@@ -199,7 +199,7 @@ export function createGameGraphics(host) {
     // Per-body free oscillation, around the accepted overall tempo. The SDK
     // still solves press/swipe/contact springs and deforms every original mesh.
     s.phase=character.phase+time*13*PARAMETERS.motion.wobbleSpeed*(character.pace-1);
-    // Longer ring-out (launch-11). The SDK's own decay only runs on rendered
+    // Longer ring-out (launch-12). The SDK's own decay only runs on rendered
     // frames, so never let a settled (sub-threshold) body creep back up.
     const decay=wobbleDecayFactor(dt,PARAMETERS.motion.wobbleSpeed,character.decay);
     if(decay<1||s.amplitude>REST)s.amplitude*=decay;

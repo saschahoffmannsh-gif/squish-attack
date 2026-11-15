@@ -170,7 +170,8 @@ test('Freischalten: Sterne-Schranke am Kapitelanfang', () => {
   assert.ok(isUnlocked(ch3low, 20));                        // gesperrt wird nur der Kapitelanfang
 });
 
-import { FREE_TOOLS_PER_LEVEL, TOOL_STOCK, freeToolCharges, toolsAvailable, spendCharge } from '../game/campaign.mjs';
+import { FREE_TOOLS_PER_LEVEL, TOOL_STOCK, freeToolCharges, toolsAvailable, spendCharge, queueGifts, collectGift, addToStock } from '../game/campaign.mjs';
+import { SHOP_CONFIG, shopProducts, formatPrice, purchase, activeStore, registerNativeStore } from '../game/shop.mjs';
 import { useRocket, useWand, wandChoices, wandCap, progressVector, emptyInventory, loadInventory, saveInventory, spendTool, grantGifts, toolName } from '../game/campaign.mjs';
 import { findHint, hintState } from '../game/hint-solver.mjs';
 import { readFileSync } from 'node:fs';
@@ -196,7 +197,7 @@ test('Inventar: laden, speichern, verbrauchen; alter Hammer wird Rakete', () => 
   assert.equal(spendTool(inv, 'hint').hint, 1);
   assert.deepEqual(loadInventory({ getItem: () => '{"version":1,"gifts":[],"extraMoves":-3}' }).extraMoves, 0);
   const old = loadInventory({ getItem: () => '{"version":1,"extraMoves":1,"hammer":2,"gifts":["level-10","stars-20"]}' });
-  assert.deepEqual(old, { version: 2, extraMoves: 1, rocket: 2, hint: 0, wand: 0, gifts: ['level-10', 'stars-20'] });
+  assert.deepEqual(old, { version: 3, extraMoves: 1, rocket: 2, hint: 0, wand: 0, gifts: ['level-10', 'stars-20'], pending: [] });
   assert.equal(toolName('rocket'), 'Rakete'); assert.equal(toolName('wand'), 'Zauberstab'); assert.equal(toolName('hint'), 'Hinweis');
 });
 
@@ -286,26 +287,77 @@ test('Hinweis-Suche: kürzester Weg wie der Solver, Züge gewinnen wirklich; kei
   assert.equal(tight.exact, false);
 });
 
-test('Test-Einstellung launch-11: je Versuch 1× jedes Hilfsmittel, kein Vorrat', () => {
-  assert.equal(FREE_TOOLS_PER_LEVEL, 1); assert.equal(TOOL_STOCK, false);
+test('Ladungen je Versuch (launch-11) + Vorrat (launch-12): zuerst gratis, dann Vorrat', () => {
+  assert.equal(FREE_TOOLS_PER_LEVEL, 1); assert.equal(TOOL_STOCK, true);
   const free = freeToolCharges();
   assert.deepEqual(free, { extraMoves: 1, rocket: 1, hint: 1, wand: 1 });
   const stock = { ...emptyInventory(), rocket: 3, hint: 2 };
-  // ohne Vorrat: nur die Ladungen des Versuchs zählen, Inventar bleibt unberührt
-  assert.deepEqual(toolsAvailable(stock, free), { extraMoves: 1, rocket: 1, hint: 1, wand: 1 });
+  assert.deepEqual(toolsAvailable(stock, free), { extraMoves: 1, rocket: 4, hint: 3, wand: 1 });
   const a = spendCharge(stock, free, 'rocket');
   assert.equal(a.fromFree, true); assert.equal(a.inventory, stock); assert.equal(a.free.rocket, 0);
-  assert.equal(spendCharge(stock, a.free, 'rocket'), null);
-  assert.deepEqual(toolsAvailable(stock, a.free).rocket, 0);
+  const b = spendCharge(a.inventory, a.free, 'rocket');
+  assert.equal(b.fromFree, false); assert.equal(b.inventory.rocket, 2);
+  assert.equal(spendCharge(stock, a.free, 'wand') !== null, true);
+  const w = spendCharge(stock, { ...free, wand: 0 }, 'wand');
+  assert.equal(w, null);                                        // weder gratis noch Vorrat
   assert.equal(spendCharge(stock, free, 'hammer'), null);
-  // neuer Versuch = wieder volle Ladungen
-  assert.deepEqual(freeToolCharges(), free);
-  // Schalter zurück (Vorrat an, 0 gratis): altes Verhalten
-  const none = freeToolCharges(0);
-  assert.deepEqual(toolsAvailable(stock, none, true), { extraMoves: 0, rocket: 3, hint: 2, wand: 0 });
-  const b = spendCharge(stock, none, 'hint', true);
-  assert.equal(b.fromFree, false); assert.equal(b.inventory.hint, 1);
-  // beides an: erst gratis, dann Vorrat
-  assert.equal(toolsAvailable(stock, free, true).rocket, 4);
-  assert.equal(spendCharge(stock, free, 'rocket', true).fromFree, true);
+  assert.deepEqual(freeToolCharges(), free);                    // neuer Versuch = wieder volle Ladungen
+  // Schalter: ohne Vorrat zählt nur gratis
+  assert.deepEqual(toolsAvailable(stock, free, false), { extraMoves: 1, rocket: 1, hint: 1, wand: 1 });
+  assert.equal(spendCharge(stock, a.free, 'rocket', false), null);
+  // ohne Gratis-Ladungen: altes Verhalten
+  assert.deepEqual(toolsAvailable(stock, freeToolCharges(0)), { extraMoves: 0, rocket: 3, hint: 2, wand: 0 });
+});
+
+test('Geschenke als offene Pakete: einreihen, einzeln einsammeln, gespeichert, nie doppelt', () => {
+  let p = emptyProgress();
+  for (let n = 1; n <= 10; n++) p = recordResult(p, n, { stars: 1, moves: 5, now: 1 });   // 10★, Level 3/6/10
+  let q = queueGifts(emptyInventory(), p);
+  assert.deepEqual(q.queued.map(g => g.id), ['level-3', 'level-6', 'level-10', 'stars-10']);
+  assert.deepEqual(q.inventory.pending, q.queued);
+  assert.equal(q.inventory.hint, 0);                                                      // noch nicht gutgeschrieben
+  assert.deepEqual(queueGifts(q.inventory, p).queued, []);                                // nicht doppelt
+  const mem = new Map(); const storage = { getItem: k => mem.get(k) ?? null, setItem: (k, v) => mem.set(k, v) };
+  saveInventory(q.inventory, storage);
+  let inv = loadInventory(storage);
+  assert.deepEqual(inv.pending.map(g => g.id), ['level-3', 'level-6', 'level-10', 'stars-10']);   // bleibt bis zum Einsammeln
+  const c = collectGift(inv);
+  assert.deepEqual(c.gift, { id: 'level-3', type: 'hint' });
+  assert.equal(c.inventory.hint, 1); assert.equal(c.inventory.pending.length, 3);
+  const d = collectGift(c.inventory, 'stars-10');
+  assert.equal(d.inventory.extraMoves, 1); assert.deepEqual(d.inventory.pending.map(g => g.id), ['level-6', 'level-10']);
+  assert.equal(collectGift(d.inventory, 'nope'), null);
+  assert.equal(collectGift(emptyInventory()), null);
+  assert.deepEqual(queueGifts(d.inventory, p).queued, []);                                // eingesammelt = vergeben
+  // kaputte Einträge werden beim Laden verworfen
+  const bad = loadInventory({ getItem: () => '{"version":3,"gifts":[],"pending":[{"id":"x","type":"hammer"},{"id":"y","type":"wand"},null]}' });
+  assert.deepEqual(bad.pending, [{ id: 'y', type: 'wand' }]);
+  assert.deepEqual(addToStock(emptyInventory(), { rocket: 3, hammer: 2, wand: -1 }).rocket, 3);
+});
+
+test('Shop: eine Preistabelle, Testkauf legt in den Vorrat, Schnittstelle für nativen Store', async () => {
+  assert.equal(SHOP_CONFIG.testPurchases, true);
+  const ps = shopProducts();
+  assert.equal(ps.length, 4 * SHOP_CONFIG.packs.length + SHOP_CONFIG.bundles.length);
+  assert.deepEqual(ps.filter(p => p.type === 'rocket').map(p => [p.id, p.items.rocket, p.price]), [['rocket-1', 1, 0.99], ['rocket-3', 3, 2.49], ['rocket-5', 5, 3.99]]);
+  assert.match(formatPrice(2.49), /^2,49\s?€$/);
+  const r = await purchase('hint-3');
+  assert.ok(r.ok && r.test); assert.deepEqual(r.items, { hint: 3 });
+  assert.equal(addToStock(emptyInventory(), r.items).hint, 3);
+  const mix = await purchase('bundle-mix');
+  assert.deepEqual(mix.items, { extraMoves: 2, hint: 2, rocket: 2, wand: 2 });
+  assert.equal((await purchase('gibts-nicht')).ok, false);
+  // ohne Testkauf und ohne nativen Store: nichts verfügbar
+  const off = { ...SHOP_CONFIG, testPurchases: false };
+  assert.equal(activeStore(off).kind, 'none');
+  assert.equal((await purchase('hint-1', { config: off })).ok, false);
+  // nativer Store (später Capacitor): wird bevorzugt, Abbruch gibt nichts
+  registerNativeStore({ name: 'fake', purchase: async p => (p.id === 'wand-1' ? { ok: true, transactionId: 't1' } : { ok: false, reason: 'cancelled' }) });
+  try {
+    assert.equal(activeStore().kind, 'native');
+    const n = await purchase('wand-1');
+    assert.ok(n.ok && !n.test && n.transactionId === 't1');
+    assert.equal((await purchase('wand-3')).ok, false);
+  } finally { registerNativeStore(null); }
+  assert.equal(activeStore().kind, 'test');
 });

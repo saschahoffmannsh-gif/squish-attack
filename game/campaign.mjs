@@ -274,7 +274,7 @@ export function nextLevel(progress, count) {
 }
 
 // ---------------- Hilfsmittel ----------------
-// launch-11: Rakete (ersetzt den Hammer), Hinweis, Zauberstab, +3 Züge.
+// launch-12: Rakete (ersetzt den Hammer), Hinweis, Zauberstab, +3 Züge.
 // Jedes Hilfsmittel deckelt das Ergebnis auf höchstens 2 Sterne.
 
 /** Rakete: entfernt einen Stein (kein Zug, keine Fusion). true, wenn etwas entfernt wurde. */
@@ -339,15 +339,17 @@ export const progressVector = run => run.level.goals.map(g => goalProgress(g, ru
 
 export const TOOLS_KEY = 'squish-campaign-tools-v1';
 export const TOOL_TYPES = ['extraMoves', 'rocket', 'hint', 'wand'];
-export const emptyInventory = () => ({ version: 2, extraMoves: 0, rocket: 0, hint: 0, wand: 0, gifts: [] });
+/** Vorrat (v3): Anzahl je Hilfsmittel, vergebene Geschenk-ids, noch nicht geöffnete Geschenke. */
+export const emptyInventory = () => ({ version: 3, extraMoves: 0, rocket: 0, hint: 0, wand: 0, gifts: [], pending: [] });
 
-/** Lädt das Inventar; alte Spielstände (v1) werden migriert: Hammer → Rakete. */
+/** Lädt den Vorrat; alte Stände werden übernommen: v1 Hammer → Rakete, v1/v2 ohne offene Geschenke. */
 export function loadInventory(storage = globalThis.localStorage) {
   try {
     const v = JSON.parse(storage?.getItem(TOOLS_KEY) ?? 'null');
-    if (v && (v.version === 1 || v.version === 2) && Array.isArray(v.gifts)) {
+    if (v && [1, 2, 3].includes(v.version) && Array.isArray(v.gifts)) {
       const n = x => Math.max(0, x | 0);
-      return { ...emptyInventory(), gifts: v.gifts.slice(), extraMoves: n(v.extraMoves),
+      const pending = Array.isArray(v.pending) ? v.pending.filter(g => g && typeof g.id === 'string' && TOOL_TYPES.includes(g.type)).map(g => ({ id: g.id, type: g.type })) : [];
+      return { ...emptyInventory(), gifts: v.gifts.slice(), pending, extraMoves: n(v.extraMoves),
         rocket: n(v.rocket) + (v.version === 1 ? n(v.hammer) : 0), hint: n(v.hint), wand: n(v.wand) };
     }
   } catch {}
@@ -356,17 +358,16 @@ export function loadInventory(storage = globalThis.localStorage) {
 export function saveInventory(inv, storage = globalThis.localStorage) {
   try { storage?.setItem(TOOLS_KEY, JSON.stringify(inv)); return true; } catch { return false; }
 }
-/** Ein Hilfsmittel verbrauchen. Gibt das neue Inventar zurück oder null, wenn keins da ist. */
 /**
- * TEMPORÄRE TEST-EINSTELLUNG (launch-11, Wunsch Sascha: „Vorrat machen wir raus“):
- *  - FREE_TOOLS_PER_LEVEL: jeder Level-Versuch (auch Neustart/Nochmal) hat genau so viele
- *    Ladungen pro Hilfsmittel; nichts wird gespeichert oder übertragen.
- *  - TOOL_STOCK: gespeicherter Vorrat (squish-campaign-tools-v1) samt Geschenken
- *    (Level 3/6/10/20, je 10 Sterne). Aus = kein Vorrat, keine Geschenke, keine Vorrats-Chips.
- * Zurück zum alten Verhalten: FREE_TOOLS_PER_LEVEL = 0, TOOL_STOCK = true.
+ * Hilfsmittel-Einstellungen:
+ *  - FREE_TOOLS_PER_LEVEL (launch-12, Test): jeder Level-Versuch (auch Neustart/Nochmal)
+ *    hat so viele Gratis-Ladungen pro Hilfsmittel; sie werden zuerst verbraucht, nie gespeichert.
+ *  - TOOL_STOCK (launch-12 wieder an): gespeicherter Vorrat, gefüllt nur durch Geschenke
+ *    und Shop-Käufe. Aus = kein Vorrat, keine Geschenke, kein Shop.
+ * Altes Verhalten (launch-10): FREE_TOOLS_PER_LEVEL = 0, TOOL_STOCK = true.
  */
 export const FREE_TOOLS_PER_LEVEL = 1;
-export const TOOL_STOCK = false;
+export const TOOL_STOCK = true;
 export function freeToolCharges(count = FREE_TOOLS_PER_LEVEL) {
   return Object.fromEntries(TOOL_TYPES.map(t => [t, Math.max(0, count | 0)]));
 }
@@ -381,26 +382,58 @@ export function spendCharge(inv, free, type, stock = TOOL_STOCK) {
   const next = stock ? spendTool(inv, type) : null;
   return next ? { inventory: next, free, fromFree: false } : null;
 }
+/** Ein Hilfsmittel aus dem Vorrat verbrauchen. Gibt den neuen Vorrat zurück oder null. */
 export function spendTool(inv, type) {
   if (!TOOL_TYPES.includes(type) || !(inv[type] > 0)) return null;
   return { ...inv, [type]: inv[type] - 1 };
+}
+/** Hilfsmittel zum Vorrat hinzufügen (Shop/Geschenk), items = {rocket: 3, …}. Unbekanntes wird ignoriert. */
+export function addToStock(inv, items) {
+  const out = { ...emptyInventory(), ...inv, gifts: [...(inv.gifts || [])], pending: [...(inv.pending || [])] };
+  for (const [t, k] of Object.entries(items || {})) if (TOOL_TYPES.includes(t) && k > 0) out[t] = (out[t] | 0) + (k | 0);
+  return out;
 }
 
 /**
  * Gratis-Geschenke (docs/kampagne.md), jedes nur einmal:
  *  Level 3 → Hinweis, Level 6 → Zauberstab, Level 10 → +3 Züge, Level 20 → Rakete,
  *  dazu je 10 Sterne ein Hilfsmittel im Wechsel: +3 Züge, Rakete, Hinweis, Zauberstab.
- * Rückgabe: {inventory, granted:[{id, type}]}.
  */
 export const STARS_PER_GIFT = 10;
 export const LEVEL_GIFTS = Object.freeze([[3, 'hint'], [6, 'wand'], [10, 'extraMoves'], [20, 'rocket']]);
 export const STAR_GIFT_ROTATION = Object.freeze(['extraMoves', 'rocket', 'hint', 'wand']);
-export function grantGifts(inv, progress) {
-  const out = { ...emptyInventory(), ...inv, gifts: [...inv.gifts] }, granted = [];
-  const give = (id, type) => { if (out.gifts.includes(id)) return; out.gifts.push(id); out[type] = (out[type] | 0) + 1; granted.push({ id, type }); };
-  for (const [n, type] of LEVEL_GIFTS) if (progress.levels[String(n)]) give(`level-${n}`, type);
+function dueGifts(inv, progress) {
+  const due = [], seen = new Set(inv.gifts || []);
+  const add = (id, type) => { if (!seen.has(id)) { seen.add(id); due.push({ id, type }); } };
+  for (const [n, type] of LEVEL_GIFTS) if (progress.levels[String(n)]) add(`level-${n}`, type);
   const blocks = Math.floor(totalStars(progress) / STARS_PER_GIFT);
-  for (let b = 1; b <= blocks; b++) give(`stars-${b * STARS_PER_GIFT}`, STAR_GIFT_ROTATION[(b - 1) % STAR_GIFT_ROTATION.length]);
+  for (let b = 1; b <= blocks; b++) add(`stars-${b * STARS_PER_GIFT}`, STAR_GIFT_ROTATION[(b - 1) % STAR_GIFT_ROTATION.length]);
+  return due;
+}
+/** Sofort gutschreiben (alt, launch-10). Rückgabe {inventory, granted:[{id, type}]}. */
+export function grantGifts(inv, progress) {
+  const granted = dueGifts(inv, progress);
+  let out = addToStock(inv, {});
+  for (const g of granted) { out.gifts.push(g.id); out[g.type] += 1; }
   return { inventory: out, granted };
+}
+/**
+ * launch-12: fällige Geschenke werden als „offene Geschenke“ gemerkt (inv.pending) und erst
+ * beim Antippen (Blase platzen lassen) gutgeschrieben. Rückgabe {inventory, queued:[{id, type}]}.
+ */
+export function queueGifts(inv, progress) {
+  const queued = dueGifts(inv, progress);
+  const out = addToStock(inv, {});
+  for (const g of queued) { out.gifts.push(g.id); out.pending.push(g); }
+  return { inventory: out, queued };
+}
+/** Offenes Geschenk einsammeln → {inventory, gift} oder null. Ohne id: das älteste. */
+export function collectGift(inv, id) {
+  const i = (inv.pending || []).findIndex(g => id == null || g.id === id);
+  if (i < 0) return null;
+  const gift = inv.pending[i];
+  const out = addToStock(inv, { [gift.type]: 1 });
+  out.pending.splice(i, 1);
+  return { inventory: out, gift };
 }
 export const toolName = type => ({ extraMoves: '+3 Züge', rocket: 'Rakete', hint: 'Hinweis', wand: 'Zauberstab', hammer: 'Rakete' })[type] ?? type;
