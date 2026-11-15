@@ -6641,94 +6641,106 @@
    "board": [
     [
      null,
-     null,
-     null,
-     4,
-     null
-    ],
-    [
-     null,
-     1,
-     3,
      2,
+     2,
+     null,
      2
     ],
     [
-     1,
-     1,
+     null,
      null,
      4,
+     null,
      2
     ],
     [
-     2,
      null,
+     null,
+     1,
+     null,
+     null
+    ],
+    [
+     2,
+     1,
      null,
      null,
      null
     ],
     [
+     1,
      null,
-     3,
      null,
-     null,
-     null
+     1,
+     3
     ]
    ],
    "sequence": [
     1,
+    1,
+    1,
+    1,
     2,
-    2,
+    4,
     1,
     1,
-    2,
     1,
-    1,
-    1
+    2
    ],
-   "moves": 4,
+   "moves": 5,
    "goals": [
     {
-     "type": "combo",
-     "chain": 3
+     "type": "tile",
+     "value": 5
     },
     {
-     "type": "tile",
-     "value": 4
+     "type": "clear",
+     "tiles": 8
     }
    ],
    "stars": {
-    "three": 2,
-    "two": 3
+    "three": 5,
+    "two": 5
    },
-   "solution": "W13=3 da",
+   "solution": "abcbr",
    "tool": "wand",
    "meta": {
     "generator": "build100",
-    "k": 74,
-    "seed": 3088445733,
+    "k": 19,
+    "seed": 3120747564,
     "role": "tool",
-    "note": "Werkzeug-Level: Zauberstab",
+    "note": "Werkzeug-Spitze: Zauberstab",
     "minMoves": 5,
-    "slack": -1,
-    "toolMin": 2,
-    "optimalSolutions": null,
-    "pOptimal": null,
+    "slack": 0,
+    "toolMin": 3,
+    "optimalSolutions": 8,
+    "pOptimal": 0.00000262,
     "target": 52,
     "estimate": {
      "D": 100,
-     "Dfelt": 48,
+     "Dfelt": 45,
      "casual": 0,
      "good": 0,
      "random": 0.0002,
      "greedy": false,
-     "casualTool": 0.406,
-     "goodTool": 0.175,
-     "goodStarts": 10
+     "casualTool": 0.425,
+     "goodTool": 0.625,
+     "goodStarts": 12
     },
     "searched": {
-     "tried": 75,
-     "usable": 17
+     "tried": 72,
+     "via": "search-one.mjs"
+    },
+    "toolSolution": "W22=5 ajj",
+    "untooled": {
+     "launch": "launch-16",
+     "from": {
+      "moves": 5,
+      "stars": {
+       "three": 3,
+       "two": 4
+      }
+     }
     }
    }
   },
@@ -9734,7 +9746,7 @@
    "board": [
     [
      1,
-     1,
+     2,
      null,
      1,
      null
@@ -9742,47 +9754,49 @@
     [
      null,
      2,
+     3,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
      null,
      null,
      1
     ],
     [
      null,
-     2,
-     null,
-     null,
-     2
-    ],
-    [
-     1,
      null,
      null,
      null,
-     null
-    ],
-    [
-     null,
-     null,
-     1,
-     null,
-     null
+     1
     ]
    ],
    "sequence": [
-    2,
-    1,
-    1,
     1,
     2,
+    4,
     2,
     2,
-    1
+    4,
+    3,
+    1,
+    2,
+    2
    ],
-   "moves": 2,
+   "moves": 5,
    "goals": [
     {
-     "type": "combo",
-     "chain": 2
+     "type": "tile",
+     "value": 5
     },
     {
      "type": "score",
@@ -9790,40 +9804,47 @@
     }
    ],
    "stars": {
-    "three": 4,
+    "three": 5,
     "two": 5
    },
-   "solution": "aacb",
+   "solution": "gpbbq",
    "tool": "extraMoves",
    "meta": {
     "generator": "build100",
-    "k": 358,
-    "seed": 1147260842,
+    "k": 216,
+    "seed": 2067484532,
     "role": "boss",
-    "note": "Finale: +3 Züge nötig",
-    "minMoves": 4,
-    "slack": -2,
-    "toolMin": 4,
-    "optimalSolutions": 462,
-    "pOptimal": 0.00291,
+    "note": "Finale: Werkzeug-Spitze (+3 Züge)",
+    "minMoves": 5,
+    "slack": 0,
+    "toolMin": 5,
+    "optimalSolutions": 7,
+    "pOptimal": 0.00000224,
     "target": 72,
     "estimate": {
      "D": 100,
-     "Dfelt": 56,
+     "Dfelt": 72,
      "casual": 0,
      "good": 0,
      "random": 0.0002,
      "greedy": false,
-     "casualTool": 0.481,
-     "goodTool": 0.169
+     "casualTool": 0.269,
+     "goodTool": 0.219
     },
     "searched": {
-     "tried": 1470,
+     "tried": 220,
      "via": "search-one.mjs"
     },
-    "bossTuned": {
-     "from": 3,
-     "to": 2
+    "toolSolution": "gpbbq",
+    "untooled": {
+     "launch": "launch-16",
+     "from": {
+      "moves": 5,
+      "stars": {
+       "three": 5,
+       "two": 7
+      }
+     }
     }
    }
   }
