@@ -9,6 +9,82 @@ export const START_VALUES = [
 ];
 
 const copy = board => board.map(row => row.slice());
+
+// ---------- Besondere Squishes (launch-16) ----------
+// ice:   friert – zieht beim Einschieben normal mit, verschmilzt aber nicht (weder Fusion noch Straße),
+//        bis direkt daneben (waagerecht/senkrecht) eine Fusion oder Straße passiert → taut auf, danach normal.
+// bound: angekettet – bewegt sich nie und lässt sich nicht verschieben; wirkt wie eine Wand (Einschub
+//        stoppt davor) und verschmilzt nie. value = 0 (keine Zahl).
+// bomb:  Restzeit in ms (Echtzeit-Countdown, Standard 20 s). Läuft sie ab, zerstört die Bombe sich und
+//        alle 8 Nachbarn (außer angeketteten). Wird die Bombe in einer Fusion/Straße verschmolzen,
+//        ist sie entschärft (der Ergebnisstein ist normal).
+export const BOMB_MS = 20000;
+/** Wert, mit dem ein Stein verschmelzen kann – undefined für leer, gefroren oder angekettet. */
+export const mergeValue = t => (t && !t.ice && !t.bound ? t.value : undefined);
+export const isSpecial = t => !!(t && (t.ice || t.bound || t.bomb != null));
+// Ergebnisstein einer Fusion ist immer normal (Bombe entschärft). Normale Steine behalten ihre Felder.
+const plain = (t, value) => (t.bomb != null || t.ice ? { id: t.id, value } : { ...t, value });
+/**
+ * Ein Zeichen je Zelle (Solver/Hinweis-Schlüssel): '.' leer, Wert base36 normal, '#' angekettet,
+ * U+00C0+Wert gefroren, U+0400 + Wert·64 + Bomben-Einheiten (à BOMB_UNIT_MS, aufgerundet) Bombe.
+ */
+export const BOMB_UNIT_MS = 2500;
+export function cellCode(t) {
+  if (t === null) return '.';
+  if (t.bound) return '#';
+  if (t.ice) return String.fromCharCode(0xC0 + t.value);
+  if (t.bomb != null) return String.fromCharCode(0x400 + t.value * 64 + Math.min(63, Math.ceil(t.bomb / BOMB_UNIT_MS)));
+  return t.value.toString(36);
+}
+export function codeCell(ch) {
+  if (ch === '.') return null;
+  if (ch === '#') return { value: 0, bound: true };
+  const n = ch.charCodeAt(0);
+  if (n >= 0x400) { const k = n - 0x400; return { value: k >> 6, bomb: (k & 63) * BOMB_UNIT_MS }; }
+  if (n >= 0xC0) return { value: n - 0xC0, ice: true };
+  return { value: parseInt(ch, 36) };
+}
+export const boardCode = board => { let s = ''; for (const row of board) for (const t of row) s += cellCode(t); return s; };
+export const boardFromCode = key => Array.from({ length: SIZE }, (_, r) => Array.from({ length: SIZE }, (_, c) => codeCell(key[r * SIZE + c])));
+const ORTHO = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+/** Gefrorene Steine neben den Zellen der Gruppen auftauen (auf `next`). Rückgabe: aufgetaute Zellen. */
+function thawAround(next, groups) {
+  const out = [];
+  for (const g of groups) for (const [r, c] of g.cells) for (const [dr, dc] of ORTHO) {
+    const t = next[r + dr]?.[c + dc];
+    if (t && t.ice) { next[r + dr][c + dc] = { id: t.id, value: t.value }; out.push([r + dr, c + dc]); }
+  }
+  return out;
+}
+/**
+ * Bomben-Uhr weiterdrehen (ms). Abgelaufene Bomben explodieren: die Bombe und alle 8 Nachbarn
+ * verschwinden (angekettete bleiben). Keine Kettenexplosion: mitgerissene Bomben verschwinden ohne Knall.
+ * Rückgabe {board, exploded:[{at:[r,c], id, removed:[[r,c]...]}]} – board unverändert, wenn nichts passiert.
+ */
+export function tickBombs(board, ms) {
+  let next = null; const exploded = [], gone = new Set();
+  for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
+    const t = board[r][c];
+    if (!t || t.bomb == null) continue;
+    next ||= copy(board);
+    next[r][c] = { ...t, bomb: Math.max(0, t.bomb - ms) };
+  }
+  if (!next) return { board, exploded };
+  for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
+    const t = next[r][c];
+    if (!t || t.bomb == null || t.bomb > 0 || gone.has(r * SIZE + c)) continue;
+    const removed = [[r, c]];
+    for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
+      if (!dr && !dc) continue;
+      const n = next[r + dr]?.[c + dc];
+      if (n && !n.bound && !gone.has((r + dr) * SIZE + c + dc)) removed.push([r + dr, c + dc]);
+    }
+    for (const [rr, cc] of removed) gone.add(rr * SIZE + cc);
+    exploded.push({ at: [r, c], id: t.id, removed });
+  }
+  for (const k of gone) next[Math.floor(k / SIZE)][k % SIZE] = null;
+  return { board: next, exploded };
+}
 const key = ([row, col]) => `${row},${col}`;
 
 export function createStartValues(random = Math.random) {
@@ -38,13 +114,13 @@ export function findStreets(board) {
     const at = i => axis === 'row' ? [line, i] : [i, line];
     for (let start = 0; start < SIZE - 2; start++) {
       const [r, c] = at(start), [nr, nc] = at(start + 1);
-      const value = board[r][c]?.value, next = board[nr][nc]?.value;
+      const value = mergeValue(board[r][c]), next = mergeValue(board[nr][nc]);
       if (value === undefined || next === undefined || Math.abs(next - value) !== 1) continue;
       const step = next - value;
       // Only emit maximal runs, including a new run after a direction change.
-      if (start > 0) { const [pr, pc] = at(start - 1); if (board[pr][pc]?.value === value - step) continue; }
+      if (start > 0) { const [pr, pc] = at(start - 1); if (mergeValue(board[pr][pc]) === value - step) continue; }
       let end = start + 2;
-      while (end < SIZE) { const [er, ec] = at(end); if (board[er][ec]?.value !== value + (end - start) * step) break; end++; }
+      while (end < SIZE) { const [er, ec] = at(end); if (mergeValue(board[er][ec]) !== value + (end - start) * step) break; end++; }
       if (end - start >= 3) streets.push({axis, cells:Array.from({length:end - start}, (_, i) => at(start + i))});
     }
   }
@@ -60,11 +136,13 @@ export function streetPass(board) {
     const target=street.cells.reduce((best,cell)=>board[cell[0]][cell[1]].value>board[best[0]][best[1]].value?cell:best);
     const [r,c]=target,value=board[r][c].value,nextValue=value+(street.cells.length>=4?1:0);
     for(const cell of street.cells){next[cell[0]][cell[1]]=null;used.add(key(cell));}
-    next[r][c]={...board[r][c],value:nextValue};
+    next[r][c]=plain(board[r][c],nextValue);
     groups.push({...street,target,value,nextValue,street:true});
     points+=nextValue*street.cells.length*10;
   }
-  return {board:groups.length?next:board,groups,points};
+  if(!groups.length)return {board,groups,points};
+  const thawed=thawAround(next,groups);
+  return {board:next,groups,points,thawed};
 }
 
 export function nextMergePass(board) {
@@ -82,7 +160,11 @@ export function insertTile(board, direction, line, tile) {
     if (direction === 'down') return [i, line];
     return [SIZE - 1 - i, line];
   });
-  const gap = cells.findIndex(([row, col]) => board[row][col] === null);
+  // Angekettete Steine sind eine Wand: geschoben wird nur bis davor.
+  const wall = cells.findIndex(([row, col]) => board[row][col]?.bound);
+  const reach = wall < 0 ? cells.length : wall;
+  let gap = -1;
+  for (let i = 0; i < reach; i++) { const [row, col] = cells[i]; if (board[row][col] === null) { gap = i; break; } }
   if (gap < 0) return { accepted: false, board };
 
   const next = copy(board);
@@ -111,11 +193,11 @@ export function mergePass(board) {
       while (start < SIZE) {
         const at = i => axis === 'row' ? [line, i] : [i, line];
         const [r, c] = at(start);
-        const value = board[r][c]?.value;
+        const value = mergeValue(board[r][c]);
         let end = start + 1;
         while (value !== undefined && end < SIZE) {
           const [nr, nc] = at(end);
-          if (board[nr][nc]?.value !== value) break;
+          if (mergeValue(board[nr][nc]) !== value) break;
           end++;
         }
         if (value !== undefined && end - start >= 3) {
@@ -128,7 +210,7 @@ export function mergePass(board) {
             for (const side of [-1, 1]) {
               const nr = axis === 'row' ? mr + side : mr;
               const nc = axis === 'col' ? mc + side : mc;
-              if (board[nr]?.[nc]?.value === value) union(first, key([nr, nc]));
+              if (board[nr]?.[nc] !== undefined && mergeValue(board[nr][nc]) === value) union(first, key([nr, nc]));
             }
           }
         }
@@ -158,11 +240,12 @@ export function mergePass(board) {
     const value = board[tr][tc].value;
     const nextValue = value + (cells.length >= 5 ? 2 : 1);
     for (const [r, c] of cells) next[r][c] = null;
-    next[tr][tc] = { ...board[tr][tc], value: nextValue };
+    next[tr][tc] = plain(board[tr][tc], nextValue);
     groups.push({ cells, target, value, nextValue });
     points += nextValue * cells.length * 10;
   }
-  return { board: next, groups, points };
+  const thawed = thawAround(next, groups);
+  return { board: next, groups, points, thawed };
 }
 
 export function settle(board) {

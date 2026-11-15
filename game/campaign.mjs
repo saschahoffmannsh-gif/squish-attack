@@ -2,7 +2,7 @@
 // Ein Level = feste Startaufstellung + feste Steinfolge + Ziele + Zuglimit.
 // Dieses Modul ist reine Logik (kein DOM). Es wird von der UI, dem Solver,
 // dem Generator und den Tests gemeinsam benutzt, damit alle exakt gleich zählen.
-import { SIZE, insertTile, settle, isGameOver } from './game-logic.mjs';
+import { SIZE, insertTile, settle, isGameOver, tickBombs, BOMB_MS, BOMB_UNIT_MS } from './game-logic.mjs?v=launch-16';
 
 export const DIRECTIONS = ['left', 'right', 'up', 'down'];
 export const QUEUE_PREVIEW = 3;
@@ -41,6 +41,19 @@ export function validateLevel(level) {
     for (const k of need) if (!Number.isInteger(g[k]) || g[k] < 1) fail(`Ziel ${g.type}: ${k} fehlt`);
   }
   if (level.tool != null && !TOOL_KEYS.includes(level.tool)) fail('tool ungültig');
+  if (level.specials != null) {   // launch-16: besondere Squishes auf dem Startbrett
+    const sp = level.specials, seen = new Set();
+    if (typeof sp !== 'object') fail('specials ungültig');
+    for (const k of Object.keys(sp)) if (!SPECIAL_KINDS.includes(k) && k !== 'bombSeconds') fail(`specials: unbekannt ${k}`);
+    if (sp.bombSeconds != null && !(Number.isInteger(sp.bombSeconds) && sp.bombSeconds >= 5 && sp.bombSeconds <= 120)) fail('specials: bombSeconds');
+    for (const kind of SPECIAL_KINDS) for (const cell of sp[kind] ?? []) {
+      const [r, c] = Array.isArray(cell) ? cell : [];
+      if (!(Number.isInteger(r) && Number.isInteger(c) && r >= 0 && r < SIZE && c >= 0 && c < SIZE)) fail(`specials ${kind}: Zelle ungültig`);
+      if (seen.has(r * SIZE + c)) fail(`specials: Zelle ${r},${c} doppelt`);
+      seen.add(r * SIZE + c);
+      if (kind === 'bound' ? level.board[r][c] !== null : level.board[r][c] === null) fail(`specials ${kind}: ${kind === 'bound' ? 'Kettenfeld muss im board leer (null) sein' : 'braucht einen Stein'} (${r},${c})`);
+    }
+  }
   const s = level.stars, room = level.tool === 'extraMoves' ? 3 : 0;   // +3-Level: 2★ auch mit den 3 Extra-Zügen
   if (!s || !Number.isInteger(s.three) || !Number.isInteger(s.two) || !(s.three >= 1 && s.three <= s.two && s.two <= level.moves + room)) fail('stars ungültig');
   if (room && level.sequence.length < level.moves + 3) fail('Reserve-Steine für +3 fehlen');
@@ -48,14 +61,45 @@ export function validateLevel(level) {
 }
 
 const toTile = (v, ctx) => ({ id: ctx.nextId++, value: v });
+/** launch-16: besondere Squishes. ice = gefroren, bound = angekettet (Wand), bomb = 20-s-Countdown. */
+export const SPECIAL_KINDS = ['ice', 'bomb', 'bound'];
+export { BOMB_MS };
+/** Solver/Hinweis/Simulation: so viel Bomben-Zeit vergeht pro Zug (Modell eines zügigen Spielers). */
+export const BOMB_MS_PER_MOVE = BOMB_UNIT_MS;
+/** Art eines Steins: 'ice' | 'bomb' | 'bound' | null. */
+export const specialOf = t => (!t ? null : t.bound ? 'bound' : t.ice ? 'ice' : t.bomb != null ? 'bomb' : null);
+function placeSpecials(level, board, ctx) {
+  const sp = level.specials;
+  if (!sp) return;
+  const ms = (sp.bombSeconds ?? BOMB_MS / 1000) * 1000;
+  for (const [r, c] of sp.ice ?? []) board[r][c] = { ...board[r][c], ice: true };
+  for (const [r, c] of sp.bomb ?? []) board[r][c] = { ...board[r][c], bomb: ms };
+  for (const [r, c] of sp.bound ?? []) board[r][c] = { id: ctx.nextId++, value: 0, bound: true };
+}
+/**
+ * Ein Zug auf einem reinen Brett (Solver, Hinweis, Simulation): einschieben, fusionieren, dann vergeht
+ * BOMB_MS_PER_MOVE Bomben-Zeit (Modell). Rückgabe wie settle() (+ exploded) oder null, wenn die Reihe voll ist.
+ */
+export function stepBoard(board, direction, line, tile, { bombMs = BOMB_MS_PER_MOVE } = {}) {
+  const ins = insertTile(board, direction, line, tile);
+  if (!ins.accepted) return null;
+  const settled = settle(ins.board);
+  if (!bombMs || !hasBomb(settled.board)) return settled;
+  const t = tickBombs(settled.board, bombMs);
+  return t.exploded.length ? { ...settled, board: t.board, exploded: t.exploded } : { ...settled, board: t.board };
+}
+export const hasBomb = board => board.some(row => row.some(t => t && t.bomb != null));
 
 /** Neuer Spielzustand für ein Level. */
 export function createLevelRun(level) {
   validateLevel(level);
   const ctx = { nextId: 1 };
   const board = level.board.map(row => row.map(v => (v === null ? null : toTile(v, ctx))));
+  placeSpecials(level, board, ctx);
   return {
     level, board, ctx,
+    bombClock: false,         // launch-16: Bomben-Countdown läuft ab dem ersten Zug
+    exploded: 0,              // explodierte Bomben
     index: 0,                 // Position in level.sequence
     moves: 0,                 // gemachte Züge
     score: 0, cleared: 0, merges: 0, streets: 0, bestCombo: 0, longStreets: 0,
@@ -122,7 +166,8 @@ export function vanished(g) {
   });
   return [...out];
 }
-export const tilesOn = board => { let n = 0; for (const row of board) for (const t of row) if (t) n++; return n; };
+// Angekettete Steine zählen nicht (sie lassen sich nie entfernen).
+export const tilesOn = board => { let n = 0; for (const row of board) for (const t of row) if (t && !t.bound) n++; return n; };
 /** Zielwert in Einheiten des Fortschritts-Vektors (Solver/Hinweis). */
 export const goalTarget = g => ({ tile: g.value, make: g.count, score: g.points, clear: g.tiles, street: g.count, combo: g.chain, empty: 1, long: g.count, purge: g.tiles })[g.type];
 /**
@@ -206,11 +251,34 @@ export function applyLevelMove(run, direction, line) {
   run.index += 1;
   run.moves += 1;
   run.log += encodeMove(direction, line);
+  run.bombClock = true;
   tally(run, settled);
   if (goalsDone(run)) run.status = 'won';
   else if (run.moves >= moveLimit(run)) { run.status = 'lost'; run.lostReason = 'moves'; }
   else if (isGameOver(run.board) || !hasLegalMove(run)) { run.status = 'lost'; run.lostReason = 'board-full'; }
   return { ok: true, settled, entry: inserted.entry, tile };
+}
+
+/**
+ * launch-16: Bomben-Uhr im echten Spiel (Echtzeit, ms). Läuft erst ab dem ersten Zug und nur solange
+ * gespielt wird; die UI ruft das nur auf, wenn nicht pausiert, kein Dialog offen und die Seite sichtbar ist.
+ * Rückgabe: Liste der Explosionen [{at, id, removed}] (leer = nichts passiert).
+ */
+export function tickLevelBombs(run, ms) {
+  if (run.status !== 'playing' || !run.bombClock || !(ms > 0)) return [];
+  const t = tickBombs(run.board, ms);
+  run.board = t.board;
+  if (!t.exploded.length) return [];
+  run.exploded = (run.exploded ?? 0) + t.exploded.length;
+  if (goalsDone(run)) run.status = 'won';
+  else if (isGameOver(run.board) || !hasLegalMove(run)) { run.status = 'lost'; run.lostReason = 'board-full'; }
+  return t.exploded;
+}
+/** Kleinste Restzeit (ms) aller Bomben auf dem Brett, sonst null. */
+export function nextBombMs(run) {
+  let m = null;
+  for (const row of run.board) for (const t of row) if (t && t.bomb != null && (m === null || t.bomb < m)) m = t.bomb;
+  return m;
 }
 
 /**
@@ -367,7 +435,7 @@ export function nextLevel(progress, count) {
 
 /** Rakete: entfernt einen Stein (kein Zug, keine Fusion). true, wenn etwas entfernt wurde. */
 export function useRocket(run, row, col) {
-  if (run.status !== 'playing' || !run.board[row]?.[col]) return false;
+  if (run.status !== 'playing' || !run.board[row]?.[col] || run.board[row][col].bound) return false;   // Ketten halten auch der Rakete stand
   run.board = run.board.map(r => r.slice());
   run.board[row][col] = null;
   markToolUsed(run, 'rocket');
@@ -390,7 +458,7 @@ export function wandCap(run) {
 }
 export function wandChoices(run, row, col) {
   const tile = run.board[row]?.[col];
-  if (run.status !== 'playing' || !tile) return [];
+  if (run.status !== 'playing' || !tile || tile.bound) return [];
   const out = [];
   for (let v = 1; v <= wandCap(run); v++) {
     if (v === tile.value) continue;
