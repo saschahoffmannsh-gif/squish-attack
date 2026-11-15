@@ -242,7 +242,7 @@ export function metricsFrom(lv, board, vec, depth0, maxDepth, seed, { nModel = N
 }
 export const Dat = (m, L, min, goals, window) => difficulty({ pCas: m.cas(L), pGood: m.good(L), pRand: m.rnd(L), min, greedyFails: !m.greedy(L), goals, window }, m.nModel || N_MODEL);
 const metricOpts = W => W > 24 ? { nModel: 24, nRand: 80 } : W > 16 ? { nModel: 36, nRand: 120 } : {};
-const toolCasMin = (role, W) => W > 24 ? (role === 'boss' ? 0.15 : 0.2) : (role === 'boss' ? 0.25 : 0.35);
+const toolCasMin = (role, W) => role === 'boss' || W > 20 ? 0.15 : 0.2;
 
 
 function bestOf(cands) {

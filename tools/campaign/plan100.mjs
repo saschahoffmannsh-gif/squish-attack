@@ -36,10 +36,27 @@ export function moveWindow(i) {
   return Math.round(Math.max(12, Math.min(40, mid + adj)));
 }
 /** Gewünschtes Optimum (ohne Werkzeug) als Anteil am Fenster. */
+function naturalMinCap(i) {
+  const goals = MISSIONS[i].goals;
+  let cap = 8;
+  for (const g of goals) {
+    if (g.type === 'tile') cap = Math.max(cap, 6 + Math.max(0, g.value - 3) * 5);
+    else if (g.type === 'make') cap = Math.max(cap, 5 + Math.max(0, g.value - 2) * 3 + (g.count || 1) * 2);
+    else if (g.type === 'score') cap = Math.max(cap, Math.min(28, Math.ceil(g.points / 35)));
+    else if (g.type === 'clear') cap = Math.max(cap, Math.min(20, Math.ceil(g.tiles / 2) + 3));
+    else if (g.type === 'street') cap = Math.max(cap, 5 + g.count * 3);
+    else if (g.type === 'long') cap = Math.max(cap, 6 + g.count * 4);
+    else if (g.type === 'empty') cap = Math.max(cap, 10);
+    else if (g.type === 'purge') cap = Math.max(cap, 6 + (g.tiles || 0));
+  }
+  if (goals.length > 1) cap += 5 * (goals.length - 1);
+  return cap;
+}
 export function minMovesWanted(i) {
   const W = moveWindow(i);
   const frac = { relief: 0.5, normal: 0.68, tool: 0.82, milestone: 0.72, boss: 0.78 }[roleOf(i)];
-  const mid = Math.round(W * frac);
+  const cap = naturalMinCap(i);
+  const mid = Math.min(cap, Math.round(W * frac));
   return [Math.max(4, mid - 3), Math.min(W, mid + 3)];
 }
 
@@ -49,7 +66,7 @@ export const MISSIONS = {
   12: { goals: [T('make', 3, 3)] },
   13: { goals: [T('clear', 8)] },
   14: { goals: [T('street', 1)] },
-  15: { goals: [T('clear', 10)], note: '1. Werkzeug-Spitze: +3 Züge' },
+  15: { goals: [T('clear', 12), T('score', 160)], note: '1. Werkzeug-Spitze: +3 Züge' },
   16: { goals: [T('score', 180)], note: 'Erholung' },
   17: { goals: [T('tile', 5)] },
   18: { goals: [T('make', 3, 4)] },
@@ -110,16 +127,16 @@ export const MISSIONS = {
   73: { goals: [T('tile', 7)], note: '(statt Kette)' },
   74: { goals: [T('make', 5, 2), T('score', 400)] },
   75: { goals: [T('empty', 3), T('score', 220)], note: 'Werkzeug-Spitze: Rakete' },
-  76: { goals: [T('street', 3)], note: 'Erholung' },
+  76: { goals: [T('street', 3), T('clear', 10)], note: 'Erholung' },
   77: { goals: [T('score', 500), T('purge', 2, 6)] },
   78: { goals: [T('make', 6, 2)] },
-  79: { goals: [T('street', 2)], note: 'Werkzeug-Spitze: Hinweis' },
+  79: { goals: [T('tile', 7), T('street', 2)], note: 'Werkzeug-Spitze: Hinweis' },
   80: { goals: [T('tile', 7), T('clear', 12), T('street', 1)], note: 'Meilenstein: drei Ziele, 5er schon auf dem Brett' },
   81: { goals: [T('clear', 12)], note: 'Erholung' },
   82: { goals: [T('long', 1)], note: 'fast fertige Straße aus 5' },
   83: { goals: [T('tile', 7), T('clear', 10)] },
   84: { goals: [T('score', 600), T('clear', 10)], note: 'hoher Wert (~30) als Blocker auf dem Brett' },
-  85: { goals: [T('make', 5, 2)], note: 'Werkzeug-Spitze: +3 Züge' },
+  85: { goals: [T('make', 5, 2), T('clear', 10)], note: 'Werkzeug-Spitze: +3 Züge' },
   86: { goals: [T('clear', 14)], note: 'Erholung' },
   87: { goals: [T('long', 1), T('clear', 10)] },
   88: { goals: [T('purge', 4, 8)] },
@@ -157,6 +174,7 @@ export const VARIETY = {
   64: { street5: true },
   70: { has5: true, climb: true },
   73: { climb: true, has5: true },
+  79: { climb: true, has5: true },
   80: { has5: true, climb: true },
   82: { street5: true },
   83: { climb: true, has5: true },
