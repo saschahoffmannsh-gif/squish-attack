@@ -447,6 +447,27 @@ export function queueGifts(inv, progress) {
   for (const g of queued) { out.gifts.push(g.id); out.pending.push(g); }
   return { inventory: out, queued };
 }
+/**
+ * Einmaliger Abenteuer-Reset (launch-14, Saschas Entscheidung): Fortschritt aller Level
+ * (freigeschaltete Level, Sterne, beste Züge, Kapitel-Sperren) sowie vergebene und offene
+ * Geschenke werden einmal auf jedem Gerät gelöscht, damit die Level-Geschenke 3/6/10/20 beim
+ * Nachspielen wieder kommen. Die Anzahl der Werkzeuge im Vorrat bleibt. Endlos, Highscores,
+ * Rangliste, Duell, Einstellungen und Werkzeug-Protokoll werden NICHT angefasst.
+ * Ein Merker (CAMPAIGN_RESET_KEY) verhindert Wiederholungen, auch nach Neuladen.
+ * Läuft NACH resetStockOnce. Rückgabe {progress, inventory, reset:boolean}.
+ */
+export const CAMPAIGN_RESET = 'launch-14';
+export const CAMPAIGN_RESET_KEY = 'squish-campaign-progress-reset';
+export function resetCampaignOnce(progress, inv, storage = globalThis.localStorage, tag = CAMPAIGN_RESET) {
+  let done = null;
+  try { done = storage?.getItem(CAMPAIGN_RESET_KEY); } catch {}
+  if (!tag || done === tag) return { progress, inventory: inv, reset: false };
+  const p = emptyProgress();
+  const out = { ...addToStock(inv || emptyInventory(), {}), gifts: [], pending: [] };
+  saveProgress(p, storage); saveInventory(out, storage);
+  try { storage?.setItem(CAMPAIGN_RESET_KEY, tag); } catch {}
+  return { progress: p, inventory: out, reset: true };
+}
 /** Offenes Geschenk einsammeln → {inventory, gift} oder null. Ohne id: das älteste. */
 export function collectGift(inv, id) {
   const i = (inv.pending || []).findIndex(g => id == null || g.id === id);

@@ -148,6 +148,8 @@ let campaignMode=false,camp=null,levels=null,levelsLoading=null,stashedBestTile=
 let campaignProgress=Camp.loadProgress(),inventory=Camp.loadInventory();
 // launch-13 (Testphase): Vorrat einmalig leeren; Werkzeug-Protokoll nur lokal (tool-log.mjs).
 if(Camp.TOOL_STOCK_RESET)inventory=Camp.resetStockOnce(inventory).inventory;
+// launch-14: Abenteuer-Fortschritt + Geschenke einmalig zurücksetzen (Merker gegen Wiederholung); Endlos usw. bleibt.
+if(Camp.CAMPAIGN_RESET){const r=Camp.resetCampaignOnce(campaignProgress,inventory);campaignProgress=r.progress;inventory=r.inventory;}
 const BUILD_LABEL='launch-14';
 let toolLog=ToolLog.loadLog(),logAttempt=null;
 // Versuche, die beim letzten Mal offen blieben (Seite geschlossen), gelten als abgebrochen.

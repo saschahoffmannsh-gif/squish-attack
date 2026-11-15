@@ -455,3 +455,33 @@ test('launch-14: Geschenk-Gutschriften im Protokoll mit Quelle „gift“, getre
   assert.deepEqual(sm.levels.map(l => l.level), [3, 4, 6]);
   assert.equal(sm.levels[0].gifts.hint, 1); assert.equal(sm.levels[2].gifts.wand, 1);
 });
+
+import { isUnlocked as isUnl14, resetCampaignOnce, CAMPAIGN_RESET_KEY, CAMPAIGN_RESET, PROGRESS_KEY as PK14, loadProgress as loadP14, emptyProgress as emptyP14 } from '../game/campaign.mjs';
+test('launch-14: Abenteuer einmalig zurückgesetzt (Fortschritt + Geschenke), Rest bleibt, kein zweites Mal', () => {
+  const st = memStore();
+  const won = n => ({ version: 1, updatedAt: 5, levels: Object.fromEntries(Array.from({ length: n }, (_, i) => [String(i + 1), { stars: 1 + (i % 3), moves: 7, at: 1 }])) });
+  st.setItem(PK14, JSON.stringify(won(12)));
+  st.setItem('squish-next-run-v1', '{"board":1}'); st.setItem('squish-rank-v1', '{"best":900}'); st.setItem('squish-sound-v1', 'x'); st.setItem(TOOL_LOG_KEY, '{"keep":1}');
+  const inv = { ...emptyInventory(), wand: 1, gifts: ['level-3', 'level-6', 'level-10', 'stars-10'], pending: [{ id: 'level-10', type: 'extraMoves' }] };
+  saveInventory(inv, st);
+  const r = resetCampaignOnce(loadP14(st), loadInventory(st), st);
+  assert.equal(r.reset, true);
+  assert.deepEqual(r.progress.levels, {});
+  assert.deepEqual(loadP14(st).levels, {});
+  const li = loadInventory(st);
+  assert.deepEqual(li.gifts, []); assert.deepEqual(li.pending, []); assert.equal(li.wand, 1);   // Vorrat bleibt
+  assert.equal(st.getItem(CAMPAIGN_RESET_KEY), CAMPAIGN_RESET);
+  for (const [k, v] of [['squish-next-run-v1', '{"board":1}'], ['squish-rank-v1', '{"best":900}'], ['squish-sound-v1', 'x'], [TOOL_LOG_KEY, '{"keep":1}']]) assert.equal(st.getItem(k), v, k);
+  // Level 1 frei, Level 2 gesperrt
+  assert.equal(isUnl14(r.progress, 1), true); assert.equal(isUnl14(r.progress, 2), false);
+  // nach Reset: Level 3 geschafft → Geschenk kommt wieder
+  const p3 = { ...emptyP14(), levels: { 1: { stars: 3 }, 2: { stars: 3 }, 3: { stars: 3 } } };
+  assert.deepEqual(queueGifts(li, p3).queued, [{ id: 'level-3', type: 'hint' }]);
+  // Neuladen: kein zweiter Reset
+  st.setItem(PK14, JSON.stringify(p3));
+  const again = resetCampaignOnce(loadP14(st), li, st);
+  assert.equal(again.reset, false); assert.equal(Object.keys(loadP14(st).levels).length, 3);
+  // frisches Gerät: nur Merker
+  const st2 = memStore(); const f = resetCampaignOnce(emptyP14(), emptyInventory(), st2);
+  assert.equal(f.reset, true); assert.equal(st2.getItem(CAMPAIGN_RESET_KEY), CAMPAIGN_RESET);
+});
