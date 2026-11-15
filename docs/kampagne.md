@@ -555,3 +555,14 @@ schreiben nichts ins Werkzeug-Protokoll. Die Regeln-Seite erklärt die drei Arte
 **Tests:** `tests/specials.test.mjs` (Logik, Level-Format, Uhr, Schlüssel, Test-Level per Solver und
 Hinweis, Befreien von Eis und Schloss); E2E `squish-e2e/campaign/e2e-squish17.mjs` (iPhone 390×844
 und 375×667, offline).
+
+## Level-Umbau: lange Level, alle ohne Werkzeug lösbar (launch-18)
+
+Alle 100 Level in `levels/levels-001-100.json` neu gebaut (Plan `tools/campaign/plan100.mjs`, Übersicht `docs/levels-100.md`).
+
+- **Keine Kettenreaktions-Level mehr** (Zieltyp `combo` kommt in keinem Level vor).
+- **Jedes Level ohne Werkzeug lösbar:** gespeicherte Lösung (`solution`) ohne Werkzeug-Tokens, vom Solver bzw. per Nachspielen geprüft. Sehr schwer ist erlaubt, unmöglich nicht. Werkzeug-Level (`tool`) sind nur Empfehlungen; wer ein Hilfsmittel nutzt, bekommt weiter höchstens 2★.
+- **Lange Level ab 11:** Zugfenster wächst mit dem Fortschritt – Level 1–10: 5–8 Züge, 21–50: ca. 12–24, 61–80: bis 37, 81–100: bis 40 (Boss 100: 34 Züge).
+- **Abwechslung:** Startbretter mit hohen Werten, fast fertigen Straßen oder schon liegendem 5er; mehrteilige Aufgaben (2–3 Ziele im selben Zugfenster) ab Level 11, später in rund der Hälfte der Level.
+- **Keine besonderen Squishes im Abenteuer:** Eis, Schloss und Bombe gibt es vorerst nur auf der Testseite (Regeln → „Neue Squishes testen“).
+- **Sterne:** Fortschritt ab Level 11 wird einmalig zurückgesetzt (`squish-campaign-stars-reset` = `launch-18`), Level 1–10 bleiben.
