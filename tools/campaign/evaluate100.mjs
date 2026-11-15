@@ -12,6 +12,8 @@ export const RESERVE = 5;
 export const STATS = {};
 const why = r => { STATS[r] = (STATS[r] || 0) + 1; return null; };
 const N_MODEL = 160, N_RAND = 2500;
+// Mit dem Schlüssel-Werkzeug „bequem“: Gelegenheitsspieler gewinnt mindestens so oft.
+export const CAS_TOOL = 0.4;
 const int = (rng, lo, hi) => lo + Math.floor(rng() * (hi - lo + 1));
 const weighted = (rng, max, focus) => {
   const w = Array.from({ length: max }, (_, i) => (max - i + 1) * (focus === i + 1 ? 3 : 1)), sum = w.reduce((a, b) => a + b);
@@ -156,7 +158,7 @@ function minRange(id, role) {
 const asLevel = (id, c, moves) => ({ id, board: c.board, sequence: c.sequence, goals: c.goals, moves, stars: { three: 1, two: moves } });
 
 /** Kennzahlen eines (Teil-)Levels ab einem Zustand: Gelegenheits-/Gut-/Zufallsspieler + Gieriger, je Zuglimit. */
-function metricsFrom(lv, board, vec, depth0, maxDepth, seed) {
+export function metricsFrom(lv, board, vec, depth0, maxDepth, seed) {
   const cas = playerFrom(lv, board, vec, depth0, maxDepth, { n: N_MODEL, seed: seed ^ 0xca5, skill: 0.4 });
   const good = playerFrom(lv, board, vec, depth0, maxDepth, { n: N_MODEL, seed: seed ^ 0x600d, skill: 0.8 });
   const sub = { ...lv, board: board.map(r => r.map(t => (t ? t.value : null))), sequence: lv.sequence.slice(depth0), moves: maxDepth - depth0, stars: { three: 1, two: maxDepth - depth0 } };
@@ -164,7 +166,7 @@ function metricsFrom(lv, board, vec, depth0, maxDepth, seed) {
   const gr = L => greedy(sub, L - depth0).won;
   return { cas: L => cas.rate(L), good: L => good.rate(L), rnd: L => { const r = rnd.rate(L - depth0); return r > 0 ? r : 0.5 / N_RAND; }, greedy: gr };
 }
-const Dat = (m, L, min, goals) => difficulty({ pCas: m.cas(L), pGood: m.good(L), pRand: m.rnd(L), min, greedyFails: !m.greedy(L), goals }, N_MODEL);
+export const Dat = (m, L, min, goals) => difficulty({ pCas: m.cas(L), pGood: m.good(L), pRand: m.rnd(L), min, greedyFails: !m.greedy(L), goals }, N_MODEL);
 
 /**
  * Bewertet Kandidat k für Level id. Rückgabe null (unbrauchbar) oder
@@ -201,7 +203,7 @@ export function evaluate(id, k) {
     for (const L of [m - 1, m - 2]) {
       if (L < 3) continue;
       const Dfelt = Dat(M, L + 3, m, G), casTool = M.cas(L + 3);
-      if (casTool < 0.5) continue;
+      if (casTool < CAS_TOOL) continue;
       const cost = Math.abs(Dfelt - target) + (m - L - 1) * 0.5;
       if (!best || cost < best.cost) best = { cost, L, Dfelt, casTool };
     }
@@ -220,14 +222,14 @@ export function evaluate(id, k) {
     for (const L of [m, m + 1]) {
       const lv = asLevel(id, c, L);
       const M = metricsFrom(lv, startBoard(lv), lv.goals.map(() => 0), 0, L, seed);
-      if (M.cas(L) > 0.12 || M.good(L) > 0.45) continue;
+      if (M.cas(L) > 0.2 || M.good(L) > 0.6) continue;
       const h = findHint({ board: c.board, goals: c.goals, sequence: c.sequence, index: 0, movesLeft: L, vec: c.goals.map(() => 0) }, { want: 2, maxMs: 4000, now: () => 0 });
       if (!h.found || h.moves.length < 2) continue;
       const st = stateAfter(lv, h.moves, L);
       if (!st || st.win) continue;
       const H = metricsFrom(lv, st.board, st.vec, 2, L, seed ^ 0x41);
       const casTool = H.cas(L);
-      if (casTool < 0.5) continue;
+      if (casTool < CAS_TOOL) continue;
       const Dfelt = Dat(H, L, Math.max(1, m - 2), G);
       const cost = Math.abs(Dfelt - target) + (L - m) * 0.3;
       if (!best || cost < best.cost) best = { cost, L, Dfelt, casTool, goodTool: H.good(L), hint: h.moves, M };
@@ -256,7 +258,7 @@ export function evaluate(id, k) {
     const lv = asLevel(id, c, L);
     const Mt = metricsFrom(lv, after.board, after.vec, 0, L, seed ^ 0x70);
     const casTool = Mt.cas(L);
-    if (casTool < 0.5) continue;
+    if (casTool < CAS_TOOL) continue;
     const Dfelt = Dat(Mt, L, tm, G);
     const cost = Math.abs(Dfelt - target);
     if (!best || cost < best.cost) best = { cost, L, Dfelt, casTool, goodTool: Mt.good(L) };

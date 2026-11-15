@@ -143,7 +143,7 @@ test('launch-15: Werkzeug-Level – ohne Werkzeug kein 3★ (Deckel), mit dem ei
       // lösbar, aber eng; Hinweis findet am Start einen Weg; Ergebnis höchstens 2★
       const h = findHint({ board: lv.board, goals: lv.goals, sequence: lv.sequence, index: 0, movesLeft: lv.moves, vec: lv.goals.map(() => 0) }, { want: 2, maxMs: 8000, now: () => 0 });
       assert.ok(h.found && h.moves.length >= 2, id);
-      assert.ok(lv.meta.estimate.casual <= 0.12, id);
+      assert.ok(lv.meta.estimate.casual <= 0.2, id);
       const r = replayWithTool(lv, lv.solution, { hint: true });
       assert.ok(r.ok, id); assert.equal(r.stars, 2, id);
       assert.equal(replaySolution(lv, lv.solution).stars, 2, `${id}: auch ohne Werkzeug nur 2★`);
