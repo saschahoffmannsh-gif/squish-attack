@@ -61,3 +61,5 @@
 /* Werkzeug-Level in der Levelauswahl: kleines Werkzeug-Symbol, höchstens 2 ★ */
 .campaign-level-btn.is-tool::after {content:"🔧";position:absolute;top:-6px;right:-5px;font-size:13px;line-height:1;filter:drop-shadow(0 1px 1px #0008);}
 .campaign-level-btn {position:relative;}
+/* launch-15: 100 Level – Kapitel außerhalb des Bildes nicht rendern (flüssiges Scrollen auf dem iPhone) */
+.campaign-chapter {content-visibility:auto;contain-intrinsic-size:auto 170px;}
