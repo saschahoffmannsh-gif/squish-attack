@@ -289,13 +289,13 @@ export function useRocket(run, row, col) {
 /**
  * Zauberstab – erlaubte Zahlen für einen Stein:
  *  - 1 … Obergrenze, ohne den aktuellen Wert
- *  - Obergrenze = kleinster Zielwert eines „Erzeuge“-Ziels − 1 (tile/make);
+ *  - Obergrenze = kleinster Zielwert eines „Erzeuge“-Ziels (tile/make), einschließlich;
  *    gibt es kein solches Ziel: der größte Wert auf Brett/Vorschau (mind. 2)
  *  - ohne Werte, die durch die anschließenden Fusionen sofort alle Ziele erfüllen würden
  */
 export function wandCap(run) {
   const targets = run.level.goals.filter(g => g.type === 'tile' || g.type === 'make').map(g => g.value);
-  if (targets.length) return Math.max(1, Math.min(...targets) - 1);
+  if (targets.length) return Math.min(...targets);   // bis einschließlich Zielwert (Sofort-Sieg wird in wandChoices ausgeschlossen)
   const seen = [...run.board.flat().filter(Boolean).map(t => t.value), ...queueOf(run)];
   return Math.max(2, ...seen);
 }

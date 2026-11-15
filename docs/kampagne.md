@@ -315,8 +315,9 @@ das Level auf **höchstens 2 ★**. Nur Geschenke, keine Käufe.
   Hinweis-Länge = Solver-Minimum, jeweils < 0,3 s (Node).
 - **Zauberstab**: Kachel antippen → Stein antippen → Comic-Auswahl mit
   Zahl-Pillen in Squish-Farben (Abbrechen/Esc/Tippen daneben bricht ab, nichts
-  verbraucht). Wahl: **1 bis unter das Levelziel** (kleinster Wert der
-  „Erzeuge“-Ziele − 1; ohne solches Ziel bis zum höchsten Wert auf Brett/Vorschau,
+  verbraucht). Wahl: **1 bis einschließlich Levelziel** (kleinster Wert der
+  „Erzeuge“-Ziele, z. B. auch der 2er in Level 5/8; Entscheidung Sascha nach
+  launch-10-Test; ohne solches Ziel bis zum höchsten Wert auf Brett/Vorschau,
   mind. 2), **nicht** die aktuelle Zahl und **keine** Zahl, die das Level sofort
   gewinnen würde. Danach gelten die normalen Regeln: entsteht eine Dreierreihe,
   wird fusioniert (zählt für Ziele und Punkte). Kein Zug. Gibt es keine passende

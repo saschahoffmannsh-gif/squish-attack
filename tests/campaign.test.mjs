@@ -222,15 +222,15 @@ test('Geschenke: Level 3/6/10/20 und je 10 Sterne im Wechsel – jeweils nur ein
   assert.deepEqual(grantGifts(migrated, p).granted.map(g => g.id), ['level-3', 'level-6', 'stars-30', 'stars-40']);
 });
 
-test('Zauberstab: Zahlen 1 … Ziel−1, nicht der aktuelle Wert, kein Sofort-Sieg; danach normale Fusion', () => {
+test('Zauberstab: Zahlen 1 … Zielwert, nicht der aktuelle Wert, kein Sofort-Sieg; danach normale Fusion', () => {
   // Ziel 4er; Brett: 3 3 1 . .
   const lv = base({ board: [[3, 3, 1, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E]],
     goals: [{ type: 'tile', value: 4 }], moves: 3, stars: { three: 1, two: 2 } });
   const run = createLevelRun(lv);
-  assert.equal(wandCap(run), 3);
-  // 1 → 3 würde 3,3,3 verbinden und sofort den 4er erzeugen → gesperrt
-  assert.deepEqual(wandChoices(run, 0, 2), [2]);
-  assert.deepEqual(wandChoices(run, 0, 0), [1, 2]);
+  assert.equal(wandCap(run), 4);
+  // 1 → 3 würde 3,3,3 verbinden und sofort den 4er erzeugen → gesperrt; der Zielwert 4 selbst ist erlaubt (gewinnt nicht sofort)
+  assert.deepEqual(wandChoices(run, 0, 2), [2, 4]);
+  assert.deepEqual(wandChoices(run, 0, 0), [1, 2, 4]);
   assert.deepEqual(wandChoices(run, 2, 2), []);              // leeres Feld
   assert.equal(useWand(run, 0, 2, 3).ok, false);
   const id = run.board[0][2].id;
@@ -249,6 +249,14 @@ test('Zauberstab: Zahlen 1 … Ziel−1, nicht der aktuelle Wert, kein Sofort-Si
   // Ohne tile/make-Ziel: höchster Wert auf Brett/Vorschau
   const run3 = createLevelRun(base({ goals: [{ type: 'score', points: 999 }], sequence: [1, 5, 3] }));
   assert.equal(wandCap(run3), 5);
+  // Erzeuge-Ziel 2er (wie Level 5/8): Zielwert 2 wird angeboten, außer er gewinnt sofort
+  const run4 = createLevelRun(base({ board: [[1, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E]],
+    goals: [{ type: 'make', value: 2, count: 3 }] }));
+  assert.equal(wandCap(run4), 2);
+  assert.deepEqual(wandChoices(run4, 0, 0), [2]);
+  const run5 = createLevelRun(base({ board: [[2, 2, 1, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E]],
+    goals: [{ type: 'tile', value: 3 }] }));
+  assert.deepEqual(wandChoices(run5, 0, 2), [3]);          // 2 würde 2,2,2 → 3er = Sofort-Sieg → gesperrt
 });
 
 test('Hinweis-Suche: kürzester Weg wie der Solver, Züge gewinnen wirklich; kein Weg wird erkannt', () => {
