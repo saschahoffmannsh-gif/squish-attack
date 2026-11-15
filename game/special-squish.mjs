@@ -71,7 +71,7 @@ function makeDecal(kind,s){
 function tint(s,kind){
   const u=s.body?.material?.uniforms;if(!u?.uLight)return;
   if(kind==='bound'){u.uLight.value.copy(STEEL[0]);u.uShade.value.copy(STEEL[1]);}
-  else if(kind==='ice'){const c=comicColors(s.value);u.uLight.value.copy(c.light).lerp(ICE[0],.62);u.uShade.value.copy(c.shade).lerp(ICE[1],.6);}
+  else if(kind==='ice'){const c=comicColors(s.value);u.uLight.value.copy(c.light).lerp(ICE[0],.52);u.uShade.value.copy(c.shade).lerp(ICE[1],.55);}
 }
 /** Squish auf seine Art stellen (null = normal). Wird nach jedem sync aufgerufen; billig, wenn sich nichts ändert. */
 export function applySpecial(s,kind){
