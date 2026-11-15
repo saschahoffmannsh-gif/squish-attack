@@ -131,7 +131,7 @@ export const MISSIONS = {
   77: { goals: [T('score', 500), T('purge', 2, 6)] },
   78: { goals: [T('make', 6, 2)] },
   79: { goals: [T('tile', 7), T('street', 2)], note: 'Werkzeug-Spitze: Hinweis' },
-  80: { goals: [T('tile', 7), T('clear', 12), T('street', 1)], note: 'Meilenstein: drei Ziele, 5er schon auf dem Brett' },
+  80: { goals: [T('tile', 6), T('clear', 12), T('street', 1)], note: 'Meilenstein: drei Ziele, 5er schon auf dem Brett' },
   81: { goals: [T('clear', 12)], note: 'Erholung' },
   82: { goals: [T('long', 1)], note: 'fast fertige Straße aus 5' },
   83: { goals: [T('tile', 7), T('clear', 10)] },
@@ -145,8 +145,8 @@ export const MISSIONS = {
   91: { goals: [T('score', 500)], note: 'Erholung, hoher Wert (~30) als Blocker auf dem Brett' },
   92: { goals: [T('score', 360), T('clear', 8)], note: 'Erholung' },
   93: { goals: [T('purge', 3, 8), T('street', 2), T('make', 5, 2)], note: 'drei Ziele' },
-  94: { goals: [T('long', 1), T('tile', 7)], note: 'fast fertige Straße aus 5' },
-  95: { goals: [T('empty', 3), T('clear', 10)], note: 'Werkzeug-Spitze: Rakete' },
+  94: { goals: [T('long', 1), T('tile', 6)], note: 'fast fertige Straße aus 5, ein 5er liegt schon da' },
+  95: { goals: [T('empty', 4), T('score', 260)], note: 'Werkzeug-Spitze: Rakete' },
   96: { goals: [T('street', 2)], note: 'Erholung, hoher Wert als Blocker' },
   97: { goals: [T('tile', 8)], note: 'Erste 8 – langer Aufbau aus 3ern, 4ern und einem 5er' },
   98: { goals: [T('street', 2), T('clear', 10)], note: 'hoher Wert (~30) als Blocker plus Straße' },
@@ -182,7 +182,7 @@ export const VARIETY = {
   89: { climb: true, has5: true },
   90: { has5: true, climb: true },
   91: { high: [26, 30] },
-  94: { street5: true },
+  94: { street5: true, has5: true },
   96: { high: [28, 32] },
   97: { climb: true, has5: true },
   98: { high: [28, 32] },
@@ -190,7 +190,7 @@ export const VARIETY = {
 };
 
 export const GEN = {
-  31: { plant: { kind: 'pairs', n: [2, 2] }, tiles: [5, 6] },
+  31: { plant: { kind: 'pairs', n: [2, 3] }, tiles: [8, 10] },
   35: { plant: { kind: 'pairs', n: [3, 4] }, tiles: [8, 10] },
   37: { plant: { kind: 'pairs', n: [2, 3] }, tiles: [6, 8] },
   41: { plant: { kind: 'long', at: [0, 1], missing: [0, 0] }, min: [1, 3] },
@@ -203,5 +203,5 @@ export const GEN = {
   82: { plant: { kind: 'long5', at: [0, 2], missing: [1, 1] } },
   84: { plant: { kind: 'pairs', n: [2, 3] }, tiles: [7, 10] },
   94: { plant: { kind: 'long5', at: [0, 3], missing: [1, 2] } },
-  95: { plant: { kind: 'pairs', n: [2, 3] }, tiles: [13, 16] },
+  95: { plant: { kind: 'pairs', n: [3, 4] }, tiles: [11, 14] },
 };
