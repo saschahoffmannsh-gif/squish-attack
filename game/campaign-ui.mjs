@@ -30,9 +30,9 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
   const select=$('campaign-screen'),selPanel=$('campaign-panel'),selTotal=$('campaign-total'),chapters=$('campaign-chapters'),lockNote=$('campaign-lock-note');
   let lastFocus=null;
 
-  function renderHud(run,n){
+  function renderHud(run,n,label=null){
     hud.hidden=false;
-    levelEl.textContent=`LEVEL ${n}${run.level.tool?' · WERKZEUG':''}`;
+    levelEl.textContent=label||`LEVEL ${n}${run.level.tool?' · WERKZEUG':''}`;
     const three=run.level.goals.length>=3;
     goalsEl.classList.toggle('is-three',three);
     goalsEl.replaceChildren(...run.level.goals.map(goal=>{

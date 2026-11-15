@@ -63,3 +63,13 @@
 .campaign-level-btn {position:relative;}
 /* launch-15: 100 Level – Kapitel außerhalb des Bildes nicht rendern (flüssiges Scrollen auf dem iPhone) */
 .campaign-chapter {content-visibility:auto;contain-intrinsic-size:auto 170px;}
+
+/* launch-16: Bomben-Countdown über dem Bomben-Squish (Comic-Abzeichen). Nur Text ändert sich 1×/s. */
+.bomb-layer{position:fixed;inset:0;pointer-events:none;z-index:6;contain:layout style}
+.bomb-badge{position:absolute;left:0;top:0;margin:-15px 0 0 -15px;width:30px;height:30px;border-radius:50%;
+  background:#fff4b8;border:3px solid #140a10;box-shadow:2px 2px 0 #140a10;display:grid;place-items:center;
+  font:800 15px/1 Fredoka,system-ui,sans-serif;color:#140a10;will-change:transform}
+.bomb-badge.is-waiting{background:#ffffff;opacity:.92}
+.bomb-badge.is-low{background:#ff5a3c;color:#fff;text-shadow:0 1px 0 #140a10}
+@media (prefers-reduced-motion:no-preference){.bomb-badge.is-low{animation:bomb-pulse 1s steps(2,end) infinite}}
+@keyframes bomb-pulse{50%{background:#ffd34d;color:#140a10}}
