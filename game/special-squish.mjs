@@ -105,7 +105,7 @@ function disposeDecor(mesh){
   if(!mesh)return;mesh.parent?.remove(mesh);mesh.geometry.dispose();mesh.material.dispose();
 }
 function cancelFree(s){
-  const j=s.userData.freeJob;if(!j)return;s.userData.freeJob=null;j.cancel?.();
+  const j=s.userData?.freeJob;if(!j)return;s.userData.freeJob=null;j.cancel?.();
 }
 /** Kurzes Aufpoppen / Ausblenden des Abzeichens, wenn Eis oder Schloss fällt. */
 function popFree(s,mesh){
@@ -119,12 +119,12 @@ function popFree(s,mesh){
       if(this.t0==null)this.t0=time;
       const t=Math.min(1,(time-this.t0)/.28),k=1+t*.45;
       mesh.scale.set(k,k,k);mesh.material.opacity=1-t;
-      if(t>=1){disposeDecor(mesh);if(s.userData.freeJob===job)s.userData.freeJob=null;return true;}
+      if(t>=1){disposeDecor(mesh);if(s.userData?.freeJob===job)s.userData.freeJob=null;return true;}
       return false;
     },
     cancel(){disposeDecor(mesh);}
   };
-  s.userData.freeJob=job;runtime.job(job);
+  (s.userData||={}).freeJob=job;runtime.job(job);
 }
 
 /** Squish auf seine Art stellen (null = normal). Wird nach jedem sync aufgerufen; billig, wenn sich nichts ändert. */
