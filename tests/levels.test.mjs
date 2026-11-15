@@ -4,7 +4,7 @@
 //   levels-001-100.json – launch-15 (tools/campaign/build100.mjs), die Datei, die das Spiel lädt
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import {
   validateLevel, replaySolution, createLevelRun, starThresholds, toolStars, decodeMove, applyLevelMove,
   addExtraMoves, useRocket, useWand, markToolUsed, starsOfRun, chapterOf, starGate, CHAPTER_SIZE,
@@ -123,11 +123,8 @@ test('launch-15: Werkzeug-Level genau laut Plan, Bosse 50 und 100 brauchen ein W
   assert.deepEqual(got, Object.fromEntries(Object.entries(TOOL_LEVELS).map(([k, v]) => [Number(k), v])));
   for (const b of BOSSES) assert.ok(L100[b - 1].tool && L100[b - 1].meta.role === 'boss', `Boss ${b}`);
   assert.ok(L100.slice(0, 14).every(l => !l.tool));
-  // nach jedem Werkzeug-Peak ein Erholungs-Level (ohne Werkzeug, leichter)
-  for (const l of L100.filter(l => l.tool && l.id < 100 && !L100[l.id].tool)) {
-    const next = L100[l.id];
-    assert.ok(next.meta.estimate == null || next.meta.estimate.D < l.meta.estimate.Dfelt + 12, `nach ${l.id}`);
-  }
+  // Werkzeug-Peak an Position 5 → Position 6 ist ein Erholungs-Level ohne Werkzeug (Peak an 9 → Meilenstein 10)
+  for (const l of L100.filter(l => l.tool && l.id % 10 === 5)) assert.ok(!L100[l.id].tool && L100[l.id].meta.role === 'relief', `nach ${l.id}`);
 });
 
 test('launch-15: Werkzeug-Level – ohne Werkzeug kein 3★ (Deckel), mit dem einen Werkzeug 2★', () => {
@@ -190,10 +187,15 @@ test('launch-15: Sterne-Schranken bleiben mit 2★-Deckel gut erreichbar', () =>
   }
 });
 
-test('launch-15: Kurve – 1–10 leicht, Meilensteine je Kapitel über dem Schnitt, sanft steigend', () => {
-  const D = l => l.meta.estimate?.Dfelt ?? l.meta.estimate?.D ?? null;
-  const ch = k => L100.filter(l => chapterOf(l.id) === k).map(D).filter(x => x != null);
-  const avg = a => a.reduce((s, x) => s + x, 0) / a.length;
-  for (let k = 3; k <= 10; k++) assert.ok(avg(ch(k)) >= avg(ch(k - 2)) - 3, `Kapitel ${k} nicht leichter als ${k - 2}`);
-  for (let k = 2; k <= 10; k++) { const m = D(L100[k * 10 - 1]); if (m != null) assert.ok(m >= avg(ch(k)) - 2, `Meilenstein ${k * 10}`); }
+test('launch-15: gemessene Kurve – 1–10 leicht, steigend, Meilensteine oben, Erholung nach Peaks', { skip: !existsSync(new URL('../tools/campaign/measure-001-100.json', import.meta.url)) }, () => {
+  const M = JSON.parse(readFileSync(new URL('../tools/campaign/measure-001-100.json', import.meta.url), 'utf8')).levels;
+  assert.equal(M.length, 100);
+  const felt = id => M[id - 1].felt, avg = a => a.reduce((s, x) => s + x, 0) / a.length;
+  const ch = k => Array.from({ length: 10 }, (_, i) => felt((k - 1) * 10 + i + 1));
+  assert.ok(M.slice(0, 10).every(r => r.cas >= 0.5), 'Kapitel 1: Gelegenheitsspieler gewinnt jedes Level in mind. 50 %');
+  for (let k = 2; k <= 10; k++) assert.ok(avg(ch(k)) >= avg(ch(k - 1)) - 3, `Kapitel ${k} nicht leichter als ${k - 1}`);
+  assert.ok(avg(ch(10)) > avg(ch(2)) + 15, 'Kurve steigt deutlich');
+  for (let k = 2; k <= 10; k++) assert.ok(felt(k * 10) >= avg(ch(k)), `Meilenstein ${k * 10} über dem Kapitelschnitt`);
+  for (let k = 2; k <= 10; k++) assert.ok(felt(k * 10 - 4) < felt(k * 10 - 6), `Erholung ${k * 10 - 4}: leichter als der Aufbau davor`);
+  for (const r of M.filter(r => r.tool && r.tool !== 'hint')) assert.ok(r.casTool >= 0.35, `Level ${r.id}: mit Werkzeug bequem (${r.casTool})`);
 });
