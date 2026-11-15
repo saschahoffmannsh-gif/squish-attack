@@ -243,7 +243,8 @@ export function metricsFrom(lv, board, vec, depth0, maxDepth, seed, { nModel = N
 export const Dat = (m, L, min, goals, window) => difficulty({ pCas: m.cas(L), pGood: m.good(L), pRand: m.rnd(L), min, greedyFails: !m.greedy(L), goals, window }, m.nModel || N_MODEL);
 const metricOpts = W => W > 24 ? { nModel: 24, nRand: 80 } : W > 16 ? { nModel: 36, nRand: 120 } : {};
 // Finale (Ziel 8 in ~40 Zügen): auch mit +3 bleibt es ein Brocken – Hauptsache ohne Werkzeug lösbar.
-const toolCasMin = (role, W) => role === 'boss' && W >= 36 ? 0.04 : role === 'boss' || W > 20 ? 0.15 : 0.2;
+// Späte Spitzen (Fenster ab 36 Zügen) sind lang: das Werkzeug muss spürbar helfen, aber keine 15 % Gelegenheits-Siege schaffen.
+const toolCasMin = (role, W) => W >= 36 ? (role === 'boss' ? 0.04 : 0.08) : role === 'boss' || W > 20 ? 0.15 : 0.2;
 
 
 function bestOf(cands) {
