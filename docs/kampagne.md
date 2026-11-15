@@ -458,3 +458,33 @@ Ziel: sehen, wie viele Hilfsmittel beim echten Spielen wann und wo gebraucht wer
 - Einmaliger Abenteuer-Reset (Saschas Entscheidung, `resetCampaignOnce`, Merker `squish-campaign-progress-reset = 'launch-14'`): beim ersten Laden von launch-14 werden auf jedem Gerät der Abenteuer-Fortschritt (freigeschaltete Level, Sterne, beste Züge, damit auch die Kapitel-Sperren) sowie vergebene und offene Geschenke gelöscht. So kommen die Level-Geschenke 3/6/10/20 beim Nachspielen wieder. Nicht angefasst: Anzahl im Werkzeug-Vorrat, Endlos-Spielstand, Highscores, Rangliste, Duell, Einstellungen, Werkzeug-Protokoll. Kein zweiter Reset nach Neuladen. Der Fortschritt liegt nur lokal (`squish-campaign-v1`), es gibt keinen Server-Abgleich, der ihn zurückholen könnte.
 - Werkzeug-Protokoll: Geschenke werden als `kind: 'gift'`, `source: 'gift'` mit `giftId` und dem Level des Geschenks protokolliert; Werbung hat `source: 'ad'`. `summarize` zählt `gifts` je Werkzeug und Level, die Statistik zeigt eine Kachel „Geschenke“ und 🎁 je Zelle.
 - Zurück zu launch-13: `TOOL_GIFTS = false`, `CAMPAIGN_RESET = null` (ein schon erfolgter Reset lässt sich nicht rückgängig machen).
+
+## 100 Level, Werkzeug-Level, neue Missionen (launch-15)
+
+**Datei:** Das Spiel lädt `levels/levels-001-100.json` (Version 2). `levels/levels-001-025.json` bleibt als Quelle der unveränderten v1-Level im Repo (wird vom Spiel nicht mehr geladen). Keine Fortschritts-Migration: Level-IDs bleiben gleich, der Fortschritt wurde in launch-14 ohnehin zurückgesetzt (`CAMPAIGN_RESET` bleibt `'launch-14'`, `TOOL_STOCK_RESET` bleibt `'launch-13'`).
+
+**Bauen und prüfen**
+
+- `tools/campaign/plan100.mjs` – Plan: Missionen je Level, Werkzeug-Level (`TOOL_LEVELS`), Bosse 50/100, Zielkurve `targetD`, Rollen, Generator-Hilfen (`GEN`: vorbereitete Ketten/Straßen/Paare, falscher Stein für den Zauberstab, zugestellte Einschub-Reihe für die Rakete).
+- `tools/campaign/evaluate100.mjs` – Kandidat (Level-Id, k) erzeugen und mit Solver + Spielermodell bewerten; alles reproduzierbar aus `(id, k)`.
+- `tools/campaign/tools-solver.mjs` – Solver mit einem Rakete-/Zauberstab-Einsatz (gleiche Regeln wie das Spiel), Spielermodell ab beliebigem Zustand.
+- `tools/campaign/build100.mjs` – Suche je Level parallel in Worker-Threads mit Zwischenstand je Level in `tools/campaign/.cache/build100/` (fortsetzbar, nicht im Repo), danach Zusammenbau: `node tools/campaign/build100.mjs --workers 6 [--only 26,27] [--assemble]`.
+- `tools/campaign/measure100.mjs` – misst alle 100 Level (D-Formel der Planungsseite, 160 Modellspiele je Spielertyp + 2500 Zufallsspiele), Zwischenstand in `.cache/measure100.jsonl`; Ergebnis `tools/campaign/measure-001-100.json`. Tabelle: `docs/levels-100.md` (`tools/campaign/report100.mjs`).
+
+**Level 1–25:** 1–10, 13, 14 unverändert. Mehr Züge (Brett gleich, Reserve-Steine verlängert): 11→7, 12→8, 16→9, 17→8, 18→7, 20→7, 24→9. Neu gebaut: 15 (erster Werkzeug-Peak, +3 Züge), 19 (leichter 4er), 21/22 (Kette 2, liegt sichtbar bereit), 23 (Doppelziel 4er + 5 Steine lösen), 25 (Zauberstab: ein falscher Stein in der Kette).
+
+**Werkzeug-Level** (`level.tool`): 15, 49, 65, 85, 100 = +3 Züge · 25, 50, 69, 89 = Zauberstab · 35, 55, 75, 95 = Rakete · 45, 59, 79, 99 = Hinweis. Bosse 50 (Zauberstab) und 100 (+3 Züge) brauchen ein Werkzeug.
+
+- Höchstens 2★ (`starsFor` deckelt bei gesetztem `level.tool`, auch ohne Werkzeug-Einsatz); Schwellen `toolStars(toolMin, limit, tool)`: 2★ bis zur Mitte zwischen Werkzeug-Optimum und Limit (bei +3: Limit + 3).
+- +3 / Rakete / Zauberstab: ohne Werkzeug im Limit **nicht lösbar** (Solver, vollständige Suche, `tests/levels.test.mjs`); mit dem einen Werkzeug gewinnt die gespeicherte Lösung (`solution`, z. B. `R12 ab…` = Rakete auf Reihe 1/Spalte 2, `W33=3` = Zauberstab macht aus dem Stein eine 3) mit 2★. Rakete/Zauberstab: mindestens 2 verschiedene Einsätze führen zum Ziel.
+- Hinweis-Level: lösbar, aber eng (Limit = Optimum oder +1, Gelegenheitsspieler ≤ 20 %); der Hinweis findet am Start einen Weg.
+- „Bequem mit dem Werkzeug“ = Gelegenheitsspieler gewinnt mit dem Schlüssel-Werkzeug am Start in ≥ 40 % (Modell).
+- UI: Kopf „LEVEL 35 · WERKZEUG“, 🔧 in der Levelauswahl mit 2 Sterne-Plätzen, Start-Notiz mit dem passenden Werkzeug, im Niederlage-Dialog „Tipp: … nimm die Rakete“, im Sieg-Dialog „2 ★ sind hier das Maximum“.
+
+**Neue Missionen** (Abschnitt 3): `empty` ab Level 31, `long` ab 41, `purge` ab 51, drei Ziele gleichzeitig ab 71 – jeweils als leichte Einführung an Kapitel-Position 1. Die Rakete kann „höchstens N Steine“ direkt erfüllen (Sieg ohne Zug).
+
+**Gefühlte Schwierigkeit:** D wie auf der Planungsseite. Für Werkzeug-Level „gefühlt“ = D nach dem Schlüssel-Werkzeug am Start (+3: Limit + 3; Hinweis: nach den 2 Zügen, die `findHint` zeigt; Rakete/Zauberstab: nach dem Einsatz aus der gespeicherten Lösung).
+
+**Kapitel und Sterne-Schranken:** 10 Kapitel à 10 Level, Schranke unverändert 18★ × (Kapitel − 1). Mit dem 2★-Deckel bleiben in den Kapiteln vor jeder Schranke ≥ 256 von 270 Sternen möglich; „überall 2★“ reicht immer.
+
+**Levelauswahl:** 100 Knöpfe in 10 Kapiteln, das nächste Level wird beim Öffnen in die Mitte gescrollt, Kapitel außerhalb des Bildes werden nicht gerendert (`content-visibility`).
