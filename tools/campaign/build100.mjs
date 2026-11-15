@@ -103,6 +103,13 @@ function assemble() {
       ...(b.hintMoves ? { hintMoves: b.hintMoves } : {}), ...(b.toolSolution ? { toolSolution: b.toolSolution } : {}),
       exact: !!b.exact, searched: { tried: st.tried, usable: st.ok },
     };
+    // Exakt gesuchte Level: Anzahl optimaler Lösungen mit dem vollständigen Solver festhalten
+    // (die Suche zählt bei vielen Lösungen nur eine Untergrenze).
+    if (lv.meta.exact) {
+      const s = solveLevel(lv, { maxLayer: 2_000_000 });
+      if (!s.solvable || !s.exact || s.minMoves !== b.min) throw new Error(`L${id}: Solver widerspricht`);
+      lv.meta.optimalSolutions = s.optimalSolutions ?? null;
+    }
     validateLevel(lv);
     if (!tool) {
       const rep = replaySolution(lv, lv.solution);

@@ -4,7 +4,8 @@
   "tool": "tools/campaign/build100.mjs",
   "plan": "tools/campaign/plan100.mjs",
   "reserve": 5,
-  "v1": "Level 1–25 aus Generator v1 (Saat 20261114)"
+  "v1": "Level 1–10 unverändert aus Generator v1 (Saat 20261114)",
+  "launch": "launch-18"
  },
  "count": 100,
  "levels": [
@@ -971,56 +972,61 @@
    "kind": "tile",
    "board": [
     [
-     3,
      null,
      null,
      1,
+     null,
      null
     ],
     [
-     null,
-     null,
      null,
      2,
-     null
-    ],
-    [
-     null,
-     3,
-     null,
+     1,
      null,
      null
     ],
     [
+     2,
      null,
      null,
+     1,
+     1
+    ],
+    [
      null,
      null,
-     3
+     1,
+     2,
+     1
     ],
     [
      1,
      null,
-     null,
-     null,
+     1,
+     1,
      null
     ]
    ],
    "sequence": [
-    1,
-    3,
+    2,
     2,
     1,
-    3,
-    1,
-    3,
-    1,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
     2,
     1,
     1,
+    1,
+    2,
     1
    ],
-   "moves": 7,
+   "moves": 12,
    "goals": [
     {
      "type": "tile",
@@ -1028,83 +1034,76 @@
     }
    ],
    "stars": {
-    "three": 3,
-    "two": 5
+    "three": 5,
+    "two": 9
    },
-   "solution": "fq",
+   "solution": "ahnh",
    "meta": {
-    "seed": 40296184,
-    "difficulty": 34,
-    "difficultyRaw": 20.36,
-    "minMoves": 2,
-    "slack": 5,
-    "optimalSolutions": 1,
-    "pathsAtMin": 400,
-    "pOptimal": 0.0025,
-    "statesExplored": 17,
-    "avgBranching": 20,
-    "winRate": {
-     "random": 0.055,
-     "casual": 0.66,
-     "good": 0.68
+    "generator": "build18",
+    "k": 135,
+    "seed": 1877406902,
+    "role": "relief",
+    "note": "Einstieg in längere Level, Erholung",
+    "minMoves": 4,
+    "slack": 8,
+    "toolMin": null,
+    "optimalSolutions": 421,
+    "pOptimal": 0.00264,
+    "target": 11,
+    "estimate": {
+     "D": 29,
+     "Dfelt": 29,
+     "casual": 0.681,
+     "good": 0.719,
+     "random": 0.171,
+     "greedy": false
     },
-    "withExtraMoves3": {
-     "casual": 0.89,
-     "good": 0.95
-    },
-    "expectedAttempts": {
-     "casual": 1.5,
-     "casualWithExtraMoves3": 1.1
-    },
-    "greedySolves": false,
-    "solverMs": 4,
-    "retuned": {
-     "from": 6,
-     "to": 7
-    },
-    "generator": "v1",
-    "role": "relief"
+    "exact": true,
+    "searched": {
+     "tried": 188,
+     "usable": 84
+    }
    }
   },
   {
    "id": 12,
    "chapter": 2,
-   "kind": "tile",
+   "kind": "make",
    "board": [
     [
      null,
-     null,
-     null,
-     null,
-     null
-    ],
-    [
-     null,
-     null,
-     null,
-     null,
-     2
-    ],
-    [
-     null,
      1,
-     null,
-     1,
-     null
-    ],
-    [
-     null,
      2,
      null,
-     null,
-     null
+     1
     ],
     [
      null,
      null,
      null,
+     2,
+     null
+    ],
+    [
+     1,
      null,
-     2
+     1,
+     2,
+     null
+    ],
+    [
+     2,
+     null,
+     1,
+     1,
+     null
+    ],
+    [
+     null,
+     1,
+     2,
+     1,
+     null
     ]
    ],
    "sequence": [
@@ -1112,156 +1111,158 @@
     1,
     1,
     2,
+    2,
     1,
+    2,
+    2,
+    2,
     1,
+    2,
+    2,
+    2,
     1,
     2,
     2,
-    2,
-    2,
-    2,
-    2
+    1
    ],
-   "moves": 8,
+   "moves": 12,
    "goals": [
     {
-     "type": "tile",
-     "value": 3
+     "type": "make",
+     "value": 3,
+     "count": 3
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 6
+    "three": 5,
+    "two": 9
    },
-   "solution": "chc",
+   "solution": "afrs",
    "meta": {
-    "seed": 36621768,
-    "difficulty": 44,
-    "difficultyRaw": 26.44,
-    "minMoves": 3,
-    "slack": 5,
-    "optimalSolutions": 6,
-    "pathsAtMin": 8000,
-    "pOptimal": 0.00075,
-    "statesExplored": 168,
-    "avgBranching": 20,
-    "winRate": {
-     "random": 0.03,
-     "casual": 0.49,
-     "good": 0.56
+    "generator": "build18",
+    "k": 21,
+    "seed": 4198228129,
+    "role": "relief",
+    "note": null,
+    "minMoves": 4,
+    "slack": 8,
+    "toolMin": null,
+    "optimalSolutions": 35,
+    "pOptimal": 0.00024,
+    "target": 15,
+    "estimate": {
+     "D": 16,
+     "Dfelt": 16,
+     "casual": 0.956,
+     "good": 0.994,
+     "random": 0.394,
+     "greedy": true
     },
-    "withExtraMoves3": {
-     "casual": 0.97,
-     "good": 0.97
-    },
-    "expectedAttempts": {
-     "casual": 2,
-     "casualWithExtraMoves3": 1
-    },
-    "greedySolves": false,
-    "solverMs": 26,
-    "retuned": {
-     "from": 6,
-     "to": 8
-    },
-    "generator": "v1",
-    "role": "relief"
+    "exact": true,
+    "searched": {
+     "tried": 30,
+     "usable": 22
+    }
    }
   },
   {
    "id": 13,
    "chapter": 2,
-   "kind": "street",
+   "kind": "clear",
    "board": [
     [
-     null,
-     null,
-     1,
-     null,
-     2
-    ],
-    [
-     null,
-     2,
-     null,
-     1,
-     2
-    ],
-    [
      1,
      null,
      2,
-     3,
-     3
+     2,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     1,
+     null
     ],
     [
      null,
      null,
      null,
      null,
-     1
+     null
     ],
     [
-     3,
      null,
      1,
      2,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
      1
     ]
    ],
    "sequence": [
     2,
     2,
+    2,
+    1,
+    2,
+    1,
+    2,
+    1,
+    2,
+    1,
+    2,
     1,
     1,
-    3,
-    3,
+    1,
+    1,
     2,
-    2,
-    3,
     1,
     2
    ],
-   "moves": 6,
+   "moves": 13,
    "goals": [
     {
-     "type": "street",
-     "count": 3
+     "type": "clear",
+     "tiles": 8
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 5
+    "three": 6,
+    "two": 10
    },
-   "solution": "cln",
+   "solution": "assms",
    "meta": {
-    "seed": 41539467,
-    "difficulty": 36,
-    "difficultyRaw": 21.46,
-    "minMoves": 3,
-    "slack": 3,
-    "optimalSolutions": 22,
-    "pathsAtMin": 5830,
-    "pOptimal": 0.00377,
-    "statesExplored": 167,
-    "avgBranching": 18.05,
-    "winRate": {
-     "random": 0.07,
-     "casual": 0.58,
-     "good": 0.93
+    "generator": "build18",
+    "k": 6,
+    "seed": 3045754689,
+    "role": "normal",
+    "note": null,
+    "minMoves": 5,
+    "slack": 8,
+    "toolMin": null,
+    "optimalSolutions": 3,
+    "pOptimal": 0.00000139,
+    "target": 20,
+    "estimate": {
+     "D": 20,
+     "Dfelt": 20,
+     "casual": 0.894,
+     "good": 0.988,
+     "random": 0.233,
+     "greedy": true
     },
-    "withExtraMoves3": {
-     "casual": 0.88,
-     "good": 0.99
-    },
-    "expectedAttempts": {
-     "casual": 1.7,
-     "casualWithExtraMoves3": 1.1
-    },
-    "greedySolves": false,
-    "solverMs": 30,
-    "generator": "v1",
-    "role": "normal"
+    "exact": true,
+    "searched": {
+     "tried": 30,
+     "usable": 26
+    }
    }
   },
   {
@@ -1271,429 +1272,223 @@
    "board": [
     [
      null,
-     3,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     2,
+     null,
      null,
      null,
      2
+    ],
+    [
+     2,
+     null,
+     null,
+     null,
+     null
     ],
     [
      null,
      null,
      null,
      2,
+     null
+    ],
+    [
+     null,
+     null,
+     1,
+     null,
      2
-    ],
-    [
-     null,
-     null,
-     null,
-     1,
-     null
-    ],
-    [
-     3,
-     null,
-     null,
-     null,
-     null
-    ],
-    [
-     null,
-     null,
-     1,
-     null,
-     null
     ]
    ],
    "sequence": [
-    3,
-    3,
     2,
     1,
     1,
-    3,
+    2,
+    2,
+    2,
+    2,
+    1,
+    1,
     1,
     1,
     2,
+    2,
     1,
-    1
+    1,
+    1,
+    1,
+    2
    ],
-   "moves": 6,
+   "moves": 13,
    "goals": [
     {
      "type": "street",
-     "count": 2
+     "count": 1
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 5
+    "three": 5,
+    "two": 9
    },
-   "solution": "esn",
+   "solution": "aooc",
    "meta": {
-    "seed": 40145723,
-    "difficulty": 39,
-    "difficultyRaw": 23.24,
-    "minMoves": 3,
-    "slack": 3,
-    "optimalSolutions": 8,
-    "pathsAtMin": 8000,
-    "pOptimal": 0.001,
-    "statesExplored": 170,
-    "avgBranching": 20,
-    "winRate": {
-     "random": 0.05,
-     "casual": 0.57,
-     "good": 0.94
+    "generator": "build18",
+    "k": 727,
+    "seed": 1331628557,
+    "role": "normal",
+    "note": null,
+    "minMoves": 4,
+    "slack": 9,
+    "toolMin": null,
+    "optimalSolutions": 432,
+    "pOptimal": 0.0027,
+    "target": 24,
+    "estimate": {
+     "D": 25,
+     "Dfelt": 25,
+     "casual": 0.644,
+     "good": 0.531,
+     "random": 0.15,
+     "greedy": true
     },
-    "withExtraMoves3": {
-     "casual": 0.8,
-     "good": 0.99
-    },
-    "expectedAttempts": {
-     "casual": 1.8,
-     "casualWithExtraMoves3": 1.3
-    },
-    "greedySolves": false,
-    "solverMs": 31,
-    "generator": "v1",
-    "role": "normal"
+    "exact": true,
+    "searched": {
+     "tried": 1046,
+     "usable": 90
+    }
    }
   },
   {
    "id": 15,
    "chapter": 2,
-   "kind": "clear",
+   "kind": "duo",
    "board": [
     [
-     1,
+     2,
      null,
      2,
      null,
-     null
-    ],
-    [
-     1,
-     null,
-     null,
-     1,
-     null
-    ],
-    [
-     2,
-     2,
-     null,
-     null,
-     null
-    ],
-    [
-     1,
-     1,
-     2,
-     1,
-     2
+     1
     ],
     [
      1,
      null,
      null,
      null,
-     2
-    ]
-   ],
-   "sequence": [
-    3,
-    3,
-    3,
-    1,
-    1,
-    3,
-    1,
-    1,
-    1
-   ],
-   "moves": 4,
-   "goals": [
-    {
-     "type": "clear",
-     "tiles": 8
-    }
-   ],
-   "stars": {
-    "three": 4,
-    "two": 4
-   },
-   "solution": "aarh",
-   "tool": "extraMoves",
-   "meta": {
-    "generator": "build100",
-    "k": 47,
-    "seed": 214677138,
-    "role": "tool",
-    "note": "1. Werkzeug-Spitze: +3 Züge",
-    "minMoves": 4,
-    "slack": 0,
-    "toolMin": 4,
-    "optimalSolutions": 582,
-    "pOptimal": 0.00802,
-    "target": 27,
-    "estimate": {
-     "D": 100,
-     "Dfelt": 30,
-     "casual": 0,
-     "good": 0,
-     "random": 0.0002,
-     "greedy": false,
-     "casualTool": 0.563,
-     "goodTool": 0.856
-    },
-    "searched": {
-     "tried": 48,
-     "usable": 1
-    },
-    "toolSolution": "aarh",
-    "untooled": {
-     "launch": "launch-16",
-     "from": {
-      "moves": 3,
-      "stars": {
-       "three": 4,
-       "two": 5
-      }
-     }
-    }
-   }
-  },
-  {
-   "id": 16,
-   "chapter": 2,
-   "kind": "make",
-   "board": [
+     3
+    ],
     [
-     null,
-     null,
-     null,
+     3,
+     1,
+     1,
+     3,
+     1
+    ],
+    [
+     1,
+     3,
+     1,
      null,
      null
     ],
     [
-     null,
-     null,
-     null,
-     null,
-     null
-    ],
-    [
-     2,
-     null,
-     null,
-     null,
-     null
-    ],
-    [
-     null,
      null,
      3,
      null,
-     null
-    ],
-    [
-     null,
-     2,
-     null,
-     1,
+     3,
      1
     ]
    ],
    "sequence": [
-    3,
     1,
     1,
-    3,
-    1,
-    3,
-    1,
-    2,
-    1,
-    3,
-    2,
-    2,
-    3,
-    2
-   ],
-   "moves": 9,
-   "goals": [
-    {
-     "type": "make",
-     "value": 3,
-     "count": 2
-    }
-   ],
-   "stars": {
-    "three": 5,
-    "two": 7
-   },
-   "solution": "dild",
-   "meta": {
-    "seed": 34396529,
-    "difficulty": 50,
-    "difficultyRaw": 30.27,
-    "minMoves": 4,
-    "slack": 5,
-    "optimalSolutions": 169,
-    "pathsAtMin": 159596,
-    "pOptimal": 0.00106,
-    "statesExplored": 2316,
-    "avgBranching": 19.96,
-    "winRate": {
-     "random": 0.015,
-     "casual": 0.36,
-     "good": 0.69
-    },
-    "withExtraMoves3": {
-     "casual": 0.86,
-     "good": 0.99
-    },
-    "expectedAttempts": {
-     "casual": 2.8,
-     "casualWithExtraMoves3": 1.2
-    },
-    "greedySolves": false,
-    "solverMs": 428,
-    "retuned": {
-     "from": 7,
-     "to": 9
-    },
-    "generator": "v1",
-    "role": "relief"
-   }
-  },
-  {
-   "id": 17,
-   "chapter": 2,
-   "kind": "score",
-   "board": [
-    [
-     null,
-     null,
-     null,
-     null,
-     null
-    ],
-    [
-     null,
-     1,
-     null,
-     null,
-     null
-    ],
-    [
-     2,
-     null,
-     null,
-     1,
-     null
-    ],
-    [
-     2,
-     null,
-     null,
-     null,
-     null
-    ],
-    [
-     null,
-     null,
-     null,
-     null,
-     null
-    ]
-   ],
-   "sequence": [
-    1,
-    2,
     2,
     2,
     1,
     1,
-    1,
-    1,
-    2,
     2,
     1,
     1,
     1
    ],
-   "moves": 8,
+   "moves": 5,
    "goals": [
+    {
+     "type": "clear",
+     "tiles": 12
+    },
     {
      "type": "score",
      "points": 160
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 6
+    "three": 5,
+    "two": 5
    },
-   "solution": "fgg",
+   "solution": "aabsh",
+   "tool": "extraMoves",
    "meta": {
-    "seed": 41658252,
-    "difficulty": 45,
-    "difficultyRaw": 27.15,
-    "minMoves": 3,
-    "slack": 5,
-    "optimalSolutions": 6,
-    "pathsAtMin": 8000,
-    "pOptimal": 0.00075,
-    "statesExplored": 270,
-    "avgBranching": 20,
-    "winRate": {
-     "random": 0.025,
-     "casual": 0.44,
-     "good": 0.59
+    "generator": "build18",
+    "k": 57,
+    "seed": 985594244,
+    "role": "tool",
+    "note": "1. Werkzeug-Spitze: +3 Züge",
+    "minMoves": 5,
+    "slack": 0,
+    "toolMin": 5,
+    "optimalSolutions": 2023,
+    "pOptimal": 0.000988,
+    "target": 27,
+    "estimate": {
+     "D": 76,
+     "Dfelt": 34,
+     "casual": 0.075,
+     "good": 0.106,
+     "random": 0.0012,
+     "greedy": true,
+     "casualTool": 0.594,
+     "goodTool": 0.831
     },
-    "withExtraMoves3": {
-     "casual": 0.84,
-     "good": 0.91
-    },
-    "expectedAttempts": {
-     "casual": 2.3,
-     "casualWithExtraMoves3": 1.2
-    },
-    "greedySolves": false,
-    "solverMs": 45,
-    "retuned": {
-     "from": 6,
-     "to": 8
-    },
-    "generator": "v1",
-    "role": "normal"
+    "toolSolution": "aabsh",
+    "exact": true,
+    "searched": {
+     "tried": 95,
+     "usable": 14
+    }
    }
   },
   {
-   "id": 18,
+   "id": 16,
    "chapter": 2,
    "kind": "score",
    "board": [
     [
      null,
-     2,
      null,
+     null,
+     null,
+     2
+    ],
+    [
+     3,
+     null,
+     1,
      1,
      null
     ],
     [
      null,
-     null,
-     1,
-     1,
-     null
-    ],
-    [
-     1,
+     3,
      null,
      null,
-     2,
      null
     ],
     [
@@ -1704,222 +1499,338 @@
      1
     ],
     [
-     3,
      1,
      null,
+     null,
+     1,
+     1
+    ]
+   ],
+   "sequence": [
+    1,
+    1,
+    2,
+    1,
+    2,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    2,
+    2,
+    1,
+    1,
+    2,
+    1
+   ],
+   "moves": 12,
+   "goals": [
+    {
+     "type": "score",
+     "points": 180
+    }
+   ],
+   "stars": {
+    "three": 5,
+    "two": 9
+   },
+   "solution": "aadn",
+   "meta": {
+    "generator": "build18",
+    "k": 78,
+    "seed": 873674718,
+    "role": "relief",
+    "note": "Erholung",
+    "minMoves": 4,
+    "slack": 8,
+    "toolMin": null,
+    "optimalSolutions": 1732,
+    "pOptimal": 0.0109,
+    "target": 13,
+    "estimate": {
+     "D": 14,
+     "Dfelt": 14,
+     "casual": 1,
+     "good": 1,
+     "random": 0.707,
+     "greedy": true
+    },
+    "exact": true,
+    "searched": {
+     "tried": 79,
+     "usable": 8
+    }
+   }
+  },
+  {
+   "id": 17,
+   "chapter": 2,
+   "kind": "tile",
+   "board": [
+    [
+     3,
+     2,
+     null,
+     3,
+     null
+    ],
+    [
+     null,
+     4,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     4
+    ],
+    [
+     null,
+     3,
+     null,
+     null,
+     null
+    ],
+    [
+     2,
+     null,
+     3,
      null,
      null
     ]
    ],
    "sequence": [
     2,
-    1,
-    1,
     3,
-    1,
+    3,
+    2,
+    4,
+    3,
+    2,
     2,
     3,
     3,
     3,
-    1,
     3,
-    3
+    3,
+    3,
+    3,
+    3,
+    3,
+    4,
+    2
    ],
-   "moves": 7,
+   "moves": 14,
    "goals": [
     {
-     "type": "score",
-     "points": 220
+     "type": "tile",
+     "value": 5
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 6
+    "three": 6,
+    "two": 10
    },
-   "solution": "icb",
+   "solution": "aamrr",
    "meta": {
-    "seed": 37667076,
-    "difficulty": 51,
-    "difficultyRaw": 30.51,
-    "minMoves": 3,
-    "slack": 4,
-    "optimalSolutions": 1,
-    "pathsAtMin": 7990,
-    "pOptimal": 0.000125,
-    "statesExplored": 304,
-    "avgBranching": 19.97,
-    "winRate": {
-     "random": 0.005,
-     "casual": 0.4,
-     "good": 0.85
+    "generator": "build18",
+    "k": 827,
+    "seed": 473266360,
+    "role": "normal",
+    "note": null,
+    "minMoves": 5,
+    "slack": 9,
+    "toolMin": null,
+    "optimalSolutions": 4015,
+    "pOptimal": 0.00112,
+    "target": 21,
+    "estimate": {
+     "D": 22,
+     "Dfelt": 22,
+     "casual": 0.756,
+     "good": 0.844,
+     "random": 0.204,
+     "greedy": true
     },
-    "withExtraMoves3": {
-     "casual": 0.92,
-     "good": 1
+    "exact": true,
+    "searched": {
+     "tried": 1500,
+     "usable": 41
+    }
+   }
+  },
+  {
+   "id": 18,
+   "chapter": 2,
+   "kind": "make",
+   "board": [
+    [
+     2,
+     1,
+     null,
+     2,
+     null
+    ],
+    [
+     1,
+     1,
+     2,
+     null,
+     null
+    ],
+    [
+     2,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     1,
+     null,
+     null,
+     1,
+     1
+    ],
+    [
+     2,
+     null,
+     null,
+     1,
+     null
+    ]
+   ],
+   "sequence": [
+    1,
+    2,
+    2,
+    2,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    2,
+    2,
+    1
+   ],
+   "moves": 14,
+   "goals": [
+    {
+     "type": "make",
+     "value": 3,
+     "count": 4
+    }
+   ],
+   "stars": {
+    "three": 6,
+    "two": 10
+   },
+   "solution": "fihrq",
+   "meta": {
+    "generator": "build18",
+    "k": 31,
+    "seed": 698684633,
+    "role": "normal",
+    "note": null,
+    "minMoves": 5,
+    "slack": 9,
+    "toolMin": null,
+    "optimalSolutions": 177,
+    "pOptimal": 0.00000165,
+    "target": 26,
+    "estimate": {
+     "D": 26,
+     "Dfelt": 26,
+     "casual": 0.581,
+     "good": 0.9,
+     "random": 0.11,
+     "greedy": true
     },
-    "expectedAttempts": {
-     "casual": 2.5,
-     "casualWithExtraMoves3": 1.1
-    },
-    "greedySolves": false,
-    "solverMs": 53,
-    "retuned": {
-     "from": 6,
-     "to": 7
-    },
-    "generator": "v1",
-    "role": "normal"
+    "exact": true,
+    "searched": {
+     "tried": 52,
+     "usable": 52
+    }
    }
   },
   {
    "id": 19,
    "chapter": 2,
-   "kind": "tile",
-   "board": [
-    [
-     null,
-     2,
-     null,
-     2,
-     null
-    ],
-    [
-     null,
-     3,
-     null,
-     1,
-     3
-    ],
-    [
-     null,
-     1,
-     2,
-     null,
-     null
-    ],
-    [
-     null,
-     null,
-     null,
-     2,
-     null
-    ],
-    [
-     null,
-     2,
-     1,
-     2,
-     2
-    ]
-   ],
-   "sequence": [
-    1,
-    1,
-    1,
-    2,
-    1,
-    2,
-    1,
-    1,
-    2,
-    2,
-    1,
-    2
-   ],
-   "moves": 7,
-   "goals": [
-    {
-     "type": "tile",
-     "value": 4
-    }
-   ],
-   "stars": {
-    "three": 5,
-    "two": 6
-   },
-   "solution": "aaam",
-   "meta": {
-    "generator": "build100",
-    "k": 28,
-    "seed": 1328588197,
-    "role": "normal",
-    "note": "leichter 4er",
-    "minMoves": 4,
-    "slack": 3,
-    "toolMin": null,
-    "optimalSolutions": 5097,
-    "pOptimal": 0.0372,
-    "target": 28,
-    "estimate": {
-     "D": 29,
-     "Dfelt": 29,
-     "casual": 0.706,
-     "good": 0.731,
-     "random": 0.101,
-     "greedy": false
-    },
-    "searched": {
-     "tried": 30,
-     "usable": 24
-    }
-   }
-  },
-  {
-   "id": 20,
-   "chapter": 2,
    "kind": "street",
    "board": [
     [
-     null,
-     null,
      4,
      1,
-     null
-    ],
-    [
+     null,
      1,
-     null,
-     4,
-     null,
-     null
-    ],
-    [
-     5,
-     2,
-     null,
-     null,
-     null
-    ],
-    [
-     null,
-     null,
-     4,
-     4,
      1
     ],
     [
+     null,
+     null,
+     null,
      2,
+     null
+    ],
+    [
      null,
      null,
      null,
-     3
+     null,
+     null
+    ],
+    [
+     4,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     1,
+     null,
+     null,
+     null
     ]
    ],
    "sequence": [
+    1,
+    1,
+    2,
     2,
     1,
     1,
-    3,
-    4,
+    2,
     1,
-    3,
     4,
-    1,
+    2,
+    3,
+    3,
+    2,
+    4,
+    2,
+    4,
+    4,
     3,
     2,
     1
    ],
-   "moves": 7,
+   "moves": 15,
    "goals": [
     {
      "type": "street",
@@ -1927,42 +1838,144 @@
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 6
+    "three": 9,
+    "two": 12
    },
-   "solution": "eej",
+   "solution": "rrbssmss",
    "meta": {
-    "seed": 28679011,
-    "difficulty": 61,
-    "difficultyRaw": 36.65,
-    "minMoves": 3,
-    "slack": 4,
-    "optimalSolutions": 2,
-    "pathsAtMin": 7956,
-    "pOptimal": 0.000251,
-    "statesExplored": 300,
-    "avgBranching": 19.91,
-    "winRate": {
-     "random": 0,
-     "casual": 0.24,
-     "good": 0.36
+    "generator": "build18",
+    "k": 136,
+    "seed": 207178993,
+    "role": "normal",
+    "note": null,
+    "minMoves": 8,
+    "slack": 7,
+    "toolMin": null,
+    "optimalSolutions": null,
+    "pOptimal": null,
+    "target": 28,
+    "estimate": {
+     "D": 33,
+     "Dfelt": 33,
+     "casual": 0.838,
+     "good": 0.95,
+     "random": 0.119,
+     "greedy": false
     },
-    "withExtraMoves3": {
-     "casual": 0.69,
-     "good": 0.83
+    "exact": false,
+    "searched": {
+     "tried": 163,
+     "usable": 67
+    }
+   }
+  },
+  {
+   "id": 20,
+   "chapter": 2,
+   "kind": "duo",
+   "board": [
+    [
+     null,
+     null,
+     null,
+     null,
+     1
+    ],
+    [
+     2,
+     2,
+     1,
+     2,
+     null
+    ],
+    [
+     2,
+     null,
+     1,
+     null,
+     1
+    ],
+    [
+     null,
+     null,
+     5,
+     1,
+     null
+    ],
+    [
+     null,
+     null,
+     1,
+     3,
+     3
+    ]
+   ],
+   "sequence": [
+    2,
+    2,
+    1,
+    1,
+    1,
+    2,
+    3,
+    2,
+    2,
+    1,
+    3,
+    3,
+    2,
+    3,
+    2,
+    2,
+    1,
+    2,
+    1,
+    2,
+    2,
+    3,
+    1
+   ],
+   "moves": 18,
+   "goals": [
+    {
+     "type": "tile",
+     "value": 5
     },
-    "expectedAttempts": {
-     "casual": 4.1,
-     "casualWithExtraMoves3": 1.5
+    {
+     "type": "clear",
+     "tiles": 8
+    }
+   ],
+   "stars": {
+    "three": 13,
+    "two": 16
+   },
+   "solution": "npmtbnocqqod",
+   "meta": {
+    "generator": "build18",
+    "k": 60,
+    "seed": 338798656,
+    "role": "milestone",
+    "note": "Meilenstein: ein 5er liegt schon auf dem Brett, dazu räumen",
+    "minMoves": 12,
+    "slack": 6,
+    "toolMin": null,
+    "optimalSolutions": null,
+    "pOptimal": null,
+    "target": 39,
+    "estimate": {
+     "D": 53,
+     "Dfelt": 53,
+     "casual": 0.417,
+     "good": 0.361,
+     "random": 0.05,
+     "greedy": true
     },
-    "greedySolves": false,
-    "solverMs": 50,
-    "retuned": {
-     "from": 6,
-     "to": 7
-    },
-    "generator": "v1",
-    "role": "milestone"
+    "exact": false,
+    "searched": {
+     "tried": 77,
+     "usable": 36
+    }
    }
   },
   {
@@ -1972,29 +1985,8 @@
    "board": [
     [
      null,
-     1,
-     null,
-     null,
-     2
-    ],
-    [
-     null,
-     null,
-     1,
      2,
-     null
-    ],
-    [
-     null,
      1,
-     null,
-     null,
-     2
-    ],
-    [
-     null,
-     null,
-     null,
      null,
      null
     ],
@@ -2002,58 +1994,86 @@
      null,
      null,
      null,
+     1,
+     3
+    ],
+    [
      2,
+     3,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     1,
+     null,
+     2,
+     2
+    ],
+    [
+     1,
+     3,
+     null,
+     1,
      1
     ]
    ],
    "sequence": [
     2,
-    2,
     1,
-    2,
     1,
-    2,
     1,
     1,
     1,
     2,
-    1
+    1,
+    1,
+    1,
+    1,
+    2,
+    2,
+    1,
+    2,
+    2,
+    2
    ],
-   "moves": 6,
+   "moves": 12,
    "goals": [
     {
      "type": "clear",
-     "tiles": 6
+     "tiles": 10
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 5
+    "three": 5,
+    "two": 9
    },
-   "solution": "aaq",
+   "solution": "dhjm",
    "meta": {
-    "generator": "build100",
-    "k": 6,
-    "seed": 3020731737,
+    "generator": "build18",
+    "k": 5,
+    "seed": 374673162,
     "role": "relief",
     "note": "Erholung (statt Kette)",
-    "minMoves": 3,
-    "slack": 3,
+    "minMoves": 4,
+    "slack": 8,
     "toolMin": null,
-    "optimalSolutions": 89,
-    "pOptimal": 0.0111,
+    "optimalSolutions": 3,
+    "pOptimal": 0.0000206,
     "target": 15,
     "estimate": {
      "D": 15,
      "Dfelt": 15,
-     "casual": 0.906,
+     "casual": 0.975,
      "good": 1,
-     "random": 0.0788,
+     "random": 0.447,
      "greedy": true
     },
+    "exact": true,
     "searched": {
      "tried": 30,
-     "via": "build100.mjs"
+     "usable": 14
     }
    }
   },
@@ -2064,34 +2084,34 @@
    "board": [
     [
      null,
-     2,
      null,
+     2,
      null,
      null
     ],
     [
      null,
+     null,
+     null,
+     1,
+     null
+    ],
+    [
+     1,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     1,
      3,
      null,
      null,
-     4
+     3
     ],
     [
      null,
-     null,
-     1,
-     null,
-     null
-    ],
-    [
-     null,
-     1,
-     null,
-     null,
-     1
-    ],
-    [
-     4,
      null,
      null,
      null,
@@ -2099,53 +2119,60 @@
     ]
    ],
    "sequence": [
+    1,
+    3,
     2,
+    1,
+    2,
+    4,
+    4,
+    1,
     2,
     1,
     2,
     3,
     1,
-    1,
-    3,
-    3,
-    1,
+    2,
+    4,
+    2,
     1
    ],
-   "moves": 6,
+   "moves": 12,
    "goals": [
     {
      "type": "score",
-     "points": 140
+     "points": 220
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 5
+    "three": 6,
+    "two": 9
    },
-   "solution": "bgg",
+   "solution": "ajkii",
    "meta": {
-    "generator": "build100",
-    "k": 6,
-    "seed": 3020123108,
+    "generator": "build18",
+    "k": 43,
+    "seed": 2451489145,
     "role": "relief",
     "note": "Erholung (statt Kette)",
-    "minMoves": 3,
-    "slack": 3,
+    "minMoves": 5,
+    "slack": 7,
     "toolMin": null,
-    "optimalSolutions": 7,
-    "pOptimal": 0.000876,
+    "optimalSolutions": 1477,
+    "pOptimal": 0.00003,
     "target": 20,
     "estimate": {
-     "D": 20,
-     "Dfelt": 20,
-     "casual": 0.769,
-     "good": 0.981,
-     "random": 0.0436,
+     "D": 22,
+     "Dfelt": 22,
+     "casual": 0.944,
+     "good": 1,
+     "random": 0.146,
      "greedy": true
     },
+    "exact": true,
     "searched": {
-     "tried": 30,
-     "via": "build100.mjs"
+     "tried": 44,
+     "usable": 11
     }
    }
   },
@@ -2155,54 +2182,65 @@
    "kind": "duo",
    "board": [
     [
+     null,
+     null,
+     null,
+     null,
+     2
+    ],
+    [
      1,
      null,
      null,
-     3,
-     2
+     null,
+     1
+    ],
+    [
+     2,
+     1,
+     null,
+     null,
+     1
     ],
     [
      null,
      1,
-     3,
-     2,
+     null,
+     null,
      null
     ],
     [
-     3,
-     null,
      null,
      2,
-     2
-    ],
-    [
      null,
-     null,
-     null,
-     null,
+     2,
      null
-    ],
-    [
-     null,
-     3,
-     3,
-     1,
-     2
     ]
    ],
    "sequence": [
+    3,
     2,
+    1,
+    1,
+    1,
     2,
+    3,
+    3,
+    2,
+    3,
+    1,
     1,
     2,
     2,
-    2,
+    3,
     2,
     1,
+    1,
+    2,
     1,
     2
    ],
-   "moves": 5,
+   "moves": 16,
    "goals": [
     {
      "type": "tile",
@@ -2210,37 +2248,38 @@
     },
     {
      "type": "clear",
-     "tiles": 5
+     "tiles": 6
     }
    ],
    "stars": {
-    "three": 3,
-    "two": 4
+    "three": 9,
+    "two": 13
    },
-   "solution": "ab",
+   "solution": "tmgfhhhh",
    "meta": {
-    "generator": "build100",
-    "k": 15,
-    "seed": 1142871386,
+    "generator": "build18",
+    "k": 168,
+    "seed": 3577292845,
     "role": "normal",
     "note": "Doppelziel mit bekannten Typen",
-    "minMoves": 2,
-    "slack": 3,
+    "minMoves": 8,
+    "slack": 8,
     "toolMin": null,
-    "optimalSolutions": 4,
-    "pOptimal": 0.0103,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 24,
     "estimate": {
-     "D": 25,
-     "Dfelt": 25,
-     "casual": 0.65,
-     "good": 0.681,
-     "random": 0.0908,
+     "D": 27,
+     "Dfelt": 27,
+     "casual": 0.975,
+     "good": 0.994,
+     "random": 0.32,
      "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "usable": 24
+     "tried": 205,
+     "usable": 38
     }
    }
   },
@@ -2251,22 +2290,15 @@
    "board": [
     [
      null,
-     3,
      null,
-     null,
-     1
-    ],
-    [
-     null,
-     null,
-     null,
-     null,
-     null
-    ],
-    [
-     null,
-     null,
+     4,
      1,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
      null,
      null
     ],
@@ -2275,333 +2307,39 @@
      null,
      null,
      null,
-     4
+     null
     ],
     [
-     null,
      4,
      null,
      null,
+     null,
+     null
+    ],
+    [
+     1,
+     null,
+     3,
+     2,
      null
     ]
    ],
    "sequence": [
     1,
-    1,
-    2,
-    1,
-    1,
-    3,
-    3,
-    1,
-    2,
-    2,
-    3,
-    1,
-    2,
-    3
-   ],
-   "moves": 9,
-   "goals": [
-    {
-     "type": "score",
-     "points": 120
-    },
-    {
-     "type": "clear",
-     "tiles": 5
-    }
-   ],
-   "stars": {
-    "three": 5,
-    "two": 7
-   },
-   "solution": "qqqh",
-   "meta": {
-    "seed": 29027447,
-    "difficulty": 72,
-    "difficultyRaw": 43.19,
-    "minMoves": 4,
-    "slack": 5,
-    "optimalSolutions": 1,
-    "pathsAtMin": 159838,
-    "pOptimal": 0.00000626,
-    "statesExplored": 2127,
-    "avgBranching": 19.98,
-    "winRate": {
-     "random": 0,
-     "casual": 0.27,
-     "good": 0.37
-    },
-    "withExtraMoves3": {
-     "casual": 0.81,
-     "good": 0.91
-    },
-    "expectedAttempts": {
-     "casual": 3.7,
-     "casualWithExtraMoves3": 1.2
-    },
-    "greedySolves": false,
-    "solverMs": 364,
-    "retuned": {
-     "from": 7,
-     "to": 9
-    },
-    "generator": "v1",
-    "role": "normal"
-   }
-  },
-  {
-   "id": 25,
-   "chapter": 3,
-   "kind": "tile",
-   "board": [
-    [
-     null,
-     2,
-     null,
-     1,
-     null
-    ],
-    [
-     null,
-     1,
-     2,
-     1,
-     2
-    ],
-    [
-     null,
-     null,
-     1,
-     null,
-     1
-    ],
-    [
-     2,
-     null,
-     null,
-     null,
-     null
-    ],
-    [
-     null,
-     null,
-     null,
-     null,
-     1
-    ]
-   ],
-   "sequence": [
-    2,
-    1,
-    3,
-    2,
-    1,
-    3,
-    1,
-    2,
-    3,
-    3
-   ],
-   "moves": 5,
-   "goals": [
-    {
-     "type": "tile",
-     "value": 5
-    }
-   ],
-   "stars": {
-    "three": 5,
-    "two": 5
-   },
-   "solution": "qrbbb",
-   "tool": "wand",
-   "meta": {
-    "generator": "build100",
-    "k": 91,
-    "seed": 1019558240,
-    "role": "tool",
-    "note": "Werkzeug-Spitze: Zauberstab (statt Kette)",
-    "minMoves": 5,
-    "slack": 0,
-    "toolMin": 2,
-    "optimalSolutions": null,
-    "pOptimal": null,
-    "target": 31,
-    "estimate": {
-     "D": 100,
-     "Dfelt": 32,
-     "casual": 0,
-     "good": 0,
-     "random": 0.0002,
-     "greedy": false,
-     "casualTool": 0.669,
-     "goodTool": 0.319,
-     "goodStarts": 7
-    },
-    "searched": {
-     "tried": 92,
-     "via": "build100.mjs"
-    },
-    "toolSolution": "W14=4 ac",
-    "untooled": {
-     "launch": "launch-16",
-     "from": {
-      "moves": 3,
-      "stars": {
-       "three": 2,
-       "two": 3
-      }
-     }
-    }
-   }
-  },
-  {
-   "id": 26,
-   "chapter": 3,
-   "kind": "tile",
-   "board": [
-    [
-     3,
-     3,
-     null,
-     1,
-     null
-    ],
-    [
-     null,
-     null,
-     3,
-     null,
-     null
-    ],
-    [
-     3,
-     null,
-     2,
-     null,
-     null
-    ],
-    [
-     2,
-     null,
-     null,
-     1,
-     null
-    ],
-    [
-     2,
-     null,
-     3,
-     2,
-     2
-    ]
-   ],
-   "sequence": [
-    2,
-    1,
-    2,
-    1,
-    1,
-    1,
-    1,
-    1,
-    2,
-    1,
-    2,
-    2,
-    1
-   ],
-   "moves": 8,
-   "goals": [
-    {
-     "type": "tile",
-     "value": 4
-    }
-   ],
-   "stars": {
-    "three": 3,
-    "two": 6
-   },
-   "solution": "kp",
-   "meta": {
-    "generator": "build100",
-    "k": 56,
-    "seed": 2645435510,
-    "role": "relief",
-    "note": "Erholung",
-    "minMoves": 2,
-    "slack": 6,
-    "toolMin": null,
-    "optimalSolutions": 5,
-    "pOptimal": 0.0128,
-    "target": 18,
-    "estimate": {
-     "D": 17,
-     "Dfelt": 17,
-     "casual": 0.794,
-     "good": 0.881,
-     "random": 0.224,
-     "greedy": false
-    },
-    "searched": {
-     "tried": 57,
-     "usable": 26
-    }
-   }
-  },
-  {
-   "id": 27,
-   "chapter": 3,
-   "kind": "street",
-   "board": [
-    [
-     null,
-     null,
-     null,
-     null,
-     2
-    ],
-    [
-     null,
-     1,
-     3,
-     1,
-     2
-    ],
-    [
-     1,
-     null,
-     null,
-     null,
-     1
-    ],
-    [
-     null,
-     1,
-     null,
-     null,
-     null
-    ],
-    [
-     null,
-     null,
-     2,
-     null,
-     1
-    ]
-   ],
-   "sequence": [
     3,
     3,
     2,
     1,
-    3,
+    1,
     1,
     2,
-    1,
+    2,
     3,
+    2,
+    1,
+    1,
+    2,
+    2,
     1,
     2,
     2,
@@ -2609,197 +2347,7 @@
     1,
     4
    ],
-   "moves": 10,
-   "goals": [
-    {
-     "type": "street",
-     "count": 3
-    }
-   ],
-   "stars": {
-    "three": 5,
-    "two": 8
-   },
-   "solution": "aasr",
-   "meta": {
-    "generator": "build100",
-    "k": 22,
-    "seed": 2573174823,
-    "role": "normal",
-    "note": null,
-    "minMoves": 4,
-    "slack": 6,
-    "toolMin": null,
-    "optimalSolutions": 109,
-    "pOptimal": 0.000751,
-    "target": 26,
-    "estimate": {
-     "D": 27,
-     "Dfelt": 27,
-     "casual": 0.569,
-     "good": 0.956,
-     "random": 0.0632,
-     "greedy": true
-    },
-    "searched": {
-     "tried": 30,
-     "usable": 12
-    }
-   }
-  },
-  {
-   "id": 28,
-   "chapter": 3,
-   "kind": "make",
-   "board": [
-    [
-     null,
-     2,
-     null,
-     null,
-     1
-    ],
-    [
-     null,
-     2,
-     1,
-     1,
-     null
-    ],
-    [
-     2,
-     null,
-     1,
-     null,
-     null
-    ],
-    [
-     2,
-     null,
-     2,
-     2,
-     null
-    ],
-    [
-     null,
-     1,
-     null,
-     1,
-     null
-    ]
-   ],
-   "sequence": [
-    2,
-    2,
-    1,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    1,
-    2,
-    1,
-    2,
-    1
-   ],
-   "moves": 9,
-   "goals": [
-    {
-     "type": "make",
-     "value": 3,
-     "count": 4
-    }
-   ],
-   "stars": {
-    "three": 5,
-    "two": 7
-   },
-   "solution": "dgqh",
-   "meta": {
-    "generator": "build100",
-    "k": 147,
-    "seed": 3631341559,
-    "role": "normal",
-    "note": "(statt Kette)",
-    "minMoves": 4,
-    "slack": 5,
-    "toolMin": null,
-    "optimalSolutions": 2,
-    "pOptimal": 0.0000126,
-    "target": 31,
-    "estimate": {
-     "D": 30,
-     "Dfelt": 30,
-     "casual": 0.531,
-     "good": 0.762,
-     "random": 0.068,
-     "greedy": true
-    },
-    "searched": {
-     "tried": 148,
-     "via": "build100.mjs"
-    }
-   }
-  },
-  {
-   "id": 29,
-   "chapter": 3,
-   "kind": "duo",
-   "board": [
-    [
-     4,
-     null,
-     null,
-     null,
-     null
-    ],
-    [
-     3,
-     null,
-     null,
-     1,
-     5
-    ],
-    [
-     null,
-     2,
-     null,
-     null,
-     null
-    ],
-    [
-     null,
-     2,
-     null,
-     null,
-     null
-    ],
-    [
-     3,
-     null,
-     3,
-     5,
-     null
-    ]
-   ],
-   "sequence": [
-    1,
-    1,
-    2,
-    1,
-    1,
-    4,
-    1,
-    1,
-    1,
-    2,
-    3,
-    2,
-    1
-   ],
-   "moves": 8,
+   "moves": 16,
    "goals": [
     {
      "type": "score",
@@ -2811,33 +2359,560 @@
     }
    ],
    "stars": {
-    "three": 5,
-    "two": 7
+    "three": 6,
+    "two": 11
    },
-   "solution": "fjlg",
+   "solution": "eddlm",
    "meta": {
-    "generator": "build100",
-    "k": 0,
-    "seed": 29000087,
+    "generator": "build18",
+    "k": 57,
+    "seed": 993275425,
     "role": "normal",
     "note": null,
-    "minMoves": 4,
-    "slack": 4,
+    "minMoves": 5,
+    "slack": 11,
     "toolMin": null,
-    "optimalSolutions": 160,
-    "pOptimal": 0.00102,
-    "target": 33,
+    "optimalSolutions": 58,
+    "pOptimal": 0.0000954,
+    "target": 29,
     "estimate": {
-     "D": 33,
-     "Dfelt": 33,
-     "casual": 0.613,
-     "good": 0.869,
-     "random": 0.0332,
+     "D": 18,
+     "Dfelt": 18,
+     "casual": 1,
+     "good": 1,
+     "random": 0.623,
      "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "usable": 25
+     "tried": 872,
+     "usable": 22
+    }
+   }
+  },
+  {
+   "id": 25,
+   "chapter": 3,
+   "kind": "tile",
+   "board": [
+    [
+     null,
+     2,
+     null,
+     3,
+     1
+    ],
+    [
+     3,
+     null,
+     null,
+     1,
+     2
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     2,
+     2,
+     null,
+     1,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     1,
+     null
+    ]
+   ],
+   "sequence": [
+    1,
+    2,
+    1,
+    1,
+    2,
+    2,
+    1,
+    1,
+    3,
+    3,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    2,
+    2,
+    1,
+    1,
+    2
+   ],
+   "moves": 16,
+   "goals": [
+    {
+     "type": "tile",
+     "value": 5
+    }
+   ],
+   "stars": {
+    "three": 16,
+    "two": 16
+   },
+   "solution": "sibrrtatrmgsatmm",
+   "tool": "wand",
+   "meta": {
+    "generator": "build18",
+    "k": 46,
+    "seed": 1821025605,
+    "role": "tool",
+    "note": "Werkzeug-Spitze: Zauberstab",
+    "minMoves": 16,
+    "slack": 0,
+    "toolMin": 2,
+    "optimalSolutions": null,
+    "pOptimal": null,
+    "target": 31,
+    "estimate": {
+     "D": 100,
+     "Dfelt": 29,
+     "casual": 0.056,
+     "good": 0.05,
+     "random": 0.0036,
+     "greedy": false,
+     "casualTool": 0.456,
+     "goodTool": 0.456,
+     "goodStarts": 8
+    },
+    "toolSolution": "W01=4 as",
+    "exact": false,
+    "searched": {
+     "tried": 47,
+     "usable": 7
+    }
+   }
+  },
+  {
+   "id": 26,
+   "chapter": 3,
+   "kind": "tile",
+   "board": [
+    [
+     3,
+     null,
+     3,
+     2,
+     2
+    ],
+    [
+     2,
+     2,
+     1,
+     null,
+     1
+    ],
+    [
+     3,
+     null,
+     1,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     2
+    ]
+   ],
+   "sequence": [
+    3,
+    2,
+    2,
+    3,
+    2,
+    3,
+    1,
+    1,
+    1,
+    3,
+    2,
+    2,
+    2,
+    1,
+    1,
+    2,
+    1,
+    1
+   ],
+   "moves": 13,
+   "goals": [
+    {
+     "type": "tile",
+     "value": 5
+    }
+   ],
+   "stars": {
+    "three": 5,
+    "two": 9
+   },
+   "solution": "agqf",
+   "meta": {
+    "generator": "build18",
+    "k": 8,
+    "seed": 4030166854,
+    "role": "relief",
+    "note": "Erholung",
+    "minMoves": 4,
+    "slack": 9,
+    "toolMin": null,
+    "optimalSolutions": 343,
+    "pOptimal": 0.00237,
+    "target": 18,
+    "estimate": {
+     "D": 49,
+     "Dfelt": 49,
+     "casual": 0.237,
+     "good": 0.244,
+     "random": 0.0368,
+     "greedy": false
+    },
+    "exact": true,
+    "searched": {
+     "tried": 48,
+     "usable": 18
+    }
+   }
+  },
+  {
+   "id": 27,
+   "chapter": 3,
+   "kind": "street",
+   "board": [
+    [
+     null,
+     null,
+     1,
+     4,
+     null
+    ],
+    [
+     null,
+     1,
+     null,
+     null,
+     3
+    ],
+    [
+     null,
+     2,
+     null,
+     1,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     2,
+     null,
+     null,
+     null,
+     1
+    ]
+   ],
+   "sequence": [
+    1,
+    1,
+    4,
+    1,
+    2,
+    2,
+    3,
+    2,
+    3,
+    2,
+    2,
+    4,
+    3,
+    3,
+    4,
+    3,
+    1,
+    3,
+    2,
+    3,
+    2,
+    2
+   ],
+   "moves": 17,
+   "goals": [
+    {
+     "type": "street",
+     "count": 3
+    }
+   ],
+   "stars": {
+    "three": 10,
+    "two": 14
+   },
+   "solution": "qsbroddsa",
+   "meta": {
+    "generator": "build18",
+    "k": 96,
+    "seed": 1431723889,
+    "role": "normal",
+    "note": null,
+    "minMoves": 9,
+    "slack": 8,
+    "toolMin": null,
+    "optimalSolutions": null,
+    "pOptimal": null,
+    "target": 26,
+    "estimate": {
+     "D": 26,
+     "Dfelt": 26,
+     "casual": 0.889,
+     "good": 1,
+     "random": 0.275,
+     "greedy": true
+    },
+    "exact": false,
+    "searched": {
+     "tried": 97,
+     "usable": 39
+    }
+   }
+  },
+  {
+   "id": 28,
+   "chapter": 3,
+   "kind": "make",
+   "board": [
+    [
+     null,
+     1,
+     2,
+     null,
+     null
+    ],
+    [
+     2,
+     null,
+     2,
+     null,
+     1
+    ],
+    [
+     null,
+     null,
+     null,
+     2,
+     null
+    ],
+    [
+     null,
+     null,
+     2,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ]
+   ],
+   "sequence": [
+    2,
+    1,
+    1,
+    2,
+    2,
+    1,
+    1,
+    2,
+    2,
+    1,
+    2,
+    2,
+    1,
+    1,
+    1,
+    1,
+    2,
+    2,
+    2,
+    1,
+    2,
+    2
+   ],
+   "moves": 17,
+   "goals": [
+    {
+     "type": "make",
+     "value": 4,
+     "count": 2
+    }
+   ],
+   "stars": {
+    "three": 9,
+    "two": 13
+   },
+   "solution": "rqqgggdr",
+   "meta": {
+    "generator": "build18",
+    "k": 51,
+    "seed": 2225471767,
+    "role": "normal",
+    "note": "(statt Kette)",
+    "minMoves": 8,
+    "slack": 9,
+    "toolMin": null,
+    "optimalSolutions": null,
+    "pOptimal": null,
+    "target": 31,
+    "estimate": {
+     "D": 40,
+     "Dfelt": 40,
+     "casual": 0.389,
+     "good": 0.639,
+     "random": 0.025,
+     "greedy": true
+    },
+    "exact": false,
+    "searched": {
+     "tried": 57,
+     "usable": 17
+    }
+   }
+  },
+  {
+   "id": 29,
+   "chapter": 3,
+   "kind": "duo",
+   "board": [
+    [
+     1,
+     null,
+     2,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     2,
+     1
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     1
+    ],
+    [
+     1,
+     null,
+     null,
+     null,
+     null
+    ]
+   ],
+   "sequence": [
+    4,
+    1,
+    4,
+    1,
+    1,
+    4,
+    1,
+    1,
+    1,
+    1,
+    3,
+    4,
+    2,
+    2,
+    3,
+    3,
+    2,
+    1,
+    4,
+    3,
+    1,
+    4,
+    1
+   ],
+   "moves": 18,
+   "goals": [
+    {
+     "type": "score",
+     "points": 280
+    },
+    {
+     "type": "clear",
+     "tiles": 8
+    }
+   ],
+   "stars": {
+    "three": 10,
+    "two": 14
+   },
+   "solution": "tbsgprfgh",
+   "meta": {
+    "generator": "build18",
+    "k": 232,
+    "seed": 1677511167,
+    "role": "normal",
+    "note": null,
+    "minMoves": 9,
+    "slack": 9,
+    "toolMin": null,
+    "optimalSolutions": null,
+    "pOptimal": null,
+    "target": 33,
+    "estimate": {
+     "D": 26,
+     "Dfelt": 26,
+     "casual": 1,
+     "good": 1,
+     "random": 0.367,
+     "greedy": true
+    },
+    "exact": false,
+    "searched": {
+     "tried": 245,
+     "usable": 35
     }
    }
   },
@@ -2847,15 +2922,22 @@
    "kind": "duo",
    "board": [
     [
+     5,
      null,
-     3,
-     3,
-     4,
+     null,
+     null,
+     1
+    ],
+    [
+     2,
+     1,
+     null,
+     2,
      1
     ],
     [
      null,
-     2,
+     null,
      null,
      null,
      null
@@ -2863,40 +2945,47 @@
     [
      null,
      null,
-     2,
-     2,
-     null
+     1,
+     null,
+     1
     ],
     [
      null,
      null,
      null,
-     2,
-     null
-    ],
-    [
      null,
-     null,
-     null,
-     4,
-     3
+     1
     ]
    ],
    "sequence": [
-    2,
-    1,
-    1,
-    2,
-    2,
     3,
     1,
+    1,
+    2,
+    1,
+    2,
+    3,
     2,
     2,
-    2,
+    1,
+    1,
+    3,
+    3,
+    1,
+    1,
+    3,
+    3,
+    1,
+    3,
+    1,
+    1,
+    3,
+    1,
+    3,
     1,
     1
    ],
-   "moves": 7,
+   "moves": 21,
    "goals": [
     {
      "type": "make",
@@ -2905,37 +2994,38 @@
     },
     {
      "type": "clear",
-     "tiles": 8
+     "tiles": 10
     }
    ],
    "stars": {
-    "three": 5,
-    "two": 6
+    "three": 17,
+    "two": 19
    },
-   "solution": "brsb",
+   "solution": "gtsccphqfdddemmc",
    "meta": {
-    "generator": "build100",
-    "k": 19,
-    "seed": 3218590713,
+    "generator": "build18",
+    "k": 29,
+    "seed": 3984657111,
     "role": "milestone",
-    "note": "Meilenstein",
-    "minMoves": 4,
-    "slack": 3,
+    "note": "Meilenstein, 5er schon auf dem Brett",
+    "minMoves": 16,
+    "slack": 5,
     "toolMin": null,
-    "optimalSolutions": 27,
-    "pOptimal": 0.000189,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 43,
     "estimate": {
-     "D": 41,
-     "Dfelt": 41,
-     "casual": 0.481,
-     "good": 0.881,
-     "random": 0.0072,
+     "D": 45,
+     "Dfelt": 45,
+     "casual": 0.75,
+     "good": 0.889,
+     "random": 0.0583,
      "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 42,
-     "via": "build100.mjs"
+     "tried": 30,
+     "usable": 16
     }
    }
   },
@@ -2947,19 +3037,12 @@
     [
      null,
      null,
-     null,
-     null,
-     null
-    ],
-    [
      1,
-     null,
-     null,
-     null,
-     null
-    ],
-    [
      1,
+     null
+    ],
+    [
+     null,
      null,
      null,
      null,
@@ -2967,15 +3050,22 @@
     ],
     [
      null,
-     2,
      null,
      null,
+     1,
      1
     ],
     [
-     null,
-     null,
      1,
+     null,
+     2,
+     null,
+     null
+    ],
+    [
+     1,
+     null,
+     null,
      null,
      1
     ]
@@ -2984,15 +3074,24 @@
     1,
     1,
     1,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
     2,
     1,
     1,
     2,
     2,
+    2,
     1,
-    2
+    1,
+    1
    ],
-   "moves": 5,
+   "moves": 14,
    "goals": [
     {
      "type": "empty",
@@ -3000,33 +3099,34 @@
     }
    ],
    "stars": {
-    "three": 3,
-    "two": 4
+    "three": 5,
+    "two": 10
    },
-   "solution": "cf",
+   "solution": "abdh",
    "meta": {
-    "generator": "build100",
-    "k": 9,
-    "seed": 2385133860,
+    "generator": "build18",
+    "k": 36,
+    "seed": 1041505017,
     "role": "relief",
     "note": "NEU Brett fast leer (Einführung, offensichtlich)",
-    "minMoves": 2,
-    "slack": 3,
+    "minMoves": 4,
+    "slack": 10,
     "toolMin": null,
-    "optimalSolutions": 24,
-    "pOptimal": 0.06,
+    "optimalSolutions": 312,
+    "pOptimal": 0.00195,
     "target": 20,
     "estimate": {
-     "D": 19,
-     "Dfelt": 19,
-     "casual": 0.65,
-     "good": 0.838,
-     "random": 0.084,
+     "D": 46,
+     "Dfelt": 46,
+     "casual": 0.181,
+     "good": 0.419,
+     "random": 0.008,
      "greedy": true
     },
+    "exact": true,
     "searched": {
-     "tried": 30,
-     "usable": 28
+     "tried": 128,
+     "usable": 80
     }
    }
   },
@@ -3036,58 +3136,64 @@
    "kind": "make",
    "board": [
     [
-     1,
+     null,
      null,
      null,
      null,
      null
     ],
     [
+     1,
+     1,
      null,
      null,
-     1,
-     2,
-     null
-    ],
-    [
-     1,
-     2,
-     1,
-     1,
      2
     ],
     [
+     1,
      null,
-     1,
+     null,
+     null,
+     null
+    ],
+    [
      2,
-     1,
+     null,
+     null,
+     2,
      null
     ],
     [
      null,
-     1,
      null,
      null,
-     null
+     2,
+     1
     ]
    ],
    "sequence": [
     1,
+    1,
+    1,
+    1,
+    1,
     2,
     2,
     1,
+    2,
+    2,
+    2,
+    1,
     1,
     1,
     2,
     1,
+    1,
     2,
-    1,
-    1,
-    1,
-    1,
-    2
+    2,
+    1
    ],
-   "moves": 9,
+   "moves": 15,
    "goals": [
     {
      "type": "make",
@@ -3096,33 +3202,34 @@
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 7
+    "three": 7,
+    "two": 11
    },
-   "solution": "lqq",
+   "solution": "actcab",
    "meta": {
-    "generator": "build100",
-    "k": 7,
-    "seed": 1382816695,
+    "generator": "build18",
+    "k": 21,
+    "seed": 4217680869,
     "role": "relief",
     "note": null,
-    "minMoves": 3,
-    "slack": 6,
+    "minMoves": 6,
+    "slack": 9,
     "toolMin": null,
-    "optimalSolutions": 1,
-    "pOptimal": 0.00016,
+    "optimalSolutions": 586,
+    "pOptimal": 0.0000736,
     "target": 24,
     "estimate": {
      "D": 23,
      "Dfelt": 23,
-     "casual": 0.619,
-     "good": 0.844,
-     "random": 0.0928,
+     "casual": 0.769,
+     "good": 0.956,
+     "random": 0.148,
      "greedy": true
     },
+    "exact": false,
     "searched": {
      "tried": 30,
-     "usable": 3
+     "usable": 19
     }
    }
   },
@@ -3132,30 +3239,30 @@
    "kind": "clear",
    "board": [
     [
+     null,
+     null,
+     null,
+     null,
+     3
+    ],
+    [
+     null,
+     null,
      2,
-     null,
-     null,
      null,
      null
     ],
     [
      1,
-     3,
-     2,
      null,
-     1
+     1,
+     null,
+     2
     ],
     [
      null,
      null,
-     3,
-     1,
-     null
-    ],
-    [
-     1,
      2,
-     1,
      null,
      2
     ],
@@ -3182,139 +3289,163 @@
     2,
     2,
     2,
+    1,
+    2,
+    1,
+    1,
+    2,
+    1,
+    2,
+    1,
+    1,
     1
    ],
-   "moves": 10,
+   "moves": 19,
    "goals": [
     {
      "type": "clear",
-     "tiles": 10
+     "tiles": 14
     }
    ],
    "stars": {
-    "three": 5,
-    "two": 8
+    "three": 11,
+    "two": 15
    },
-   "solution": "gnnd",
+   "solution": "hasersdhhd",
    "meta": {
-    "generator": "build100",
+    "generator": "build18",
     "k": 23,
     "seed": 923558980,
     "role": "normal",
     "note": null,
-    "minMoves": 4,
-    "slack": 6,
+    "minMoves": 10,
+    "slack": 9,
     "toolMin": null,
-    "optimalSolutions": 3,
-    "pOptimal": 0.0000196,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 29,
     "estimate": {
-     "D": 29,
-     "Dfelt": 29,
-     "casual": 0.537,
-     "good": 0.825,
-     "random": 0.0736,
+     "D": 30,
+     "Dfelt": 30,
+     "casual": 0.694,
+     "good": 0.917,
+     "random": 0.133,
      "greedy": true
     },
+    "exact": false,
     "searched": {
      "tried": 30,
-     "usable": 8
+     "usable": 30
     }
    }
   },
   {
    "id": 34,
    "chapter": 4,
-   "kind": "tile",
+   "kind": "duo",
    "board": [
     [
-     2,
-     4,
      null,
-     2,
-     1
+     null,
+     3,
+     3,
+     4
     ],
     [
      null,
-     null,
-     null,
+     3,
+     3,
      null,
      null
     ],
     [
-     1,
      null,
-     null,
-     null,
-     2
-    ],
-    [
-     1,
      3,
-     2,
+     null,
      null,
      null
     ],
     [
      3,
-     1,
      null,
-     4,
+     null,
+     null,
      null
+    ],
+    [
+     3,
+     null,
+     3,
+     2,
+     5
     ]
    ],
    "sequence": [
     2,
+    3,
+    3,
+    3,
+    3,
     2,
-    1,
     2,
     4,
+    3,
+    4,
+    3,
     2,
     3,
-    1,
     2,
+    3,
     4,
-    2,
-    1,
-    1,
-    1,
-    3
+    3,
+    3,
+    4,
+    3,
+    3,
+    3,
+    4,
+    2
    ],
-   "moves": 10,
+   "moves": 19,
    "goals": [
     {
      "type": "tile",
-     "value": 5
+     "value": 6
+    },
+    {
+     "type": "clear",
+     "tiles": 8
     }
    ],
    "stars": {
-    "three": 5,
-    "two": 8
+    "three": 6,
+    "two": 13
    },
-   "solution": "ddsn",
+   "solution": "jneql",
    "meta": {
-    "generator": "build100",
-    "k": 29,
-    "seed": 3998090731,
+    "generator": "build18",
+    "k": 142,
+    "seed": 3234024648,
     "role": "normal",
-    "note": null,
-    "minMoves": 4,
-    "slack": 6,
+    "note": "Erste 6 – mit 3ern/4ern und einem 5er, dazu räumen",
+    "minMoves": 5,
+    "slack": 14,
     "toolMin": null,
-    "optimalSolutions": 2,
-    "pOptimal": 0.0000147,
+    "optimalSolutions": 3,
+    "pOptimal": 0.0000051,
     "target": 33,
     "estimate": {
-     "D": 33,
-     "Dfelt": 33,
-     "casual": 0.619,
-     "good": 0.725,
-     "random": 0.0608,
+     "D": 35,
+     "Dfelt": 35,
+     "casual": 0.611,
+     "good": 0.472,
+     "random": 0.075,
      "greedy": false
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "usable": 14
+     "tried": 150,
+     "usable": 25
     }
    }
   },
@@ -3324,13 +3455,6 @@
    "kind": "duo",
    "board": [
     [
-     2,
-     3,
-     1,
-     null,
-     1
-    ],
-    [
      null,
      null,
      null,
@@ -3338,40 +3462,54 @@
      null
     ],
     [
+     4,
+     null,
      1,
-     null,
-     null,
-     null,
+     2,
      null
     ],
     [
+     4,
+     null,
      1,
      null,
-     null,
-     null,
-     null
+     3
     ],
     [
      null,
-     2,
-     2,
+     null,
+     null,
+     null,
+     3
+    ],
+    [
+     null,
+     1,
+     null,
      null,
      null
     ]
    ],
    "sequence": [
-    2,
+    3,
+    4,
+    1,
+    3,
+    4,
+    1,
+    3,
     1,
     1,
     3,
+    2,
+    2,
     3,
     1,
-    2,
     1,
     3,
     1
    ],
-   "moves": 5,
+   "moves": 12,
    "goals": [
     {
      "type": "empty",
@@ -3379,52 +3517,43 @@
     },
     {
      "type": "score",
-     "points": 120
+     "points": 160
     }
    ],
    "stars": {
-    "three": 5,
-    "two": 5
+    "three": 12,
+    "two": 12
    },
-   "solution": "nfrmm",
+   "solution": "ofrihjomjmob",
    "tool": "rocket",
    "meta": {
-    "generator": "build100",
-    "k": 4,
-    "seed": 2060184045,
+    "generator": "build18",
+    "k": 101,
+    "seed": 1777667580,
     "role": "tool",
-    "note": "Werkzeug-Spitze: Rakete (statt Kette)",
-    "minMoves": 5,
+    "note": "Werkzeug-Spitze: Rakete",
+    "minMoves": 12,
     "slack": 0,
     "toolMin": 3,
     "optimalSolutions": null,
     "pOptimal": null,
     "target": 36,
     "estimate": {
-     "D": 100,
-     "Dfelt": 39,
+     "D": 93,
+     "Dfelt": 37,
      "casual": 0,
      "good": 0,
-     "random": 0.0002,
+     "random": 0.00417,
      "greedy": false,
-     "casualTool": 0.45,
+     "casualTool": 0.278,
      "goodTool": 0.944,
      "goodStarts": 8
     },
+    "toolSolution": "R13 bfr",
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "via": "build100.mjs"
-    },
-    "toolSolution": "R00 jag",
-    "untooled": {
-     "launch": "launch-16",
-     "from": {
-      "moves": 4,
-      "stars": {
-       "three": 3,
-       "two": 4
-      }
-     }
+     "tried": 102,
+     "usable": 1
     }
    }
   },
@@ -3434,55 +3563,65 @@
    "kind": "street",
    "board": [
     [
+     null,
+     4,
+     4,
      2,
-     3,
-     null,
-     null,
-     3
-    ],
-    [
-     null,
-     2,
-     null,
-     2,
-     null
-    ],
-    [
-     null,
-     2,
-     null,
-     null,
-     null
-    ],
-    [
-     null,
-     1,
-     3,
-     3,
      2
     ],
     [
      null,
      null,
+     1,
+     4,
+     null
+    ],
+    [
+     1,
      null,
      null,
-     1
+     4,
+     null
+    ],
+    [
+     null,
+     4,
+     1,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
     ]
    ],
    "sequence": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
     2,
+    3,
+    3,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
     2,
     3,
     1,
     1,
-    1,
-    3,
-    1,
-    1,
-    2,
-    2
+    1
    ],
-   "moves": 6,
+   "moves": 16,
    "goals": [
     {
      "type": "street",
@@ -3490,33 +3629,34 @@
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 5
+    "three": 7,
+    "two": 12
    },
-   "solution": "doq",
+   "solution": "apqsrr",
    "meta": {
-    "generator": "build100",
-    "k": 21,
-    "seed": 4171868905,
+    "generator": "build18",
+    "k": 28,
+    "seed": 1278484016,
     "role": "relief",
     "note": "Erholung",
-    "minMoves": 3,
-    "slack": 3,
+    "minMoves": 6,
+    "slack": 10,
     "toolMin": null,
     "optimalSolutions": 6,
-    "pOptimal": 0.000797,
+    "pOptimal": 0.00000281,
     "target": 22,
     "estimate": {
-     "D": 22,
-     "Dfelt": 22,
-     "casual": 0.644,
-     "good": 0.9,
-     "random": 0.0696,
+     "D": 21,
+     "Dfelt": 21,
+     "casual": 0.838,
+     "good": 0.956,
+     "random": 0.161,
      "greedy": true
     },
+    "exact": false,
     "searched": {
      "tried": 30,
-     "usable": 22
+     "usable": 17
     }
    }
   },
@@ -3533,6 +3673,13 @@
      null
     ],
     [
+     null,
+     null,
+     1,
+     null,
+     null
+    ],
+    [
      1,
      null,
      null,
@@ -3541,40 +3688,47 @@
     ],
     [
      1,
+     1,
      null,
      null,
+     null
+    ],
+    [
      null,
+     null,
+     2,
+     2,
      1
-    ],
-    [
-     null,
-     null,
-     null,
-     null,
-     null
-    ],
-    [
-     null,
-     1,
-     1,
-     null,
-     null
     ]
    ],
    "sequence": [
     1,
     1,
+    2,
+    3,
     1,
+    1,
+    2,
+    2,
+    3,
+    2,
     1,
     1,
     1,
     1,
     2,
+    1,
+    3,
+    2,
+    1,
+    1,
     3,
     1,
-    2
+    1,
+    2,
+    1
    ],
-   "moves": 6,
+   "moves": 20,
    "goals": [
     {
      "type": "empty",
@@ -3582,33 +3736,34 @@
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 5
+    "three": 7,
+    "two": 14
    },
-   "solution": "afj",
+   "solution": "kolmid",
    "meta": {
-    "generator": "build100",
-    "k": 83,
-    "seed": 1237903308,
+    "generator": "build18",
+    "k": 20,
+    "seed": 1583420027,
     "role": "normal",
     "note": "Brett fast leer: 3",
-    "minMoves": 3,
-    "slack": 3,
+    "minMoves": 6,
+    "slack": 14,
     "toolMin": null,
-    "optimalSolutions": 162,
-    "pOptimal": 0.0203,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 31,
     "estimate": {
-     "D": 31,
-     "Dfelt": 31,
-     "casual": 0.481,
-     "good": 0.706,
-     "random": 0.034,
+     "D": 67,
+     "Dfelt": 67,
+     "casual": 0,
+     "good": 0.139,
+     "random": 0.00417,
      "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 84,
-     "usable": 51
+     "tried": 141,
+     "usable": 67
     }
    }
   },
@@ -3618,7 +3773,7 @@
    "kind": "score",
    "board": [
     [
-     null,
+     2,
      null,
      null,
      null,
@@ -3626,84 +3781,96 @@
     ],
     [
      null,
-     null,
-     null,
+     2,
+     2,
      null,
      1
     ],
     [
      null,
-     1,
-     null,
-     2,
-     2
-    ],
-    [
-     null,
      null,
      null,
      null,
      null
     ],
     [
-     2,
      null,
-     1,
+     null,
+     null,
+     3,
+     null
+    ],
+    [
+     null,
+     3,
+     null,
      null,
      null
     ]
    ],
    "sequence": [
     1,
-    4,
-    3,
     2,
     1,
-    3,
     2,
-    2,
+    1,
     1,
     1,
     2,
     1,
+    1,
     2,
-    3
+    1,
+    1,
+    2,
+    2,
+    2,
+    1,
+    2,
+    2,
+    1,
+    2,
+    1,
+    1,
+    2,
+    1
    ],
-   "moves": 9,
+   "moves": 20,
    "goals": [
     {
      "type": "score",
-     "points": 260
+     "points": 360
     }
    ],
    "stars": {
-    "three": 5,
-    "two": 7
+    "three": 10,
+    "two": 15
    },
-   "solution": "bndd",
+   "solution": "pggnnbbrs",
    "meta": {
-    "generator": "build100",
-    "k": 3,
-    "seed": 3638933729,
+    "generator": "build18",
+    "k": 25,
+    "seed": 1898526651,
     "role": "normal",
     "note": null,
-    "minMoves": 4,
-    "slack": 5,
+    "minMoves": 9,
+    "slack": 11,
     "toolMin": null,
-    "optimalSolutions": 6,
-    "pOptimal": 0.0000377,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 35,
     "estimate": {
-     "D": 35,
-     "Dfelt": 35,
-     "casual": 0.463,
-     "good": 0.875,
-     "random": 0.02,
+     "D": 19,
+     "Dfelt": 19,
+     "casual": 1,
+     "good": 1,
+     "random": 0.7,
      "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "usable": 25
+     "tried": 115,
+     "usable": 60
     }
    }
   },
@@ -3713,59 +3880,74 @@
    "kind": "duo",
    "board": [
     [
-     3,
      null,
-     4,
-     null,
-     5
-    ],
-    [
      5,
      null,
-     2,
      null,
      null
     ],
     [
+     1,
      null,
      null,
-     null,
-     null,
-     4
-    ],
-    [
-     3,
-     null,
-     null,
-     null,
+     2,
      null
     ],
     [
-     3,
+     1,
      null,
+     null,
+     null,
+     2
+    ],
+    [
      2,
+     2,
+     1,
      null,
      1
+    ],
+    [
+     null,
+     null,
+     1,
+     2,
+     null
     ]
    ],
    "sequence": [
     1,
+    1,
+    4,
+    2,
+    1,
+    3,
     2,
     1,
     1,
-    2,
-    2,
     1,
     1,
     1,
+    4,
+    3,
+    4,
+    1,
+    3,
     2,
-    2
+    1,
+    4,
+    4,
+    1,
+    3,
+    2,
+    2,
+    1
    ],
-   "moves": 6,
+   "moves": 21,
    "goals": [
     {
      "type": "tile",
-     "value": 4
+     "value": 5
     },
     {
      "type": "street",
@@ -3773,33 +3955,34 @@
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 5
+    "three": 16,
+    "two": 19
    },
-   "solution": "efj",
+   "solution": "mndllcbihcmlonc",
    "meta": {
-    "generator": "build100",
-    "k": 42,
-    "seed": 4148883263,
+    "generator": "build18",
+    "k": 21,
+    "seed": 4175422384,
     "role": "normal",
-    "note": null,
-    "minMoves": 3,
-    "slack": 3,
+    "note": "5er schon auf dem Brett",
+    "minMoves": 15,
+    "slack": 6,
     "toolMin": null,
-    "optimalSolutions": 5,
-    "pOptimal": 0.000655,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 38,
     "estimate": {
-     "D": 39,
-     "Dfelt": 39,
-     "casual": 0.581,
-     "good": 0.688,
-     "random": 0.0188,
-     "greedy": false
+     "D": 38,
+     "Dfelt": 38,
+     "casual": 0.972,
+     "good": 0.861,
+     "random": 0.158,
+     "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 43,
-     "usable": 17
+     "tried": 30,
+     "usable": 6
     }
    }
   },
@@ -3809,62 +3992,77 @@
    "kind": "duo",
    "board": [
     [
-     1,
-     2,
+     4,
+     null,
      null,
      1,
      null
     ],
     [
      null,
-     3,
-     1,
-     2,
-     1
+     null,
+     null,
+     null,
+     3
     ],
     [
      null,
-     null,
-     null,
-     1,
-     1
-    ],
-    [
      1,
      null,
-     2,
-     1,
+     null,
      null
     ],
     [
-     1,
      null,
      null,
      null,
-     1
+     null,
+     2
+    ],
+    [
+     null,
+     null,
+     2,
+     null,
+     null
     ]
    ],
    "sequence": [
-    2,
-    1,
     1,
     2,
     1,
     1,
     1,
     2,
-    2,
-    1,
     1,
     2,
     1,
-    1
+    2,
+    1,
+    1,
+    1,
+    1,
+    2,
+    1,
+    2,
+    2,
+    2,
+    2,
+    1,
+    2,
+    2,
+    1,
+    2,
+    2,
+    1,
+    1,
+    2
    ],
-   "moves": 9,
+   "moves": 24,
    "goals": [
     {
      "type": "clear",
-     "tiles": 12
+     "tiles": 16
     },
     {
      "type": "street",
@@ -3872,33 +4070,34 @@
     }
    ],
    "stars": {
-    "three": 6,
-    "two": 8
+    "three": 22,
+    "two": 23
    },
-   "solution": "abgkg",
+   "solution": "dcllmateoeotrmmlcpilc",
    "meta": {
-    "generator": "build100",
-    "k": 5,
-    "seed": 360135181,
+    "generator": "build18",
+    "k": 22,
+    "seed": 2594582350,
     "role": "milestone",
     "note": "Meilenstein",
-    "minMoves": 5,
-    "slack": 4,
+    "minMoves": 21,
+    "slack": 3,
     "toolMin": null,
-    "optimalSolutions": 836,
-    "pOptimal": 0.00029,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 48,
     "estimate": {
-     "D": 48,
-     "Dfelt": 48,
-     "casual": 0.494,
-     "good": 0.75,
-     "random": 0.0156,
-     "greedy": false
+     "D": 47,
+     "Dfelt": 47,
+     "casual": 0.778,
+     "good": 0.944,
+     "random": 0.133,
+     "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "via": "build100.mjs"
+     "tried": 61,
+     "usable": 59
     }
    }
   },
@@ -3908,54 +4107,66 @@
    "kind": "long",
    "board": [
     [
+     3,
      null,
-     1,
      null,
      null,
-     1
+     null
+    ],
+    [
+     null,
+     2,
+     2,
+     null,
+     null
     ],
     [
      2,
+     3,
+     null,
      4,
-     2,
+     null
+    ],
+    [
      null,
+     2,
+     1,
+     2,
      1
     ],
     [
-     3,
-     null,
-     null,
-     null,
-     null
-    ],
-    [
-     null,
-     3,
-     null,
      1,
+     null,
+     null,
+     null,
      null
-    ],
-    [
-     null,
-     2,
-     null,
-     2,
-     2
     ]
    ],
    "sequence": [
+    1,
+    3,
+    3,
+    1,
     2,
     1,
-    3,
-    1,
-    3,
-    1,
+    2,
     1,
     1,
     3,
-    1
+    1,
+    1,
+    1,
+    1,
+    2,
+    2,
+    1,
+    2,
+    2,
+    1,
+    2,
+    2
    ],
-   "moves": 5,
+   "moves": 17,
    "goals": [
     {
      "type": "long",
@@ -3963,33 +4174,34 @@
     }
    ],
    "stars": {
-    "three": 3,
-    "two": 4
+    "three": 5,
+    "two": 11
    },
-   "solution": "al",
+   "solution": "aadh",
    "meta": {
-    "generator": "build100",
-    "k": 4,
-    "seed": 2058123903,
+    "generator": "build18",
+    "k": 1319,
+    "seed": 765616716,
     "role": "relief",
     "note": "NEU Straße aus 4 (Einführung, offensichtlich)",
-    "minMoves": 2,
-    "slack": 3,
+    "minMoves": 4,
+    "slack": 13,
     "toolMin": null,
-    "optimalSolutions": 14,
-    "pOptimal": 0.0355,
+    "optimalSolutions": 2697,
+    "pOptimal": 0.018,
     "target": 25,
     "estimate": {
-     "D": 25,
-     "Dfelt": 25,
-     "casual": 0.756,
-     "good": 0.656,
-     "random": 0.0548,
+     "D": 30,
+     "Dfelt": 30,
+     "casual": 0.528,
+     "good": 0.528,
+     "random": 0.117,
      "greedy": false
     },
+    "exact": true,
     "searched": {
-     "tried": 30,
-     "usable": 30
+     "tried": 1500,
+     "usable": 8
     }
    }
   },
@@ -3999,91 +4211,102 @@
    "kind": "tile",
    "board": [
     [
+     4,
      null,
-     1,
-     1,
-     2,
+     3,
+     null,
      null
     ],
     [
+     null,
+     4,
+     null,
+     null,
+     3
+    ],
+    [
+     null,
      3,
-     2,
      null,
-     null,
-     2
-    ],
-    [
-     2,
-     1,
-     null,
-     2,
-     2
-    ],
-    [
-     null,
-     null,
-     null,
-     1,
+     3,
      null
     ],
     [
+     null,
+     3,
      3,
      null,
+     5
+    ],
+    [
+     4,
      null,
+     3,
      null,
      null
     ]
    ],
    "sequence": [
-    1,
     2,
-    1,
-    1,
+    3,
+    3,
+    3,
+    4,
+    4,
+    3,
+    3,
     2,
+    3,
     2,
+    4,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
     2,
-    1,
+    3,
+    3,
     2,
-    2,
-    2,
-    2,
-    1
+    3
    ],
-   "moves": 8,
+   "moves": 18,
    "goals": [
     {
      "type": "tile",
-     "value": 4
+     "value": 6
     }
    ],
    "stars": {
-    "three": 3,
-    "two": 6
+    "three": 5,
+    "two": 12
    },
-   "solution": "gb",
+   "solution": "bgqg",
    "meta": {
-    "generator": "build100",
-    "k": 5,
-    "seed": 362135179,
+    "generator": "build18",
+    "k": 3,
+    "seed": 3626415085,
     "role": "relief",
     "note": null,
-    "minMoves": 2,
-    "slack": 6,
+    "minMoves": 4,
+    "slack": 14,
     "toolMin": null,
-    "optimalSolutions": 6,
-    "pOptimal": 0.0152,
+    "optimalSolutions": 2,
+    "pOptimal": 0.0000127,
     "target": 29,
     "estimate": {
-     "D": 29,
-     "Dfelt": 29,
-     "casual": 0.444,
-     "good": 0.506,
-     "random": 0.119,
-     "greedy": true
+     "D": 30,
+     "Dfelt": 30,
+     "casual": 0.556,
+     "good": 0.5,
+     "random": 0.108,
+     "greedy": false
     },
+    "exact": true,
     "searched": {
-     "tried": 30,
-     "usable": 23
+     "tried": 152,
+     "usable": 90
     }
    }
   },
@@ -4093,9 +4316,23 @@
    "kind": "duo",
    "board": [
     [
+     2,
+     null,
+     null,
+     null,
+     1
+    ],
+    [
      null,
      2,
      1,
+     2,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
      null,
      null
     ],
@@ -4104,46 +4341,46 @@
      1,
      null,
      null,
-     2
-    ],
-    [
-     1,
-     1,
-     null,
-     null,
-     2
+     null
     ],
     [
      null,
-     3,
-     1,
-     null,
-     1
-    ],
-    [
-     1,
      null,
      null,
      null,
-     2
+     null
     ]
    ],
    "sequence": [
-    3,
+    2,
+    1,
     4,
+    1,
+    1,
+    2,
+    2,
+    1,
+    3,
     4,
     4,
     1,
     2,
-    1,
     3,
+    4,
     3,
-    1,
+    4,
+    4,
+    2,
     1,
     2,
-    3
+    2,
+    3,
+    2,
+    1,
+    3,
+    1
    ],
-   "moves": 8,
+   "moves": 22,
    "goals": [
     {
      "type": "long",
@@ -4151,37 +4388,38 @@
     },
     {
      "type": "score",
-     "points": 150
+     "points": 200
     }
    ],
    "stars": {
-    "three": 3,
-    "two": 6
+    "three": 15,
+    "two": 19
    },
-   "solution": "bb",
+   "solution": "rrpgsrqirbbihg",
    "meta": {
-    "generator": "build100",
-    "k": 64,
-    "seed": 2404273409,
+    "generator": "build18",
+    "k": 9,
+    "seed": 2372101752,
     "role": "normal",
     "note": null,
-    "minMoves": 2,
-    "slack": 6,
+    "minMoves": 14,
+    "slack": 8,
     "toolMin": null,
-    "optimalSolutions": 2,
-    "pOptimal": 0.0051,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 34,
     "estimate": {
-     "D": 46,
-     "Dfelt": 46,
-     "casual": 0.35,
-     "good": 0.294,
-     "random": 0.0328,
-     "greedy": true
+     "D": 53,
+     "Dfelt": 53,
+     "casual": 0.5,
+     "good": 0.472,
+     "random": 0.05,
+     "greedy": false
     },
+    "exact": false,
     "searched": {
-     "tried": 97,
-     "via": "build100.mjs"
+     "tried": 70,
+     "usable": 18
     }
    }
   },
@@ -4192,93 +4430,106 @@
    "board": [
     [
      null,
-     2,
-     null,
-     3,
-     1
-    ],
-    [
      null,
      null,
-     3,
-     null,
-     3
-    ],
-    [
-     null,
-     null,
-     2,
      null,
      1
     ],
     [
-     null,
+     3,
      1,
      null,
+     null,
+     1
+    ],
+    [
+     3,
+     null,
      2,
-     3
+     2,
+     null
     ],
     [
      null,
-     null,
+     2,
+     3,
      1,
-     null,
+     3
+    ],
+    [
+     2,
+     3,
+     1,
+     3,
      null
     ]
    ],
    "sequence": [
-    1,
-    1,
-    3,
-    1,
-    1,
-    3,
     2,
     1,
     2,
+    1,
+    2,
+    1,
     2,
     1,
     1,
     2,
     1,
-    1
+    1,
+    1,
+    1,
+    1,
+    2,
+    2,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    2,
+    2
    ],
-   "moves": 10,
+   "moves": 22,
    "goals": [
     {
      "type": "make",
-     "value": 4,
+     "value": 5,
      "count": 2
     }
    ],
    "stars": {
-    "three": 5,
-    "two": 8
+    "three": 14,
+    "two": 18
    },
-   "solution": "acrb",
+   "solution": "lnjcmpghlhrrm",
    "meta": {
-    "generator": "build100",
-    "k": 47,
-    "seed": 246428923,
+    "generator": "build18",
+    "k": 3,
+    "seed": 3627617943,
     "role": "normal",
     "note": null,
-    "minMoves": 4,
-    "slack": 6,
+    "minMoves": 13,
+    "slack": 9,
     "toolMin": null,
-    "optimalSolutions": 104,
-    "pOptimal": 0.000696,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 38,
     "estimate": {
-     "D": 39,
-     "Dfelt": 39,
-     "casual": 0.381,
-     "good": 0.675,
-     "random": 0.0348,
-     "greedy": true
+     "D": 88,
+     "Dfelt": 88,
+     "casual": 0,
+     "good": 0.028,
+     "random": 0.00417,
+     "greedy": false
     },
+    "exact": false,
     "searched": {
-     "tried": 48,
-     "usable": 16
+     "tried": 39,
+     "usable": 12
     }
    }
   },
@@ -4291,34 +4542,34 @@
      null,
      null,
      null,
-     null,
+     1,
      null
     ],
     [
+     null,
+     null,
      1,
      null,
-     null,
-     null,
-     1
-    ],
-    [
-     null,
-     null,
-     null,
-     null,
-     1
-    ],
-    [
-     null,
-     null,
-     null,
-     3,
      null
     ],
     [
+     null,
+     1,
+     null,
+     2,
+     null
+    ],
+    [
+     2,
      null,
      null,
      2,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
      null,
      null
     ]
@@ -4326,68 +4577,69 @@
    "sequence": [
     2,
     1,
+    4,
+    2,
+    4,
+    1,
+    2,
+    1,
+    3,
+    2,
+    2,
     1,
     1,
     3,
     1,
+    2,
+    1,
     3,
-    3,
-    1
+    2
    ],
-   "moves": 4,
+   "moves": 14,
    "goals": [
     {
      "type": "street",
-     "count": 1
+     "count": 2
     },
     {
      "type": "clear",
-     "tiles": 6
+     "tiles": 8
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 4
+    "three": 14,
+    "two": 14
    },
-   "solution": "dadm",
+   "solution": "niitarbsnnthha",
    "tool": "hint",
    "meta": {
-    "generator": "build100",
-    "k": 17,
-    "seed": 2197926150,
+    "generator": "build18",
+    "k": 129,
+    "seed": 3143301110,
     "role": "tool",
     "note": "Werkzeug-Spitze: Hinweis",
-    "minMoves": 4,
+    "minMoves": 14,
     "slack": 0,
-    "toolMin": 4,
-    "optimalSolutions": 7,
-    "pOptimal": 0.0000438,
+    "toolMin": 14,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 40,
     "estimate": {
-     "D": 100,
-     "Dfelt": 42,
-     "casual": 0.025,
-     "good": 0.056,
-     "random": 0.0002,
+     "D": 47,
+     "Dfelt": 36,
+     "casual": 0.611,
+     "good": 0.944,
+     "random": 0.0333,
      "greedy": false,
-     "casualTool": 0.725,
-     "goodTool": 1
+     "casualTool": 0.806,
+     "goodTool": 0.944
     },
-    "hintMoves": "da",
+    "hintMoves": "bh",
+    "toolSolution": "niitarbsnnthha",
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "usable": 3
-    },
-    "toolSolution": "dadm",
-    "untooled": {
-     "launch": "launch-16",
-     "from": {
-      "moves": 4,
-      "stars": {
-       "three": 4,
-       "two": 4
-      }
-     }
+     "tried": 242,
+     "usable": 17
     }
    }
   },
@@ -4398,31 +4650,31 @@
    "board": [
     [
      null,
+     null,
+     null,
      2,
-     null,
-     null,
-     2
-    ],
-    [
-     null,
-     null,
-     1,
-     1,
      null
     ],
     [
      null,
      null,
+     2,
+     4,
+     1
+    ],
+    [
      null,
+     null,
+     4,
      null,
      1
     ],
     [
-     1,
      null,
      null,
+     4,
      null,
-     2
+     null
     ],
     [
      null,
@@ -4434,56 +4686,66 @@
    ],
    "sequence": [
     1,
+    3,
+    1,
+    2,
+    2,
+    2,
+    1,
+    2,
+    1,
+    2,
+    1,
+    1,
+    3,
+    1,
+    3,
+    3,
+    1,
     2,
     1,
     1,
     1,
     2,
     2,
-    2,
-    1,
-    1,
-    2,
-    1,
-    1,
-    1,
     1
    ],
-   "moves": 10,
+   "moves": 19,
    "goals": [
     {
      "type": "clear",
-     "tiles": 8
+     "tiles": 12
     }
    ],
    "stars": {
-    "three": 5,
-    "two": 8
+    "three": 10,
+    "two": 15
    },
-   "solution": "tbqb",
+   "solution": "bsattbbta",
    "meta": {
-    "generator": "build100",
-    "k": 17,
-    "seed": 2199059659,
+    "generator": "build18",
+    "k": 10,
+    "seed": 748103904,
     "role": "relief",
     "note": "Erholung",
-    "minMoves": 4,
-    "slack": 6,
+    "minMoves": 9,
+    "slack": 10,
     "toolMin": null,
-    "optimalSolutions": 1,
-    "pOptimal": 0.00000629,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 27,
     "estimate": {
-     "D": 27,
-     "Dfelt": 27,
-     "casual": 0.563,
-     "good": 0.881,
-     "random": 0.0796,
+     "D": 26,
+     "Dfelt": 26,
+     "casual": 0.806,
+     "good": 0.944,
+     "random": 0.167,
      "greedy": true
     },
+    "exact": false,
     "searched": {
      "tried": 30,
-     "usable": 19
+     "usable": 30
     }
    }
   },
@@ -4493,93 +4755,111 @@
    "kind": "duo",
    "board": [
     [
-     1,
+     3,
+     null,
+     null,
+     3,
+     3
+    ],
+    [
+     3,
      null,
      2,
-     1,
+     4,
      null
     ],
     [
      null,
-     4,
      null,
-     4,
+     3,
+     null,
+     3
+    ],
+    [
+     3,
+     null,
+     5,
+     null,
      3
     ],
     [
      3,
      null,
      null,
-     4,
+     null,
      null
-    ],
-    [
-     1,
-     null,
-     null,
-     null,
-     2
-    ],
-    [
-     null,
-     null,
-     4,
-     2,
-     1
     ]
    ],
    "sequence": [
-    1,
+    2,
+    2,
+    3,
+    3,
+    4,
+    3,
+    3,
+    3,
+    3,
+    3,
+    2,
+    4,
+    4,
+    4,
+    3,
+    3,
+    4,
+    3,
     2,
     4,
     3,
-    1,
+    3,
+    3,
+    4,
+    3,
     2,
     3,
-    1,
-    2,
-    1,
     3
    ],
-   "moves": 6,
+   "moves": 23,
    "goals": [
     {
      "type": "tile",
-     "value": 5
+     "value": 6
     },
     {
      "type": "clear",
-     "tiles": 6
+     "tiles": 8
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 5
+    "three": 15,
+    "two": 19
    },
-   "solution": "obg",
+   "solution": "ptgscsssasbjki",
    "meta": {
-    "generator": "build100",
-    "k": 12,
-    "seed": 1750375937,
+    "generator": "build18",
+    "k": 56,
+    "seed": 2666509557,
     "role": "normal",
-    "note": "(statt Kette 3)",
-    "minMoves": 3,
-    "slack": 3,
+    "note": "(statt Kette)",
+    "minMoves": 14,
+    "slack": 9,
     "toolMin": null,
-    "optimalSolutions": 1,
-    "pOptimal": 0.000132,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 35,
     "estimate": {
-     "D": 35,
-     "Dfelt": 35,
-     "casual": 0.537,
-     "good": 0.875,
-     "random": 0.0124,
-     "greedy": true
+     "D": 51,
+     "Dfelt": 51,
+     "casual": 0.5,
+     "good": 0.417,
+     "random": 0.125,
+     "greedy": false
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "via": "build100.mjs"
+     "tried": 90,
+     "usable": 7
     }
    }
   },
@@ -4591,12 +4871,12 @@
     [
      1,
      null,
-     1,
      null,
-     2
+     null,
+     5
     ],
     [
-     null,
+     1,
      null,
      null,
      null,
@@ -4604,40 +4884,58 @@
     ],
     [
      null,
-     1,
-     null,
-     3,
-     null
-    ],
-    [
-     null,
-     3,
-     1,
      2,
+     null,
+     null,
+     3
+    ],
+    [
+     2,
+     null,
+     2,
+     null,
      null
     ],
     [
      null,
      null,
-     1,
-     2,
+     null,
+     null,
      2
     ]
    ],
    "sequence": [
-    3,
-    3,
-    2,
-    2,
+    4,
     1,
     1,
+    1,
+    1,
+    1,
+    2,
     3,
+    3,
+    4,
+    1,
     1,
     4,
+    1,
     3,
-    1
+    3,
+    4,
+    1,
+    3,
+    4,
+    3,
+    3,
+    1,
+    3,
+    1,
+    2,
+    3,
+    3,
+    4
    ],
-   "moves": 6,
+   "moves": 24,
    "goals": [
     {
      "type": "street",
@@ -4645,37 +4943,38 @@
     },
     {
      "type": "clear",
-     "tiles": 6
+     "tiles": 8
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 5
+    "three": 16,
+    "two": 20
    },
-   "solution": "aoo",
+   "solution": "bhgihhdrrdoedec",
    "meta": {
-    "generator": "build100",
-    "k": 20,
-    "seed": 1586097476,
+    "generator": "build18",
+    "k": 76,
+    "seed": 4205071388,
     "role": "normal",
-    "note": null,
-    "minMoves": 3,
-    "slack": 3,
+    "note": "fast fertige Straße aus 5",
+    "minMoves": 15,
+    "slack": 9,
     "toolMin": null,
-    "optimalSolutions": 2,
-    "pOptimal": 0.000252,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 40,
     "estimate": {
-     "D": 40,
-     "Dfelt": 40,
-     "casual": 0.406,
-     "good": 0.85,
-     "random": 0.0116,
+     "D": 32,
+     "Dfelt": 32,
+     "casual": 0.917,
+     "good": 1,
+     "random": 0.375,
      "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "usable": 21
+     "tried": 114,
+     "usable": 19
     }
    }
   },
@@ -4685,54 +4984,61 @@
    "kind": "street",
    "board": [
     [
-     null,
-     null,
-     1,
-     null,
-     null
-    ],
-    [
-     1,
-     null,
-     null,
      2,
-     4
+     null,
+     null,
+     1,
+     2
     ],
     [
      null,
      null,
      null,
-     3,
+     1,
      null
     ],
     [
      null,
      null,
      null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     1,
      null,
      1
     ],
     [
      null,
-     null,
-     4,
+     1,
+     1,
      null,
      null
     ]
    ],
    "sequence": [
     1,
-    3,
-    3,
     1,
-    2,
-    3,
+    4,
+    4,
     2,
     1,
     1,
+    2,
+    1,
+    2,
+    2,
+    3,
+    1,
+    1,
+    2,
+    3,
     3
    ],
-   "moves": 5,
+   "moves": 12,
    "goals": [
     {
      "type": "street",
@@ -4740,47 +5046,38 @@
     }
    ],
    "stars": {
-    "three": 5,
-    "two": 5
+    "three": 12,
+    "two": 12
    },
-   "solution": "aaaar",
+   "solution": "dkcdtbsssfrb",
    "tool": "extraMoves",
    "meta": {
-    "generator": "build100",
-    "k": 21,
-    "seed": 4167521622,
+    "generator": "build18",
+    "k": 176,
+    "seed": 3301443427,
     "role": "tool",
     "note": "Werkzeug-Spitze: +3 Züge",
-    "minMoves": 5,
+    "minMoves": 12,
     "slack": 0,
-    "toolMin": 5,
-    "optimalSolutions": 34634,
-    "pOptimal": 0.011,
+    "toolMin": 12,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 42,
     "estimate": {
-     "D": 100,
+     "D": 61,
      "Dfelt": 38,
-     "casual": 0,
-     "good": 0,
-     "random": 0.0002,
+     "casual": 0.167,
+     "good": 0.361,
+     "random": 0.00833,
      "greedy": false,
-     "casualTool": 0.438,
-     "goodTool": 0.931
+     "casualTool": 0.444,
+     "goodTool": 0.75
     },
+    "toolSolution": "dkcdtbsssfrb",
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "usable": 4
-    },
-    "toolSolution": "aaaar",
-    "untooled": {
-     "launch": "launch-16",
-     "from": {
-      "moves": 3,
-      "stars": {
-       "three": 5,
-       "two": 6
-      }
-     }
+     "tried": 177,
+     "usable": 12
     }
    }
   },
@@ -4790,95 +5087,115 @@
    "kind": "duo",
    "board": [
     [
-     1,
-     1,
      null,
-     1,
+     3,
+     null,
+     2,
+     3
+    ],
+    [
+     2,
+     null,
+     3,
+     null,
+     3
+    ],
+    [
+     null,
+     2,
+     null,
+     5,
+     null
+    ],
+    [
+     3,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     3,
+     2,
+     null,
      2
-    ],
-    [
-     3,
-     2,
-     3,
-     3,
-     null
-    ],
-    [
-     3,
-     2,
-     null,
-     1,
-     1
-    ],
-    [
-     null,
-     null,
-     null,
-     null,
-     null
-    ],
-    [
-     2,
-     null,
-     1,
-     1,
-     null
     ]
    ],
    "sequence": [
     2,
+    3,
+    3,
+    3,
+    3,
     2,
-    1,
-    1,
+    4,
+    3,
+    3,
+    3,
+    3,
     2,
-    1,
-    1,
-    2
+    4,
+    2,
+    3,
+    3,
+    4,
+    3,
+    3,
+    4,
+    3,
+    3,
+    3,
+    2,
+    3,
+    3,
+    3
    ],
-   "moves": 3,
+   "moves": 22,
    "goals": [
     {
-     "type": "combo",
-     "chain": 2
+     "type": "tile",
+     "value": 6
     },
     {
-     "type": "make",
-     "value": 4,
-     "count": 2
+     "type": "score",
+     "points": 280
     }
    ],
    "stars": {
-    "three": 2,
-    "two": 3
+    "three": 22,
+    "two": 22
    },
-   "solution": "W00=3 bc",
+   "solution": "ebamkjpgharqppspgrrmmh",
    "tool": "wand",
    "meta": {
-    "generator": "build100",
-    "k": 487,
-    "seed": 4185034401,
+    "generator": "build18",
+    "k": 138,
+    "seed": 1260218492,
     "role": "boss",
-    "note": "Boss: Zauberstab nötig",
-    "minMoves": 4,
-    "slack": -1,
-    "toolMin": 2,
+    "note": "Boss: eine 6 und Punkte, Werkzeug-Spitze (Zauberstab)",
+    "minMoves": 22,
+    "slack": 0,
+    "toolMin": 3,
     "optimalSolutions": null,
     "pOptimal": null,
     "target": 49,
     "estimate": {
-     "D": 100,
-     "Dfelt": 54,
-     "casual": 0,
-     "good": 0,
-     "random": 0.0002,
+     "D": 81,
+     "Dfelt": 31,
+     "casual": 0.167,
+     "good": 0.083,
+     "random": 0.025,
      "greedy": false,
-     "casualTool": 0.487,
-     "goodTool": 0.588,
-     "goodStarts": 12
+     "casualTool": 0.417,
+     "goodTool": 0.542,
+     "goodStarts": 8
     },
+    "toolSolution": "W03=5 qss",
+    "exact": false,
     "searched": {
-     "tried": 768,
-     "via": "search-one.mjs"
+     "tried": 336,
+     "usable": 7
     }
    }
   },
@@ -4888,56 +5205,70 @@
    "kind": "purge",
    "board": [
     [
-     2,
      null,
-     null,
-     null,
-     3
-    ],
-    [
-     2,
      2,
      null,
      null,
      null
     ],
     [
+     null,
+     2,
+     null,
+     3,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
      1,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     1
+    ],
+    [
+     null,
+     null,
      null,
      2,
-     null,
-     null
-    ],
-    [
-     null,
-     null,
-     null,
-     null,
-     null
-    ],
-    [
-     1,
-     null,
-     null,
-     null,
      null
     ]
    ],
    "sequence": [
     1,
+    1,
+    1,
+    3,
+    3,
+    1,
+    3,
     2,
+    2,
+    2,
+    2,
+    3,
+    1,
+    2,
+    1,
+    2,
+    2,
+    2,
+    2,
+    3,
+    2,
+    1,
     2,
     1,
     1,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2,
-    2
+    3
    ],
-   "moves": 7,
+   "moves": 21,
    "goals": [
     {
      "type": "purge",
@@ -4946,33 +5277,34 @@
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 6
+    "three": 11,
+    "two": 16
    },
-   "solution": "fhq",
+   "solution": "gggnqhnnnn",
    "meta": {
-    "generator": "build100",
-    "k": 24,
-    "seed": 3594083265,
+    "generator": "build18",
+    "k": 454,
+    "seed": 2506882239,
     "role": "relief",
     "note": "NEU Wert räumen (Einführung, offensichtlich)",
-    "minMoves": 3,
-    "slack": 4,
+    "minMoves": 10,
+    "slack": 11,
     "toolMin": null,
-    "optimalSolutions": 22,
-    "pOptimal": 0.0028,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 29,
     "estimate": {
-     "D": 28,
-     "Dfelt": 28,
-     "casual": 0.581,
-     "good": 0.563,
-     "random": 0.068,
+     "D": 20,
+     "Dfelt": 20,
+     "casual": 1,
+     "good": 1,
+     "random": 0.883,
      "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "usable": 27
+     "tried": 552,
+     "usable": 48
     }
    }
   },
@@ -4983,88 +5315,104 @@
    "board": [
     [
      null,
+     4,
+     4,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     1,
+     1
+    ],
+    [
+     null,
      null,
      null,
      null,
      null
     ],
     [
-     null,
-     null,
-     null,
-     1,
-     null
-    ],
-    [
-     1,
-     null,
-     null,
-     1,
-     null
-    ],
-    [
-     1,
-     null,
-     1,
-     null,
-     null
-    ],
-    [
-     null,
-     1,
-     null,
      2,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     4,
      null
     ]
    ],
    "sequence": [
     2,
+    1,
     2,
+    3,
+    1,
+    3,
+    1,
+    1,
+    3,
+    1,
+    3,
+    2,
+    2,
+    3,
+    2,
+    3,
+    1,
     2,
     2,
     2,
     1,
+    1,
     2,
     2,
     1,
-    2,
-    1
+    2
    ],
-   "moves": 6,
+   "moves": 21,
    "goals": [
     {
      "type": "score",
-     "points": 220
+     "points": 320
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 5
+    "three": 9,
+    "two": 15
    },
-   "solution": "jlj",
+   "solution": "hbkioioc",
    "meta": {
-    "generator": "build100",
-    "k": 24,
-    "seed": 3593084164,
+    "generator": "build18",
+    "k": 75,
+    "seed": 1499059015,
     "role": "relief",
     "note": null,
-    "minMoves": 3,
-    "slack": 3,
+    "minMoves": 8,
+    "slack": 13,
     "toolMin": null,
-    "optimalSolutions": 8,
-    "pOptimal": 0.001,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 34,
     "estimate": {
-     "D": 34,
-     "Dfelt": 34,
-     "casual": 0.431,
-     "good": 0.794,
-     "random": 0.0192,
+     "D": 16,
+     "Dfelt": 16,
+     "casual": 1,
+     "good": 1,
+     "random": 0.742,
      "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "usable": 26
+     "tried": 135,
+     "usable": 98
     }
    }
   },
@@ -5075,36 +5423,36 @@
    "board": [
     [
      null,
-     1,
+     null,
+     5,
+     null,
+     null
+    ],
+    [
+     3,
+     3,
+     null,
+     null,
+     null
+    ],
+    [
+     3,
      null,
      4,
-     null
-    ],
-    [
-     null,
-     null,
-     null,
      null,
      null
     ],
     [
-     null,
-     null,
-     null,
-     null,
-     2
-    ],
-    [
-     null,
      null,
      3,
-     4,
+     2,
+     null,
      3
     ],
     [
-     null,
+     2,
      3,
-     1,
+     null,
      null,
      null
     ]
@@ -5112,54 +5460,71 @@
    "sequence": [
     3,
     3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
     4,
-    2,
+    3,
+    3,
+    3,
+    3,
+    4,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    4,
     3,
     3,
     2,
     3,
-    1,
-    2,
-    1,
-    2,
-    3,
-    4
+    4,
+    3
    ],
-   "moves": 9,
+   "moves": 25,
    "goals": [
     {
      "type": "tile",
-     "value": 5
+     "value": 6
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 7
+    "three": 19,
+    "two": 22
    },
-   "solution": "ann",
+   "solution": "iilddmmnemnnenpqrr",
    "meta": {
-    "generator": "build100",
-    "k": 26,
-    "seed": 311094309,
+    "generator": "build18",
+    "k": 129,
+    "seed": 3135038958,
     "role": "normal",
     "note": null,
-    "minMoves": 3,
-    "slack": 6,
+    "minMoves": 18,
+    "slack": 7,
     "toolMin": null,
-    "optimalSolutions": 44,
-    "pOptimal": 0.0055,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 38,
     "estimate": {
-     "D": 37,
-     "Dfelt": 37,
-     "casual": 0.419,
-     "good": 0.656,
-     "random": 0.0708,
+     "D": 54,
+     "Dfelt": 54,
+     "casual": 0.458,
+     "good": 0.333,
+     "random": 0.0875,
      "greedy": false
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "usable": 19
+     "tried": 212,
+     "usable": 10
     }
    }
   },
@@ -5171,27 +5536,27 @@
     [
      null,
      null,
-     null,
-     1,
-     3
-    ],
-    [
-     null,
-     4,
-     null,
-     null,
-     null
-    ],
-    [
-     1,
-     null,
      2,
      null,
      null
     ],
     [
      4,
-     3,
+     null,
+     null,
+     2,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     1
+    ],
+    [
+     1,
+     null,
      null,
      null,
      null
@@ -5200,28 +5565,44 @@
      null,
      null,
      null,
-     null,
+     4,
      null
     ]
    ],
    "sequence": [
-    3,
     1,
-    3,
+    2,
+    1,
+    2,
+    2,
+    1,
+    2,
+    1,
+    2,
+    1,
+    1,
     2,
     1,
     1,
     1,
     1,
-    3,
-    3,
     1,
-    3,
+    1,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    2,
+    1,
+    2,
+    1,
     1,
     1,
     1
    ],
-   "moves": 10,
+   "moves": 26,
    "goals": [
     {
      "type": "street",
@@ -5229,37 +5610,38 @@
     },
     {
      "type": "score",
-     "points": 200
+     "points": 280
     }
    ],
    "stars": {
-    "three": 5,
-    "two": 8
+    "three": 13,
+    "two": 20
    },
-   "solution": "aarr",
+   "solution": "rbrccddjbktb",
    "meta": {
-    "generator": "build100",
-    "k": 9,
-    "seed": 2361703707,
+    "generator": "build18",
+    "k": 18,
+    "seed": 483488848,
     "role": "normal",
-    "note": "(statt Kette 3)",
-    "minMoves": 4,
-    "slack": 6,
+    "note": "(statt Kette)",
+    "minMoves": 12,
+    "slack": 14,
     "toolMin": null,
-    "optimalSolutions": 16,
-    "pOptimal": 0.0001,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 43,
     "estimate": {
-     "D": 43,
-     "Dfelt": 43,
-     "casual": 0.469,
-     "good": 0.475,
-     "random": 0.024,
+     "D": 30,
+     "Dfelt": 30,
+     "casual": 0.792,
+     "good": 0.833,
+     "random": 0.163,
      "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "via": "build100.mjs"
+     "tried": 189,
+     "usable": 11
     }
    }
   },
@@ -5271,40 +5653,155 @@
     [
      null,
      null,
-     null,
-     null,
-     2
-    ],
-    [
-     null,
      2,
      2,
-     null,
-     2
-    ],
-    [
-     null,
-     null,
-     null,
-     null,
      null
     ],
     [
-     null,
-     null,
-     null,
-     null,
-     null
-    ],
-    [
-     null,
-     2,
-     2,
      3,
+     null,
+     2,
+     2,
+     null
+    ],
+    [
+     3,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     2,
+     2,
      null
     ]
    ],
    "sequence": [
+    2,
+    3,
+    2,
+    2,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1
+   ],
+   "moves": 5,
+   "goals": [
+    {
+     "type": "empty",
+     "max": 3
+    }
+   ],
+   "stars": {
+    "three": 5,
+    "two": 5
+   },
+   "solution": "gmgre",
+   "tool": "rocket",
+   "meta": {
+    "generator": "build18",
+    "k": 34,
+    "seed": 1644007,
+    "role": "tool",
+    "note": "Werkzeug-Spitze: Rakete",
+    "minMoves": 5,
+    "slack": 0,
+    "toolMin": 3,
+    "optimalSolutions": 3,
+    "pOptimal": 0.00000212,
+    "target": 45,
+    "estimate": {
+     "D": 72,
+     "Dfelt": 35,
+     "casual": 0,
+     "good": 0,
+     "random": 0.00625,
+     "greedy": false,
+     "casualTool": 0.292,
+     "goodTool": 0.417,
+     "goodStarts": 8
+    },
+    "toolSolution": "R02 bfe",
+    "exact": false,
+    "searched": {
+     "tried": 64,
+     "usable": 4
+    }
+   }
+  },
+  {
+   "id": 56,
+   "chapter": 6,
+   "kind": "street",
+   "board": [
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     1,
+     null,
+     1,
+     null,
+     null
+    ],
+    [
+     1,
+     null,
+     1,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     1,
+     null
+    ],
+    [
+     null,
+     2,
+     null,
+     null,
+     2
+    ]
+   ],
+   "sequence": [
+    2,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    2,
+    2,
+    1,
+    1,
+    1,
     2,
     2,
     2,
@@ -5315,114 +5812,7 @@
     1,
     1
    ],
-   "moves": 4,
-   "goals": [
-    {
-     "type": "empty",
-     "max": 3
-    }
-   ],
-   "stars": {
-    "three": 4,
-    "two": 4
-   },
-   "solution": "clql",
-   "tool": "rocket",
-   "meta": {
-    "generator": "build100",
-    "k": 143,
-    "seed": 1673250234,
-    "role": "tool",
-    "note": "Werkzeug-Spitze: Rakete",
-    "minMoves": 4,
-    "slack": 0,
-    "toolMin": 2,
-    "optimalSolutions": null,
-    "pOptimal": null,
-    "target": 45,
-    "estimate": {
-     "D": 100,
-     "Dfelt": 32,
-     "casual": 0,
-     "good": 0,
-     "random": 0.0002,
-     "greedy": false,
-     "casualTool": 0.406,
-     "goodTool": 0.744,
-     "goodStarts": 2
-    },
-    "searched": {
-     "tried": 151,
-     "usable": 2
-    },
-    "toolSolution": "R04 bj",
-    "untooled": {
-     "launch": "launch-16",
-     "from": {
-      "moves": 3,
-      "stars": {
-       "three": 2,
-       "two": 3
-      }
-     }
-    }
-   }
-  },
-  {
-   "id": 56,
-   "chapter": 6,
-   "kind": "street",
-   "board": [
-    [
-     2,
-     1,
-     null,
-     2,
-     null
-    ],
-    [
-     null,
-     4,
-     null,
-     null,
-     null
-    ],
-    [
-     1,
-     null,
-     2,
-     1,
-     null
-    ],
-    [
-     1,
-     null,
-     null,
-     null,
-     null
-    ],
-    [
-     2,
-     1,
-     null,
-     2,
-     null
-    ]
-   ],
-   "sequence": [
-    1,
-    3,
-    2,
-    2,
-    1,
-    1,
-    1,
-    2,
-    2,
-    2,
-    4
-   ],
-   "moves": 6,
+   "moves": 22,
    "goals": [
     {
      "type": "street",
@@ -5430,33 +5820,34 @@
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 5
+    "three": 10,
+    "two": 16
    },
-   "solution": "afg",
+   "solution": "eefrnndmm",
    "meta": {
-    "generator": "build100",
-    "k": 7,
-    "seed": 1355951487,
+    "generator": "build18",
+    "k": 130,
+    "seed": 1534965066,
     "role": "relief",
     "note": "Erholung",
-    "minMoves": 3,
-    "slack": 3,
+    "minMoves": 9,
+    "slack": 13,
     "toolMin": null,
-    "optimalSolutions": 75,
-    "pOptimal": 0.00964,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 32,
     "estimate": {
-     "D": 32,
-     "Dfelt": 32,
-     "casual": 0.544,
-     "good": 0.85,
-     "random": 0.038,
-     "greedy": false
+     "D": 34,
+     "Dfelt": 34,
+     "casual": 0.472,
+     "good": 0.611,
+     "random": 0.0583,
+     "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "usable": 22
+     "tried": 131,
+     "usable": 26
     }
    }
   },
@@ -5466,17 +5857,10 @@
    "kind": "duo",
    "board": [
     [
-     null,
-     3,
-     null,
-     null,
-     null
-    ],
-    [
-     1,
-     null,
      2,
+     1,
      null,
+     1,
      null
     ],
     [
@@ -5484,42 +5868,68 @@
      null,
      null,
      null,
-     null
+     1
     ],
     [
      null,
      null,
+     null,
+     null,
+     2
+    ],
+    [
+     2,
+     2,
      1,
      null,
      null
     ],
     [
      null,
-     3,
-     3,
+     1,
      null,
-     null
+     1,
+     1
     ]
    ],
    "sequence": [
     1,
-    3,
-    4,
-    3,
     2,
     4,
     1,
     4,
     1,
+    2,
+    4,
+    1,
+    1,
+    1,
     4,
     3,
-    3
+    4,
+    1,
+    1,
+    1,
+    4,
+    1,
+    2,
+    3,
+    4,
+    1,
+    3,
+    4,
+    2,
+    1,
+    3,
+    4,
+    1,
+    2
    ],
-   "moves": 7,
+   "moves": 26,
    "goals": [
     {
      "type": "make",
-     "value": 4,
+     "value": 5,
      "count": 2
     },
     {
@@ -5528,33 +5938,34 @@
     }
    ],
    "stars": {
-    "three": 5,
-    "two": 6
+    "three": 19,
+    "two": 23
    },
-   "solution": "abbj",
+   "solution": "elnrnbfnbbqbccqlqa",
    "meta": {
-    "generator": "build100",
-    "k": 4,
-    "seed": 2075665967,
+    "generator": "build18",
+    "k": 35,
+    "seed": 2733663192,
     "role": "normal",
     "note": null,
-    "minMoves": 4,
-    "slack": 3,
+    "minMoves": 18,
+    "slack": 8,
     "toolMin": null,
-    "optimalSolutions": 200,
-    "pOptimal": 0.00125,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 40,
     "estimate": {
-     "D": 39,
-     "Dfelt": 39,
-     "casual": 0.506,
-     "good": 0.706,
-     "random": 0.0188,
+     "D": 37,
+     "Dfelt": 37,
+     "casual": 0.958,
+     "good": 0.917,
+     "random": 0.163,
      "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 26,
-     "usable": 14
+     "tried": 36,
+     "usable": 11
     }
    }
   },
@@ -5564,8 +5975,15 @@
    "kind": "purge",
    "board": [
     [
+     1,
      null,
-     3,
+     null,
+     null,
+     2
+    ],
+    [
+     null,
+     null,
      null,
      null,
      3
@@ -5573,46 +5991,60 @@
     [
      null,
      null,
+     1,
      null,
+     2
+    ],
+    [
+     3,
+     3,
      null,
+     2,
      null
     ],
     [
+     1,
      null,
      null,
-     3,
      null,
      null
-    ],
-    [
-     null,
-     null,
-     null,
-     3,
-     null
-    ],
-    [
-     null,
-     null,
-     null,
-     3,
-     3
     ]
    ],
    "sequence": [
-    3,
-    3,
+    1,
+    2,
+    2,
+    4,
+    2,
     3,
     1,
+    4,
+    2,
     3,
+    1,
+    2,
+    2,
+    2,
+    2,
+    3,
+    1,
+    1,
     2,
     1,
+    2,
+    2,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    4,
+    3,
     1,
-    1,
-    1,
-    3
+    1
    ],
-   "moves": 6,
+   "moves": 27,
    "goals": [
     {
      "type": "purge",
@@ -5621,33 +6053,34 @@
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 5
+    "three": 17,
+    "two": 22
    },
-   "solution": "aae",
+   "solution": "tdibdhgiggihgfhg",
    "meta": {
-    "generator": "build100",
-    "k": 16,
-    "seed": 3758266430,
+    "generator": "build18",
+    "k": 41,
+    "seed": 1435991671,
     "role": "normal",
     "note": null,
-    "minMoves": 3,
-    "slack": 3,
+    "minMoves": 16,
+    "slack": 11,
     "toolMin": null,
-    "optimalSolutions": 36,
-    "pOptimal": 0.0045,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 44,
     "estimate": {
-     "D": 43,
-     "Dfelt": 43,
-     "casual": 0.325,
-     "good": 0.438,
-     "random": 0.0268,
+     "D": 28,
+     "Dfelt": 28,
+     "casual": 0.917,
+     "good": 1,
+     "random": 0.3,
      "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "usable": 8
+     "tried": 78,
+     "usable": 60
     }
    }
   },
@@ -5658,7 +6091,21 @@
    "board": [
     [
      null,
+     null,
+     null,
+     4,
+     null
+    ],
+    [
+     null,
      2,
+     1,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
      null,
      null,
      null
@@ -5667,44 +6114,40 @@
      null,
      null,
      1,
-     2,
-     4
+     null,
+     2
     ],
     [
-     4,
      null,
-     1,
      null,
-     1
-    ],
-    [
-     2,
      null,
-     4,
      null,
-     1
-    ],
-    [
-     1,
-     5,
-     2,
-     3,
-     null
+     3
     ]
    ],
    "sequence": [
     2,
+    1,
+    4,
     3,
-    3,
+    2,
     3,
     2,
     4,
-    4,
+    3,
+    3,
     1,
+    1,
+    1,
+    1,
+    2,
+    3,
+    1,
+    3,
     1,
     2
    ],
-   "moves": 5,
+   "moves": 15,
    "goals": [
     {
      "type": "street",
@@ -5712,52 +6155,43 @@
     },
     {
      "type": "clear",
-     "tiles": 8
+     "tiles": 10
     }
    ],
    "stars": {
-    "three": 5,
-    "two": 5
+    "three": 15,
+    "two": 15
    },
-   "solution": "ddhh",
+   "solution": "doegmnccoftkpig",
    "tool": "hint",
    "meta": {
-    "generator": "build100",
-    "k": 23,
-    "seed": 897559446,
+    "generator": "build18",
+    "k": 15,
+    "seed": 1187275822,
     "role": "tool",
     "note": "Werkzeug-Spitze: Hinweis",
-    "minMoves": 4,
-    "slack": 1,
-    "toolMin": 4,
-    "optimalSolutions": 5,
-    "pOptimal": 0.0000373,
+    "minMoves": 15,
+    "slack": 0,
+    "toolMin": 15,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 47,
     "estimate": {
-     "D": 87,
-     "Dfelt": 46,
-     "casual": 0.106,
-     "good": 0.281,
-     "random": 0.0002,
+     "D": 44,
+     "Dfelt": 42,
+     "casual": 0.5,
+     "good": 0.708,
+     "random": 0.025,
      "greedy": true,
-     "casualTool": 0.525,
-     "goodTool": 0.981
+     "casualTool": 0.583,
+     "goodTool": 0.833
     },
-    "hintMoves": "dd",
+    "hintMoves": "dc",
+    "toolSolution": "doegmnccoftkpig",
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "via": "build100.mjs"
-    },
-    "toolSolution": "ddhh",
-    "untooled": {
-     "launch": "launch-16",
-     "from": {
-      "moves": 5,
-      "stars": {
-       "three": 4,
-       "two": 5
-      }
-     }
+     "tried": 117,
+     "usable": 19
     }
    }
   },
@@ -5767,95 +6201,118 @@
    "kind": "duo",
    "board": [
     [
-     2,
      null,
-     null,
+     3,
+     3,
      null,
      null
     ],
     [
      null,
+     3,
      null,
-     2,
-     2,
+     3,
+     null
+    ],
+    [
+     4,
+     null,
+     null,
+     5,
      null
     ],
     [
      null,
      null,
      null,
-     1,
-     2
+     3,
+     null
     ],
     [
-     1,
+     3,
      null,
+     3,
      null,
-     1,
-     2
-    ],
-    [
-     null,
-     null,
-     null,
-     null,
-     1
+     null
     ]
    ],
    "sequence": [
     4,
-    2,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    4,
+    4,
     3,
     3,
     2,
-    4,
-    4,
-    4,
+    2,
     3,
     4,
+    3,
     2,
-    1,
-    1
+    3,
+    3,
+    3,
+    3,
+    2,
+    3,
+    3,
+    3,
+    4,
+    3,
+    3,
+    3,
+    2,
+    3,
+    2,
+    2,
+    3,
+    2
    ],
-   "moves": 8,
+   "moves": 30,
    "goals": [
     {
-     "type": "street",
-     "count": 3
+     "type": "tile",
+     "value": 6
     },
     {
      "type": "score",
-     "points": 300
+     "points": 360
     }
    ],
    "stars": {
-    "three": 5,
-    "two": 7
+    "three": 29,
+    "two": 30
    },
-   "solution": "acbc",
+   "solution": "rjrshhmmndnppontphhhhfhhhccm",
    "meta": {
-    "generator": "build100",
-    "k": 1,
-    "seed": 2644835845,
+    "generator": "build18",
+    "k": 187,
+    "seed": 2434163711,
     "role": "milestone",
-    "note": "Meilenstein",
-    "minMoves": 4,
-    "slack": 4,
+    "note": "Meilenstein, 5er schon auf dem Brett",
+    "minMoves": 28,
+    "slack": 2,
     "toolMin": null,
-    "optimalSolutions": 104,
-    "pOptimal": 0.000656,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 57,
     "estimate": {
-     "D": 57,
-     "Dfelt": 57,
-     "casual": 0.313,
-     "good": 0.275,
-     "random": 0.0108,
+     "D": 48,
+     "Dfelt": 48,
+     "casual": 0.75,
+     "good": 1,
+     "random": 0.225,
      "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "usable": 14
+     "tried": 206,
+     "usable": 2
     }
    }
   },
@@ -5867,52 +6324,71 @@
     [
      null,
      null,
+     1,
+     null,
+     1
+    ],
+    [
+     3,
+     null,
      null,
      null,
      null
     ],
     [
+     3,
+     1,
      null,
      null,
-     1,
-     1,
+     1
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
      null
     ],
     [
+     3,
      null,
-     null,
-     null,
-     null,
-     2
-    ],
-    [
-     null,
-     2,
-     1,
-     null,
-     2
-    ],
-    [
-     null,
-     null,
-     null,
+     3,
      null,
      null
     ]
    ],
    "sequence": [
+    3,
     1,
+    3,
+    3,
+    3,
     2,
     1,
-    2,
+    4,
     1,
     1,
     3,
+    3,
+    2,
+    4,
+    3,
+    3,
+    2,
+    3,
+    4,
+    3,
+    2,
+    4,
+    2,
+    1,
+    1,
+    1,
     2,
     1,
     1
    ],
-   "moves": 5,
+   "moves": 24,
    "goals": [
     {
      "type": "empty",
@@ -5920,63 +6396,57 @@
     },
     {
      "type": "score",
-     "points": 120
+     "points": 180
     }
    ],
    "stars": {
-    "three": 3,
-    "two": 4
+    "three": 10,
+    "two": 17
    },
-   "solution": "bb",
+   "solution": "iaklllbha",
    "meta": {
-    "generator": "build100",
-    "k": 35,
-    "seed": 2721540804,
+    "generator": "build18",
+    "k": 605,
+    "seed": 3937951418,
     "role": "relief",
-    "note": "Erholung (statt Große Gruppe)",
-    "minMoves": 2,
-    "slack": 3,
+    "note": "Erholung",
+    "minMoves": 9,
+    "slack": 15,
     "toolMin": null,
-    "optimalSolutions": 3,
-    "pOptimal": 0.0075,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 34,
     "estimate": {
-     "D": 33,
-     "Dfelt": 33,
-     "casual": 0.463,
-     "good": 0.981,
-     "random": 0.0128,
+     "D": 79,
+     "Dfelt": 79,
+     "casual": 0,
+     "good": 0,
+     "random": 0.00417,
      "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 36,
-     "usable": 28
+     "tried": 627,
+     "usable": 32
     }
    }
   },
   {
    "id": 62,
    "chapter": 7,
-   "kind": "tile",
+   "kind": "clear",
    "board": [
     [
+     1,
      null,
+     null,
+     null,
+     null
+    ],
+    [
      null,
      null,
      2,
-     null
-    ],
-    [
-     null,
-     1,
-     null,
-     null,
-     3
-    ],
-    [
-     null,
-     null,
-     null,
      null,
      null
     ],
@@ -5990,157 +6460,200 @@
     [
      null,
      null,
-     1,
+     3,
      null,
-     4
+     2
+    ],
+    [
+     3,
+     null,
+     null,
+     4,
+     null
     ]
    ],
    "sequence": [
-    4,
+    3,
     2,
     2,
-    4,
+    3,
     2,
     3,
     1,
     1,
+    1,
+    1,
+    3,
+    2,
+    2,
     2,
     1,
-    4,
+    2,
+    2,
+    1,
+    1,
+    2,
     3,
     3,
-    3
+    1,
+    3,
+    3,
+    1,
+    3,
+    1,
+    1
    ],
-   "moves": 9,
+   "moves": 24,
    "goals": [
     {
-     "type": "tile",
-     "value": 5
+     "type": "clear",
+     "tiles": 16
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 7
+    "three": 14,
+    "two": 19
    },
-   "solution": "brr",
+   "solution": "mljjlmdrrfoej",
    "meta": {
-    "generator": "build100",
+    "generator": "build18",
     "k": 2,
     "seed": 1071447896,
     "role": "relief",
-    "note": null,
-    "minMoves": 3,
-    "slack": 6,
+    "note": "Erholung",
+    "minMoves": 13,
+    "slack": 11,
     "toolMin": null,
-    "optimalSolutions": 1,
-    "pOptimal": 0.000125,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 38,
     "estimate": {
-     "D": 38,
-     "Dfelt": 38,
-     "casual": 0.425,
-     "good": 0.419,
-     "random": 0.0368,
+     "D": 32,
+     "Dfelt": 32,
+     "casual": 0.639,
+     "good": 0.806,
+     "random": 0.142,
      "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "usable": 12
+     "tried": 62,
+     "usable": 62
     }
    }
   },
   {
    "id": 63,
    "chapter": 7,
-   "kind": "clear",
+   "kind": "tile",
    "board": [
     [
      null,
      null,
-     null,
-     null,
-     1
-    ],
-    [
-     null,
      3,
-     1,
      null,
      2
     ],
     [
-     1,
-     null,
-     2,
-     null,
-     2
-    ],
-    [
+     3,
+     3,
      null,
      3,
-     1,
-     2,
      null
     ],
     [
-     1,
-     2,
-     1,
+     3,
+     3,
      null,
-     null
+     3,
+     4
+    ],
+    [
+     2,
+     null,
+     3,
+     null,
+     5
+    ],
+    [
+     4,
+     null,
+     3,
+     null,
+     3
     ]
    ],
    "sequence": [
+    3,
+    4,
+    3,
+    3,
+    4,
+    4,
+    4,
+    3,
+    4,
+    4,
+    3,
+    3,
     2,
-    1,
-    1,
+    3,
+    3,
+    4,
+    3,
+    3,
+    3,
+    4,
+    4,
+    3,
+    4,
     2,
+    3,
+    3,
     2,
-    1,
-    2,
-    1,
-    1,
-    2,
-    1,
-    2,
-    2,
-    2
+    3,
+    3,
+    3,
+    3,
+    3,
+    3
    ],
-   "moves": 9,
+   "moves": 28,
    "goals": [
     {
-     "type": "clear",
-     "tiles": 12
+     "type": "tile",
+     "value": 7
     }
    ],
    "stars": {
-    "three": 5,
-    "two": 7
+    "three": 17,
+    "two": 23
    },
-   "solution": "ehhd",
+   "solution": "bhgnihdgllmeeiil",
    "meta": {
-    "generator": "build100",
-    "k": 29,
-    "seed": 4018767728,
+    "generator": "build18",
+    "k": 50,
+    "seed": 3843328751,
     "role": "normal",
-    "note": null,
-    "minMoves": 4,
-    "slack": 5,
+    "note": "Erste 7 – langer Aufbau",
+    "minMoves": 16,
+    "slack": 12,
     "toolMin": null,
-    "optimalSolutions": 9,
-    "pOptimal": 0.0000602,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 43,
     "estimate": {
-     "D": 43,
-     "Dfelt": 43,
-     "casual": 0.344,
-     "good": 0.556,
-     "random": 0.0256,
-     "greedy": true
+     "D": 72,
+     "Dfelt": 72,
+     "casual": 0.125,
+     "good": 0.083,
+     "random": 0.025,
+     "greedy": false
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "usable": 11
+     "tried": 53,
+     "usable": 3
     }
    }
   },
@@ -6150,57 +6663,78 @@
    "kind": "duo",
    "board": [
     [
+     null,
+     1,
+     null,
+     null,
+     null
+    ],
+    [
      3,
      null,
-     4,
-     2,
-     null
-    ],
-    [
-     1,
-     5,
      null,
-     null,
-     null
-    ],
-    [
-     null,
-     null,
-     1,
      null,
      1
     ],
     [
-     3,
      null,
      null,
-     2,
+     null,
+     null,
      null
     ],
     [
      4,
+     2,
      null,
-     3,
+     null,
+     null
+    ],
+    [
+     5,
+     2,
+     null,
      null,
      null
     ]
    ],
    "sequence": [
-    1,
-    1,
-    1,
-    1,
     2,
-    2,
+    1,
     1,
     2,
     1,
     2,
     2,
+    1,
+    2,
+    1,
+    1,
+    1,
+    3,
+    2,
+    1,
+    3,
+    2,
+    4,
+    2,
+    1,
+    1,
+    1,
+    3,
+    1,
+    4,
+    4,
+    2,
+    1,
+    1,
+    3,
+    4,
+    3,
     2,
     3
    ],
-   "moves": 8,
+   "moves": 29,
    "goals": [
     {
      "type": "long",
@@ -6212,33 +6746,34 @@
     }
    ],
    "stars": {
-    "three": 6,
-    "two": 7
+    "three": 19,
+    "two": 24
    },
-   "solution": "aaddh",
+   "solution": "kljcjmknmprblcoddd",
    "meta": {
-    "generator": "build100",
-    "k": 22,
-    "seed": 2601838070,
+    "generator": "build18",
+    "k": 119,
+    "seed": 2283340167,
     "role": "normal",
-    "note": null,
-    "minMoves": 5,
-    "slack": 3,
+    "note": "fast fertige Straße aus 5",
+    "minMoves": 18,
+    "slack": 11,
     "toolMin": null,
-    "optimalSolutions": 3539,
-    "pOptimal": 0.00128,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 47,
     "estimate": {
-     "D": 47,
-     "Dfelt": 47,
-     "casual": 0.456,
-     "good": 0.6,
-     "random": 0.0104,
-     "greedy": true
+     "D": 49,
+     "Dfelt": 49,
+     "casual": 0.583,
+     "good": 0.375,
+     "random": 0.2,
+     "greedy": false
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "via": "build100.mjs"
+     "tried": 120,
+     "usable": 7
     }
    }
   },
@@ -6248,102 +6783,112 @@
    "kind": "make",
    "board": [
     [
+     null,
      1,
      1,
      null,
+     null
+    ],
+    [
+     null,
+     null,
      2,
+     null,
+     1
+    ],
+    [
+     2,
+     2,
+     1,
+     null,
      2
     ],
     [
      null,
      null,
-     null,
-     2,
-     null
-    ],
-    [
-     1,
      2,
      1,
-     null,
-     2
-    ],
-    [
-     null,
-     1,
-     null,
-     null,
      null
     ],
     [
      null,
      null,
-     2,
-     2,
-     null
+     null,
+     null,
+     1
     ]
    ],
    "sequence": [
+    1,
+    2,
+    1,
     2,
     1,
     2,
     1,
+    2,
+    2,
+    2,
+    1,
+    1,
     1,
     1,
     2,
+    1,
+    1,
+    1,
+    1,
+    2,
+    2,
+    2,
+    2,
+    1,
+    2,
+    1,
     1,
     1
    ],
-   "moves": 4,
+   "moves": 23,
    "goals": [
     {
      "type": "make",
-     "value": 3,
+     "value": 4,
      "count": 3
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 4
+    "three": 23,
+    "two": 23
    },
-   "solution": "acnm",
+   "solution": "srcoeolccjddjllddddnnll",
    "tool": "extraMoves",
    "meta": {
-    "generator": "build100",
-    "k": 98,
-    "seed": 2464368321,
+    "generator": "build18",
+    "k": 5,
+    "seed": 348828534,
     "role": "tool",
     "note": "Werkzeug-Spitze: +3 Züge",
-    "minMoves": 4,
+    "minMoves": 23,
     "slack": 0,
-    "toolMin": 4,
-    "optimalSolutions": 711,
-    "pOptimal": 0.00468,
+    "toolMin": 23,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 50,
     "estimate": {
-     "D": 100,
-     "Dfelt": 40,
-     "casual": 0,
-     "good": 0,
-     "random": 0.0002,
+     "D": 71,
+     "Dfelt": 65,
+     "casual": 0.208,
+     "good": 0.25,
+     "random": 0.0125,
      "greedy": false,
-     "casualTool": 0.4,
-     "goodTool": 0.556
+     "casualTool": 0.292,
+     "goodTool": 0.417
     },
+    "toolSolution": "srcoeolccjddjllddddnnll",
+    "exact": false,
     "searched": {
-     "tried": 210,
-     "usable": 1
-    },
-    "toolSolution": "acnm",
-    "untooled": {
-     "launch": "launch-16",
-     "from": {
-      "moves": 3,
-      "stars": {
-       "three": 4,
-       "two": 5
-      }
-     }
+     "tried": 160,
+     "usable": 22
     }
    }
   },
@@ -6354,9 +6899,9 @@
    "board": [
     [
      null,
-     null,
      2,
-     1,
+     null,
+     null,
      null
     ],
     [
@@ -6368,14 +6913,14 @@
     ],
     [
      null,
-     2,
-     2,
      null,
-     null
+     null,
+     null,
+     1
     ],
     [
      null,
-     null,
+     1,
      null,
      null,
      null
@@ -6384,14 +6929,33 @@
      1,
      null,
      null,
-     null,
+     1,
      null
     ]
    ],
    "sequence": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
     2,
     2,
     1,
+    1,
+    2,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    2,
     1,
     2,
     1,
@@ -6401,42 +6965,43 @@
     1,
     2
    ],
-   "moves": 6,
+   "moves": 25,
    "goals": [
     {
      "type": "make",
      "value": 3,
-     "count": 2
+     "count": 3
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 5
+    "three": 12,
+    "two": 19
    },
-   "solution": "ccr",
+   "solution": "mlddcbdcbnm",
    "meta": {
-    "generator": "build100",
-    "k": 3,
-    "seed": 3645470805,
+    "generator": "build18",
+    "k": 133,
+    "seed": 826092979,
     "role": "relief",
     "note": "Erholung",
-    "minMoves": 3,
-    "slack": 3,
+    "minMoves": 11,
+    "slack": 14,
     "toolMin": null,
-    "optimalSolutions": 11,
-    "pOptimal": 0.00137,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 36,
     "estimate": {
-     "D": 37,
-     "Dfelt": 37,
-     "casual": 0.412,
-     "good": 0.613,
-     "random": 0.018,
+     "D": 21,
+     "Dfelt": 21,
+     "casual": 0.917,
+     "good": 1,
+     "random": 0.475,
      "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "usable": 29
+     "tried": 168,
+     "usable": 39
     }
    }
   },
@@ -6447,17 +7012,10 @@
    "board": [
     [
      null,
+     null,
+     null,
      2,
-     4,
-     1,
      null
-    ],
-    [
-     3,
-     null,
-     3,
-     null,
-     1
     ],
     [
      null,
@@ -6467,35 +7025,65 @@
      null
     ],
     [
-     4,
-     4,
+     2,
+     5,
      null,
      null,
      3
     ],
     [
-     4,
-     3,
-     3,
-     1,
-     2
+     null,
+     null,
+     2,
+     null,
+     4
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
     ]
    ],
    "sequence": [
-    5,
-    1,
-    1,
-    2,
-    2,
-    2,
+    4,
     1,
     2,
+    1,
+    1,
+    1,
+    2,
+    2,
+    2,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
     2,
     1,
     2,
-    2
+    1,
+    1,
+    1,
+    2,
+    1,
+    2,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    2,
+    1,
+    1
    ],
-   "moves": 7,
+   "moves": 30,
    "goals": [
     {
      "type": "long",
@@ -6503,37 +7091,38 @@
     },
     {
      "type": "clear",
-     "tiles": 8
+     "tiles": 10
     }
    ],
    "stars": {
-    "three": 5,
-    "two": 6
+    "three": 16,
+    "two": 23
    },
-   "solution": "aapm",
+   "solution": "csmmnlmhhhhbdii",
    "meta": {
-    "generator": "build100",
-    "k": 4,
-    "seed": 2065936717,
+    "generator": "build18",
+    "k": 20,
+    "seed": 1605097053,
     "role": "normal",
-    "note": "(statt Große Gruppe)",
-    "minMoves": 4,
-    "slack": 3,
+    "note": null,
+    "minMoves": 15,
+    "slack": 15,
     "toolMin": null,
-    "optimalSolutions": 14,
-    "pOptimal": 0.000141,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 45,
     "estimate": {
      "D": 45,
      "Dfelt": 45,
-     "casual": 0.425,
-     "good": 0.75,
-     "random": 0.0068,
-     "greedy": true
+     "casual": 0.458,
+     "good": 0.583,
+     "random": 0.138,
+     "greedy": false
     },
+    "exact": false,
     "searched": {
      "tried": 30,
-     "usable": 19
+     "usable": 16
     }
    }
   },
@@ -6543,56 +7132,79 @@
    "kind": "duo",
    "board": [
     [
-     null,
-     null,
      2,
-     null,
-     3
-    ],
-    [
-     null,
-     null,
-     null,
-     null,
-     null
-    ],
-    [
-     null,
-     2,
-     2,
-     null,
-     null
-    ],
-    [
      null,
      null,
      1,
+     null
+    ],
+    [
      null,
-     2
+     1,
+     3,
+     null,
+     null
     ],
     [
      null,
      null,
      null,
-     3,
-     2
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     2,
+     1,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
     ]
    ],
    "sequence": [
     2,
-    1,
-    1,
-    4,
-    4,
-    1,
-    4,
-    4,
-    1,
-    4,
+    3,
     2,
+    1,
+    3,
+    2,
+    2,
+    1,
+    3,
+    1,
+    3,
+    2,
+    3,
+    2,
+    2,
+    1,
+    3,
+    1,
+    2,
+    2,
+    2,
+    1,
+    3,
+    2,
+    1,
+    2,
+    2,
+    1,
+    2,
+    3,
+    1,
+    2,
+    3,
+    1,
     3
    ],
-   "moves": 7,
+   "moves": 30,
    "goals": [
     {
      "type": "street",
@@ -6600,37 +7212,38 @@
     },
     {
      "type": "clear",
-     "tiles": 6
+     "tiles": 10
     }
    ],
    "stars": {
-    "three": 5,
-    "two": 6
+    "three": 14,
+    "two": 22
    },
-   "solution": "aaem",
+   "solution": "rqfprggrprrfm",
    "meta": {
-    "generator": "build100",
-    "k": 22,
-    "seed": 2630479098,
+    "generator": "build18",
+    "k": 62,
+    "seed": 1432543506,
     "role": "normal",
     "note": null,
-    "minMoves": 4,
-    "slack": 3,
+    "minMoves": 13,
+    "slack": 17,
     "toolMin": null,
-    "optimalSolutions": 86,
-    "pOptimal": 0.000542,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 49,
     "estimate": {
-     "D": 49,
-     "Dfelt": 49,
-     "casual": 0.381,
-     "good": 0.525,
-     "random": 0.0076,
+     "D": 22,
+     "Dfelt": 22,
+     "casual": 1,
+     "good": 1,
+     "random": 0.9,
      "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "usable": 30
+     "tried": 79,
+     "usable": 33
     }
    }
   },
@@ -6640,107 +7253,117 @@
    "kind": "duo",
    "board": [
     [
-     null,
-     2,
-     2,
-     null,
-     2
-    ],
-    [
-     null,
-     null,
      4,
      null,
-     2
-    ],
-    [
-     null,
-     null,
      1,
      null,
-     null
+     3
     ],
     [
+     null,
      2,
      1,
+     4,
+     null
+    ],
+    [
+     3,
+     null,
      null,
      null,
      null
     ],
     [
-     1,
+     3,
      null,
      null,
-     1,
-     3
+     null,
+     1
+    ],
+    [
+     4,
+     null,
+     3,
+     4,
+     null
     ]
    ],
    "sequence": [
-    1,
-    1,
-    1,
-    1,
+    4,
+    4,
     2,
+    2,
+    3,
+    3,
+    3,
+    2,
+    1,
+    1,
     4,
     1,
+    4,
+    2,
     1,
+    2,
     1,
-    2
+    2,
+    1,
+    3,
+    2,
+    4,
+    3,
+    4,
+    4,
+    2,
+    2,
+    1,
+    3
    ],
-   "moves": 5,
+   "moves": 24,
    "goals": [
     {
      "type": "tile",
-     "value": 5
+     "value": 6
     },
     {
      "type": "clear",
-     "tiles": 8
+     "tiles": 10
     }
    ],
    "stars": {
-    "three": 5,
-    "two": 5
+    "three": 24,
+    "two": 24
    },
-   "solution": "abcbr",
+   "solution": "khhlsrsssfpgfsshhqhcqiiq",
    "tool": "wand",
    "meta": {
-    "generator": "build100",
-    "k": 19,
-    "seed": 3120747564,
+    "generator": "build18",
+    "k": 48,
+    "seed": 2927234367,
     "role": "tool",
     "note": "Werkzeug-Spitze: Zauberstab",
-    "minMoves": 5,
+    "minMoves": 24,
     "slack": 0,
-    "toolMin": 3,
-    "optimalSolutions": 8,
-    "pOptimal": 0.00000262,
+    "toolMin": 5,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 52,
     "estimate": {
-     "D": 100,
-     "Dfelt": 45,
-     "casual": 0,
-     "good": 0,
-     "random": 0.0002,
+     "D": 64,
+     "Dfelt": 44,
+     "casual": 0.417,
+     "good": 0.292,
+     "random": 0.0625,
      "greedy": false,
-     "casualTool": 0.425,
-     "goodTool": 0.625,
-     "goodStarts": 12
+     "casualTool": 0.25,
+     "goodTool": 0.25,
+     "goodStarts": 8
     },
+    "toolSolution": "W20=4 khlsg",
+    "exact": false,
     "searched": {
-     "tried": 72,
-     "via": "search-one.mjs"
-    },
-    "toolSolution": "W22=5 ajj",
-    "untooled": {
-     "launch": "launch-16",
-     "from": {
-      "moves": 5,
-      "stars": {
-       "three": 3,
-       "two": 4
-      }
-     }
+     "tried": 52,
+     "usable": 4
     }
    }
   },
@@ -6752,95 +7375,121 @@
     [
      null,
      null,
-     2,
-     1,
+     null,
+     null,
      3
     ],
     [
-     1,
-     null,
-     1,
-     null,
-     null
+     4,
+     3,
+     3,
+     2,
+     3
     ],
     [
      null,
      3,
-     1,
-     null,
-     null
-    ],
-    [
      null,
      4,
-     null,
-     2,
-     1
+     4
     ],
     [
-     null,
-     null,
-     null,
-     null,
+     3,
+     5,
+     3,
+     3,
      null
+    ],
+    [
+     4,
+     3,
+     null,
+     null,
+     4
     ]
    ],
    "sequence": [
-    2,
-    1,
-    1,
-    1,
+    3,
+    3,
     4,
     3,
-    1,
+    3,
+    4,
+    3,
+    4,
+    2,
+    4,
+    3,
+    4,
+    3,
+    3,
+    3,
+    2,
+    4,
+    3,
+    3,
+    4,
     3,
     2,
     3,
+    4,
+    3,
+    3,
+    3,
     3,
     2,
+    4,
     3,
-    2
+    3,
+    3,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4
    ],
-   "moves": 9,
+   "moves": 34,
    "goals": [
     {
-     "type": "long",
-     "count": 1
+     "type": "tile",
+     "value": 7
     },
     {
      "type": "make",
-     "value": 4,
+     "value": 5,
      "count": 2
     }
    ],
    "stars": {
-    "three": 6,
-    "two": 8
+    "three": 24,
+    "two": 29
    },
-   "solution": "aaaqr",
+   "solution": "lqbbcbjmmiiodndcodenoem",
    "meta": {
-    "generator": "build100",
-    "k": 8,
-    "seed": 4120368090,
+    "generator": "build18",
+    "k": 4,
+    "seed": 2096232598,
     "role": "milestone",
-    "note": "Meilenstein",
-    "minMoves": 5,
-    "slack": 4,
+    "note": "Meilenstein, 5er schon auf dem Brett",
+    "minMoves": 23,
+    "slack": 11,
     "toolMin": null,
-    "optimalSolutions": 2513,
-    "pOptimal": 0.000813,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 62,
     "estimate": {
-     "D": 60,
-     "Dfelt": 60,
-     "casual": 0.356,
-     "good": 0.244,
-     "random": 0.0076,
-     "greedy": true
+     "D": 71,
+     "Dfelt": 71,
+     "casual": 0.208,
+     "good": 0.167,
+     "random": 0.0375,
+     "greedy": false
     },
+    "exact": false,
     "searched": {
-     "tried": 48,
-     "via": "build100.mjs"
+     "tried": 97,
+     "usable": 21
     }
    }
   },
@@ -6850,11 +7499,25 @@
    "kind": "trio",
    "board": [
     [
-     1,
-     1,
+     null,
+     3,
+     3,
+     null,
+     null
+    ],
+    [
+     null,
+     2,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
      null,
      1,
-     null
+     3
     ],
     [
      null,
@@ -6864,53 +7527,56 @@
      null
     ],
     [
-     null,
+     3,
      null,
      null,
      2,
-     null
-    ],
-    [
-     null,
-     2,
-     2,
-     null,
-     null
-    ],
-    [
-     null,
-     2,
-     null,
-     null,
      null
     ]
    ],
    "sequence": [
-    3,
-    1,
-    1,
-    3,
-    3,
-    3,
-    2,
     2,
     1,
     1,
+    4,
     3,
     2,
     1,
     2,
+    3,
+    3,
+    2,
+    4,
+    1,
+    3,
+    1,
+    4,
+    1,
+    2,
+    1,
+    3,
+    2,
+    2,
+    1,
+    2,
+    2,
+    3,
+    2,
+    1,
+    3,
+    1,
+    1,
     1
    ],
-   "moves": 10,
+   "moves": 27,
    "goals": [
     {
      "type": "tile",
-     "value": 4
+     "value": 5
     },
     {
      "type": "clear",
-     "tiles": 6
+     "tiles": 8
     },
     {
      "type": "street",
@@ -6918,33 +7584,34 @@
     }
    ],
    "stars": {
-    "three": 5,
-    "two": 8
+    "three": 17,
+    "two": 22
    },
-   "solution": "mjsm",
+   "solution": "ccnqrkksrggqddng",
    "meta": {
-    "generator": "build100",
-    "k": 8,
-    "seed": 4118850845,
+    "generator": "build18",
+    "k": 36,
+    "seed": 1006009457,
     "role": "relief",
     "note": "NEU drei Ziele (Einführung, je leicht)",
-    "minMoves": 4,
-    "slack": 6,
+    "minMoves": 16,
+    "slack": 11,
     "toolMin": null,
-    "optimalSolutions": 4,
-    "pOptimal": 0.0000251,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 39,
     "estimate": {
-     "D": 39,
-     "Dfelt": 39,
-     "casual": 0.625,
-     "good": 0.706,
-     "random": 0.0248,
+     "D": 37,
+     "Dfelt": 37,
+     "casual": 0.875,
+     "good": 0.958,
+     "random": 0.275,
      "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "usable": 24
+     "tried": 37,
+     "usable": 8
     }
    }
   },
@@ -6958,87 +7625,108 @@
      null,
      null,
      null,
-     1
+     null
+    ],
+    [
+     1,
+     null,
+     null,
+     2,
+     null
     ],
     [
      null,
      null,
-     1,
      null,
+     3,
      null
     ],
     [
      2,
      null,
      null,
-     2,
+     null,
      1
     ],
     [
-     3,
-     null,
-     3,
-     1,
-     null
-    ],
-    [
      null,
      null,
      2,
-     3,
-     2
+     null,
+     null
     ]
    ],
    "sequence": [
     2,
     3,
+    2,
     3,
     3,
+    3,
+    2,
+    1,
+    1,
+    2,
+    1,
+    2,
+    2,
     1,
     1,
     3,
     2,
     3,
+    3,
+    2,
+    3,
+    3,
     1,
-    4,
-    1
+    1,
+    2,
+    1,
+    1,
+    3,
+    3,
+    3,
+    1,
+    3
    ],
-   "moves": 7,
+   "moves": 27,
    "goals": [
     {
      "type": "purge",
      "value": 3,
-     "tiles": 6
+     "tiles": 8
     }
    ],
    "stars": {
-    "three": 5,
-    "two": 6
+    "three": 18,
+    "two": 23
    },
-   "solution": "aein",
+   "solution": "imminnlddnmbbggjk",
    "meta": {
-    "generator": "build100",
-    "k": 39,
-    "seed": 507063087,
+    "generator": "build18",
+    "k": 26,
+    "seed": 367589666,
     "role": "relief",
     "note": null,
-    "minMoves": 4,
-    "slack": 3,
+    "minMoves": 17,
+    "slack": 10,
     "toolMin": null,
-    "optimalSolutions": 368,
-    "pOptimal": 0.00236,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 43,
     "estimate": {
-     "D": 43,
-     "Dfelt": 43,
-     "casual": 0.362,
-     "good": 0.556,
-     "random": 0.0176,
+     "D": 32,
+     "Dfelt": 32,
+     "casual": 0.833,
+     "good": 0.833,
+     "random": 0.237,
      "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 40,
-     "usable": 31
+     "tried": 88,
+     "usable": 57
     }
    }
   },
@@ -7048,90 +7736,116 @@
    "kind": "tile",
    "board": [
     [
+     3,
      4,
-     1,
      null,
-     null,
-     2
+     3,
+     3
     ],
     [
      null,
-     2,
-     null,
+     4,
+     3,
      null,
      null
     ],
     [
+     4,
+     3,
      null,
-     2,
-     null,
-     null,
-     null
+     3,
+     3
     ],
     [
      null,
-     null,
-     null,
-     null,
-     null
-    ],
-    [
-     null,
-     null,
+     3,
      2,
      null,
-     1
+     3
+    ],
+    [
+     4,
+     5,
+     3,
+     4,
+     null
     ]
    ],
    "sequence": [
+    4,
+    3,
+    3,
+    4,
+    4,
+    4,
+    3,
+    3,
     3,
     3,
     2,
     4,
+    3,
+    4,
+    3,
+    4,
     4,
     3,
     3,
+    3,
+    3,
+    3,
+    3,
     4,
-    1,
     4,
-    1,
-    1
+    4,
+    3,
+    4,
+    3,
+    2,
+    3,
+    3,
+    3,
+    4,
+    3,
+    3,
+    2
    ],
-   "moves": 7,
+   "moves": 32,
    "goals": [
     {
      "type": "tile",
-     "value": 5
+     "value": 7
     }
    ],
    "stars": {
-    "three": 5,
-    "two": 6
+    "three": 19,
+    "two": 26
    },
-   "solution": "abba",
+   "solution": "icarmlmpnlbqmrrood",
    "meta": {
-    "generator": "build100",
-    "k": 12,
-    "seed": 1858097495,
+    "generator": "build18",
+    "k": 4,
+    "seed": 2089026527,
     "role": "normal",
-    "note": "(statt Kette 3)",
-    "minMoves": 4,
-    "slack": 3,
+    "note": "(statt Kette)",
+    "minMoves": 18,
+    "slack": 14,
     "toolMin": null,
-    "optimalSolutions": 675,
-    "pOptimal": 0.00427,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 47,
     "estimate": {
-     "D": 47,
-     "Dfelt": 47,
-     "casual": 0.313,
-     "good": 0.362,
-     "random": 0.0392,
-     "greedy": true
+     "D": 65,
+     "Dfelt": 65,
+     "casual": 0.167,
+     "good": 0.25,
+     "random": 0.0125,
+     "greedy": false
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "via": "build100.mjs"
+     "tried": 49,
+     "usable": 18
     }
    }
   },
@@ -7142,8 +7856,8 @@
    "board": [
     [
      null,
-     null,
      3,
+     null,
      null,
      null
     ],
@@ -7155,82 +7869,107 @@
      null
     ],
     [
-     3,
      null,
-     2,
-     null,
-     null
-    ],
-    [
-     3,
      1,
      null,
      null,
      null
     ],
     [
+     2,
+     1,
      null,
      null,
+     null
+    ],
+    [
+     1,
      null,
      null,
-     1
+     1,
+     null
     ]
    ],
    "sequence": [
-    1,
+    3,
     2,
     1,
     2,
     4,
     2,
     1,
-    3,
+    1,
     1,
     2,
+    4,
+    2,
+    1,
     1,
     3,
+    3,
+    3,
+    2,
+    2,
+    2,
+    4,
+    2,
+    2,
+    3,
+    3,
+    1,
+    4,
+    2,
+    2,
+    4,
+    2,
+    3,
+    2,
+    3,
+    4,
+    4,
     4
    ],
-   "moves": 8,
+   "moves": 32,
    "goals": [
     {
      "type": "make",
-     "value": 4,
+     "value": 5,
      "count": 2
     },
     {
      "type": "score",
-     "points": 250
+     "points": 400
     }
    ],
    "stars": {
-    "three": 6,
-    "two": 7
+    "three": 25,
+    "two": 29
    },
-   "solution": "affjh",
+   "solution": "jijmqliqhipfrrqrphligrrg",
    "meta": {
-    "generator": "build100",
-    "k": 24,
-    "seed": 3512356806,
+    "generator": "build18",
+    "k": 11,
+    "seed": 3356171717,
     "role": "normal",
     "note": null,
-    "minMoves": 5,
-    "slack": 3,
+    "minMoves": 24,
+    "slack": 8,
     "toolMin": null,
-    "optimalSolutions": 2074,
-    "pOptimal": 0.00065,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 52,
     "estimate": {
-     "D": 54,
-     "Dfelt": 54,
-     "casual": 0.388,
-     "good": 0.581,
-     "random": 0.0024,
-     "greedy": true
+     "D": 55,
+     "Dfelt": 55,
+     "casual": 0.5,
+     "good": 0.875,
+     "random": 0.0375,
+     "greedy": false
     },
+    "exact": false,
     "searched": {
-     "tried": 35,
-     "usable": 18
+     "tried": 49,
+     "usable": 22
     }
    }
   },
@@ -7240,53 +7979,64 @@
    "kind": "duo",
    "board": [
     [
+     1,
      null,
-     2,
      null,
-     2,
+     null,
      null
     ],
     [
-     null,
-     null,
      null,
      1,
-     null
-    ],
-    [
      2,
-     2,
-     null,
      null,
      null
     ],
     [
-     null,
-     2,
-     null,
-     null,
-     null
-    ],
-    [
-     null,
-     null,
-     null,
      1,
-     1
+     2,
+     2,
+     null,
+     3
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     3
+    ],
+    [
+     null,
+     3,
+     3,
+     null,
+     null
     ]
    ],
    "sequence": [
+    1,
+    3,
+    3,
+    2,
+    4,
+    3,
+    1,
     2,
     1,
     2,
-    2,
+    1,
     2,
     3,
-    3,
     2,
-    2
+    2,
+    1,
+    1,
+    3,
+    3,
+    1
    ],
-   "moves": 4,
+   "moves": 15,
    "goals": [
     {
      "type": "empty",
@@ -7294,146 +8044,162 @@
     },
     {
      "type": "score",
-     "points": 150
+     "points": 220
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 4
+    "three": 15,
+    "two": 15
    },
-   "solution": "qnss",
+   "solution": "lbbtmiggliilmim",
    "tool": "rocket",
    "meta": {
-    "generator": "build100",
-    "k": 90,
-    "seed": 2616762779,
+    "generator": "build18",
+    "k": 50,
+    "seed": 3803032883,
     "role": "tool",
     "note": "Werkzeug-Spitze: Rakete",
-    "minMoves": 4,
+    "minMoves": 15,
     "slack": 0,
-    "toolMin": 2,
+    "toolMin": 4,
     "optimalSolutions": null,
     "pOptimal": null,
     "target": 54,
     "estimate": {
-     "D": 100,
-     "Dfelt": 37,
+     "D": 87,
+     "Dfelt": 42,
      "casual": 0,
      "good": 0,
-     "random": 0.0002,
+     "random": 0.00625,
      "greedy": false,
-     "casualTool": 0.519,
-     "goodTool": 0.975,
-     "goodStarts": 2
+     "casualTool": 0.25,
+     "goodTool": 0.792,
+     "goodStarts": 5
     },
+    "toolSolution": "R22 gbjg",
+    "exact": false,
     "searched": {
-     "tried": 179,
-     "usable": 5
-    },
-    "toolSolution": "R03 qe",
-    "untooled": {
-     "launch": "launch-16",
-     "from": {
-      "moves": 3,
-      "stars": {
-       "three": 2,
-       "two": 3
-      }
-     }
+     "tried": 57,
+     "usable": 1
     }
    }
   },
   {
    "id": 76,
    "chapter": 8,
-   "kind": "street",
+   "kind": "duo",
    "board": [
     [
+     2,
      null,
-     null,
-     null,
-     4,
-     2
-    ],
-    [
-     3,
      1,
      null,
-     3,
+     null
+    ],
+    [
+     null,
+     1,
+     null,
+     null,
      null
     ],
     [
      null,
      null,
      null,
-     3,
+     null,
+     null
+    ],
+    [
+     1,
+     null,
+     null,
+     null,
      1
     ],
     [
      null,
      null,
+     null,
      2,
-     null,
-     null
-    ],
-    [
-     null,
-     null,
-     3,
-     null,
      null
     ]
    ],
    "sequence": [
     1,
-    2,
-    3,
     1,
-    3,
-    2,
-    2,
-    3,
     1,
-    3,
+    1,
     2,
     1,
-    1
+    2,
+    1,
+    1,
+    2,
+    2,
+    1,
+    1,
+    1,
+    1,
+    2,
+    2,
+    1,
+    1,
+    1,
+    1,
+    2,
+    2,
+    1,
+    2,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    2,
+    2
    ],
-   "moves": 8,
+   "moves": 28,
    "goals": [
     {
      "type": "street",
      "count": 3
+    },
+    {
+     "type": "clear",
+     "tiles": 10
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 6
+    "three": 14,
+    "two": 21
    },
-   "solution": "agr",
+   "solution": "pqghqdggdnrrh",
    "meta": {
-    "generator": "build100",
-    "k": 0,
-    "seed": 76000228,
+    "generator": "build18",
+    "k": 68,
+    "seed": 37484768,
     "role": "relief",
     "note": "Erholung",
-    "minMoves": 3,
-    "slack": 5,
+    "minMoves": 13,
+    "slack": 15,
     "toolMin": null,
-    "optimalSolutions": 1,
-    "pOptimal": 0.000125,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 41,
     "estimate": {
-     "D": 41,
-     "Dfelt": 41,
-     "casual": 0.331,
-     "good": 0.713,
-     "random": 0.0124,
+     "D": 42,
+     "Dfelt": 42,
+     "casual": 0.375,
+     "good": 0.792,
+     "random": 0.0375,
      "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "usable": 24
+     "tried": 69,
+     "usable": 37
     }
    }
   },
@@ -7445,28 +8211,14 @@
     [
      null,
      2,
-     1,
      null,
-     null
+     2,
+     3
     ],
     [
-     2,
+     3,
      null,
-     2,
-     null,
-     2
-    ],
-    [
-     null,
-     null,
-     null,
-     2,
-     null
-    ],
-    [
-     2,
-     null,
-     null,
+     3,
      null,
      null
     ],
@@ -7475,28 +8227,68 @@
      null,
      null,
      null,
-     2
+     null
+    ],
+    [
+     null,
+     2,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
     ]
    ],
    "sequence": [
+    1,
+    1,
     2,
-    3,
+    1,
+    2,
+    1,
+    2,
+    2,
+    1,
+    1,
+    2,
+    1,
+    1,
+    2,
+    2,
+    2,
+    2,
+    2,
+    1,
+    1,
+    1,
     2,
     2,
     1,
     2,
-    3,
-    3,
     1,
-    3,
     2,
+    2,
+    2,
+    2,
+    1,
+    2,
+    2,
+    1,
+    2,
+    1,
+    1,
     1
    ],
-   "moves": 7,
+   "moves": 33,
    "goals": [
     {
      "type": "score",
-     "points": 350
+     "points": 500
     },
     {
      "type": "purge",
@@ -7505,33 +8297,34 @@
     }
    ],
    "stars": {
-    "three": 5,
-    "two": 6
+    "three": 19,
+    "two": 26
    },
-   "solution": "bqqg",
+   "solution": "rgqqrriiffqepitmii",
    "meta": {
-    "generator": "build100",
-    "k": 14,
-    "seed": 2745059721,
+    "generator": "build18",
+    "k": 8,
+    "seed": 4113376175,
     "role": "normal",
-    "note": "(statt Große Gruppe)",
-    "minMoves": 4,
-    "slack": 3,
+    "note": null,
+    "minMoves": 18,
+    "slack": 15,
     "toolMin": null,
-    "optimalSolutions": 91,
-    "pOptimal": 0.000569,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 49,
     "estimate": {
-     "D": 49,
-     "Dfelt": 49,
-     "casual": 0.344,
-     "good": 0.556,
-     "random": 0.0156,
+     "D": 26,
+     "Dfelt": 26,
+     "casual": 1,
+     "good": 1,
+     "random": 1,
      "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "usable": 22
+     "tried": 144,
+     "usable": 26
     }
    }
   },
@@ -7541,31 +8334,145 @@
    "kind": "make",
    "board": [
     [
-     4,
-     3,
      null,
-     1,
+     null,
+     2,
+     null,
      null
     ],
     [
      null,
+     null,
+     null,
+     1,
+     4
+    ],
+    [
+     null,
+     4,
+     3,
+     null,
+     null
+    ],
+    [
+     1,
      null,
      null,
      null,
      1
     ],
     [
-     2,
+     3,
+     4,
      null,
      null,
-     2,
      null
+    ]
+   ],
+   "sequence": [
+    1,
+    2,
+    4,
+    3,
+    4,
+    3,
+    3,
+    1,
+    1,
+    1,
+    4,
+    4,
+    1,
+    2,
+    3,
+    4,
+    3,
+    3,
+    3,
+    1,
+    3,
+    2,
+    1,
+    1,
+    2,
+    3,
+    4,
+    2,
+    1,
+    1,
+    2,
+    3,
+    1,
+    1,
+    2,
+    4,
+    1,
+    1
+   ],
+   "moves": 33,
+   "goals": [
+    {
+     "type": "make",
+     "value": 6,
+     "count": 2
+    }
+   ],
+   "stars": {
+    "three": 26,
+    "two": 30
+   },
+   "solution": "rjpfqgpiddppskihccksjkmbb",
+   "meta": {
+    "generator": "build18",
+    "k": 10,
+    "seed": 713879680,
+    "role": "normal",
+    "note": null,
+    "minMoves": 25,
+    "slack": 8,
+    "toolMin": null,
+    "optimalSolutions": null,
+    "pOptimal": null,
+    "target": 54,
+    "estimate": {
+     "D": 92,
+     "Dfelt": 92,
+     "casual": 0,
+     "good": 0.083,
+     "random": 0.00625,
+     "greedy": false
+    },
+    "exact": false,
+    "searched": {
+     "tried": 39,
+     "usable": 3
+    }
+   }
+  },
+  {
+   "id": 79,
+   "chapter": 8,
+   "kind": "duo",
+   "board": [
+    [
+     3,
+     4,
+     null,
+     null,
+     3
     ],
     [
-     1,
-     1,
+     null,
+     2,
      null,
      null,
+     3
+    ],
+    [
+     null,
+     3,
+     null,
+     5,
      null
     ],
     [
@@ -7573,169 +8480,91 @@
      null,
      null,
      null,
-     null
+     4
+    ],
+    [
+     3,
+     null,
+     4,
+     3,
+     3
     ]
    ],
    "sequence": [
-    1,
-    1,
     3,
-    1,
-    4,
-    2,
-    4,
-    3,
-    2,
-    1,
-    1,
     3,
     4,
+    4,
+    4,
     2,
-    1
+    3,
+    4,
+    3,
+    3,
+    2,
+    3,
+    2,
+    3,
+    3,
+    3,
+    4,
+    4,
+    3,
+    4,
+    3,
+    4,
+    3,
+    3,
+    2,
+    3,
+    3,
+    3
    ],
-   "moves": 10,
+   "moves": 23,
    "goals": [
     {
-     "type": "make",
-     "value": 5,
-     "count": 2
-    }
-   ],
-   "stars": {
-    "three": 6,
-    "two": 8
-   },
-   "solution": "abfbp",
-   "meta": {
-    "generator": "build100",
-    "k": 2,
-    "seed": 952681224,
-    "role": "normal",
-    "note": null,
-    "minMoves": 5,
-    "slack": 5,
-    "toolMin": null,
-    "optimalSolutions": 1908,
-    "pOptimal": 0.00067,
-    "target": 54,
-    "estimate": {
-     "D": 61,
-     "Dfelt": 61,
-     "casual": 0.231,
-     "good": 0.563,
-     "random": 0.0084,
-     "greedy": false
+     "type": "tile",
+     "value": 7
     },
-    "searched": {
-     "tried": 22,
-     "usable": 2
-    }
-   }
-  },
-  {
-   "id": 79,
-   "chapter": 8,
-   "kind": "street",
-   "board": [
-    [
-     3,
-     null,
-     null,
-     3,
-     null
-    ],
-    [
-     1,
-     null,
-     null,
-     1,
-     null
-    ],
-    [
-     null,
-     null,
-     null,
-     null,
-     null
-    ],
-    [
-     null,
-     null,
-     2,
-     null,
-     null
-    ],
-    [
-     null,
-     null,
-     2,
-     null,
-     null
-    ]
-   ],
-   "sequence": [
-    2,
-    1,
-    1,
-    1,
-    3,
-    4,
-    2,
-    2,
-    3,
-    3,
-    1
-   ],
-   "moves": 6,
-   "goals": [
     {
      "type": "street",
      "count": 2
     }
    ],
    "stars": {
-    "three": 6,
-    "two": 6
+    "three": 23,
+    "two": 23
    },
-   "solution": "aaaln",
+   "solution": "dittqqkfilfqimccbssbscc",
    "tool": "hint",
    "meta": {
-    "generator": "build100",
-    "k": 185,
-    "seed": 1386447428,
+    "generator": "build18",
+    "k": 18,
+    "seed": 458489055,
     "role": "tool",
     "note": "Werkzeug-Spitze: Hinweis",
-    "minMoves": 5,
-    "slack": 1,
-    "toolMin": 5,
-    "optimalSolutions": 2054,
-    "pOptimal": 0.000645,
+    "minMoves": 23,
+    "slack": 0,
+    "toolMin": 23,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 56,
     "estimate": {
-     "D": 77,
-     "Dfelt": 54,
-     "casual": 0.15,
-     "good": 0.3,
-     "random": 0.0032,
+     "D": 89,
+     "Dfelt": 66,
+     "casual": 0.042,
+     "good": 0.208,
+     "random": 0.00625,
      "greedy": false,
-     "casualTool": 0.475,
-     "goodTool": 0.506
+     "casualTool": 0.25,
+     "goodTool": 0.333
     },
-    "hintMoves": "aa",
+    "hintMoves": "im",
+    "toolSolution": "dittqqkfilfqimccbssbscc",
+    "exact": false,
     "searched": {
-     "tried": 186,
-     "usable": 13
-    },
-    "toolSolution": "aaaln",
-    "untooled": {
-     "launch": "launch-16",
-     "from": {
-      "moves": 6,
-      "stars": {
-       "three": 5,
-       "two": 6
-      }
-     }
+     "tried": 87,
+     "usable": 3
     }
    }
   },
@@ -7745,67 +8574,94 @@
    "kind": "trio",
    "board": [
     [
-     2,
-     null,
-     null,
-     null,
-     3
-    ],
-    [
-     1,
-     3,
-     1,
-     5,
-     null
-    ],
-    [
      4,
      null,
+     null,
+     3,
+     null
+    ],
+    [
+     null,
      5,
-     2,
+     3,
+     null,
      null
     ],
     [
      2,
      3,
-     5,
      null,
+     3,
      null
     ],
     [
-     2,
      null,
-     1,
      null,
-     null
+     4,
+     null,
+     4
+    ],
+    [
+     null,
+     null,
+     null,
+     3,
+     3
     ]
    ],
    "sequence": [
-    1,
-    1,
-    1,
-    1,
-    1,
+    3,
+    3,
+    4,
+    3,
+    3,
+    3,
+    3,
+    4,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    4,
+    4,
+    4,
+    3,
+    3,
+    2,
+    4,
+    2,
+    3,
+    3,
+    3,
+    4,
+    3,
+    3,
+    3,
     2,
     2,
     2,
+    3,
+    3,
+    4,
+    3,
     2,
-    1,
-    2,
-    2,
-    1,
-    1,
-    1
+    4,
+    3,
+    2
    ],
-   "moves": 10,
+   "moves": 37,
    "goals": [
     {
      "type": "tile",
-     "value": 5
+     "value": 6
     },
     {
      "type": "clear",
-     "tiles": 10
+     "tiles": 12
     },
     {
      "type": "street",
@@ -7813,33 +8669,34 @@
     }
    ],
    "stars": {
-    "three": 5,
-    "two": 8
+    "three": 25,
+    "two": 31
    },
-   "solution": "fhkj",
+   "solution": "gsdmnsfssqrfqiilccqqbtch",
    "meta": {
-    "generator": "build100",
-    "k": 7,
-    "seed": 1463871271,
+    "generator": "build18",
+    "k": 16,
+    "seed": 3887280096,
     "role": "milestone",
-    "note": "Meilenstein: drei Ziele",
-    "minMoves": 4,
-    "slack": 6,
+    "note": "Meilenstein: drei Ziele, 5er schon auf dem Brett",
+    "minMoves": 24,
+    "slack": 13,
     "toolMin": null,
-    "optimalSolutions": 10,
-    "pOptimal": 0.000109,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 67,
     "estimate": {
-     "D": 70,
-     "Dfelt": 70,
-     "casual": 0.212,
-     "good": 0.331,
-     "random": 0.0164,
-     "greedy": false
+     "D": 37,
+     "Dfelt": 37,
+     "casual": 0.917,
+     "good": 0.958,
+     "random": 0.45,
+     "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "via": "build100.mjs"
+     "tried": 45,
+     "usable": 2
     }
    }
   },
@@ -7850,10 +8707,10 @@
    "board": [
     [
      null,
+     2,
      null,
-     null,
-     null,
-     1
+     1,
+     null
     ],
     [
      null,
@@ -7863,79 +8720,100 @@
      null
     ],
     [
-     null,
      1,
+     null,
+     null,
+     2,
+     null
+    ],
+    [
      2,
      null,
-     1
-    ],
-    [
-     null,
-     null,
      null,
      1,
-     1
+     null
     ],
     [
      null,
      null,
-     null,
+     3,
      null,
      null
     ]
    ],
    "sequence": [
+    2,
+    3,
+    3,
+    2,
+    3,
+    2,
+    2,
+    1,
+    2,
+    2,
+    1,
+    3,
+    2,
+    2,
+    1,
+    3,
+    2,
+    2,
+    2,
+    1,
+    2,
+    2,
+    1,
+    2,
+    2,
+    1,
+    1,
     3,
     2,
     1,
     2,
-    3,
     1,
     1,
     1,
-    1,
-    1,
-    2,
-    1,
-    2,
-    2,
-    1
+    2
    ],
-   "moves": 10,
+   "moves": 30,
    "goals": [
     {
      "type": "clear",
-     "tiles": 8
+     "tiles": 12
     }
    ],
    "stars": {
-    "three": 6,
-    "two": 8
+    "three": 11,
+    "two": 21
    },
-   "solution": "bcbhh",
+   "solution": "sjlrmnqfcc",
    "meta": {
-    "generator": "build100",
-    "k": 13,
-    "seed": 201513678,
+    "generator": "build18",
+    "k": 1,
+    "seed": 2598669954,
     "role": "relief",
     "note": "Erholung",
-    "minMoves": 5,
-    "slack": 5,
+    "minMoves": 10,
+    "slack": 20,
     "toolMin": null,
-    "optimalSolutions": 9,
-    "pOptimal": 0.00000285,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 43,
     "estimate": {
-     "D": 43,
-     "Dfelt": 43,
-     "casual": 0.381,
-     "good": 0.606,
-     "random": 0.0272,
+     "D": 14,
+     "Dfelt": 14,
+     "casual": 1,
+     "good": 1,
+     "random": 1,
      "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "via": "build100.mjs"
+     "tried": 81,
+     "usable": 80
     }
    }
   },
@@ -7949,7 +8827,21 @@
      null,
      null,
      null,
-     null
+     2
+    ],
+    [
+     1,
+     null,
+     null,
+     null,
+     2
+    ],
+    [
+     null,
+     3,
+     4,
+     null,
+     5
     ],
     [
      null,
@@ -7960,23 +8852,9 @@
     ],
     [
      null,
-     3,
-     null,
-     null,
-     3
-    ],
-    [
-     null,
-     4,
-     null,
-     null,
-     2
-    ],
-    [
      null,
      null,
      2,
-     3,
      null
     ]
    ],
@@ -7984,17 +8862,40 @@
     2,
     1,
     1,
+    3,
+    3,
+    3,
+    2,
+    1,
+    3,
+    1,
+    2,
+    1,
+    3,
+    1,
+    3,
+    2,
+    2,
+    3,
     2,
     2,
     1,
+    1,
+    1,
+    1,
     2,
-    4,
+    3,
     2,
+    3,
     2,
+    1,
+    3,
+    2,
+    1,
     2,
     1
    ],
-   "moves": 7,
+   "moves": 30,
    "goals": [
     {
      "type": "long",
@@ -8002,33 +8903,34 @@
     }
    ],
    "stars": {
-    "three": 3,
-    "two": 5
+    "three": 12,
+    "two": 21
    },
-   "solution": "nd",
+   "solution": "cfhnnnatnfn",
    "meta": {
-    "generator": "build100",
-    "k": 8,
-    "seed": 4116247806,
+    "generator": "build18",
+    "k": 192,
+    "seed": 2910354870,
     "role": "relief",
-    "note": null,
-    "minMoves": 2,
-    "slack": 5,
+    "note": "fast fertige Straße aus 5",
+    "minMoves": 11,
+    "slack": 19,
     "toolMin": null,
-    "optimalSolutions": 2,
-    "pOptimal": 0.005,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 48,
     "estimate": {
-     "D": 48,
-     "Dfelt": 48,
-     "casual": 0.338,
-     "good": 0.313,
-     "random": 0.0196,
+     "D": 46,
+     "Dfelt": 46,
+     "casual": 0.375,
+     "good": 0.208,
+     "random": 0.0625,
      "greedy": false
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "usable": 30
+     "tried": 193,
+     "usable": 26
     }
    }
   },
@@ -8038,35 +8940,35 @@
    "kind": "duo",
    "board": [
     [
-     null,
-     null,
-     3,
      2,
-     null
-    ],
-    [
-     null,
-     null,
      3,
      null,
-     2
-    ],
-    [
-     null,
-     null,
-     1,
-     1,
+     3,
      3
     ],
     [
+     null,
      3,
      null,
+     3,
+     3
+    ],
+    [
+     4,
+     5,
      null,
      null,
      null
     ],
     [
-     2,
+     3,
+     null,
+     null,
+     3,
+     4
+    ],
+    [
+     3,
      3,
      null,
      null,
@@ -8074,62 +8976,87 @@
     ]
    ],
    "sequence": [
+    2,
+    3,
+    2,
+    3,
+    4,
+    4,
+    4,
+    3,
     4,
     2,
     4,
     3,
-    2,
     4,
     3,
     3,
-    2,
-    1,
-    2,
-    1,
-    1,
-    2,
-    2,
+    3,
+    3,
+    4,
+    3,
+    4,
+    3,
+    3,
+    3,
+    4,
+    3,
+    4,
+    4,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    4,
+    3,
+    3,
+    3,
+    3,
     3
    ],
-   "moves": 11,
+   "moves": 35,
    "goals": [
     {
      "type": "tile",
-     "value": 5
+     "value": 7
     },
     {
      "type": "clear",
-     "tiles": 8
+     "tiles": 10
     }
    ],
    "stars": {
-    "three": 6,
-    "two": 9
+    "three": 24,
+    "two": 30
    },
-   "solution": "bqbrr",
+   "solution": "jhfjaarqlsltabbnndasbtb",
    "meta": {
-    "generator": "build100",
-    "k": 8,
-    "seed": 4115248689,
+    "generator": "build18",
+    "k": 40,
+    "seed": 3159980049,
     "role": "normal",
     "note": null,
-    "minMoves": 5,
-    "slack": 6,
+    "minMoves": 23,
+    "slack": 12,
     "toolMin": null,
-    "optimalSolutions": 28,
-    "pOptimal": 0.00000902,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 52,
     "estimate": {
-     "D": 61,
-     "Dfelt": 61,
-     "casual": 0.313,
-     "good": 0.331,
-     "random": 0.0268,
+     "D": 82,
+     "Dfelt": 82,
+     "casual": 0.167,
+     "good": 0.042,
+     "random": 0.00625,
      "greedy": false
     },
+    "exact": false,
     "searched": {
-     "tried": 12,
-     "usable": 6
+     "tried": 45,
+     "usable": 4
     }
    }
   },
@@ -8140,198 +9067,240 @@
    "board": [
     [
      null,
-     1,
-     1,
-     null,
-     null
-    ],
-    [
-     null,
-     null,
-     null,
-     1,
-     null
-    ],
-    [
-     null,
-     3,
-     3,
-     1,
-     null
-    ],
-    [
-     null,
-     null,
-     null,
-     null,
-     null
-    ],
-    [
      null,
      2,
-     null,
      2,
+     null
+    ],
+    [
+     1,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     1,
+     null,
+     null,
+     1,
+     1
+    ],
+    [
+     null,
+     null,
+     30,
+     null,
+     1
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
      null
     ]
    ],
    "sequence": [
-    3,
+    1,
+    2,
+    1,
+    2,
+    1,
+    2,
+    1,
+    2,
+    2,
     1,
     1,
     2,
     1,
-    3,
-    1,
-    3,
+    2,
     1,
     1,
     1,
+    2,
+    1,
+    1,
+    2,
+    2,
+    1,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    2,
+    2,
+    1,
+    1,
+    2,
+    2,
+    1,
+    2,
+    1,
+    2,
     1
    ],
-   "moves": 7,
+   "moves": 35,
    "goals": [
     {
-     "type": "empty",
-     "max": 4
+     "type": "score",
+     "points": 600
     },
     {
-     "type": "score",
-     "points": 300
+     "type": "clear",
+     "tiles": 10
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 6
+    "three": 19,
+    "two": 27
    },
-   "solution": "haa",
+   "solution": "baftaffphbtscbpmcq",
    "meta": {
-    "generator": "build100",
-    "k": 15,
-    "seed": 1078041763,
+    "generator": "build18",
+    "k": 219,
+    "seed": 1551148951,
     "role": "normal",
-    "note": "(statt Große Gruppe)",
-    "minMoves": 3,
-    "slack": 4,
+    "note": "hoher Wert (~30) als Blocker auf dem Brett",
+    "minMoves": 18,
+    "slack": 17,
     "toolMin": null,
-    "optimalSolutions": 6,
-    "pOptimal": 0.000751,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 57,
     "estimate": {
-     "D": 57,
-     "Dfelt": 57,
-     "casual": 0.225,
-     "good": 0.775,
-     "random": 0.0012,
+     "D": 25,
+     "Dfelt": 25,
+     "casual": 1,
+     "good": 1,
+     "random": 1,
      "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "usable": 25
+     "tried": 244,
+     "usable": 22
     }
    }
   },
   {
    "id": 85,
    "chapter": 9,
-   "kind": "make",
+   "kind": "duo",
    "board": [
     [
      null,
-     null,
-     1,
-     null,
-     3
-    ],
-    [
-     1,
-     null,
-     null,
-     null,
-     3
-    ],
-    [
-     null,
-     null,
-     null,
+     3,
+     3,
      null,
      null
     ],
     [
      null,
      null,
-     1,
+     2,
+     4,
+     null
+    ],
+    [
+     3,
+     null,
+     3,
      null,
      null
     ],
     [
+     2,
      null,
      null,
      3,
-     3,
+     2
+    ],
+    [
+     4,
+     null,
+     null,
+     2,
      null
     ]
    ],
    "sequence": [
+    2,
+    2,
+    3,
+    3,
+    2,
+    1,
+    2,
+    3,
+    1,
+    2,
+    1,
+    1,
+    1,
+    1,
+    2,
+    2,
+    2,
+    1,
+    1,
+    2,
     1,
     3,
-    2,
-    3,
-    2,
-    2,
-    3,
     1,
+    2,
+    3,
+    2,
     3
    ],
-   "moves": 4,
+   "moves": 22,
    "goals": [
     {
      "type": "make",
-     "value": 4,
+     "value": 5,
      "count": 2
+    },
+    {
+     "type": "clear",
+     "tiles": 10
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 4
+    "three": 22,
+    "two": 22
    },
-   "solution": "aebs",
+   "solution": "nqqpgkhigibbbdnjccirrq",
    "tool": "extraMoves",
    "meta": {
-    "generator": "build100",
-    "k": 12,
-    "seed": 1871230067,
+    "generator": "build18",
+    "k": 72,
+    "seed": 2055944695,
     "role": "tool",
     "note": "Werkzeug-Spitze: +3 Züge",
-    "minMoves": 4,
+    "minMoves": 22,
     "slack": 0,
-    "toolMin": 4,
-    "optimalSolutions": 3658,
-    "pOptimal": 0.0229,
+    "toolMin": 22,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 59,
     "estimate": {
-     "D": 100,
-     "Dfelt": 40,
-     "casual": 0,
-     "good": 0,
-     "random": 0.0002,
+     "D": 61,
+     "Dfelt": 57,
+     "casual": 0.375,
+     "good": 0.25,
+     "random": 0.025,
      "greedy": false,
-     "casualTool": 0.45,
-     "goodTool": 0.775
+     "casualTool": 0.417,
+     "goodTool": 0.333
     },
+    "toolSolution": "nqqpgkhigibbbdnjccirrq",
+    "exact": false,
     "searched": {
-     "tried": 60,
-     "usable": 1
-    },
-    "toolSolution": "aebs",
-    "untooled": {
-     "launch": "launch-16",
-     "from": {
-      "moves": 3,
-      "stars": {
-       "three": 4,
-       "two": 5
-      }
-     }
+     "tried": 124,
+     "usable": 17
     }
    }
   },
@@ -8341,6 +9310,13 @@
    "kind": "clear",
    "board": [
     [
+     4,
+     2,
+     null,
+     null,
+     null
+    ],
+    [
      null,
      null,
      null,
@@ -8349,86 +9325,101 @@
     ],
     [
      null,
-     1,
      null,
-     1,
+     2,
+     null,
      null
     ],
     [
-     2,
-     null,
      4,
+     null,
+     null,
      2,
-     3
+     null
     ],
     [
+     null,
      1,
-     null,
-     null,
+     1,
      2,
-     4
-    ],
-    [
-     4,
-     4,
-     null,
-     null,
-     4
+     1
     ]
    ],
    "sequence": [
+    2,
     1,
-    2,
-    3,
-    2,
-    2,
-    3,
     1,
     2,
     1,
     1,
-    3,
-    3,
     1,
+    1,
+    2,
+    2,
+    2,
+    2,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    2,
+    2,
+    2,
+    1,
+    1,
+    1,
+    1,
+    2,
+    1,
+    2,
+    1,
+    1,
+    2,
+    2,
     1,
     1,
     1
    ],
-   "moves": 11,
+   "moves": 32,
    "goals": [
     {
      "type": "clear",
-     "tiles": 10
+     "tiles": 14
     }
    ],
    "stars": {
-    "three": 6,
-    "two": 9
+    "three": 12,
+    "two": 22
    },
-   "solution": "bbdhh",
+   "solution": "necmdedqqpf",
    "meta": {
-    "generator": "build100",
-    "k": 2,
-    "seed": 961458656,
+    "generator": "build18",
+    "k": 95,
+    "seed": 3015076397,
     "role": "relief",
     "note": "Erholung",
-    "minMoves": 5,
-    "slack": 6,
+    "minMoves": 11,
+    "slack": 21,
     "toolMin": null,
-    "optimalSolutions": 46,
-    "pOptimal": 0.0000168,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 45,
     "estimate": {
-     "D": 44,
-     "Dfelt": 44,
-     "casual": 0.338,
-     "good": 0.725,
-     "random": 0.0252,
+     "D": 15,
+     "Dfelt": 15,
+     "casual": 0.958,
+     "good": 1,
+     "random": 1,
      "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "usable": 17
+     "tried": 107,
+     "usable": 106
     }
    }
   },
@@ -8438,58 +9429,85 @@
    "kind": "duo",
    "board": [
     [
+     2,
      null,
      null,
      null,
-     null,
-     2
+     null
     ],
     [
      null,
-     null,
-     null,
+     3,
+     3,
      1,
+     null
+    ],
+    [
+     4,
+     3,
+     null,
+     null,
      null
     ],
     [
      null,
      null,
-     3,
      null,
-     3
-    ],
-    [
-     null,
-     4,
-     1,
-     null,
-     4
-    ],
-    [
      2,
-     null,
+     2
+    ],
+    [
+     1,
+     2,
      null,
      null,
      null
     ]
    ],
    "sequence": [
+    2,
+    1,
+    3,
+    1,
+    1,
+    2,
+    2,
+    3,
+    1,
+    2,
+    3,
+    2,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    2,
+    1,
+    2,
+    3,
+    2,
+    1,
+    1,
+    3,
+    1,
+    1,
+    1,
+    1,
     1,
     1,
     1,
     1,
     2,
     1,
+    3,
     1,
-    2,
     1,
-    2,
-    2,
-    2,
-    2,
-    2
+    1
    ],
-   "moves": 9,
+   "moves": 36,
    "goals": [
     {
      "type": "long",
@@ -8497,37 +9515,38 @@
     },
     {
      "type": "clear",
-     "tiles": 8
+     "tiles": 10
     }
    ],
    "stars": {
-    "three": 6,
-    "two": 8
+    "three": 17,
+    "two": 27
    },
-   "solution": "lmntj",
+   "solution": "dlqikhghogssnmhh",
    "meta": {
-    "generator": "build100",
-    "k": 18,
-    "seed": 449383095,
+    "generator": "build18",
+    "k": 71,
+    "seed": 3830269138,
     "role": "normal",
     "note": null,
-    "minMoves": 5,
-    "slack": 4,
+    "minMoves": 16,
+    "slack": 20,
     "toolMin": null,
-    "optimalSolutions": 48,
-    "pOptimal": 0.0000154,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 54,
     "estimate": {
-     "D": 61,
-     "Dfelt": 61,
-     "casual": 0.287,
-     "good": 0.444,
-     "random": 0.0028,
-     "greedy": true
+     "D": 51,
+     "Dfelt": 51,
+     "casual": 0.292,
+     "good": 0.5,
+     "random": 0.0625,
+     "greedy": false
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "via": "build100.mjs"
+     "tried": 93,
+     "usable": 69
     }
    }
   },
@@ -8537,94 +9556,121 @@
    "kind": "purge",
    "board": [
     [
+     2,
+     4,
+     null,
+     5,
+     2
+    ],
+    [
+     5,
+     2,
+     null,
+     3,
+     2
+    ],
+    [
+     null,
+     3,
      null,
      null,
+     null
+    ],
+    [
+     null,
+     3,
      null,
      3,
      null
     ],
     [
      null,
+     5,
      null,
      null,
-     null,
-     null
-    ],
-    [
-     4,
-     null,
-     null,
-     null,
-     null
-    ],
-    [
-     4,
-     4,
-     null,
-     null,
-     null
-    ],
-    [
-     null,
-     null,
-     1,
-     null,
-     4
+     2
     ]
    ],
    "sequence": [
+    1,
+    1,
     2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    2,
+    3,
+    1,
+    2,
+    1,
+    3,
     2,
     1,
     4,
     4,
+    2,
+    1,
+    4,
     1,
     3,
     4,
+    1,
+    3,
     2,
-    5,
+    4,
     4,
     3,
+    1,
     4,
-    5,
-    5
+    2,
+    1,
+    2,
+    4,
+    2,
+    4,
+    1,
+    2,
+    1
    ],
-   "moves": 10,
+   "moves": 36,
    "goals": [
     {
      "type": "purge",
      "value": 4,
-     "tiles": 6
+     "tiles": 8
     }
    ],
    "stars": {
-    "three": 6,
-    "two": 8
+    "three": 30,
+    "two": 33
    },
-   "solution": "aehml",
+   "solution": "bpgshgddrqtctdptddplbbsgsfphh",
    "meta": {
-    "generator": "build100",
-    "k": 22,
-    "seed": 2650452542,
+    "generator": "build18",
+    "k": 2,
+    "seed": 961557610,
     "role": "normal",
     "note": null,
-    "minMoves": 5,
-    "slack": 5,
+    "minMoves": 29,
+    "slack": 7,
     "toolMin": null,
-    "optimalSolutions": 999,
-    "pOptimal": 0.000314,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 58,
     "estimate": {
-     "D": 59,
-     "Dfelt": 59,
-     "casual": 0.281,
-     "good": 0.362,
-     "random": 0.0196,
-     "greedy": false
+     "D": 53,
+     "Dfelt": 53,
+     "casual": 0.375,
+     "good": 0.542,
+     "random": 0.0625,
+     "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "usable": 9
+     "tried": 110,
+     "usable": 98
     }
    }
   },
@@ -8634,95 +9680,125 @@
    "kind": "duo",
    "board": [
     [
-     null,
-     null,
-     null,
-     null,
-     null
-    ],
-    [
-     null,
-     null,
+     3,
+     3,
      null,
      null,
      null
     ],
     [
-     null,
-     null,
+     3,
      null,
      3,
-     null
+     null,
+     3
     ],
     [
+     null,
+     null,
      3,
      4,
-     1,
-     2,
+     null
+    ],
+    [
+     5,
+     null,
+     4,
+     3,
      null
     ],
     [
      null,
+     3,
+     3,
      null,
-     2,
-     2,
-     null
+     3
     ]
    ],
    "sequence": [
     2,
+    3,
+    4,
+    4,
+    4,
+    4,
+    4,
+    3,
+    4,
+    4,
+    3,
+    3,
     2,
-    1,
     3,
     3,
-    1,
+    4,
+    4,
     3,
-    3
+    3,
+    4,
+    3,
+    3,
+    3,
+    3,
+    2,
+    3,
+    3,
+    3,
+    4,
+    3,
+    4,
+    3,
+    3,
+    3,
+    3,
+    4,
+    4
    ],
-   "moves": 3,
+   "moves": 32,
    "goals": [
     {
-     "type": "combo",
-     "chain": 2
+     "type": "tile",
+     "value": 7
     },
     {
-     "type": "make",
-     "value": 4,
-     "count": 2
+     "type": "score",
+     "points": 360
     }
    ],
    "stars": {
-    "three": 2,
-    "two": 3
+    "three": 32,
+    "two": 32
    },
-   "solution": "W33=3 ei",
+   "solution": "irennbrsacnkkhihhqtbrppbfbrbsscc",
    "tool": "wand",
    "meta": {
-    "generator": "build100",
-    "k": 115,
-    "seed": 396731336,
+    "generator": "build18",
+    "k": 38,
+    "seed": 2037520653,
     "role": "tool",
-    "note": "Werkzeug-Level: Zauberstab",
-    "minMoves": 5,
-    "slack": -2,
-    "toolMin": 2,
+    "note": "Werkzeug-Spitze: Zauberstab (statt Kette)",
+    "minMoves": 32,
+    "slack": 0,
+    "toolMin": 3,
     "optimalSolutions": null,
     "pOptimal": null,
     "target": 61,
     "estimate": {
-     "D": 100,
-     "Dfelt": 26,
-     "casual": 0,
-     "good": 0,
-     "random": 0.0002,
+     "D": 97,
+     "Dfelt": 38,
+     "casual": 0.083,
+     "good": 0.042,
+     "random": 0.00625,
      "greedy": false,
-     "casualTool": 0.806,
-     "goodTool": 0.981,
-     "goodStarts": 3
+     "casualTool": 0.292,
+     "goodTool": 0.375,
+     "goodStarts": 8
     },
+    "toolSolution": "W01=6 qgm",
+    "exact": false,
     "searched": {
-     "tried": 141,
-     "usable": 1
+     "tried": 39,
+     "usable": 5
     }
    }
   },
@@ -8732,105 +9808,150 @@
    "kind": "duo",
    "board": [
     [
-     null,
-     null,
-     1,
+     4,
      2,
-     null
-    ],
-    [
-     null,
-     null,
      null,
      3,
      2
     ],
     [
      null,
-     null,
-     2,
-     null,
-     3
-    ],
-    [
-     null,
+     4,
      3,
-     null,
-     null,
-     3
-    ],
-    [
-     3,
-     2,
-     2,
      null,
      4
+    ],
+    [
+     3,
+     null,
+     3,
+     null,
+     null
+    ],
+    [
+     4,
+     null,
+     null,
+     3,
+     null
+    ],
+    [
+     4,
+     3,
+     3,
+     null,
+     5
     ]
    ],
    "sequence": [
-    2,
-    1,
-    1,
     3,
-    1,
-    1,
-    1,
-    1,
-    1,
+    3,
+    3,
+    3,
+    3,
+    2,
+    4,
+    4,
+    3,
+    3,
+    3,
+    3,
+    3,
+    4,
+    3,
+    3,
+    4,
     4,
     4,
     2,
+    4,
+    3,
+    4,
+    4,
+    4,
+    3,
+    4,
+    3,
+    4,
+    3,
+    4,
+    3,
+    3,
+    3,
+    4,
+    3,
     2,
-    1,
-    1
+    3,
+    4,
+    3,
+    4,
+    4,
+    2,
+    3,
+    3
    ],
-   "moves": 10,
+   "moves": 40,
    "goals": [
     {
      "type": "tile",
-     "value": 5
+     "value": 7
     },
     {
      "type": "clear",
-     "tiles": 10
+     "tiles": 12
     }
    ],
    "stars": {
-    "three": 5,
-    "two": 8
+    "three": 34,
+    "two": 37
    },
-   "solution": "kcsd",
+   "solution": "mipgbbrookijrrlitamkcmdbsrstststb",
    "meta": {
-    "generator": "build100",
-    "k": 27,
-    "seed": 2860817957,
+    "generator": "build18",
+    "k": 18,
+    "seed": 448513532,
     "role": "milestone",
-    "note": "Meilenstein",
-    "minMoves": 4,
-    "slack": 6,
+    "note": "Meilenstein, 5er schon auf dem Brett",
+    "minMoves": 33,
+    "slack": 7,
     "toolMin": null,
-    "optimalSolutions": 12,
-    "pOptimal": 0.0000835,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 71,
     "estimate": {
-     "D": 71,
-     "Dfelt": 71,
-     "casual": 0.219,
-     "good": 0.212,
-     "random": 0.0088,
+     "D": 75,
+     "Dfelt": 75,
+     "casual": 0.25,
+     "good": 0.125,
+     "random": 0.05,
      "greedy": false
     },
+    "exact": false,
     "searched": {
-     "tried": 29,
-     "usable": 12
+     "tried": 67,
+     "usable": 14
     }
    }
   },
   {
    "id": 91,
    "chapter": 10,
-   "kind": "tile",
+   "kind": "score",
    "board": [
+    [
+     null,
+     1,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     1,
+     null,
+     2
+    ],
     [
      null,
      null,
@@ -8839,87 +9960,96 @@
      null
     ],
     [
-     2,
-     2,
-     1,
-     null,
-     3
-    ],
-    [
-     null,
-     1,
      null,
      null,
-     4
-    ],
-    [
+     28,
      null,
-     2,
-     1,
-     null,
-     2
-    ],
-    [
-     1,
-     null,
-     null,
-     3,
      1
+    ],
+    [
+     1,
+     2,
+     null,
+     null,
+     null
     ]
    ],
    "sequence": [
     1,
     1,
+    4,
+    4,
+    1,
+    1,
+    2,
+    2,
+    3,
+    1,
+    3,
+    1,
+    4,
+    4,
+    3,
+    1,
+    2,
+    2,
+    1,
+    2,
+    1,
+    2,
     3,
     3,
     2,
     3,
-    4,
-    3,
     1,
-    3,
-    3,
+    1,
+    1,
     2,
-    4,
-    1,
     3,
+    1,
+    2,
+    1,
+    4,
+    2,
+    1,
     4
    ],
-   "moves": 11,
+   "moves": 33,
    "goals": [
     {
-     "type": "tile",
-     "value": 5
+     "type": "score",
+     "points": 500
     }
    ],
    "stars": {
-    "three": 6,
-    "two": 9
+    "three": 13,
+    "two": 23
    },
-   "solution": "boacd",
+   "solution": "rsrrddmmmtmr",
    "meta": {
-    "generator": "build100",
-    "k": 6,
-    "seed": 2954909687,
+    "generator": "build18",
+    "k": 0,
+    "seed": 91000273,
     "role": "relief",
-    "note": "Erholung",
-    "minMoves": 5,
-    "slack": 6,
+    "note": "Erholung, hoher Wert (~30) als Blocker auf dem Brett",
+    "minMoves": 12,
+    "slack": 21,
     "toolMin": null,
-    "optimalSolutions": 940,
-    "pOptimal": 0.000379,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 48,
     "estimate": {
-     "D": 47,
-     "Dfelt": 47,
-     "casual": 0.356,
-     "good": 0.375,
-     "random": 0.0444,
+     "D": 15,
+     "Dfelt": 15,
+     "casual": 1,
+     "good": 1,
+     "random": 0.9,
      "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "usable": 17
+     "tried": 101,
+     "usable": 63
     }
    }
   },
@@ -8929,96 +10059,121 @@
    "kind": "duo",
    "board": [
     [
-     null,
-     null,
-     null,
-     null,
-     null
-    ],
-    [
-     null,
-     null,
      1,
      null,
+     null,
+     null,
      null
     ],
     [
+     1,
      null,
      null,
-     3,
      null,
-     1
+     null
     ],
     [
-     null,
      null,
      null,
      2,
-     1
+     3,
+     null
     ],
     [
      null,
      null,
      null,
+     null,
+     null
+    ],
+    [
+     null,
+     2,
+     1,
      null,
      null
     ]
    ],
    "sequence": [
-    3,
+    2,
     1,
-    4,
-    4,
-    3,
     1,
-    4,
+    2,
+    1,
+    1,
+    2,
     1,
     1,
     1,
     2,
-    3,
+    1,
+    1,
+    1,
+    1,
     2,
-    2
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    2,
+    2,
+    1,
+    1,
+    2,
+    1,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1
    ],
-   "moves": 9,
+   "moves": 33,
    "goals": [
     {
      "type": "score",
-     "points": 200
+     "points": 360
     },
     {
      "type": "clear",
-     "tiles": 6
+     "tiles": 8
     }
    ],
    "stars": {
-    "three": 6,
-    "two": 8
+    "three": 15,
+    "two": 24
    },
-   "solution": "bbbbr",
+   "solution": "sshcchgqtgrmff",
    "meta": {
-    "generator": "build100",
-    "k": 15,
-    "seed": 1077670219,
+    "generator": "build18",
+    "k": 64,
+    "seed": 2292563028,
     "role": "relief",
     "note": "Erholung",
-    "minMoves": 5,
-    "slack": 4,
+    "minMoves": 14,
+    "slack": 19,
     "toolMin": null,
-    "optimalSolutions": 80,
-    "pOptimal": 0.0000251,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 52,
     "estimate": {
-     "D": 51,
-     "Dfelt": 51,
-     "casual": 0.406,
-     "good": 0.644,
-     "random": 0.0048,
+     "D": 21,
+     "Dfelt": 21,
+     "casual": 1,
+     "good": 1,
+     "random": 1,
      "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "via": "build100.mjs"
+     "tried": 315,
+     "usable": 24
     }
    }
   },
@@ -9029,63 +10184,91 @@
    "board": [
     [
      null,
-     3,
-     null,
-     null,
-     5
-    ],
-    [
-     null,
-     null,
-     null,
-     5,
-     null
-    ],
-    [
-     null,
-     null,
-     3,
-     3,
-     null
-    ],
-    [
      null,
      1,
+     null,
+     null
+    ],
+    [
      1,
-     5,
+     null,
+     2,
+     null,
      null
     ],
     [
      null,
      null,
-     4,
-     3,
+     null,
+     null,
+     null
+    ],
+    [
+     1,
+     null,
+     2,
+     null,
+     2
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
      null
     ]
    ],
    "sequence": [
-    4,
-    3,
+    2,
+    1,
+    1,
+    1,
     1,
     3,
     3,
+    3,
+    1,
+    4,
+    1,
+    2,
+    2,
+    4,
+    3,
+    2,
+    3,
+    1,
+    1,
     1,
     2,
     3,
     3,
     4,
     3,
+    2,
+    3,
     1,
     2,
     3,
-    3
+    3,
+    3,
+    1,
+    1,
+    1,
+    1,
+    3,
+    2,
+    1,
+    3,
+    3,
+    1,
+    2
    ],
-   "moves": 10,
+   "moves": 38,
    "goals": [
     {
      "type": "purge",
      "value": 3,
-     "tiles": 6
+     "tiles": 8
     },
     {
      "type": "street",
@@ -9093,38 +10276,39 @@
     },
     {
      "type": "make",
-     "value": 4,
+     "value": 5,
      "count": 2
     }
    ],
    "stars": {
-    "three": 6,
-    "two": 8
+    "three": 28,
+    "two": 33
    },
-   "solution": "ddncm",
+   "solution": "dhrddiiigjgheihqfdondkijimi",
    "meta": {
-    "generator": "build100",
-    "k": 24,
-    "seed": 3501750991,
+    "generator": "build18",
+    "k": 27,
+    "seed": 2857551868,
     "role": "normal",
     "note": "drei Ziele",
-    "minMoves": 5,
-    "slack": 5,
+    "minMoves": 27,
+    "slack": 11,
     "toolMin": null,
-    "optimalSolutions": 7,
-    "pOptimal": 0.00000253,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 57,
     "estimate": {
-     "D": 57,
-     "Dfelt": 57,
-     "casual": 0.362,
-     "good": 0.613,
-     "random": 0.0056,
-     "greedy": true
+     "D": 55,
+     "Dfelt": 55,
+     "casual": 0.583,
+     "good": 0.625,
+     "random": 0.1,
+     "greedy": false
     },
+    "exact": false,
     "searched": {
-     "tried": 27,
-     "usable": 12
+     "tried": 49,
+     "usable": 26
     }
    }
   },
@@ -9134,58 +10318,87 @@
    "kind": "duo",
    "board": [
     [
+     null,
+     null,
      1,
      null,
-     null,
-     null,
      null
-    ],
-    [
-     4,
-     null,
-     4,
-     2,
-     4
     ],
     [
      3,
-     2,
+     null,
      null,
      null,
      null
     ],
     [
+     null,
      1,
-     4,
-     null,
-     null,
-     2
+     2,
+     1,
+     3
     ],
     [
+     1,
      null,
      null,
      null,
+     null
+    ],
+    [
+     2,
+     1,
      null,
-     3
+     null,
+     5
     ]
    ],
    "sequence": [
-    3,
+    4,
+    2,
     1,
     1,
     2,
+    3,
+    1,
+    3,
+    2,
+    3,
     3,
     4,
-    4,
+    3,
     3,
     1,
+    4,
     3,
+    3,
+    1,
+    1,
+    2,
+    4,
+    2,
+    1,
+    1,
+    2,
+    4,
+    1,
+    4,
+    1,
     2,
     2,
     3,
+    1,
+    4,
+    3,
+    3,
+    2,
+    1,
+    1,
+    3,
+    4,
     3
    ],
-   "moves": 9,
+   "moves": 38,
    "goals": [
     {
      "type": "long",
@@ -9193,37 +10406,38 @@
     },
     {
      "type": "tile",
-     "value": 5
+     "value": 6
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 7
+    "three": 29,
+    "two": 34
    },
-   "solution": "end",
+   "solution": "dhrrmglnnddeedmjlhhgrqsfqqlk",
    "meta": {
-    "generator": "build100",
-    "k": 54,
-    "seed": 1512701900,
+    "generator": "build18",
+    "k": 362,
+    "seed": 3219669200,
     "role": "normal",
-    "note": null,
-    "minMoves": 3,
-    "slack": 6,
+    "note": "fast fertige Straße aus 5, ein 5er liegt schon da",
+    "minMoves": 28,
+    "slack": 10,
     "toolMin": null,
-    "optimalSolutions": 4,
-    "pOptimal": 0.000539,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 61,
     "estimate": {
-     "D": 62,
-     "Dfelt": 62,
-     "casual": 0.263,
-     "good": 0.194,
-     "random": 0.0288,
+     "D": 66,
+     "Dfelt": 66,
+     "casual": 0.25,
+     "good": 0.375,
+     "random": 0.0625,
      "greedy": false
     },
+    "exact": false,
     "searched": {
-     "tried": 55,
-     "usable": 39
+     "tried": 363,
+     "usable": 6
     }
    }
   },
@@ -9234,106 +10448,109 @@
    "board": [
     [
      null,
-     1,
-     1,
      null,
-     null
+     1,
+     1,
+     2
     ],
     [
      null,
-     null,
-     1,
-     1,
-     null
-    ],
-    [
      2,
-     null,
-     null,
-     null,
-     null
-    ],
-    [
-     2,
-     null,
      1,
      1,
      null
     ],
     [
+     3,
+     null,
      null,
      2,
+     2
+    ],
+    [
+     3,
+     null,
+     null,
      2,
+     2
+    ],
+    [
+     null,
+     null,
+     null,
      null,
      null
     ]
    ],
    "sequence": [
+    3,
+    1,
     2,
+    2,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    3,
     1,
     2,
     1,
     3,
-    1,
+    2,
     1,
     2,
-    2,
-    2
+    3,
+    1,
+    1
    ],
-   "moves": 5,
+   "moves": 17,
    "goals": [
     {
      "type": "empty",
-     "max": 3
+     "max": 4
     },
     {
-     "type": "clear",
-     "tiles": 8
+     "type": "score",
+     "points": 260
     }
    ],
    "stars": {
-    "three": 5,
-    "two": 5
+    "three": 17,
+    "two": 17
    },
-   "solution": "gllqh",
+   "solution": "grtgqhfpnrthphran",
    "tool": "rocket",
    "meta": {
-    "generator": "build100",
-    "k": 108,
-    "seed": 3134111857,
+    "generator": "build18",
+    "k": 5,
+    "seed": 314373800,
     "role": "tool",
     "note": "Werkzeug-Spitze: Rakete",
-    "minMoves": 5,
+    "minMoves": 17,
     "slack": 0,
-    "toolMin": 2,
+    "toolMin": 3,
     "optimalSolutions": null,
     "pOptimal": null,
     "target": 64,
     "estimate": {
-     "D": 100,
-     "Dfelt": 35,
+     "D": 81,
+     "Dfelt": 54,
      "casual": 0,
-     "good": 0,
-     "random": 0.0002,
-     "greedy": false,
-     "casualTool": 0.512,
-     "goodTool": 0.919,
-     "goodStarts": 2
+     "good": 0.042,
+     "random": 0.00625,
+     "greedy": true,
+     "casualTool": 0.125,
+     "goodTool": 0.083,
+     "goodStarts": 8
     },
+    "toolSolution": "R02 gsc",
+    "exact": false,
     "searched": {
-     "tried": 202,
-     "usable": 2
-    },
-    "toolSolution": "R01 jr",
-    "untooled": {
-     "launch": "launch-16",
-     "from": {
-      "moves": 3,
-      "stars": {
-       "three": 2,
-       "two": 3
-      }
-     }
+     "tried": 36,
+     "usable": 1
     }
    }
   },
@@ -9343,57 +10560,84 @@
    "kind": "street",
    "board": [
     [
-     null,
-     null,
-     null,
-     null,
-     null
-    ],
-    [
-     null,
      1,
      null,
      null,
-     null
-    ],
-    [
-     3,
-     null,
-     null,
      null,
      null
     ],
     [
+     null,
+     null,
+     1,
+     null,
+     null
+    ],
+    [
+     30,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     1,
+     null,
+     null,
+     2,
+     null
+    ],
+    [
+     2,
+     null,
      4,
      null,
-     2,
-     2,
-     null
-    ],
-    [
-     null,
-     null,
-     null,
-     null,
-     null
+     1
     ]
    ],
    "sequence": [
-    4,
-    4,
     1,
-    3,
-    3,
-    3,
     2,
     2,
-    4,
-    3,
-    3,
-    4,
-    1
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    2,
+    2,
+    2,
+    1,
+    2,
+    1,
+    1,
+    1,
+    2,
+    1,
+    2,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    1,
+    2,
+    2,
+    1,
+    2,
+    2,
+    2,
+    1,
+    1,
+    2,
+    1,
+    2
    ],
-   "moves": 8,
+   "moves": 35,
    "goals": [
     {
      "type": "street",
@@ -9401,131 +10645,160 @@
     }
    ],
    "stars": {
-    "three": 6,
-    "two": 7
+    "three": 13,
+    "two": 24
    },
-   "solution": "ahdmm",
+   "solution": "hkhoorrrhhnh",
    "meta": {
-    "generator": "build100",
-    "k": 26,
-    "seed": 337281754,
+    "generator": "build18",
+    "k": 152,
+    "seed": 4115175480,
     "role": "relief",
-    "note": "Erholung",
-    "minMoves": 5,
-    "slack": 3,
+    "note": "Erholung, hoher Wert als Blocker",
+    "minMoves": 12,
+    "slack": 23,
     "toolMin": null,
-    "optimalSolutions": 164,
-    "pOptimal": 0.0000519,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 50,
     "estimate": {
-     "D": 49,
-     "Dfelt": 49,
-     "casual": 0.375,
-     "good": 0.694,
-     "random": 0.016,
-     "greedy": false
+     "D": 16,
+     "Dfelt": 16,
+     "casual": 0.958,
+     "good": 1,
+     "random": 0.5,
+     "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "usable": 28
+     "tried": 666,
+     "usable": 93
     }
    }
   },
   {
    "id": 97,
    "chapter": 10,
-   "kind": "duo",
+   "kind": "tile",
    "board": [
     [
-     1,
+     5,
+     null,
+     null,
+     null,
+     3
+    ],
+    [
+     3,
      2,
-     1,
-     2,
+     null,
+     null,
      null
     ],
     [
      null,
-     1,
+     null,
+     3,
+     null,
+     6
+    ],
+    [
+     4,
+     3,
+     3,
+     null,
+     3
+    ],
+    [
      2,
-     null,
-     null
-    ],
-    [
-     1,
-     null,
-     null,
-     1,
-     2
-    ],
-    [
-     1,
-     null,
-     null,
-     2,
-     null
-    ],
-    [
-     null,
-     1,
-     null,
-     null,
-     2
+     4,
+     7,
+     4,
+     4
     ]
    ],
    "sequence": [
-    2,
+    3,
+    4,
+    3,
+    4,
+    3,
+    3,
+    3,
+    3,
+    3,
+    4,
+    3,
     4,
     3,
     2,
+    4,
     3,
-    2,
+    3,
+    4,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    4,
+    3,
     4,
     4,
-    1,
-    1,
-    1,
-    2,
-    4
+    3,
+    4,
+    4,
+    4,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    4,
+    4,
+    3
    ],
-   "moves": 8,
+   "moves": 39,
    "goals": [
     {
      "type": "tile",
-     "value": 5
-    },
-    {
-     "type": "clear",
-     "tiles": 10
+     "value": 8
     }
    ],
    "stars": {
-    "three": 5,
-    "two": 7
+    "three": 27,
+    "two": 33
    },
-   "solution": "cfqc",
+   "solution": "dgimhttbmghggjndnffmllcccr",
    "meta": {
-    "generator": "build100",
-    "k": 17,
-    "seed": 2221346722,
+    "generator": "build18",
+    "k": 28,
+    "seed": 1272534079,
     "role": "normal",
-    "note": null,
-    "minMoves": 4,
-    "slack": 4,
+    "note": "Erste 8 – langer Aufbau aus 3ern, 4ern und einem 5er",
+    "minMoves": 26,
+    "slack": 13,
     "toolMin": null,
-    "optimalSolutions": 11,
-    "pOptimal": 0.0000747,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 59,
     "estimate": {
-     "D": 59,
-     "Dfelt": 59,
-     "casual": 0.231,
-     "good": 0.419,
-     "random": 0.01,
-     "greedy": true
+     "D": 83,
+     "Dfelt": 83,
+     "casual": 0.042,
+     "good": 0.125,
+     "random": 0.025,
+     "greedy": false
     },
+    "exact": false,
     "searched": {
-     "tried": 30,
-     "usable": 9
+     "tried": 41,
+     "usable": 2
     }
    }
   },
@@ -9535,97 +10808,127 @@
    "kind": "duo",
    "board": [
     [
+     null,
      2,
+     2,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     3,
+     null,
+     1
+    ],
+    [
+     null,
+     1,
      1,
      null,
-     3,
-     2
-    ],
-    [
-     null,
-     2,
-     2,
-     1,
      null
     ],
     [
-     2,
-     null,
-     4,
-     null,
-     null
-    ],
-    [
+     30,
      null,
      3,
-     null,
      null,
      null
     ],
     [
      null,
      null,
+     2,
      null,
-     3,
-     4
+     null
     ]
    ],
    "sequence": [
-    4,
-    3,
     1,
     2,
-    3,
-    3,
-    3,
+    2,
+    1,
+    1,
     2,
     1,
     2,
-    3,
-    4,
     1,
-    4
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    2,
+    1,
+    1,
+    2,
+    1,
+    2,
+    1,
+    2,
+    1,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    2,
+    1,
+    1,
+    2,
+    2
    ],
-   "moves": 9,
+   "moves": 39,
    "goals": [
-    {
-     "type": "purge",
-     "value": 3,
-     "tiles": 6
-    },
     {
      "type": "street",
      "count": 2
+    },
+    {
+     "type": "clear",
+     "tiles": 10
     }
    ],
    "stars": {
-    "three": 6,
-    "two": 8
+    "three": 18,
+    "two": 29
    },
-   "solution": "repel",
+   "solution": "hsmhhmmchacbsbbqq",
    "meta": {
-    "generator": "build100",
-    "k": 44,
-    "seed": 878688202,
+    "generator": "build18",
+    "k": 40,
+    "seed": 3179044366,
     "role": "normal",
-    "note": null,
-    "minMoves": 5,
-    "slack": 4,
+    "note": "hoher Wert (~30) als Blocker plus Straße",
+    "minMoves": 17,
+    "slack": 22,
     "toolMin": null,
-    "optimalSolutions": 6,
-    "pOptimal": 0.00000208,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 63,
     "estimate": {
-     "D": 65,
-     "Dfelt": 65,
-     "casual": 0.219,
-     "good": 0.506,
-     "random": 0.0032,
+     "D": 23,
+     "Dfelt": 23,
+     "casual": 0.958,
+     "good": 1,
+     "random": 0.875,
      "greedy": true
     },
+    "exact": false,
     "searched": {
-     "tried": 48,
-     "via": "build100.mjs"
+     "tried": 176,
+     "usable": 47
     }
    }
   },
@@ -9636,6 +10939,20 @@
    "board": [
     [
      null,
+     3,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     2,
+     2,
+     null,
+     null
+    ],
+    [
+     2,
      null,
      null,
      null,
@@ -9643,46 +10960,39 @@
     ],
     [
      null,
-     3,
      null,
-     1,
+     null,
+     2,
+     4
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
      null
-    ],
-    [
-     null,
-     null,
-     3,
-     3,
-     1
-    ],
-    [
-     null,
-     1,
-     null,
-     1,
-     null
-    ],
-    [
-     1,
-     null,
-     null,
-     3,
-     3
     ]
    ],
    "sequence": [
     1,
     1,
     2,
+    1,
+    1,
+    1,
+    2,
+    1,
     2,
     2,
     2,
     1,
+    2,
     1,
+    2,
     2,
     1
    ],
-   "moves": 5,
+   "moves": 12,
    "goals": [
     {
      "type": "street",
@@ -9690,161 +11000,168 @@
     },
     {
      "type": "score",
-     "points": 200
+     "points": 400
     }
    ],
    "stars": {
-    "three": 5,
-    "two": 5
+    "three": 12,
+    "two": 12
    },
-   "solution": "ccel",
+   "solution": "hhdhhhhtnqrq",
    "tool": "hint",
    "meta": {
-    "generator": "build100",
-    "k": 77,
-    "seed": 2471036372,
+    "generator": "build18",
+    "k": 8,
+    "seed": 4099756641,
     "role": "tool",
     "note": "Werkzeug-Spitze: Hinweis",
-    "minMoves": 4,
-    "slack": 1,
-    "toolMin": 4,
-    "optimalSolutions": 23,
-    "pOptimal": 0.000153,
+    "minMoves": 12,
+    "slack": 0,
+    "toolMin": 12,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 66,
     "estimate": {
-     "D": 78,
-     "Dfelt": 56,
-     "casual": 0.163,
-     "good": 0.375,
-     "random": 0.0008,
+     "D": 68,
+     "Dfelt": 50,
+     "casual": 0.083,
+     "good": 0.167,
+     "random": 0.00625,
      "greedy": false,
-     "casualTool": 0.506,
-     "goodTool": 0.394
+     "casualTool": 0.25,
+     "goodTool": 0.333
     },
-    "hintMoves": "cc",
+    "hintMoves": "dd",
+    "toolSolution": "hhdhhhhtnqrq",
+    "exact": false,
     "searched": {
-     "tried": 130,
-     "usable": 20
-    },
-    "toolSolution": "ccel",
-    "untooled": {
-     "launch": "launch-16",
-     "from": {
-      "moves": 5,
-      "stars": {
-       "three": 4,
-       "two": 5
-      }
-     }
+     "tried": 125,
+     "usable": 13
     }
    }
   },
   {
    "id": 100,
    "chapter": 10,
-   "kind": "duo",
+   "kind": "tile",
    "board": [
     [
-     1,
-     2,
      null,
-     1,
-     null
-    ],
-    [
-     null,
-     2,
      3,
      null,
+     3,
+     7
+    ],
+    [
+     4,
+     4,
+     5,
+     null,
      null
     ],
     [
+     3,
+     4,
+     4,
+     null,
+     3
+    ],
+    [
      null,
      null,
-     null,
-     null,
+     4,
+     3,
      null
     ],
     [
-     null,
-     null,
-     null,
-     null,
-     1
-    ],
-    [
-     null,
-     null,
-     null,
-     null,
-     1
+     6,
+     3,
+     3,
+     4,
+     null
     ]
    ],
    "sequence": [
-    1,
     2,
-    4,
-    2,
-    2,
+    3,
     4,
     3,
-    1,
+    4,
+    4,
+    3,
+    3,
+    4,
+    3,
+    3,
+    3,
+    4,
+    3,
+    3,
+    3,
+    4,
+    3,
+    4,
     2,
-    2
+    3,
+    4,
+    3,
+    4,
+    3,
+    3,
+    3,
+    3,
+    4,
+    3,
+    4,
+    3,
+    2,
+    3,
+    3,
+    3,
+    3,
+    4,
+    3
    ],
-   "moves": 5,
+   "moves": 34,
    "goals": [
     {
      "type": "tile",
-     "value": 5
-    },
-    {
-     "type": "score",
-     "points": 250
+     "value": 8
     }
    ],
    "stars": {
-    "three": 5,
-    "two": 5
+    "three": 34,
+    "two": 34
    },
-   "solution": "gpbbq",
+   "solution": "mrncrrjlqqlimmddldillhjlmlimlimmas",
    "tool": "extraMoves",
    "meta": {
-    "generator": "build100",
-    "k": 216,
-    "seed": 2067484532,
+    "generator": "build18",
+    "k": 49,
+    "seed": 1298901197,
     "role": "boss",
-    "note": "Finale: Werkzeug-Spitze (+3 Züge)",
-    "minMoves": 5,
+    "note": "Finale: 3er, 4er und ein 5er auf dem Brett, eine 8 in 40 Zügen. +3 hilft (höchstens 2★).",
+    "minMoves": 34,
     "slack": 0,
-    "toolMin": 5,
-    "optimalSolutions": 7,
-    "pOptimal": 0.00000224,
+    "toolMin": 34,
+    "optimalSolutions": null,
+    "pOptimal": null,
     "target": 72,
     "estimate": {
-     "D": 100,
-     "Dfelt": 72,
-     "casual": 0,
-     "good": 0,
-     "random": 0.0002,
+     "D": 96,
+     "Dfelt": 95,
+     "casual": 0.042,
+     "good": 0.042,
+     "random": 0.0125,
      "greedy": false,
-     "casualTool": 0.269,
-     "goodTool": 0.219
+     "casualTool": 0.042,
+     "goodTool": 0.042
     },
+    "toolSolution": "mrncrrjlqqlimmddldillhjlmlimlimmas",
+    "exact": false,
     "searched": {
-     "tried": 220,
-     "via": "search-one.mjs"
-    },
-    "toolSolution": "gpbbq",
-    "untooled": {
-     "launch": "launch-16",
-     "from": {
-      "moves": 5,
-      "stars": {
-       "three": 5,
-       "two": 7
-      }
-     }
+     "tried": 75,
+     "usable": 2
     }
    }
   }

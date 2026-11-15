@@ -60,7 +60,9 @@ test(`${file}: keine Felsen; Sterne: 3★ = Optimum + 1 / Mitte (launch-16 auch 
     assert.deepEqual(lv.stars, starThresholds(lv.meta.minMoves, lv.moves), `Level ${lv.id}`);
     if (tool(lv)) { assert.ok(lv.meta.minMoves <= lv.moves, `Level ${lv.id}: ohne Werkzeug im Limit`); continue; }   // Spitze: eng, Stufen fallen zusammen
     assert.equal(lv.stars.three, lv.meta.minMoves + 1);
-    assert.ok(lv.stars.three < lv.stars.two && lv.stars.two < lv.moves, `Level ${lv.id}: drei Stufen`);
+    // launch-18: enge Meilensteine (Optimum nahe am Limit) dürfen 2★ = Limit haben
+    if (lv.moves - lv.meta.minMoves >= 4) assert.ok(lv.stars.three < lv.stars.two && lv.stars.two < lv.moves, `Level ${lv.id}: drei Stufen`);
+    else assert.ok(lv.stars.three <= lv.stars.two && lv.stars.two <= lv.moves, `Level ${lv.id}: Stufen`);
   }
 });
 
