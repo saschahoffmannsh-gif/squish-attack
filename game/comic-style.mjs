@@ -85,12 +85,20 @@ export function comicOutline(geometry,{world=OUTLINE_WORLD,push=0}={}){
 // Ziffer: weiß mit dunkler Kontur, aus der vorhandenen Coverage-Textur
 // (12 Abtastungen im Kreis). Bleibt ein MeshBasicMaterial, damit opacity,
 // clone() und die Fusion unverändert funktionieren.
-export function comicLabelMaterial(material,{width=.5,height=.7,thickness=.03}={}){
-  material.color.set('#ffffff');material.toneMapped=false;
+export function setComicLabel(material,{face='#ffffff',ink=INK}={}){
+  if(!material)return;
+  material.color.set(face);
+  material.userData.comicFace=face;material.userData.comicInkColor=ink;
+  const u=material.userData.comicLabelUniforms;if(u?.uComicInk)u.uComicInk.value.copy(col(ink));
+}
+export function comicLabelMaterial(material,{width=.5,height=.7,thickness=.03,face='#ffffff',ink=INK}={}){
+  material.toneMapped=false;
   material.userData.comicInk=[thickness/width,thickness/height];
+  setComicLabel(material,{face,ink});
   material.onBeforeCompile=function(shader){
     const [ox,oy]=this.userData.comicInk||[.06,.04];
-    shader.uniforms.uComicOff={value:new THREE.Vector2(ox,oy)};shader.uniforms.uComicInk={value:col(INK)};
+    shader.uniforms.uComicOff={value:new THREE.Vector2(ox,oy)};shader.uniforms.uComicInk={value:col(this.userData.comicInkColor||INK)};
+    this.userData.comicLabelUniforms=shader.uniforms;
     shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nuniform vec2 uComicOff;uniform vec3 uComicInk;')
       .replace('#include <alphamap_fragment>',`
         #ifdef USE_ALPHAMAP
@@ -102,7 +110,7 @@ export function comicLabelMaterial(material,{width=.5,height=.7,thickness=.03}={
   };
   material.customProgramCacheKey=()=>'comic-label-1';
   const clone=material.clone;
-  material.clone=function(){const c=clone.call(this);c.onBeforeCompile=this.onBeforeCompile;c.customProgramCacheKey=this.customProgramCacheKey;c.clone=this.clone;c.toneMapped=false;return c;};
+  material.clone=function(){const c=clone.call(this);c.onBeforeCompile=this.onBeforeCompile;c.customProgramCacheKey=this.customProgramCacheKey;c.clone=this.clone;c.toneMapped=false;c.userData.comicFace=this.userData.comicFace;c.userData.comicInkColor=this.userData.comicInkColor;setComicLabel(c,{face:this.userData.comicFace||'#ffffff',ink:this.userData.comicInkColor||INK});return c;};
   material.needsUpdate=true;
   return material;
 }

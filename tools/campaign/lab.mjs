@@ -10,10 +10,10 @@ import { validateLevel, starThresholds, replaySolution, createLevelRun, applyLev
 
 const _ = null;
 const DEFS = [
-  { id: 1, title: 'Eis', note: 'Der gefrorene 3er rutscht mit, verschmilzt aber nicht. Verschmilz etwas direkt daneben – das Eis zerspringt und der 3er ist frei.',
+  { id: 1, title: 'Eis', note: 'Der gefrorene 3er rutscht mit, verschmilzt aber nicht. Verschmilz etwas direkt daneben – das Eis-Symbol geht weg und der 3er bleibt als normaler Squish.',
     board: [[_, _, _, _, _], [3, _, 3, _, _], [_, 2, 2, _, _], [_, _, _, _, _], [_, _, _, 1, _]],
     specials: { ice: [[1, 2]] }, sequence: [2, 3, 1, 1, 2, 3, 2, 1, 3, 2, 1, 2], goals: [{ type: 'tile', value: 4 }], slack: 3 },
-  { id: 2, title: 'Ketten', note: 'Angekettete Squishes bewegen sich nicht – sie sind eine Wand. Verschmilz direkt daneben, dann reißen die Ketten und der Squish ist frei.',
+  { id: 2, title: 'Ketten', note: 'Schloss-Squishes bewegen sich nicht – sie sind eine Wand. Verschmilz direkt daneben, dann geht das Schloss weg und der Squish ist frei.',
     board: [[_, _, _, _, _], [_, _, 1, 1, _], [_, 4, 4, _, _], [_, _, _, _, _], [_, _, _, _, 2]],
     specials: { bound: [[2, 2], [4, 4]] }, sequence: [1, 4, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2], goals: [{ type: 'tile', value: 5 }], slack: 3 },
   { id: 3, title: 'Bombe', note: 'Die Bombe zählt 20 Sekunden ab dem ersten Zug. Verschmilz sie, dann ist sie entschärft – sonst reißt sie ihre Nachbarn mit.',

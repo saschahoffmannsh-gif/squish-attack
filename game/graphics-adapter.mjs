@@ -1,15 +1,15 @@
 import {createContactSolver} from './dense-contacts.mjs?v=dense-board-1';
-import {configureRenderQuality} from './render-quality.mjs?v=launch-16';
+import {configureRenderQuality} from './render-quality.mjs?v=launch-17';
 import {enqueueRippleImpulse} from './merge-ripple.mjs?v=swarm-fx-3';
 import {installPressureWave} from './pressure-wave.mjs?v=soft-gel-1';
-import {applyGelSoftness,softWobblePower,wobbleDecayFactor} from './gel-softness.mjs?v=launch-16';
+import {applyGelSoftness,softWobblePower,wobbleDecayFactor} from './gel-softness.mjs?v=launch-17';
 import {applyNeonGlassLighting} from './gel-lighting.mjs?v=menu-1';
-import {createCrispLabelFactory} from './crisp-labels.mjs?v=launch-16';
-import {applyComic,comicBodyMaterial,setComicValue} from './comic-style.mjs?v=launch-16';
-import {installCleanScreen} from './clean-screen.mjs?v=launch-16';
-import {applySpecial} from './special-squish.mjs?v=launch-16';
-import {createFusion} from './fusion.mjs?v=launch-16';
-import {flags} from './flags.mjs?v=launch-16';
+import {createCrispLabelFactory} from './crisp-labels.mjs?v=launch-17';
+import {applyComic,comicBodyMaterial,setComicValue} from './comic-style.mjs?v=launch-17';
+import {installCleanScreen} from './clean-screen.mjs?v=launch-17';
+import {applySpecial,setSpecialRuntime} from './special-squish.mjs?v=launch-17';
+import {createFusion} from './fusion.mjs?v=launch-17';
+import {flags} from './flags.mjs?v=launch-17';
 import {createSquishGraphics,THREE,PARAMETERS} from '../squish/squish-graphics.js?v=play-sharp-1';
 import {buildSquishy,createLabel,bindGelOptics,initializeMotion,updateSquishy,PARAMETERS as HUD_PARAMETERS} from './original-gel-models.js?v=menu-1';
 
@@ -330,6 +330,8 @@ export function createGameGraphics(host) {
       }finally{for(const s of bodies)s.group.visible=false;}
     }};
   fusion=createFusion({internals,graphics});
+  // launch-17: kurze Pop-Animation, wenn Eis oder Schloss fällt (respektiert Reduced Motion).
+  setSpecialRuntime({job:job=>internals.job(job),reduced:()=>reducedMotion.matches});
   const ready=Promise.all([graphics.ready,setting.ready]);
   return {graphics,internals,fusion,ready,location,pick,localPoint,gestureCell,setHud,prepareEntry,mergeIn,dropIn,
     wait(seconds){return new Promise(resolve=>waitJobs.push({until:graphics.state.time+seconds,resolve}));},
@@ -338,7 +340,7 @@ export function createGameGraphics(host) {
       requestFrame({shadows:true});
       for(const tile of graphics.tiles)applyComic(tile,tile.value);
       // launch-16: Eis / Kette / Bombe (Deko + Farbe), nach applyComic.
-      for(const t of tiles){let s=null;try{s=graphics.getTile(t.id);}catch{}if(s)applySpecial(s,t.special||null);}
+      for(const t of tiles){let s=null;try{s=graphics.getTile(t.id);}catch{}if(s)applySpecial(s,t.special||null,{freed:!!t.freed});}
       const pressure=options?.animate&&options.incoming
         ?installPressureWave(graphics.tiles,options.incoming,graphics.state.time,options.onPop):0;
       if(options?.animate&&!pressure)for(const tile of graphics.tiles)if(tile.motion)graphics.wobble(tile.id,.25);

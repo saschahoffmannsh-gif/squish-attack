@@ -78,7 +78,7 @@
    "solution": "hg",
    "meta": {
     "lab": true,
-    "note": "Der gefrorene 3er rutscht mit, verschmilzt aber nicht. Verschmilz etwas direkt daneben – das Eis zerspringt und der 3er ist frei.",
+    "note": "Der gefrorene 3er rutscht mit, verschmilzt aber nicht. Verschmilz etwas direkt daneben – das Eis-Symbol geht weg und der 3er bleibt als normaler Squish.",
     "minMoves": 2,
     "pOpt": 0.0025,
     "freed": {
@@ -167,7 +167,7 @@
    "solution": "bh",
    "meta": {
     "lab": true,
-    "note": "Angekettete Squishes bewegen sich nicht – sie sind eine Wand. Verschmilz direkt daneben, dann reißen die Ketten und der Squish ist frei.",
+    "note": "Schloss-Squishes bewegen sich nicht – sie sind eine Wand. Verschmilz direkt daneben, dann geht das Schloss weg und der Squish ist frei.",
     "minMoves": 2,
     "pOpt": 0.003105590062111801,
     "freed": {
@@ -261,7 +261,7 @@
     "lab": true,
     "note": "Die Bombe zählt 20 Sekunden ab dem ersten Zug. Verschmilz sie, dann ist sie entschärft – sonst reißt sie ihre Nachbarn mit.",
     "minMoves": 4,
-    "pOpt": 0.000012588275280403833,
+    "pOpt": 1.2588275280403833e-05,
     "freed": {
      "ice": 0,
      "bound": 0
@@ -382,7 +382,7 @@
     "lab": true,
     "note": "Eis, Ketten und eine Bombe auf einem Brett.",
     "minMoves": 4,
-    "pOpt": 0.00004970228332289585,
+    "pOpt": 4.970228332289585e-05,
     "freed": {
      "ice": 1,
      "bound": 2

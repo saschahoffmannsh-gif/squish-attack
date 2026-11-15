@@ -1,32 +1,32 @@
-import {apiFetch,hasSaveToken} from './api.mjs?v=launch-16';
-import {createRng,encodeMove,replayRun,MAX_LOG} from './ranked.mjs?v=launch-16';
-import {createLeaderboard} from './leaderboard.mjs?v=launch-16';
-import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-16';
+import {apiFetch,hasSaveToken} from './api.mjs?v=launch-17';
+import {createRng,encodeMove,replayRun,MAX_LOG} from './ranked.mjs?v=launch-17';
+import {createLeaderboard} from './leaderboard.mjs?v=launch-17';
+import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-17';
 import { nextSpawn, spawnProfile } from './balance.mjs';
-import {canContinueRun} from './run-availability.mjs?v=launch-16';
-import { createMergeEffects } from './merge-effects.mjs?v=launch-16';
-import { createGameGraphics } from './graphics-adapter.mjs?v=launch-16';
+import {canContinueRun} from './run-availability.mjs?v=launch-17';
+import { createMergeEffects } from './merge-effects.mjs?v=launch-17';
+import { createGameGraphics } from './graphics-adapter.mjs?v=launch-17';
 import { installDeviceMotion } from './device-motion.mjs';
-import { createGameSound } from './sound.mjs?v=launch-16';
+import { createGameSound } from './sound.mjs?v=launch-17';
 import { installSettings } from './settings.mjs?v=woodland-menu-1';
-import { createDuelClient } from './duel-client.mjs?v=launch-16';
+import { createDuelClient } from './duel-client.mjs?v=launch-17';
 import {installFullscreen} from './fullscreen.mjs?v=timed-duel-1';
-import {createHomeMenu} from './home-menu.mjs?v=launch-16';
-import {createConfetti} from './confetti.mjs?v=launch-16';
-import {createHaptics} from './haptics.mjs?v=launch-16';
+import {createHomeMenu} from './home-menu.mjs?v=launch-17';
+import {createConfetti} from './confetti.mjs?v=launch-17';
+import {createHaptics} from './haptics.mjs?v=launch-17';
 import {planMergeRipple} from './merge-ripple.mjs?v=swarm-fx-3';
-import * as Camp from './campaign.mjs?v=launch-16';
-import {createCampaignUI,TOOL_ARTICLE} from './campaign-ui.mjs?v=launch-16';
-import {createToolFx} from './tool-fx.mjs?v=launch-16';
-import {hintState,findHint} from './hint-solver.mjs?v=launch-16';
-import {comicColors} from './comic-style.mjs?v=launch-16';
-import * as Shop from './shop.mjs?v=launch-16';
-import {createShopUI} from './shop-ui.mjs?v=launch-16';
-import {createGiftFx} from './gift-fx.mjs?v=launch-16';
-import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-16';
-import {createAdUI} from './ad-ui.mjs?v=launch-16';
-import {createStatsUI} from './stats-ui.mjs?v=launch-16';
-import * as ToolLog from './tool-log.mjs?v=launch-16';
+import * as Camp from './campaign.mjs?v=launch-17';
+import {createCampaignUI,TOOL_ARTICLE} from './campaign-ui.mjs?v=launch-17';
+import {createToolFx} from './tool-fx.mjs?v=launch-17';
+import {hintState,findHint} from './hint-solver.mjs?v=launch-17';
+import {comicColors} from './comic-style.mjs?v=launch-17';
+import * as Shop from './shop.mjs?v=launch-17';
+import {createShopUI} from './shop-ui.mjs?v=launch-17';
+import {createGiftFx} from './gift-fx.mjs?v=launch-17';
+import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-17';
+import {createAdUI} from './ad-ui.mjs?v=launch-17';
+import {createStatsUI} from './stats-ui.mjs?v=launch-17';
+import * as ToolLog from './tool-log.mjs?v=launch-17';
 const playfield = document.getElementById('playfield');
 const gameElement = document.querySelector('.game');
 const visual = createGameGraphics(document.getElementById('graphics'));
@@ -145,7 +145,7 @@ const newTile = value => ({ id: nextId++, value });
 const MODE_KEY='squish-mode-v1';
 const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-16',import.meta.url);
 // launch-16: Test-Level für die neuen Squishes (Eis, Ketten, Bombe) – eigener kleiner Satz, kein Fortschritt/Protokoll.
-const LAB_URL=new URL('../levels/levels-lab.json?v=launch-16',import.meta.url);
+const LAB_URL=new URL('../levels/levels-lab.json?v=launch-17',import.meta.url);
 let labMode=false,labLevels=null,labLoading=null;
 function loadLab(){
   return labLoading||=fetch(LAB_URL,{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('lab '+r.status);return r.json();})
@@ -167,7 +167,7 @@ let campaignProgress=Camp.loadProgress(),inventory=Camp.loadInventory();
 if(Camp.TOOL_STOCK_RESET)inventory=Camp.resetStockOnce(inventory).inventory;
 // launch-14: Abenteuer-Fortschritt + Geschenke einmalig zurücksetzen (Merker gegen Wiederholung); Endlos usw. bleibt.
 if(Camp.CAMPAIGN_RESET){const r=Camp.resetCampaignOnce(campaignProgress,inventory);campaignProgress=r.progress;inventory=r.inventory;}
-const BUILD_LABEL='launch-16';
+const BUILD_LABEL='launch-17';
 let toolLog=ToolLog.loadLog(),logAttempt=null;
 // Versuche, die beim letzten Mal offen blieben (Seite geschlossen), gelten als abgebrochen.
 if(toolLog.attempts.some(a=>!a.outcome)){for(const a of toolLog.attempts)if(!a.outcome)ToolLog.endAttempt(toolLog,a.id,{outcome:'quit',moves:a.moves});ToolLog.saveLog(toolLog);}
@@ -487,7 +487,7 @@ let hintWorker=null,hintSeq=0;
 function searchHint(state){
   const budget={want:2,maxStates:160000,maxMs:2500};
   try{
-    hintWorker||=new Worker(new URL('./hint-worker.mjs?v=launch-16',import.meta.url),{type:'module'});
+    hintWorker||=new Worker(new URL('./hint-worker.mjs?v=launch-17',import.meta.url),{type:'module'});
   }catch{hintWorker=null;}
   if(!hintWorker)return Promise.resolve(findHint(state,{...budget,maxMs:900}));
   const id=++hintSeq;
@@ -831,9 +831,9 @@ function boardRect(){
 function graphicsTiles(incoming) {
   return board.flatMap((line,row)=>line.flatMap((tile,col)=> {
     if(!tile)return [];
-    // launch-16: besondere Squishes – angekettete haben keine Zahl (value 0), die Grafik braucht ≥ 1.
+    // launch-17: besondere Squishes (Eis, Schloss, Bombe) – Zahl immer sichtbar.
     const data={id:tile.id,value:Math.max(1,tile.value),row,col,special:tile.bound?'bound':tile.ice?'ice':tile.bomb!=null?'bomb':null};
-    if(freedNow.has(tile.id))data.freed=true;   // launch-17: gerade befreit → Eis zerspringt / Ketten reißen
+    if(freedNow.has(tile.id))data.freed=true;   // launch-17: gerade befreit → Abzeichen poppt weg
     if(incoming?.id===tile.id) {
       const pitch=graphics.parameters.board.pitch;
       data.fromPosition=[(col-2)*pitch,.08,(row-2)*pitch];
