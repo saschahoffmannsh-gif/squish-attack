@@ -625,6 +625,25 @@ export function resetCampaignOnce(progress, inv, storage = globalThis.localStora
   try { storage?.setItem(CAMPAIGN_RESET_KEY, tag); } catch {}
   return { progress: p, inventory: out, reset: true };
 }
+/**
+ * launch-18: Sterne und beste Züge der umgebauten Level (ab 11) einmalig löschen.
+ * Level 1–10 bleiben, damit Kapitel 2 frei bleibt, wenn es schon offen war.
+ * Eigener Merker, CAMPAIGN_RESET bleibt 'launch-14'.
+ */
+export const STARS_RESET = 'launch-18';
+export const STARS_RESET_KEY = 'squish-campaign-stars-reset';
+export const STARS_RESET_FROM = 11;
+export function resetChangedStarsOnce(progress, storage = globalThis.localStorage, { tag = STARS_RESET, fromId = STARS_RESET_FROM } = {}) {
+  let done = null;
+  try { done = storage?.getItem(STARS_RESET_KEY); } catch {}
+  if (!tag || done === tag) return { progress, reset: false };
+  const levels = { ...progress.levels };
+  for (const k of Object.keys(levels)) if (Number(k) >= fromId) delete levels[k];
+  const p = { ...progress, levels, updatedAt: Date.now() };
+  saveProgress(p, storage);
+  try { storage?.setItem(STARS_RESET_KEY, tag); } catch {}
+  return { progress: p, reset: true };
+}
 /** Offenes Geschenk einsammeln → {inventory, gift} oder null. Ohne id: das älteste. */
 export function collectGift(inv, id) {
   const i = (inv.pending || []).findIndex(g => id == null || g.id === id);

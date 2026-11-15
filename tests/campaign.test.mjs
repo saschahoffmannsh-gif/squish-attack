@@ -5,6 +5,7 @@ import {
   validateLevel, encodeMove, decodeMove, recordResult, mergeProgress, emptyProgress, isUnlocked,
   nextLevel, totalStars, loadProgress, saveProgress, goalText, starThresholds, starsOfRun, addExtraMoves,
   markToolUsed, moveLimit, lockReason, chapterOf, starGate, CHAPTER_SIZE, STARS_PER_CHAPTER_GATE,
+  resetChangedStarsOnce, STARS_RESET, STARS_RESET_KEY,
 } from '../game/campaign.mjs';
 
 const E = null;
@@ -572,4 +573,21 @@ test('launch-15: 100 Level = 10 Kapitel; Schranke 18★ × (Kapitel − 1) bis L
   assert.equal(nextLevel(p, 100), 91);
   p.levels['90'].stars = 1; for (let n = 1; n <= 19; n++) p.levels[String(n)].stars = 1;
   assert.deepEqual(lockReason(p, 91), { reason: 'stars', need: 162, have: 160, chapter: 10 });
+});
+
+test('launch-18: Sterne ab Level 11 einmalig zurücksetzen, 1–10 und launch-14-Merker bleiben', () => {
+  const st = new Map();
+  st.getItem = k => (st.has(k) ? st.get(k) : null);
+  st.setItem = (k, v) => st.set(k, v);
+  const p0 = emptyProgress();
+  for (let n = 1; n <= 20; n++) p0.levels[String(n)] = { stars: 3, moves: 4, at: 0 };
+  const a = resetChangedStarsOnce(p0, st);
+  assert.equal(a.reset, true);
+  assert.equal(STARS_RESET, 'launch-18');
+  assert.equal(st.getItem(STARS_RESET_KEY), 'launch-18');
+  assert.deepEqual(Object.keys(a.progress.levels).map(Number).sort((x, y) => x - y), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+  assert.equal(a.progress.levels['10'].stars, 3);
+  const b = resetChangedStarsOnce(a.progress, st);
+  assert.equal(b.reset, false);
+  assert.equal(Object.keys(b.progress.levels).length, 10);
 });
