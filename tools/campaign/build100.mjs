@@ -22,7 +22,7 @@ const BUILD = Object.keys(MISSIONS).map(Number).sort((a, b) => a - b);
 function search(id, { budgetMs, kMax }) {
   const file = join(cacheDir, `L${id}.json`);
   let st = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : { id, next: 0, best: null, tried: 0, ok: 0, spentMs: 0 };
-  const role = roleOf(id), t0 = Date.now(), good = role === 'tool' || role === 'boss' ? 1.5 : 1.5;
+  const role = roleOf(id), t0 = Date.now(), good = role === 'tool' || role === 'boss' ? 6 : 1.5;
   while (st.next < kMax && Date.now() - t0 < budgetMs) {
     if (st.best && st.best.cost <= good && st.tried >= 30) break;
     let r = null;

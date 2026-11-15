@@ -163,7 +163,7 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
         const maxS=toolOf(n)?2:3;
         if(rec){const b=document.createElement('b');b.textContent='★'.repeat(rec.stars);st.append(b,'☆'.repeat(Math.max(0,maxS-rec.stars)));}else st.textContent=lock?'':'☆'.repeat(maxS);
         b.append(num,st);
-        b.setAttribute('aria-label',(lock?`Level ${n}, gesperrt. ${lockText(lock)}`:`Level ${n}${rec?`, ${rec.stars} von 3 Sternen`:', noch nicht gespielt'}`)+(toolOf(n)?`. Werkzeug-Level (${toolName(toolOf(n))}), höchstens 2 Sterne`:''));
+        b.setAttribute('aria-label',(lock?`Level ${n}, gesperrt. ${lockText(lock)}`:`Level ${n}${rec?`, ${rec.stars} von ${maxS} Sternen`:', noch nicht gespielt'}`)+(toolOf(n)?`. Werkzeug-Level (${toolName(toolOf(n))}), höchstens 2 Sterne`:''));
         b.addEventListener('click',()=>{
           if(lock){lockNote.textContent=`Level ${n}: ${lockText(lock)}`;b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');return;}
           closeSelect(true);onPlay?.(n);

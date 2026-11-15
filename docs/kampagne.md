@@ -67,6 +67,12 @@ gezählt (`game/campaign.mjs`, `tally()`):
 | `street` | `count` | „Bilde 2 Straßen“ | Straßen-Gruppen |
 | `score` | `points` | „Erreiche 400 Punkte“ | Punkte wie im Endlosmodus |
 | `combo` | `chain` | „Kettenreaktion: 2 Fusionen in einem Zug“ | längste Kette in einem Zug |
+| `empty` | `max` (launch-15) | „Höchstens 4 Steine übrig“ | Steine auf dem Brett (HUD „7→4“); auch die Rakete kann es erfüllen |
+| `long` | `count` (launch-15) | „Bilde eine Straße aus 4 Steinen“ | Straßen-Gruppen mit ≥ 4 Feldern |
+| `purge` | `value`, `tiles` (launch-15) | „Löse 6× die 2 auf“ | verschwundene Steine dieses Werts (Fusion: alle der Gruppe; Straße: Wert je Feld, Zielstein bleibt bei Länge 3) |
+
+Bei **drei Zielen** zeigt die Ziel-Karte Kurztexte (`goalShort`, z. B. „4er bauen · 6 Steine lösen · 1 Straße“), damit sie auf 375 px passt.
+„Große Gruppe“ gibt es bewusst nicht (Entscheidung Sascha).
 
 **Keine Hindernisse** (Entscheidung Sascha, 14.11.2026): Felsen o. Ä. gibt es
 nicht, weder im Format noch im Generator noch in `campaign.mjs`.
