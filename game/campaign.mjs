@@ -2,7 +2,7 @@
 // Ein Level = feste Startaufstellung + feste Steinfolge + Ziele + Zuglimit.
 // Dieses Modul ist reine Logik (kein DOM). Es wird von der UI, dem Solver,
 // dem Generator und den Tests gemeinsam benutzt, damit alle exakt gleich zählen.
-import { SIZE, insertTile, settle, isGameOver, tickBombs, BOMB_MS, BOMB_UNIT_MS } from './game-logic.mjs?v=launch-16';
+import { SIZE, insertTile, settle, isGameOver, tickBombs, BOMB_MS, BOMB_UNIT_MS } from './game-logic.mjs?v=launch-17';
 
 export const DIRECTIONS = ['left', 'right', 'up', 'down'];
 export const QUEUE_PREVIEW = 3;
@@ -51,7 +51,7 @@ export function validateLevel(level) {
       if (!(Number.isInteger(r) && Number.isInteger(c) && r >= 0 && r < SIZE && c >= 0 && c < SIZE)) fail(`specials ${kind}: Zelle ungültig`);
       if (seen.has(r * SIZE + c)) fail(`specials: Zelle ${r},${c} doppelt`);
       seen.add(r * SIZE + c);
-      if (kind === 'bound' ? level.board[r][c] !== null : level.board[r][c] === null) fail(`specials ${kind}: ${kind === 'bound' ? 'Kettenfeld muss im board leer (null) sein' : 'braucht einen Stein'} (${r},${c})`);
+      if (level.board[r][c] === null) fail(`specials ${kind}: braucht einen Stein (${r},${c})`);   // launch-17: auch Ketten tragen eine Zahl
     }
   }
   const s = level.stars, room = level.tool === 'extraMoves' ? 3 : 0;   // +3-Level: 2★ auch mit den 3 Extra-Zügen
@@ -61,7 +61,7 @@ export function validateLevel(level) {
 }
 
 const toTile = (v, ctx) => ({ id: ctx.nextId++, value: v });
-/** launch-16: besondere Squishes. ice = gefroren, bound = angekettet (Wand), bomb = 20-s-Countdown. */
+/** launch-16: besondere Squishes. ice = gefroren, bound = angekettet (Wand, launch-17: befreibar), bomb = 20-s-Countdown. */
 export const SPECIAL_KINDS = ['ice', 'bomb', 'bound'];
 export { BOMB_MS };
 /** Solver/Hinweis/Simulation: so viel Bomben-Zeit vergeht pro Zug (Modell eines zügigen Spielers). */
@@ -74,7 +74,7 @@ function placeSpecials(level, board, ctx) {
   const ms = (sp.bombSeconds ?? BOMB_MS / 1000) * 1000;
   for (const [r, c] of sp.ice ?? []) board[r][c] = { ...board[r][c], ice: true };
   for (const [r, c] of sp.bomb ?? []) board[r][c] = { ...board[r][c], bomb: ms };
-  for (const [r, c] of sp.bound ?? []) board[r][c] = { id: ctx.nextId++, value: 0, bound: true };
+  for (const [r, c] of sp.bound ?? []) board[r][c] = { ...board[r][c], bound: true };
 }
 /**
  * Ein Zug auf einem reinen Brett (Solver, Hinweis, Simulation): einschieben, fusionieren, dann vergeht
@@ -166,7 +166,7 @@ export function vanished(g) {
   });
   return [...out];
 }
-// Angekettete Steine zählen nicht (sie lassen sich nie entfernen).
+// Angekettete Steine zählen nicht (solange angekettet); befreit zählen sie normal.
 export const tilesOn = board => { let n = 0; for (const row of board) for (const t of row) if (t && !t.bound) n++; return n; };
 /** Zielwert in Einheiten des Fortschritts-Vektors (Solver/Hinweis). */
 export const goalTarget = g => ({ tile: g.value, make: g.count, score: g.points, clear: g.tiles, street: g.count, combo: g.chain, empty: 1, long: g.count, purge: g.tiles })[g.type];

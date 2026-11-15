@@ -1,4 +1,4 @@
-import {apiFetch} from './api.mjs?v=launch-16';
+import {apiFetch} from './api.mjs?v=launch-17';
 // All commands share one channel; polling can never overtake a player's move.
 export function createDuelClient({canSync,onView,onPrepare,onBegin,onConnection,onStatus=()=>{},onCode=()=>{},onClose=()=>{}}) {
   const overlay=document.getElementById('duel-screen'),panel=document.getElementById('duel-panel');

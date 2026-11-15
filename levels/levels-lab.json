@@ -1,6 +1,6 @@
 {
  "version": 1,
- "note": "launch-16: Test-Level für Eis, Ketten, Bombe (nicht Teil der Kampagne)",
+ "note": "launch-17: Test-Level für Eis, Ketten (befreibar), Bombe (nicht Teil der Kampagne)",
  "levels": [
   {
    "id": 1,
@@ -15,16 +15,16 @@
     ],
     [
      3,
+     null,
      3,
      null,
-     null,
      null
     ],
     [
+     null,
      2,
      2,
      null,
-     null,
      null
     ],
     [
@@ -35,10 +35,10 @@
      null
     ],
     [
+     null,
      null,
      null,
      1,
-     null,
      null
     ]
    ],
@@ -46,7 +46,7 @@
     "ice": [
      [
       1,
-      0
+      2
      ]
     ]
    },
@@ -78,9 +78,13 @@
    "solution": "hg",
    "meta": {
     "lab": true,
-    "note": "Der gefrorene 3er taut auf, sobald direkt daneben etwas verschmilzt.",
+    "note": "Der gefrorene 3er rutscht mit, verschmilzt aber nicht. Verschmilz etwas direkt daneben – das Eis-Symbol geht weg und der 3er bleibt als normaler Squish.",
     "minMoves": 2,
-    "pOpt": 0.005
+    "pOpt": 0.0025,
+    "freed": {
+     "ice": 1,
+     "bound": 0
+    }
    }
   },
   {
@@ -96,56 +100,52 @@
     ],
     [
      null,
+     null,
      1,
-     null,
-     2,
-     null
-    ],
-    [
-     null,
-     null,
-     null,
-     null,
-     null
-    ],
-    [
-     null,
-     2,
-     null,
      1,
      null
     ],
     [
      null,
+     4,
+     4,
+     null,
+     null
+    ],
+    [
+     null,
      null,
      null,
      null,
      null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     2
     ]
    ],
    "specials": {
     "bound": [
-     [
-      0,
-      2
-     ],
      [
       2,
       2
      ],
      [
       4,
-      2
+      4
      ]
     ]
    },
    "sequence": [
     1,
+    4,
     2,
+    3,
     1,
     2,
-    2,
-    1,
     3,
     1,
     2,
@@ -155,21 +155,25 @@
    ],
    "goals": [
     {
-     "type": "clear",
-     "tiles": 6
+     "type": "tile",
+     "value": 5
     }
    ],
-   "moves": 8,
+   "moves": 5,
    "stars": {
-    "three": 6,
-    "two": 7
+    "three": 3,
+    "two": 4
    },
-   "solution": "bbssb",
+   "solution": "bh",
    "meta": {
     "lab": true,
-    "note": "Angekettete Squishes bewegen sich nie – sie sind eine Wand.",
-    "minMoves": 5,
-    "pOpt": 0.00005625264718339686
+    "note": "Schloss-Squishes bewegen sich nicht – sie sind eine Wand. Verschmilz direkt daneben, dann geht das Schloss weg und der Squish ist frei.",
+    "minMoves": 2,
+    "pOpt": 0.003105590062111801,
+    "freed": {
+     "ice": 0,
+     "bound": 1
+    }
    }
   },
   {
@@ -257,7 +261,11 @@
     "lab": true,
     "note": "Die Bombe zählt 20 Sekunden ab dem ersten Zug. Verschmilz sie, dann ist sie entschärft – sonst reißt sie ihre Nachbarn mit.",
     "minMoves": 4,
-    "pOpt": 0.000012588275280403833,
+    "pOpt": 1.2588275280403833e-05,
+    "freed": {
+     "ice": 0,
+     "bound": 0
+    },
     "realtime": {
      "normal": {
       "n": 200,
@@ -277,7 +285,7 @@
    "title": "Alles zusammen",
    "board": [
     [
-     null,
+     1,
      null,
      null,
      null,
@@ -293,7 +301,7 @@
     [
      null,
      3,
-     null,
+     2,
      2,
      null
     ],
@@ -369,22 +377,26 @@
     "three": 5,
     "two": 7
    },
-   "solution": "gggs",
+   "solution": "gcqh",
    "meta": {
     "lab": true,
     "note": "Eis, Ketten und eine Bombe auf einem Brett.",
     "minMoves": 4,
-    "pOpt": 0.000009959365787586646,
+    "pOpt": 4.970228332289585e-05,
+    "freed": {
+     "ice": 1,
+     "bound": 2
+    },
     "realtime": {
      "normal": {
       "n": 200,
-      "winRate": 0.765,
-      "explodedRate": 0.235
+      "winRate": 0.875,
+      "explodedRate": 0.17
      },
      "slow": {
       "n": 200,
-      "winRate": 0.63,
-      "explodedRate": 0.71
+      "winRate": 0.68,
+      "explodedRate": 0.66
      }
     }
    }

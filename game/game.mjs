@@ -1,32 +1,32 @@
-import {apiFetch,hasSaveToken} from './api.mjs?v=launch-16';
-import {createRng,encodeMove,replayRun,MAX_LOG} from './ranked.mjs?v=launch-16';
-import {createLeaderboard} from './leaderboard.mjs?v=launch-16';
-import { SIZE, START_VALUES, createStartValues, insertTile, nextMergePass, settle, isGameOver } from './game-logic.mjs?v=launch-16';
+import {apiFetch,hasSaveToken} from './api.mjs?v=launch-17';
+import {createRng,encodeMove,replayRun,MAX_LOG} from './ranked.mjs?v=launch-17';
+import {createLeaderboard} from './leaderboard.mjs?v=launch-17';
+import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-17';
 import { nextSpawn, spawnProfile } from './balance.mjs';
-import {canContinueRun} from './run-availability.mjs?v=launch-16';
-import { createMergeEffects } from './merge-effects.mjs?v=launch-16';
-import { createGameGraphics } from './graphics-adapter.mjs?v=launch-16';
+import {canContinueRun} from './run-availability.mjs?v=launch-17';
+import { createMergeEffects } from './merge-effects.mjs?v=launch-17';
+import { createGameGraphics } from './graphics-adapter.mjs?v=launch-17';
 import { installDeviceMotion } from './device-motion.mjs';
-import { createGameSound } from './sound.mjs?v=launch-16';
+import { createGameSound } from './sound.mjs?v=launch-17';
 import { installSettings } from './settings.mjs?v=woodland-menu-1';
-import { createDuelClient } from './duel-client.mjs?v=launch-16';
+import { createDuelClient } from './duel-client.mjs?v=launch-17';
 import {installFullscreen} from './fullscreen.mjs?v=timed-duel-1';
-import {createHomeMenu} from './home-menu.mjs?v=launch-16';
-import {createConfetti} from './confetti.mjs?v=launch-16';
-import {createHaptics} from './haptics.mjs?v=launch-16';
+import {createHomeMenu} from './home-menu.mjs?v=launch-17';
+import {createConfetti} from './confetti.mjs?v=launch-17';
+import {createHaptics} from './haptics.mjs?v=launch-17';
 import {planMergeRipple} from './merge-ripple.mjs?v=swarm-fx-3';
-import * as Camp from './campaign.mjs?v=launch-16';
-import {createCampaignUI,TOOL_ARTICLE,TOOL_NOM} from './campaign-ui.mjs?v=launch-16';
-import {createToolFx} from './tool-fx.mjs?v=launch-16';
-import {hintState,findHint} from './hint-solver.mjs?v=launch-16';
-import {comicColors} from './comic-style.mjs?v=launch-16';
-import * as Shop from './shop.mjs?v=launch-16';
-import {createShopUI} from './shop-ui.mjs?v=launch-16';
-import {createGiftFx} from './gift-fx.mjs?v=launch-16';
-import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-16';
-import {createAdUI} from './ad-ui.mjs?v=launch-16';
-import {createStatsUI} from './stats-ui.mjs?v=launch-16';
-import * as ToolLog from './tool-log.mjs?v=launch-16';
+import * as Camp from './campaign.mjs?v=launch-17';
+import {createCampaignUI,TOOL_ARTICLE,TOOL_NOM} from './campaign-ui.mjs?v=launch-17';
+import {createToolFx} from './tool-fx.mjs?v=launch-17';
+import {hintState,findHint} from './hint-solver.mjs?v=launch-17';
+import {comicColors} from './comic-style.mjs?v=launch-17';
+import * as Shop from './shop.mjs?v=launch-17';
+import {createShopUI} from './shop-ui.mjs?v=launch-17';
+import {createGiftFx} from './gift-fx.mjs?v=launch-17';
+import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-17';
+import {createAdUI} from './ad-ui.mjs?v=launch-17';
+import {createStatsUI} from './stats-ui.mjs?v=launch-17';
+import * as ToolLog from './tool-log.mjs?v=launch-17';
 const playfield = document.getElementById('playfield');
 const gameElement = document.querySelector('.game');
 const visual = createGameGraphics(document.getElementById('graphics'));
@@ -145,7 +145,7 @@ const newTile = value => ({ id: nextId++, value });
 const MODE_KEY='squish-mode-v1';
 const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-16',import.meta.url);
 // launch-16: Test-Level für die neuen Squishes (Eis, Ketten, Bombe) – eigener kleiner Satz, kein Fortschritt/Protokoll.
-const LAB_URL=new URL('../levels/levels-lab.json?v=launch-16',import.meta.url);
+const LAB_URL=new URL('../levels/levels-lab.json?v=launch-17',import.meta.url);
 let labMode=false,labLevels=null,labLoading=null;
 function loadLab(){
   return labLoading||=fetch(LAB_URL,{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('lab '+r.status);return r.json();})
@@ -167,7 +167,7 @@ let campaignProgress=Camp.loadProgress(),inventory=Camp.loadInventory();
 if(Camp.TOOL_STOCK_RESET)inventory=Camp.resetStockOnce(inventory).inventory;
 // launch-14: Abenteuer-Fortschritt + Geschenke einmalig zurücksetzen (Merker gegen Wiederholung); Endlos usw. bleibt.
 if(Camp.CAMPAIGN_RESET){const r=Camp.resetCampaignOnce(campaignProgress,inventory);campaignProgress=r.progress;inventory=r.inventory;}
-const BUILD_LABEL='launch-16';
+const BUILD_LABEL='launch-17';
 let toolLog=ToolLog.loadLog(),logAttempt=null;
 // Versuche, die beim letzten Mal offen blieben (Seite geschlossen), gelten als abgebrochen.
 if(toolLog.attempts.some(a=>!a.outcome)){for(const a of toolLog.attempts)if(!a.outcome)ToolLog.endAttempt(toolLog,a.id,{outcome:'quit',moves:a.moves});ToolLog.saveLog(toolLog);}
@@ -487,7 +487,7 @@ let hintWorker=null,hintSeq=0;
 function searchHint(state){
   const budget={want:2,maxStates:160000,maxMs:2500};
   try{
-    hintWorker||=new Worker(new URL('./hint-worker.mjs?v=launch-16',import.meta.url),{type:'module'});
+    hintWorker||=new Worker(new URL('./hint-worker.mjs?v=launch-17',import.meta.url),{type:'module'});
   }catch{hintWorker=null;}
   if(!hintWorker)return Promise.resolve(findHint(state,{...budget,maxMs:900}));
   const id=++hintSeq;
@@ -831,8 +831,9 @@ function boardRect(){
 function graphicsTiles(incoming) {
   return board.flatMap((line,row)=>line.flatMap((tile,col)=> {
     if(!tile)return [];
-    // launch-16: besondere Squishes – angekettete haben keine Zahl (value 0), die Grafik braucht ≥ 1.
+    // launch-17: besondere Squishes (Eis, Schloss, Bombe) – Zahl immer sichtbar.
     const data={id:tile.id,value:Math.max(1,tile.value),row,col,special:tile.bound?'bound':tile.ice?'ice':tile.bomb!=null?'bomb':null};
+    if(freedNow.has(tile.id))data.freed=true;   // launch-17: gerade befreit → Abzeichen poppt weg
     if(incoming?.id===tile.id) {
       const pitch=graphics.parameters.board.pitch;
       data.fromPosition=[(col-2)*pitch,.08,(row-2)*pitch];
@@ -844,6 +845,7 @@ function graphicsTiles(incoming) {
     return [data];
   }));
 }
+let freedNow=new Set();
 function renderBoard(incoming) {
   // Reduced motion: no slide-in, so no off-board start position either
   // (the new stone used to stay outside the board at its entry point).
@@ -994,7 +996,7 @@ function wobbleMergeNeighbors(groups,combo=1) {
   for(const pulse of planMergeRipple(board,groups,{combo,moves}))visual.scheduleWobble(pulse.id,pulse.power,pulse.delay);
 }
 
-async function applyMerge(pass,turn,combo) {
+async function applyMerge(pass,turn,combo,hold=new Set()) {
   const sources=pass.groups.map(group=>group.cells.map(([r,c])=>({...location(r,c),value:board[r][c].value})));
   const upgraded=pass.groups.filter(g=>!g.street&&g.cells.length>=5);
   // The group's real cushions melt into one gel body, swell and pop; the
@@ -1010,12 +1012,17 @@ async function applyMerge(pass,turn,combo) {
   const previousPeak=Math.max(peak,...board.flat().filter(Boolean).map(t=>t.value));
   const previousScore=score,previousRecord=bestTile;
   board=pass.board;score+=pass.points;best=Math.max(best,score);
+  // launch-17: befreite Squishes (aufgetaut / entkettet) bleiben liegen – nur ihre Hülle geht ab.
+  const freedCells=[...(pass.thawed||[]),...(pass.unchained||[])];
+  freedNow=new Set(freedCells.map(([r,c])=>board[r][c]?.id).filter(id=>id!=null));
+  if(freedCells.length){haptics.pulse('merge');for(const [r,c] of freedCells){const t=board[r][c];if(t&&!reduceMotion.matches)visual.scheduleWobble?.(t.id,.55,.06);}}
   const lead=pass.groups.reduce((a,b)=>b.cells.length>a.cells.length?b:a);
   sound.play(lead.street?'flow':'merge',lead.cells.length,{combo,pan:(lead.target[1]-2)*.13});
   if(!campaignMode)bestTile=Math.max(bestTile,...board.flat().filter(Boolean).map(t=>t.value));
   const rewards=pass.groups.map((group,index)=>({...group,position:location(...group.target),sources:sources[index],combo}));
   mergeEffects.award(rewards,previousScore,score);
-  renderBoard();renderBest();mergeEffects.combo(combo);
+  try{renderBoard();}finally{freedNow=new Set();}
+  renderBest();mergeEffects.combo(combo);
   if(bestTile>previousRecord){const record=rewards.find(group=>group.nextValue===bestTile);if(record)mergeEffects.record(record.position,bestTile,record);}
   haptics.pulse(upgraded.length||lead.cells.length>=4||bestTile>previousRecord||moveCombo>=4||combo>=3?'big':'merge');
   for(const group of pass.groups) {
@@ -1032,7 +1039,7 @@ async function applyMerge(pass,turn,combo) {
   wobbleMergeNeighbors(pass.groups,combo);
   // Wait only if another pass will follow, so the next swipe is accepted
   // as soon as this pop has updated the board.
-  const more=nextMergePass(board);
+  const more=settlePass(board,new Set(hold));
   if(more.groups.length)await wait(upgraded.length?110:80);
   if(turn!==generation)return;
 }
@@ -1046,13 +1053,14 @@ function updateCombo(merged) {
 
 async function resolveMerges(turn,{streak=false}={}) {
   let chains=0,totalMerges=0,hadUpgrade=false,hadStreet=false;
+  const hold=new Set();   // launch-17: in diesem Zug befreite Zellen verschmelzen erst im nächsten Zug
   for(let count=0;count<SIZE*SIZE;count++) {
-    const pass=nextMergePass(board);if(!pass.groups.length)break;
+    const pass=settlePass(board,hold);if(!pass.groups.length)break;
     chains++;totalMerges+=pass.groups.length;
     if(streak&&chains===1)updateCombo(true);
     if(pass.groups.some(g=>!g.street&&g.cells.length>=5))hadUpgrade=true;
     if(pass.groups.some(g=>g.street))hadStreet=true;
-    await applyMerge(pass,turn,totalMerges);
+    await applyMerge(pass,turn,totalMerges,hold);
     if(turn!==generation)return;
   }
   if(streak&&!chains)updateCombo(false);
@@ -1313,7 +1321,7 @@ window.SquishGame={graphics,move,restart,get state(){return {board,queue,score,b
 if(new URLSearchParams(globalThis.location.search).has('vfxdemo'))window.SquishVFX={
   setBoard(grid,next=[1,2,3]){
     if(busy)return false;
-    board=grid.map(row=>row.map(value=>value?{id:nextId++,value}:null));queue=next.slice(0,3);run=null;rng=null;
+    board=grid.map(row=>row.map(value=>value&&typeof value==='object'?{id:nextId++,...value}:value?{id:nextId++,value}:null));queue=next.slice(0,3);run=null;rng=null;
     renderBoard();renderQueue();renderBest();return true;
   },
   slow(v=1){mergeEffects.vfx.timeScale=v;},
