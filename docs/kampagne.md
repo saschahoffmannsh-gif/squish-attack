@@ -283,3 +283,8 @@ Spieldaten (Versuche pro Level) nachkalibriert werden.
 - Gezeichnet wird, bis die Amplitude < 0,012 ist (vorher 0,045), damit kein leicht schiefer Endzustand stehen bleibt.
 - Der Hammer stupst die direkten Nachbarn an. `prefers-reduced-motion`: kein Wackeln.
 - Fix aus launch-7 bleibt: im Bewegung-reduzieren-Modus sind Steine/Vorschau sichtbar und neue Steine liegen auf dem Brett.
+
+## Sterne-Sound (launch-9)
+- Im Gewinn-Dialog spielt jeder Stern jetzt den weichen Schiebe-Sound der Squishes (Sample `cup`, `sound.play('star',n)`)
+  statt des Ballon-Knalls; Tonhöhe steigt pro Stern (Rate 1 / 1,12 / 1,26), weiter synchron zur gestaffelten Stern-Animation.
+- Stumm/Sound-aus und `?nosound=1` gelten wie für alle Sounds. Haptik unverändert.

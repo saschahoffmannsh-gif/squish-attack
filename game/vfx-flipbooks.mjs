@@ -10,7 +10,7 @@ export function hexColor(hex){const n=parseInt(String(hex).slice(1),16);return [
 const VS=`attribute vec2 p;attribute vec4 uv;attribute float m;attribute vec3 tint;attribute vec4 k;
 varying vec4 vUv;varying float vM;varying vec3 vT;varying vec4 vK;uniform vec2 view;
 void main(){vUv=uv;vM=m;vT=tint;vK=k;gl_Position=vec4(p.x/view.x*2.-1.,1.-p.y/view.y*2.,0.,1.);}`;
-// Comic look (launch-8): the channel-packed renders are posterised into flat
+// Comic look (launch-9): the channel-packed renders are posterised into flat
 // colour with two tones, hard white glints and a dark ink outline taken from
 // the coverage channel. Light-only cells (orbs, glints) become flat shapes.
 const FS=`precision mediump float;varying vec4 vUv;varying float vM;varying vec3 vT;varying vec4 vK;uniform sampler2D atlas;uniform float texel;uniform vec2 grid;

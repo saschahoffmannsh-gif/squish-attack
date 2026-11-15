@@ -1,4 +1,4 @@
-import {flags,ios,safari,BUILD} from './flags.mjs?v=launch-8';
+import {flags,ios,safari,BUILD} from './flags.mjs?v=launch-9';
 // Sampled gel foley. Fetching is optional and never holds up the splash;
 // the AudioContext is created/resumed only by a real player gesture.
 // Slide/land use ralph.whitehead's CC0 Plunger Pop (#05); merge/pop use Gniffelbaf's CC0 balloon burst.
@@ -52,6 +52,9 @@ export const FOLEY_FILES=Object.freeze({
   burst:foleyUrl('burst',preferredFoleyExt()),
 });
 export const MAX_SOUND_VOICES=16;
+// Star sounds in the win dialog: same slide sample, rising per star.
+export const STAR_RATES=Object.freeze([1,1.12,1.26]);
+export const STAR_VOLUMES=Object.freeze([.40,.42,.46]);
 const LAND_WINDOW=40,LAND_MAX=2,SLIDE_DUP=18,PENDING_LIFE=800;
 const SFX_LOG=typeof location!=='undefined'&&/\bsfxlog=1\b/.test(location.search||'');
 
@@ -217,7 +220,7 @@ export function createGameSound(button,{
   }
 
   function sampleName(kind){
-    return kind==='land'||kind==='slide'?'cup':kind==='merge'||kind==='flow'||kind==='pop'?'burst':kind==='squish'||kind==='tap'?'plop':kind==='record'?'suction':kind==='collect'?'count':kind;
+    return kind==='land'||kind==='slide'||kind==='star'?'cup':kind==='merge'||kind==='flow'||kind==='pop'?'burst':kind==='squish'||kind==='tap'?'plop':kind==='record'?'suction':kind==='collect'?'count':kind;
   }
 
   function enqueue(kind,size,{combo=1,pan=0,requestedAt}={}){
@@ -254,7 +257,7 @@ export function createGameSound(button,{
       void Promise.resolve(kick).then(ok=>{if(ok)flushQueue();}).catch(()=>{});
       return;
     }
-    const need=kind==='land'||kind==='slide'?'cup':kind==='merge'||kind==='flow'||kind==='pop'?'burst':kind==='squish'||kind==='tap'?'plop':kind==='record'?'suction':kind==='collect'?'count':null;
+    const need=kind==='land'||kind==='slide'||kind==='star'?'cup':kind==='merge'||kind==='flow'||kind==='pop'?'burst':kind==='squish'||kind==='tap'?'plop':kind==='record'?'suction':kind==='collect'?'count':null;
     if(need&&!buffers.has(need)){
       enqueue(kind,size,{combo,pan,requestedAt});
       notePlay({kind,name:sampleName(kind),skipped:'decode',t:requestedAt??now()});
@@ -275,6 +278,15 @@ export function createGameSound(button,{
       const volume=.34+.08*Math.random();
       const voice=sample('cup',{volume,rate,pan,delay,priority:1});
       notePlay({kind,name:'cup',size,rate,volume:+volume.toFixed(3),delay,t:at,skipped:voice?undefined:'failed'});
+      return;
+    }
+    if(kind==='star'){
+      // Win-dialog stars (launch-9): the soft squish slide sound instead of
+      // the balloon bang, a little higher for each star. size = star 1..3.
+      const index=Math.max(0,Math.min(2,(size|0)-1));
+      const rate=STAR_RATES[index],volume=STAR_VOLUMES[index];
+      const voice=sample('cup',{volume,rate,pan,delay,priority:2});
+      notePlay({kind,name:'cup',size,rate,volume,delay,t:requestedAt??now(),skipped:voice?undefined:'failed'});
       return;
     }
     if(kind==='land'){

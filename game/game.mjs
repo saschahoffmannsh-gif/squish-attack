@@ -1,22 +1,22 @@
-import {apiFetch,hasSaveToken} from './api.mjs?v=launch-8';
-import {createRng,encodeMove,replayRun,MAX_LOG} from './ranked.mjs?v=launch-8';
-import {createLeaderboard} from './leaderboard.mjs?v=launch-8';
+import {apiFetch,hasSaveToken} from './api.mjs?v=launch-9';
+import {createRng,encodeMove,replayRun,MAX_LOG} from './ranked.mjs?v=launch-9';
+import {createLeaderboard} from './leaderboard.mjs?v=launch-9';
 import { SIZE, START_VALUES, createStartValues, insertTile, nextMergePass, settle, isGameOver } from './game-logic.mjs?v=automatic-streets-2';
 import { nextSpawn, spawnProfile } from './balance.mjs';
 import {canContinueRun} from './run-availability.mjs?v=splash-plate-1';
-import { createMergeEffects } from './merge-effects.mjs?v=launch-8';
-import { createGameGraphics } from './graphics-adapter.mjs?v=launch-8';
+import { createMergeEffects } from './merge-effects.mjs?v=launch-9';
+import { createGameGraphics } from './graphics-adapter.mjs?v=launch-9';
 import { installDeviceMotion } from './device-motion.mjs';
-import { createGameSound } from './sound.mjs?v=launch-8';
+import { createGameSound } from './sound.mjs?v=launch-9';
 import { installSettings } from './settings.mjs?v=woodland-menu-1';
-import { createDuelClient } from './duel-client.mjs?v=launch-8';
+import { createDuelClient } from './duel-client.mjs?v=launch-9';
 import {installFullscreen} from './fullscreen.mjs?v=timed-duel-1';
-import {createHomeMenu} from './home-menu.mjs?v=launch-8';
-import {createConfetti} from './confetti.mjs?v=launch-8';
-import {createHaptics} from './haptics.mjs?v=launch-8';
+import {createHomeMenu} from './home-menu.mjs?v=launch-9';
+import {createConfetti} from './confetti.mjs?v=launch-9';
+import {createHaptics} from './haptics.mjs?v=launch-9';
 import {planMergeRipple} from './merge-ripple.mjs?v=swarm-fx-3';
-import * as Camp from './campaign.mjs?v=launch-8';
-import {createCampaignUI} from './campaign-ui.mjs?v=launch-8';
+import * as Camp from './campaign.mjs?v=launch-9';
+import {createCampaignUI} from './campaign-ui.mjs?v=launch-9';
 const playfield = document.getElementById('playfield');
 const gameElement = document.querySelector('.game');
 const visual = createGameGraphics(document.getElementById('graphics'));
@@ -129,7 +129,7 @@ const newTile = value => ({ id: nextId++, value });
 // in localStorage unangetastet: während der Kampagne wird nichts davon gespeichert,
 // beim Verlassen wird er wieder geladen.
 const MODE_KEY='squish-mode-v1';
-const LEVELS_URL=new URL('../levels/levels-001-025.json?v=launch-8',import.meta.url);
+const LEVELS_URL=new URL('../levels/levels-001-025.json?v=launch-9',import.meta.url);
 function storedMode(){try{return localStorage.getItem(MODE_KEY)||'';}catch{return '';}}
 let campaignMode=false,camp=null,levels=null,levelsLoading=null,stashedBestTile=null,needsEntry=false,hammerArmed=false;
 let campaignProgress=Camp.loadProgress(),inventory=Camp.loadInventory();
@@ -155,7 +155,7 @@ const campaignUI=createCampaignUI({
   onExtra:()=>useExtraMoves(),
   onMenu:()=>void backToMenu(),
   onTool:type=>type==='extraMoves'?useExtraMoves():toggleHammer(),
-  onStar:i=>{sound.play('merge',3+i,{combo:1+i});haptics.pulse(i===2?'big':'merge');},
+  onStar:i=>{sound.play('star',i+1);haptics.pulse(i===2?'big':'merge');},
   reduceMotion,
 });
 function renderCampaign(){
