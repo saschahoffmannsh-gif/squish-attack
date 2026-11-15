@@ -1026,6 +1026,7 @@
   },
   {
    "id": 50,
+   "seed": 4185034401,
    "role": "boss",
    "tool": "wand",
    "goals": [
@@ -1043,11 +1044,11 @@
    "min": 4,
    "toolMin": 2,
    "D": 100,
-   "felt": 29,
+   "felt": 55,
    "target": 49,
    "cas": 0,
    "good": 0,
-   "casTool": 0.569
+   "casTool": 0.45
   },
   {
    "id": 51,
@@ -2158,6 +2159,7 @@
   },
   {
    "id": 100,
+   "seed": 1147260842,
    "role": "boss",
    "tool": "extraMoves",
    "goals": [
@@ -2170,15 +2172,15 @@
      "points": 250
     }
    ],
-   "moves": 3,
+   "moves": 2,
    "min": 4,
    "toolMin": 4,
    "D": 100,
-   "felt": 55,
+   "felt": 64,
    "target": 72,
    "cas": 0,
    "good": 0,
-   "casTool": 0.45
+   "casTool": 0.356
   }
  ]
 }

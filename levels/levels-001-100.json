@@ -1062,7 +1062,8 @@
      "from": 6,
      "to": 7
     },
-    "generator": "v1"
+    "generator": "v1",
+    "role": "relief"
    }
   },
   {
@@ -1163,7 +1164,8 @@
      "from": 6,
      "to": 8
     },
-    "generator": "v1"
+    "generator": "v1",
+    "role": "relief"
    }
   },
   {
@@ -1258,7 +1260,8 @@
     },
     "greedySolves": false,
     "solverMs": 30,
-    "generator": "v1"
+    "generator": "v1",
+    "role": "normal"
    }
   },
   {
@@ -1353,7 +1356,8 @@
     },
     "greedySolves": false,
     "solverMs": 31,
-    "generator": "v1"
+    "generator": "v1",
+    "role": "normal"
    }
   },
   {
@@ -1548,7 +1552,8 @@
      "from": 7,
      "to": 9
     },
-    "generator": "v1"
+    "generator": "v1",
+    "role": "relief"
    }
   },
   {
@@ -1649,7 +1654,8 @@
      "from": 6,
      "to": 8
     },
-    "generator": "v1"
+    "generator": "v1",
+    "role": "normal"
    }
   },
   {
@@ -1749,7 +1755,8 @@
      "from": 6,
      "to": 7
     },
-    "generator": "v1"
+    "generator": "v1",
+    "role": "normal"
    }
   },
   {
@@ -1942,7 +1949,8 @@
      "from": 6,
      "to": 7
     },
-    "generator": "v1"
+    "generator": "v1",
+    "role": "milestone"
    }
   },
   {
@@ -2328,7 +2336,8 @@
      "from": 7,
      "to": 9
     },
-    "generator": "v1"
+    "generator": "v1",
+    "role": "normal"
    }
   },
   {
@@ -4713,50 +4722,50 @@
    "kind": "duo",
    "board": [
     [
-     4,
-     3,
+     1,
+     1,
      null,
-     null,
+     1,
      2
     ],
     [
-     1,
      3,
-     1,
-     null,
+     2,
+     3,
+     3,
      null
     ],
     [
+     3,
+     2,
      null,
      1,
-     4,
-     null,
      1
     ],
     [
      null,
-     3,
-     2,
-     2,
+     null,
+     null,
+     null,
      null
     ],
     [
      2,
-     1,
-     4,
      null,
-     2
+     1,
+     1,
+     null
     ]
    ],
    "sequence": [
-    1,
+    2,
+    2,
     1,
     1,
     2,
     1,
     1,
-    1,
-    1
+    2
    ],
    "moves": 3,
    "goals": [
@@ -4774,12 +4783,12 @@
     "three": 2,
     "two": 3
    },
-   "solution": "W10=2 km",
+   "solution": "W00=3 bc",
    "tool": "wand",
    "meta": {
     "generator": "build100",
-    "k": 5,
-    "seed": 368021859,
+    "k": 487,
+    "seed": 4185034401,
     "role": "boss",
     "note": "Boss: Zauberstab nötig",
     "minMoves": 4,
@@ -4790,18 +4799,18 @@
     "target": 49,
     "estimate": {
      "D": 100,
-     "Dfelt": 30,
+     "Dfelt": 54,
      "casual": 0,
      "good": 0,
      "random": 0.0002,
      "greedy": false,
-     "casualTool": 0.525,
-     "goodTool": 0.969,
+     "casualTool": 0.487,
+     "goodTool": 0.588,
      "goodStarts": 12
     },
     "searched": {
-     "tried": 30,
-     "usable": 1
+     "tried": 768,
+     "via": "search-one.mjs"
     }
    }
   },
@@ -9542,52 +9551,52 @@
    "kind": "duo",
    "board": [
     [
+     1,
+     1,
      null,
-     4,
-     null,
-     null,
-     2
+     1,
+     null
     ],
     [
+     null,
      2,
      null,
      null,
-     1,
-     2
+     1
     ],
     [
      null,
+     2,
+     null,
+     null,
+     2
+    ],
+    [
+     1,
      null,
      null,
      null,
      null
     ],
     [
-     2,
-     3,
-     2,
-     2,
-     1
-    ],
-    [
+     null,
+     null,
      1,
      null,
-     null,
-     5,
      null
     ]
    ],
    "sequence": [
+    2,
+    1,
     1,
     1,
     2,
-    3,
-    4,
-    4,
+    2,
     2,
     1
    ],
-   "moves": 3,
+   "moves": 2,
    "goals": [
     {
      "type": "combo",
@@ -9602,33 +9611,37 @@
     "three": 4,
     "two": 5
    },
-   "solution": "artt",
+   "solution": "aacb",
    "tool": "extraMoves",
    "meta": {
     "generator": "build100",
-    "k": 159,
-    "seed": 1099003587,
+    "k": 358,
+    "seed": 1147260842,
     "role": "boss",
     "note": "Finale: +3 Züge nötig",
     "minMoves": 4,
-    "slack": -1,
+    "slack": -2,
     "toolMin": 4,
-    "optimalSolutions": 282,
-    "pOptimal": 0.00275,
+    "optimalSolutions": 462,
+    "pOptimal": 0.00291,
     "target": 72,
     "estimate": {
      "D": 100,
-     "Dfelt": 54,
+     "Dfelt": 56,
      "casual": 0,
      "good": 0,
      "random": 0.0002,
      "greedy": false,
-     "casualTool": 0.412,
-     "goodTool": 0.394
+     "casualTool": 0.481,
+     "goodTool": 0.169
     },
     "searched": {
-     "tried": 219,
-     "usable": 2
+     "tried": 1470,
+     "via": "search-one.mjs"
+    },
+    "bossTuned": {
+     "from": 3,
+     "to": 2
     }
    }
   }

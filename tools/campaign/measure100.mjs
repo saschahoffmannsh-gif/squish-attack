@@ -18,7 +18,7 @@ const done = new Map(existsSync(part) ? readFileSync(part, 'utf8').trim().split(
 const out = [];
 for (const lv of levels) {
   if (only && !only.includes(lv.id)) continue;
-  if (!only && done.has(lv.id) && done.get(lv.id).moves === lv.moves && JSON.stringify(done.get(lv.id).goals) === JSON.stringify(lv.goals)) { out.push(done.get(lv.id)); continue; }
+  if (!only && done.has(lv.id) && done.get(lv.id).moves === lv.moves && JSON.stringify(done.get(lv.id).goals) === JSON.stringify(lv.goals) && (done.get(lv.id).seed ?? lv.meta.seed) === lv.meta.seed) { out.push(done.get(lv.id)); continue; }
   const G = lv.goals.length, seed = 0x5eed0000 + lv.id, v0 = lv.goals.map(() => 0);
   const L = lv.moves, top = L + (lv.tool === 'extraMoves' ? 3 : 0);
   const asLv = { ...lv, tool: undefined, moves: top, stars: { three: 1, two: top } };
@@ -36,10 +36,10 @@ for (const lv of levels) {
     const st = act ? stateAfter(asLv, act, L) : null;
     if (st) { const H = metricsFrom(asLv, st.board, st.vec, 0, L, seed ^ 0x70); felt = Dat(H, L, lv.meta.toolMin, G); casTool = H.cas(L); }
   }
-  const row = { id: lv.id, role: lv.id <= 10 ? (lv.id === 10 ? 'milestone' : 'normal') : roleOf(lv.id), tool: lv.tool ?? null, goals: lv.goals, moves: L, min: lv.meta.minMoves ?? null, toolMin: lv.meta.toolMin ?? null,
+  const row = { id: lv.id, seed: lv.meta.seed, role: lv.id <= 10 ? (lv.id === 10 ? 'milestone' : 'normal') : roleOf(lv.id), tool: lv.tool ?? null, goals: lv.goals, moves: L, min: lv.meta.minMoves ?? null, toolMin: lv.meta.toolMin ?? null,
     D, felt, target: targetD(lv.id), cas: +M.cas(L).toFixed(3), good: +M.good(L).toFixed(3), casTool: casTool == null ? null : +casTool.toFixed(3) };
   out.push(row);
   if (!only) appendFileSync(part, JSON.stringify(row) + '\n');
-  console.log([row.id, row.role, row.tool ?? '-', `D ${D}`, `gefühlt ${felt}`, `Soll ${row.target}`, `min ${row.min}`, `Limit ${L}`, `gel ${row.cas}`].join('\t'));
+  console.log([row.id, row.role, row.tool ?? '-', `D ${D}`, `gefühlt ${felt}`, `Soll ${row.target}`, `min ${row.min}`, `Limit ${L}`, `gel ${row.cas}`, `mit Wkz ${row.casTool ?? "-"}`].join('\t'));
 }
 if (!only) writeFileSync(new URL('tools/campaign/measure-001-100.json', root), JSON.stringify({ measuredWith: 'metricsFrom N=160 Modellspiele + 2500 Zufall, D-Formel der Planungsseite', levels: out }, null, 1) + '\n');
