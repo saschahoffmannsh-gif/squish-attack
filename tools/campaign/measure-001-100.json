@@ -3,6 +3,7 @@
  "levels": [
   {
    "id": 1,
+   "seed": 24711592,
    "role": "normal",
    "tool": null,
    "goals": [
@@ -23,6 +24,7 @@
   },
   {
    "id": 2,
+   "seed": 21480640,
    "role": "normal",
    "tool": null,
    "goals": [
@@ -34,8 +36,8 @@
    "moves": 7,
    "min": 2,
    "toolMin": null,
-   "D": 7,
-   "felt": 7,
+   "D": 6,
+   "felt": 6,
    "target": 6,
    "cas": 1,
    "good": 1,
@@ -43,6 +45,7 @@
   },
   {
    "id": 3,
+   "seed": 21100528,
    "role": "normal",
    "tool": null,
    "goals": [
@@ -54,8 +57,8 @@
    "moves": 6,
    "min": 2,
    "toolMin": null,
-   "D": 14,
-   "felt": 14,
+   "D": 11,
+   "felt": 11,
    "target": 10,
    "cas": 0.844,
    "good": 0.838,
@@ -63,6 +66,7 @@
   },
   {
    "id": 4,
+   "seed": 20276952,
    "role": "normal",
    "tool": null,
    "goals": [
@@ -74,8 +78,8 @@
    "moves": 8,
    "min": 3,
    "toolMin": null,
-   "D": 15,
-   "felt": 15,
+   "D": 13,
+   "felt": 13,
    "target": 13,
    "cas": 0.806,
    "good": 0.925,
@@ -83,6 +87,7 @@
   },
   {
    "id": 5,
+   "seed": 23183225,
    "role": "normal",
    "tool": null,
    "goals": [
@@ -95,8 +100,8 @@
    "moves": 8,
    "min": 3,
    "toolMin": null,
-   "D": 12,
-   "felt": 12,
+   "D": 10,
+   "felt": 10,
    "target": 12,
    "cas": 0.938,
    "good": 0.994,
@@ -104,6 +109,7 @@
   },
   {
    "id": 6,
+   "seed": 37120665,
    "role": "normal",
    "tool": null,
    "goals": [
@@ -116,8 +122,8 @@
    "moves": 6,
    "min": 3,
    "toolMin": null,
-   "D": 20,
-   "felt": 20,
+   "D": 13,
+   "felt": 13,
    "target": 15,
    "cas": 0.875,
    "good": 0.969,
@@ -125,6 +131,7 @@
   },
   {
    "id": 7,
+   "seed": 25408464,
    "role": "normal",
    "tool": null,
    "goals": [
@@ -136,8 +143,8 @@
    "moves": 7,
    "min": 3,
    "toolMin": null,
-   "D": 26,
-   "felt": 26,
+   "D": 17,
+   "felt": 17,
    "target": 20,
    "cas": 0.706,
    "good": 0.794,
@@ -145,6 +152,7 @@
   },
   {
    "id": 8,
+   "seed": 38831169,
    "role": "normal",
    "tool": null,
    "goals": [
@@ -157,8 +165,8 @@
    "moves": 6,
    "min": 3,
    "toolMin": null,
-   "D": 29,
-   "felt": 29,
+   "D": 18,
+   "felt": 18,
    "target": 22,
    "cas": 0.588,
    "good": 0.875,
@@ -166,6 +174,7 @@
   },
   {
    "id": 9,
+   "seed": 22731842,
    "role": "normal",
    "tool": null,
    "goals": [
@@ -177,8 +186,8 @@
    "moves": 5,
    "min": 2,
    "toolMin": null,
-   "D": 25,
-   "felt": 25,
+   "D": 15,
+   "felt": 15,
    "target": 22,
    "cas": 0.606,
    "good": 0.9,
@@ -186,6 +195,7 @@
   },
   {
    "id": 10,
+   "seed": 39203362,
    "role": "milestone",
    "tool": null,
    "goals": [
@@ -197,8 +207,8 @@
    "moves": 6,
    "min": 2,
    "toolMin": null,
-   "D": 25,
-   "felt": 25,
+   "D": 15,
+   "felt": 15,
    "target": 28,
    "cas": 0.688,
    "good": 0.7,
@@ -206,6 +216,7 @@
   },
   {
    "id": 11,
+   "seed": 1877406902,
    "role": "relief",
    "tool": null,
    "goals": [
@@ -214,140 +225,240 @@
      "value": 4
     }
    ],
-   "moves": 7,
-   "min": 2,
+   "moves": 12,
+   "min": 4,
    "toolMin": null,
-   "D": 16,
-   "felt": 16,
+   "D": 29,
+   "felt": 29,
    "target": 11,
-   "cas": 0.906,
-   "good": 0.9,
+   "cas": 0.613,
+   "good": 0.75,
    "casTool": null
   },
   {
    "id": 12,
-   "role": "relief",
-   "tool": null,
-   "goals": [
-    {
-     "type": "tile",
-     "value": 3
-    }
-   ],
-   "moves": 8,
-   "min": 3,
-   "toolMin": null,
-   "D": 13,
-   "felt": 13,
-   "target": 15,
-   "cas": 0.925,
-   "good": 0.95,
-   "casTool": null
-  },
-  {
-   "id": 13,
-   "role": "normal",
-   "tool": null,
-   "goals": [
-    {
-     "type": "street",
-     "count": 3
-    }
-   ],
-   "moves": 6,
-   "min": 3,
-   "toolMin": null,
-   "D": 25,
-   "felt": 25,
-   "target": 20,
-   "cas": 0.675,
-   "good": 0.931,
-   "casTool": null
-  },
-  {
-   "id": 14,
-   "role": "normal",
-   "tool": null,
-   "goals": [
-    {
-     "type": "street",
-     "count": 2
-    }
-   ],
-   "moves": 6,
-   "min": 3,
-   "toolMin": null,
-   "D": 29,
-   "felt": 29,
-   "target": 24,
-   "cas": 0.631,
-   "good": 0.95,
-   "casTool": null
-  },
-  {
-   "id": 15,
-   "role": "tool",
-   "tool": "extraMoves",
-   "goals": [
-    {
-     "type": "clear",
-     "tiles": 8
-    }
-   ],
-   "moves": 3,
-   "min": 4,
-   "toolMin": 4,
-   "D": 100,
-   "felt": 32,
-   "target": 27,
-   "cas": 0,
-   "good": 0,
-   "casTool": 0.469
-  },
-  {
-   "id": 16,
+   "seed": 4198228129,
    "role": "relief",
    "tool": null,
    "goals": [
     {
      "type": "make",
      "value": 3,
-     "count": 2
+     "count": 3
     }
    ],
-   "moves": 9,
+   "moves": 12,
    "min": 4,
    "toolMin": null,
-   "D": 22,
-   "felt": 22,
-   "target": 13,
-   "cas": 0.769,
-   "good": 0.925,
+   "D": 16,
+   "felt": 16,
+   "target": 15,
+   "cas": 0.925,
+   "good": 1,
    "casTool": null
   },
   {
-   "id": 17,
+   "id": 13,
+   "seed": 3045754689,
    "role": "normal",
    "tool": null,
    "goals": [
+    {
+     "type": "clear",
+     "tiles": 8
+    }
+   ],
+   "moves": 13,
+   "min": 5,
+   "toolMin": null,
+   "D": 21,
+   "felt": 21,
+   "target": 20,
+   "cas": 0.844,
+   "good": 0.969,
+   "casTool": null
+  },
+  {
+   "id": 14,
+   "seed": 1331628557,
+   "role": "normal",
+   "tool": null,
+   "goals": [
+    {
+     "type": "street",
+     "count": 1
+    }
+   ],
+   "moves": 13,
+   "min": 4,
+   "toolMin": null,
+   "D": 25,
+   "felt": 25,
+   "target": 24,
+   "cas": 0.681,
+   "good": 0.5,
+   "casTool": null
+  },
+  {
+   "id": 15,
+   "seed": 985594244,
+   "role": "tool",
+   "tool": "extraMoves",
+   "goals": [
+    {
+     "type": "clear",
+     "tiles": 12
+    },
     {
      "type": "score",
      "points": 160
     }
    ],
-   "moves": 8,
-   "min": 3,
+   "moves": 5,
+   "min": 5,
+   "toolMin": 5,
+   "D": 79,
+   "felt": 34,
+   "target": 27,
+   "cas": 0.056,
+   "good": 0.113,
+   "casTool": 0.556
+  },
+  {
+   "id": 16,
+   "seed": 873674718,
+   "role": "relief",
+   "tool": null,
+   "goals": [
+    {
+     "type": "score",
+     "points": 180
+    }
+   ],
+   "moves": 12,
+   "min": 4,
    "toolMin": null,
-   "D": 23,
-   "felt": 23,
+   "D": 14,
+   "felt": 14,
+   "target": 13,
+   "cas": 1,
+   "good": 1,
+   "casTool": null
+  },
+  {
+   "id": 17,
+   "seed": 473266360,
+   "role": "normal",
+   "tool": null,
+   "goals": [
+    {
+     "type": "tile",
+     "value": 5
+    }
+   ],
+   "moves": 14,
+   "min": 5,
+   "toolMin": null,
+   "D": 22,
+   "felt": 22,
    "target": 21,
-   "cas": 0.637,
-   "good": 0.831,
+   "cas": 0.775,
+   "good": 0.787,
    "casTool": null
   },
   {
    "id": 18,
+   "seed": 698684633,
    "role": "normal",
+   "tool": null,
+   "goals": [
+    {
+     "type": "make",
+     "value": 3,
+     "count": 4
+    }
+   ],
+   "moves": 14,
+   "min": 5,
+   "toolMin": null,
+   "D": 26,
+   "felt": 26,
+   "target": 26,
+   "cas": 0.588,
+   "good": 0.9,
+   "casTool": null
+  },
+  {
+   "id": 19,
+   "seed": 207178993,
+   "role": "normal",
+   "tool": null,
+   "goals": [
+    {
+     "type": "street",
+     "count": 2
+    }
+   ],
+   "moves": 15,
+   "min": 8,
+   "toolMin": null,
+   "D": 34,
+   "felt": 34,
+   "target": 28,
+   "cas": 0.8,
+   "good": 0.969,
+   "casTool": null
+  },
+  {
+   "id": 20,
+   "seed": 338798656,
+   "role": "milestone",
+   "tool": null,
+   "goals": [
+    {
+     "type": "tile",
+     "value": 5
+    },
+    {
+     "type": "clear",
+     "tiles": 8
+    }
+   ],
+   "moves": 18,
+   "min": 12,
+   "toolMin": null,
+   "D": 58,
+   "felt": 58,
+   "target": 39,
+   "cas": 0.3,
+   "good": 0.3,
+   "casTool": null
+  },
+  {
+   "id": 21,
+   "seed": 374673162,
+   "role": "relief",
+   "tool": null,
+   "goals": [
+    {
+     "type": "clear",
+     "tiles": 10
+    }
+   ],
+   "moves": 12,
+   "min": 4,
+   "toolMin": null,
+   "D": 15,
+   "felt": 15,
+   "target": 15,
+   "cas": 0.994,
+   "good": 1,
+   "casTool": null
+  },
+  {
+   "id": 22,
+   "seed": 2451489145,
+   "role": "relief",
    "tool": null,
    "goals": [
     {
@@ -355,98 +466,19 @@
      "points": 220
     }
    ],
-   "moves": 7,
-   "min": 3,
+   "moves": 12,
+   "min": 5,
    "toolMin": null,
-   "D": 29,
-   "felt": 29,
-   "target": 26,
-   "cas": 0.588,
-   "good": 0.988,
-   "casTool": null
-  },
-  {
-   "id": 19,
-   "role": "normal",
-   "tool": null,
-   "goals": [
-    {
-     "type": "tile",
-     "value": 4
-    }
-   ],
-   "moves": 7,
-   "min": 4,
-   "toolMin": null,
-   "D": 27,
-   "felt": 27,
-   "target": 28,
-   "cas": 0.787,
-   "good": 0.787,
-   "casTool": null
-  },
-  {
-   "id": 20,
-   "role": "milestone",
-   "tool": null,
-   "goals": [
-    {
-     "type": "street",
-     "count": 2
-    }
-   ],
-   "moves": 7,
-   "min": 3,
-   "toolMin": null,
-   "D": 39,
-   "felt": 39,
-   "target": 39,
-   "cas": 0.344,
-   "good": 0.7,
-   "casTool": null
-  },
-  {
-   "id": 21,
-   "role": "relief",
-   "tool": null,
-   "goals": [
-    {
-     "type": "combo",
-     "chain": 2
-    }
-   ],
-   "moves": 5,
-   "min": 2,
-   "toolMin": null,
-   "D": 13,
-   "felt": 13,
-   "target": 15,
-   "cas": 0.863,
-   "good": 0.831,
-   "casTool": null
-  },
-  {
-   "id": 22,
-   "role": "relief",
-   "tool": null,
-   "goals": [
-    {
-     "type": "combo",
-     "chain": 2
-    }
-   ],
-   "moves": 8,
-   "min": 2,
-   "toolMin": null,
-   "D": 23,
-   "felt": 23,
+   "D": 22,
+   "felt": 22,
    "target": 20,
-   "cas": 0.656,
-   "good": 0.806,
+   "cas": 0.9,
+   "good": 1,
    "casTool": null
   },
   {
    "id": 23,
+   "seed": 3577292845,
    "role": "normal",
    "tool": null,
    "goals": [
@@ -456,125 +488,22 @@
     },
     {
      "type": "clear",
-     "tiles": 5
+     "tiles": 6
     }
    ],
-   "moves": 5,
-   "min": 2,
+   "moves": 16,
+   "min": 8,
    "toolMin": null,
-   "D": 24,
-   "felt": 24,
+   "D": 27,
+   "felt": 27,
    "target": 24,
-   "cas": 0.662,
-   "good": 0.725,
+   "cas": 0.956,
+   "good": 0.975,
    "casTool": null
   },
   {
    "id": 24,
-   "role": "normal",
-   "tool": null,
-   "goals": [
-    {
-     "type": "score",
-     "points": 120
-    },
-    {
-     "type": "clear",
-     "tiles": 5
-    }
-   ],
-   "moves": 9,
-   "min": 4,
-   "toolMin": null,
-   "D": 30,
-   "felt": 30,
-   "target": 29,
-   "cas": 0.744,
-   "good": 0.875,
-   "casTool": null
-  },
-  {
-   "id": 25,
-   "role": "tool",
-   "tool": "wand",
-   "goals": [
-    {
-     "type": "combo",
-     "chain": 2
-    }
-   ],
-   "moves": 4,
-   "min": 5,
-   "toolMin": 2,
-   "D": 100,
-   "felt": 31,
-   "target": 31,
-   "cas": 0,
-   "good": 0,
-   "casTool": 0.544
-  },
-  {
-   "id": 26,
-   "role": "relief",
-   "tool": null,
-   "goals": [
-    {
-     "type": "tile",
-     "value": 4
-    }
-   ],
-   "moves": 8,
-   "min": 2,
-   "toolMin": null,
-   "D": 19,
-   "felt": 19,
-   "target": 18,
-   "cas": 0.756,
-   "good": 0.806,
-   "casTool": null
-  },
-  {
-   "id": 27,
-   "role": "normal",
-   "tool": null,
-   "goals": [
-    {
-     "type": "street",
-     "count": 3
-    }
-   ],
-   "moves": 10,
-   "min": 4,
-   "toolMin": null,
-   "D": 25,
-   "felt": 25,
-   "target": 26,
-   "cas": 0.644,
-   "good": 0.969,
-   "casTool": null
-  },
-  {
-   "id": 28,
-   "role": "normal",
-   "tool": null,
-   "goals": [
-    {
-     "type": "combo",
-     "chain": 2
-    }
-   ],
-   "moves": 6,
-   "min": 2,
-   "toolMin": null,
-   "D": 29,
-   "felt": 29,
-   "target": 31,
-   "cas": 0.512,
-   "good": 0.431,
-   "casTool": null
-  },
-  {
-   "id": 29,
+   "seed": 993275425,
    "role": "normal",
    "tool": null,
    "goals": [
@@ -587,18 +516,129 @@
      "tiles": 6
     }
    ],
-   "moves": 8,
+   "moves": 16,
+   "min": 5,
+   "toolMin": null,
+   "D": 18,
+   "felt": 18,
+   "target": 29,
+   "cas": 1,
+   "good": 1,
+   "casTool": null
+  },
+  {
+   "id": 25,
+   "seed": 1821025605,
+   "role": "tool",
+   "tool": "wand",
+   "goals": [
+    {
+     "type": "tile",
+     "value": 5
+    }
+   ],
+   "moves": 16,
+   "min": 16,
+   "toolMin": 2,
+   "D": 100,
+   "felt": 100,
+   "target": 31,
+   "cas": 0.031,
+   "good": 0.081,
+   "casTool": null
+  },
+  {
+   "id": 26,
+   "seed": 4030166854,
+   "role": "relief",
+   "tool": null,
+   "goals": [
+    {
+     "type": "tile",
+     "value": 5
+    }
+   ],
+   "moves": 13,
    "min": 4,
    "toolMin": null,
-   "D": 31,
-   "felt": 31,
+   "D": 56,
+   "felt": 56,
+   "target": 18,
+   "cas": 0.156,
+   "good": 0.2,
+   "casTool": null
+  },
+  {
+   "id": 27,
+   "seed": 1431723889,
+   "role": "normal",
+   "tool": null,
+   "goals": [
+    {
+     "type": "street",
+     "count": 3
+    }
+   ],
+   "moves": 17,
+   "min": 9,
+   "toolMin": null,
+   "D": 26,
+   "felt": 26,
+   "target": 26,
+   "cas": 0.85,
+   "good": 0.994,
+   "casTool": null
+  },
+  {
+   "id": 28,
+   "seed": 2225471767,
+   "role": "normal",
+   "tool": null,
+   "goals": [
+    {
+     "type": "make",
+     "value": 4,
+     "count": 2
+    }
+   ],
+   "moves": 17,
+   "min": 8,
+   "toolMin": null,
+   "D": 42,
+   "felt": 42,
+   "target": 31,
+   "cas": 0.369,
+   "good": 0.512,
+   "casTool": null
+  },
+  {
+   "id": 29,
+   "seed": 1677511167,
+   "role": "normal",
+   "tool": null,
+   "goals": [
+    {
+     "type": "score",
+     "points": 280
+    },
+    {
+     "type": "clear",
+     "tiles": 8
+    }
+   ],
+   "moves": 18,
+   "min": 9,
+   "toolMin": null,
+   "D": 26,
+   "felt": 26,
    "target": 33,
-   "cas": 0.694,
-   "good": 0.869,
+   "cas": 1,
+   "good": 1,
    "casTool": null
   },
   {
    "id": 30,
+   "seed": 3984657111,
    "role": "milestone",
    "tool": null,
    "goals": [
@@ -607,664 +647,115 @@
      "value": 4,
      "count": 2
     },
-    {
-     "type": "combo",
-     "chain": 2
-    }
-   ],
-   "moves": 10,
-   "min": 4,
-   "toolMin": null,
-   "D": 48,
-   "felt": 48,
-   "target": 43,
-   "cas": 0.406,
-   "good": 0.575,
-   "casTool": null
-  },
-  {
-   "id": 31,
-   "role": "relief",
-   "tool": null,
-   "goals": [
-    {
-     "type": "empty",
-     "max": 4
-    }
-   ],
-   "moves": 5,
-   "min": 2,
-   "toolMin": null,
-   "D": 18,
-   "felt": 18,
-   "target": 20,
-   "cas": 0.675,
-   "good": 0.9,
-   "casTool": null
-  },
-  {
-   "id": 32,
-   "role": "relief",
-   "tool": null,
-   "goals": [
-    {
-     "type": "make",
-     "value": 3,
-     "count": 3
-    }
-   ],
-   "moves": 9,
-   "min": 3,
-   "toolMin": null,
-   "D": 21,
-   "felt": 21,
-   "target": 24,
-   "cas": 0.675,
-   "good": 0.9,
-   "casTool": null
-  },
-  {
-   "id": 33,
-   "role": "normal",
-   "tool": null,
-   "goals": [
     {
      "type": "clear",
      "tiles": 10
     }
    ],
-   "moves": 10,
-   "min": 4,
+   "moves": 21,
+   "min": 16,
    "toolMin": null,
-   "D": 26,
-   "felt": 26,
-   "target": 29,
-   "cas": 0.625,
-   "good": 0.85,
+   "D": 44,
+   "felt": 44,
+   "target": 43,
+   "cas": 0.694,
+   "good": 0.925,
    "casTool": null
   },
   {
-   "id": 34,
-   "role": "normal",
-   "tool": null,
-   "goals": [
-    {
-     "type": "tile",
-     "value": 5
-    }
-   ],
-   "moves": 10,
-   "min": 4,
-   "toolMin": null,
-   "D": 34,
-   "felt": 34,
-   "target": 33,
-   "cas": 0.613,
-   "good": 0.669,
-   "casTool": null
-  },
-  {
-   "id": 35,
-   "role": "tool",
-   "tool": "rocket",
-   "goals": [
-    {
-     "type": "combo",
-     "chain": 2
-    }
-   ],
-   "moves": 3,
-   "min": 4,
-   "toolMin": 2,
-   "D": 100,
-   "felt": 34,
-   "target": 36,
-   "cas": 0,
-   "good": 0,
-   "casTool": 0.694
-  },
-  {
-   "id": 36,
+   "id": 31,
+   "seed": 1041505017,
    "role": "relief",
-   "tool": null,
-   "goals": [
-    {
-     "type": "street",
-     "count": 2
-    }
-   ],
-   "moves": 6,
-   "min": 3,
-   "toolMin": null,
-   "D": 20,
-   "felt": 20,
-   "target": 22,
-   "cas": 0.706,
-   "good": 0.881,
-   "casTool": null
-  },
-  {
-   "id": 37,
-   "role": "normal",
    "tool": null,
    "goals": [
     {
      "type": "empty",
-     "max": 3
+     "max": 4
     }
    ],
-   "moves": 6,
-   "min": 3,
-   "toolMin": null,
-   "D": 36,
-   "felt": 36,
-   "target": 31,
-   "cas": 0.362,
-   "good": 0.725,
-   "casTool": null
-  },
-  {
-   "id": 38,
-   "role": "normal",
-   "tool": null,
-   "goals": [
-    {
-     "type": "score",
-     "points": 260
-    }
-   ],
-   "moves": 9,
+   "moves": 14,
    "min": 4,
    "toolMin": null,
-   "D": 36,
-   "felt": 36,
-   "target": 35,
-   "cas": 0.425,
-   "good": 0.875,
+   "D": 47,
+   "felt": 47,
+   "target": 20,
+   "cas": 0.169,
+   "good": 0.419,
    "casTool": null
   },
   {
-   "id": 39,
-   "role": "normal",
-   "tool": null,
-   "goals": [
-    {
-     "type": "tile",
-     "value": 4
-    },
-    {
-     "type": "street",
-     "count": 2
-    }
-   ],
-   "moves": 6,
-   "min": 3,
-   "toolMin": null,
-   "D": 41,
-   "felt": 41,
-   "target": 38,
-   "cas": 0.537,
-   "good": 0.637,
-   "casTool": null
-  },
-  {
-   "id": 40,
-   "role": "milestone",
-   "tool": null,
-   "goals": [
-    {
-     "type": "clear",
-     "tiles": 12
-    },
-    {
-     "type": "combo",
-     "chain": 2
-    }
-   ],
-   "moves": 10,
-   "min": 5,
-   "toolMin": null,
-   "D": 50,
-   "felt": 50,
-   "target": 48,
-   "cas": 0.344,
-   "good": 0.744,
-   "casTool": null
-  },
-  {
-   "id": 41,
+   "id": 32,
+   "seed": 4217680869,
    "role": "relief",
    "tool": null,
    "goals": [
     {
-     "type": "long",
-     "count": 1
+     "type": "make",
+     "value": 3,
+     "count": 3
     }
    ],
-   "moves": 5,
-   "min": 2,
+   "moves": 15,
+   "min": 6,
    "toolMin": null,
    "D": 24,
    "felt": 24,
-   "target": 25,
-   "cas": 0.75,
-   "good": 0.75,
+   "target": 24,
+   "cas": 0.769,
+   "good": 0.938,
    "casTool": null
   },
   {
-   "id": 42,
-   "role": "relief",
-   "tool": null,
-   "goals": [
-    {
-     "type": "tile",
-     "value": 4
-    }
-   ],
-   "moves": 8,
-   "min": 2,
-   "toolMin": null,
-   "D": 28,
-   "felt": 28,
-   "target": 29,
-   "cas": 0.456,
-   "good": 0.531,
-   "casTool": null
-  },
-  {
-   "id": 43,
+   "id": 33,
+   "seed": 923558980,
    "role": "normal",
-   "tool": null,
-   "goals": [
-    {
-     "type": "combo",
-     "chain": 2
-    },
-    {
-     "type": "score",
-     "points": 150
-    }
-   ],
-   "moves": 8,
-   "min": 2,
-   "toolMin": null,
-   "D": 35,
-   "felt": 35,
-   "target": 34,
-   "cas": 0.494,
-   "good": 0.55,
-   "casTool": null
-  },
-  {
-   "id": 44,
-   "role": "normal",
-   "tool": null,
-   "goals": [
-    {
-     "type": "make",
-     "value": 4,
-     "count": 2
-    }
-   ],
-   "moves": 10,
-   "min": 4,
-   "toolMin": null,
-   "D": 35,
-   "felt": 35,
-   "target": 38,
-   "cas": 0.487,
-   "good": 0.644,
-   "casTool": null
-  },
-  {
-   "id": 45,
-   "role": "tool",
-   "tool": "hint",
-   "goals": [
-    {
-     "type": "street",
-     "count": 1
-    },
-    {
-     "type": "clear",
-     "tiles": 6
-    }
-   ],
-   "moves": 4,
-   "min": 4,
-   "toolMin": 4,
-   "D": 100,
-   "felt": 42,
-   "target": 40,
-   "cas": 0.013,
-   "good": 0.075,
-   "casTool": 0.725
-  },
-  {
-   "id": 46,
-   "role": "relief",
    "tool": null,
    "goals": [
     {
      "type": "clear",
-     "tiles": 8
+     "tiles": 14
     }
    ],
-   "moves": 10,
-   "min": 4,
-   "toolMin": null,
-   "D": 26,
-   "felt": 26,
-   "target": 27,
-   "cas": 0.613,
-   "good": 0.875,
-   "casTool": null
-  },
-  {
-   "id": 47,
-   "role": "normal",
-   "tool": null,
-   "goals": [
-    {
-     "type": "combo",
-     "chain": 3
-    }
-   ],
-   "moves": 6,
-   "min": 3,
-   "toolMin": null,
-   "D": 34,
-   "felt": 34,
-   "target": 35,
-   "cas": 0.6,
-   "good": 0.5,
-   "casTool": null
-  },
-  {
-   "id": 48,
-   "role": "normal",
-   "tool": null,
-   "goals": [
-    {
-     "type": "street",
-     "count": 3
-    },
-    {
-     "type": "clear",
-     "tiles": 6
-    }
-   ],
-   "moves": 6,
-   "min": 3,
-   "toolMin": null,
-   "D": 41,
-   "felt": 41,
-   "target": 40,
-   "cas": 0.394,
-   "good": 0.825,
-   "casTool": null
-  },
-  {
-   "id": 49,
-   "role": "tool",
-   "tool": "extraMoves",
-   "goals": [
-    {
-     "type": "street",
-     "count": 2
-    }
-   ],
-   "moves": 3,
-   "min": 5,
-   "toolMin": 5,
-   "D": 100,
-   "felt": 40,
-   "target": 42,
-   "cas": 0,
-   "good": 0,
-   "casTool": 0.412
-  },
-  {
-   "id": 50,
-   "seed": 4185034401,
-   "role": "boss",
-   "tool": "wand",
-   "goals": [
-    {
-     "type": "combo",
-     "chain": 2
-    },
-    {
-     "type": "make",
-     "value": 4,
-     "count": 2
-    }
-   ],
-   "moves": 3,
-   "min": 4,
-   "toolMin": 2,
-   "D": 100,
-   "felt": 55,
-   "target": 49,
-   "cas": 0,
-   "good": 0,
-   "casTool": 0.45
-  },
-  {
-   "id": 51,
-   "role": "relief",
-   "tool": null,
-   "goals": [
-    {
-     "type": "purge",
-     "value": 2,
-     "tiles": 6
-    }
-   ],
-   "moves": 7,
-   "min": 3,
+   "moves": 19,
+   "min": 10,
    "toolMin": null,
    "D": 30,
    "felt": 30,
    "target": 29,
-   "cas": 0.531,
-   "good": 0.563,
+   "cas": 0.706,
+   "good": 0.887,
    "casTool": null
   },
   {
-   "id": 52,
-   "role": "relief",
-   "tool": null,
-   "goals": [
-    {
-     "type": "score",
-     "points": 220
-    }
-   ],
-   "moves": 6,
-   "min": 3,
-   "toolMin": null,
-   "D": 36,
-   "felt": 36,
-   "target": 34,
-   "cas": 0.375,
-   "good": 0.819,
-   "casTool": null
-  },
-  {
-   "id": 53,
+   "id": 34,
+   "seed": 3234024648,
    "role": "normal",
    "tool": null,
    "goals": [
     {
      "type": "tile",
-     "value": 5
-    }
-   ],
-   "moves": 9,
-   "min": 3,
-   "toolMin": null,
-   "D": 38,
-   "felt": 38,
-   "target": 38,
-   "cas": 0.469,
-   "good": 0.55,
-   "casTool": null
-  },
-  {
-   "id": 54,
-   "role": "normal",
-   "tool": null,
-   "goals": [
-    {
-     "type": "combo",
-     "chain": 3
-    }
-   ],
-   "moves": 5,
-   "min": 2,
-   "toolMin": null,
-   "D": 42,
-   "felt": 42,
-   "target": 43,
-   "cas": 0.494,
-   "good": 0.219,
-   "casTool": null
-  },
-  {
-   "id": 55,
-   "role": "tool",
-   "tool": "rocket",
-   "goals": [
-    {
-     "type": "empty",
-     "max": 3
-    }
-   ],
-   "moves": 3,
-   "min": 4,
-   "toolMin": 2,
-   "D": 100,
-   "felt": 32,
-   "target": 45,
-   "cas": 0,
-   "good": 0,
-   "casTool": 0.438
-  },
-  {
-   "id": 56,
-   "role": "relief",
-   "tool": null,
-   "goals": [
-    {
-     "type": "street",
-     "count": 2
-    }
-   ],
-   "moves": 6,
-   "min": 3,
-   "toolMin": null,
-   "D": 29,
-   "felt": 29,
-   "target": 32,
-   "cas": 0.637,
-   "good": 0.838,
-   "casTool": null
-  },
-  {
-   "id": 57,
-   "role": "normal",
-   "tool": null,
-   "goals": [
-    {
-     "type": "make",
-     "value": 4,
-     "count": 2
+     "value": 6
     },
     {
-     "type": "street",
-     "count": 1
-    }
-   ],
-   "moves": 7,
-   "min": 4,
-   "toolMin": null,
-   "D": 36,
-   "felt": 36,
-   "target": 40,
-   "cas": 0.594,
-   "good": 0.7,
-   "casTool": null
-  },
-  {
-   "id": 58,
-   "role": "normal",
-   "tool": null,
-   "goals": [
-    {
-     "type": "purge",
-     "value": 3,
+     "type": "clear",
      "tiles": 8
     }
    ],
-   "moves": 6,
-   "min": 3,
+   "moves": 19,
+   "min": 5,
    "toolMin": null,
-   "D": 39,
-   "felt": 39,
-   "target": 44,
-   "cas": 0.4,
-   "good": 0.45,
-   "casTool": null
-  },
-  {
-   "id": 59,
-   "role": "tool",
-   "tool": "hint",
-   "goals": [
-    {
-     "type": "combo",
-     "chain": 3
-    }
-   ],
-   "moves": 4,
-   "min": 4,
-   "toolMin": 4,
-   "D": 100,
-   "felt": 32,
-   "target": 47,
-   "cas": 0.025,
-   "good": 0.081,
-   "casTool": 0.512
-  },
-  {
-   "id": 60,
-   "role": "milestone",
-   "tool": null,
-   "goals": [
-    {
-     "type": "street",
-     "count": 3
-    },
-    {
-     "type": "score",
-     "points": 300
-    }
-   ],
-   "moves": 8,
-   "min": 4,
-   "toolMin": null,
-   "D": 54,
-   "felt": 54,
-   "target": 57,
+   "D": 43,
+   "felt": 43,
+   "target": 33,
    "cas": 0.356,
-   "good": 0.319,
+   "good": 0.35,
    "casTool": null
   },
   {
-   "id": 61,
-   "role": "relief",
-   "tool": null,
+   "id": 35,
+   "seed": 1777667580,
+   "role": "tool",
+   "tool": "rocket",
    "goals": [
     {
      "type": "empty",
@@ -1272,386 +763,202 @@
     },
     {
      "type": "score",
-     "points": 120
+     "points": 160
     }
    ],
-   "moves": 5,
-   "min": 2,
-   "toolMin": null,
-   "D": 33,
-   "felt": 33,
-   "target": 34,
-   "cas": 0.469,
-   "good": 0.975,
+   "moves": 12,
+   "min": 12,
+   "toolMin": 3,
+   "D": 99,
+   "felt": 99,
+   "target": 36,
+   "cas": 0.006,
+   "good": 0,
    "casTool": null
   },
   {
-   "id": 62,
+   "id": 36,
+   "seed": 1278484016,
    "role": "relief",
+   "tool": null,
+   "goals": [
+    {
+     "type": "street",
+     "count": 2
+    }
+   ],
+   "moves": 16,
+   "min": 6,
+   "toolMin": null,
+   "D": 22,
+   "felt": 22,
+   "target": 22,
+   "cas": 0.819,
+   "good": 0.963,
+   "casTool": null
+  },
+  {
+   "id": 37,
+   "seed": 1583420027,
+   "role": "normal",
+   "tool": null,
+   "goals": [
+    {
+     "type": "empty",
+     "max": 3
+    }
+   ],
+   "moves": 20,
+   "min": 6,
+   "toolMin": null,
+   "D": 78,
+   "felt": 78,
+   "target": 31,
+   "cas": 0,
+   "good": 0.019,
+   "casTool": null
+  },
+  {
+   "id": 38,
+   "seed": 1898526651,
+   "role": "normal",
+   "tool": null,
+   "goals": [
+    {
+     "type": "score",
+     "points": 360
+    }
+   ],
+   "moves": 20,
+   "min": 9,
+   "toolMin": null,
+   "D": 19,
+   "felt": 19,
+   "target": 35,
+   "cas": 1,
+   "good": 1,
+   "casTool": null
+  },
+  {
+   "id": 39,
+   "seed": 4175422384,
+   "role": "normal",
    "tool": null,
    "goals": [
     {
      "type": "tile",
      "value": 5
+    },
+    {
+     "type": "street",
+     "count": 2
     }
    ],
-   "moves": 9,
-   "min": 3,
+   "moves": 21,
+   "min": 15,
    "toolMin": null,
-   "D": 38,
-   "felt": 38,
+   "D": 37,
+   "felt": 37,
    "target": 38,
-   "cas": 0.412,
-   "good": 0.412,
+   "cas": 0.906,
+   "good": 0.975,
    "casTool": null
   },
   {
-   "id": 63,
-   "role": "normal",
-   "tool": null,
-   "goals": [
-    {
-     "type": "clear",
-     "tiles": 12
-    }
-   ],
-   "moves": 9,
-   "min": 4,
-   "toolMin": null,
-   "D": 40,
-   "felt": 40,
-   "target": 43,
-   "cas": 0.375,
-   "good": 0.625,
-   "casTool": null
-  },
-  {
-   "id": 64,
-   "role": "normal",
-   "tool": null,
-   "goals": [
-    {
-     "type": "combo",
-     "chain": 2
-    },
-    {
-     "type": "street",
-     "count": 2
-    }
-   ],
-   "moves": 5,
-   "min": 2,
-   "toolMin": null,
-   "D": 51,
-   "felt": 51,
-   "target": 47,
-   "cas": 0.3,
-   "good": 0.394,
-   "casTool": null
-  },
-  {
-   "id": 65,
-   "role": "tool",
-   "tool": "extraMoves",
-   "goals": [
-    {
-     "type": "make",
-     "value": 3,
-     "count": 3
-    }
-   ],
-   "moves": 3,
-   "min": 4,
-   "toolMin": 4,
-   "D": 100,
-   "felt": 40,
-   "target": 50,
-   "cas": 0,
-   "good": 0,
-   "casTool": 0.394
-  },
-  {
-   "id": 66,
-   "role": "relief",
-   "tool": null,
-   "goals": [
-    {
-     "type": "make",
-     "value": 3,
-     "count": 2
-    }
-   ],
-   "moves": 6,
-   "min": 3,
-   "toolMin": null,
-   "D": 38,
-   "felt": 38,
-   "target": 36,
-   "cas": 0.4,
-   "good": 0.563,
-   "casTool": null
-  },
-  {
-   "id": 67,
-   "role": "normal",
-   "tool": null,
-   "goals": [
-    {
-     "type": "long",
-     "count": 1
-    },
-    {
-     "type": "clear",
-     "tiles": 8
-    }
-   ],
-   "moves": 7,
-   "min": 4,
-   "toolMin": null,
-   "D": 45,
-   "felt": 45,
-   "target": 45,
-   "cas": 0.394,
-   "good": 0.769,
-   "casTool": null
-  },
-  {
-   "id": 68,
-   "role": "normal",
-   "tool": null,
-   "goals": [
-    {
-     "type": "street",
-     "count": 2
-    },
-    {
-     "type": "clear",
-     "tiles": 6
-    }
-   ],
-   "moves": 7,
-   "min": 4,
-   "toolMin": null,
-   "D": 44,
-   "felt": 44,
-   "target": 49,
-   "cas": 0.5,
-   "good": 0.606,
-   "casTool": null
-  },
-  {
-   "id": 69,
-   "role": "tool",
-   "tool": "wand",
-   "goals": [
-    {
-     "type": "combo",
-     "chain": 3
-    },
-    {
-     "type": "tile",
-     "value": 4
-    }
-   ],
-   "moves": 4,
-   "min": 5,
-   "toolMin": 2,
-   "D": 100,
-   "felt": 47,
-   "target": 52,
-   "cas": 0,
-   "good": 0,
-   "casTool": 0.475
-  },
-  {
-   "id": 70,
+   "id": 40,
+   "seed": 2594582350,
    "role": "milestone",
    "tool": null,
    "goals": [
     {
-     "type": "long",
-     "count": 1
+     "type": "clear",
+     "tiles": 16
     },
     {
-     "type": "combo",
-     "chain": 2
+     "type": "street",
+     "count": 2
     }
    ],
-   "moves": 9,
-   "min": 3,
+   "moves": 24,
+   "min": 21,
    "toolMin": null,
-   "D": 76,
-   "felt": 76,
-   "target": 62,
-   "cas": 0.181,
-   "good": 0.169,
+   "D": 47,
+   "felt": 47,
+   "target": 48,
+   "cas": 0.794,
+   "good": 0.956,
    "casTool": null
   },
   {
-   "id": 71,
+   "id": 41,
+   "seed": 765616716,
+   "role": "relief",
+   "tool": null,
+   "goals": [
+    {
+     "type": "long",
+     "count": 1
+    }
+   ],
+   "moves": 17,
+   "min": 4,
+   "toolMin": null,
+   "D": 31,
+   "felt": 31,
+   "target": 25,
+   "cas": 0.544,
+   "good": 0.469,
+   "casTool": null
+  },
+  {
+   "id": 42,
+   "seed": 3626415085,
    "role": "relief",
    "tool": null,
    "goals": [
     {
      "type": "tile",
-     "value": 4
-    },
+     "value": 6
+    }
+   ],
+   "moves": 18,
+   "min": 4,
+   "toolMin": null,
+   "D": 34,
+   "felt": 34,
+   "target": 29,
+   "cas": 0.412,
+   "good": 0.45,
+   "casTool": null
+  },
+  {
+   "id": 43,
+   "seed": 2372101752,
+   "role": "normal",
+   "tool": null,
+   "goals": [
     {
-     "type": "clear",
-     "tiles": 6
-    },
-    {
-     "type": "street",
+     "type": "long",
      "count": 1
-    }
-   ],
-   "moves": 10,
-   "min": 4,
-   "toolMin": null,
-   "D": 41,
-   "felt": 41,
-   "target": 39,
-   "cas": 0.556,
-   "good": 0.694,
-   "casTool": null
-  },
-  {
-   "id": 72,
-   "role": "relief",
-   "tool": null,
-   "goals": [
-    {
-     "type": "purge",
-     "value": 3,
-     "tiles": 6
-    }
-   ],
-   "moves": 7,
-   "min": 4,
-   "toolMin": null,
-   "D": 40,
-   "felt": 40,
-   "target": 43,
-   "cas": 0.419,
-   "good": 0.556,
-   "casTool": null
-  },
-  {
-   "id": 73,
-   "role": "normal",
-   "tool": null,
-   "goals": [
-    {
-     "type": "combo",
-     "chain": 3
-    }
-   ],
-   "moves": 9,
-   "min": 3,
-   "toolMin": null,
-   "D": 53,
-   "felt": 53,
-   "target": 47,
-   "cas": 0.281,
-   "good": 0.325,
-   "casTool": null
-  },
-  {
-   "id": 74,
-   "role": "normal",
-   "tool": null,
-   "goals": [
-    {
-     "type": "make",
-     "value": 4,
-     "count": 2
     },
     {
      "type": "score",
-     "points": 250
+     "points": 200
     }
    ],
-   "moves": 8,
-   "min": 5,
+   "moves": 22,
+   "min": 14,
    "toolMin": null,
-   "D": 51,
-   "felt": 51,
-   "target": 52,
-   "cas": 0.438,
-   "good": 0.581,
+   "D": 52,
+   "felt": 52,
+   "target": 34,
+   "cas": 0.487,
+   "good": 0.456,
    "casTool": null
   },
   {
-   "id": 75,
-   "role": "tool",
-   "tool": "rocket",
-   "goals": [
-    {
-     "type": "empty",
-     "max": 3
-    },
-    {
-     "type": "score",
-     "points": 150
-    }
-   ],
-   "moves": 3,
-   "min": 4,
-   "toolMin": 2,
-   "D": 100,
-   "felt": 36,
-   "target": 54,
-   "cas": 0,
-   "good": 0,
-   "casTool": 0.494
-  },
-  {
-   "id": 76,
-   "role": "relief",
-   "tool": null,
-   "goals": [
-    {
-     "type": "street",
-     "count": 3
-    }
-   ],
-   "moves": 8,
-   "min": 3,
-   "toolMin": null,
-   "D": 45,
-   "felt": 45,
-   "target": 41,
-   "cas": 0.231,
-   "good": 0.738,
-   "casTool": null
-  },
-  {
-   "id": 77,
-   "role": "normal",
-   "tool": null,
-   "goals": [
-    {
-     "type": "score",
-     "points": 350
-    },
-    {
-     "type": "purge",
-     "value": 2,
-     "tiles": 6
-    }
-   ],
-   "moves": 7,
-   "min": 4,
-   "toolMin": null,
-   "D": 48,
-   "felt": 48,
-   "target": 49,
-   "cas": 0.344,
-   "good": 0.619,
-   "casTool": null
-  },
-  {
-   "id": 78,
+   "id": 44,
+   "seed": 3627617943,
    "role": "normal",
    "tool": null,
    "goals": [
@@ -1661,131 +968,391 @@
      "count": 2
     }
    ],
-   "moves": 10,
-   "min": 5,
+   "moves": 22,
+   "min": 13,
    "toolMin": null,
-   "D": 57,
-   "felt": 57,
-   "target": 54,
-   "cas": 0.3,
-   "good": 0.512,
+   "D": 94,
+   "felt": 94,
+   "target": 38,
+   "cas": 0.013,
+   "good": 0.006,
    "casTool": null
   },
   {
-   "id": 79,
+   "id": 45,
+   "seed": 3143301110,
    "role": "tool",
    "tool": "hint",
    "goals": [
     {
      "type": "street",
      "count": 2
-    }
-   ],
-   "moves": 6,
-   "min": 5,
-   "toolMin": 5,
-   "D": 70,
-   "felt": 52,
-   "target": 56,
-   "cas": 0.2,
-   "good": 0.356,
-   "casTool": 0.519
-  },
-  {
-   "id": 80,
-   "role": "milestone",
-   "tool": null,
-   "goals": [
-    {
-     "type": "tile",
-     "value": 5
-    },
-    {
-     "type": "clear",
-     "tiles": 10
-    },
-    {
-     "type": "combo",
-     "chain": 2
-    }
-   ],
-   "moves": 9,
-   "min": 4,
-   "toolMin": null,
-   "D": 65,
-   "felt": 65,
-   "target": 67,
-   "cas": 0.2,
-   "good": 0.4,
-   "casTool": null
-  },
-  {
-   "id": 81,
-   "role": "relief",
-   "tool": null,
-   "goals": [
-    {
-     "type": "combo",
-     "chain": 2
-    }
-   ],
-   "moves": 8,
-   "min": 3,
-   "toolMin": null,
-   "D": 51,
-   "felt": 51,
-   "target": 43,
-   "cas": 0.281,
-   "good": 0.3,
-   "casTool": null
-  },
-  {
-   "id": 82,
-   "role": "relief",
-   "tool": null,
-   "goals": [
-    {
-     "type": "long",
-     "count": 1
-    }
-   ],
-   "moves": 7,
-   "min": 2,
-   "toolMin": null,
-   "D": 54,
-   "felt": 54,
-   "target": 48,
-   "cas": 0.306,
-   "good": 0.175,
-   "casTool": null
-  },
-  {
-   "id": 83,
-   "role": "normal",
-   "tool": null,
-   "goals": [
-    {
-     "type": "tile",
-     "value": 5
     },
     {
      "type": "clear",
      "tiles": 8
     }
    ],
-   "moves": 11,
-   "min": 5,
+   "moves": 14,
+   "min": 14,
+   "toolMin": 14,
+   "D": 46,
+   "felt": 35,
+   "target": 40,
+   "cas": 0.656,
+   "good": 0.919,
+   "casTool": 0.738
+  },
+  {
+   "id": 46,
+   "seed": 748103904,
+   "role": "relief",
+   "tool": null,
+   "goals": [
+    {
+     "type": "clear",
+     "tiles": 12
+    }
+   ],
+   "moves": 19,
+   "min": 9,
    "toolMin": null,
-   "D": 64,
-   "felt": 64,
-   "target": 52,
-   "cas": 0.263,
-   "good": 0.331,
+   "D": 26,
+   "felt": 26,
+   "target": 27,
+   "cas": 0.756,
+   "good": 0.944,
    "casTool": null
   },
   {
-   "id": 84,
+   "id": 47,
+   "seed": 2666509557,
    "role": "normal",
+   "tool": null,
+   "goals": [
+    {
+     "type": "tile",
+     "value": 6
+    },
+    {
+     "type": "clear",
+     "tiles": 8
+    }
+   ],
+   "moves": 23,
+   "min": 14,
+   "toolMin": null,
+   "D": 51,
+   "felt": 51,
+   "target": 35,
+   "cas": 0.506,
+   "good": 0.45,
+   "casTool": null
+  },
+  {
+   "id": 48,
+   "seed": 4205071388,
+   "role": "normal",
+   "tool": null,
+   "goals": [
+    {
+     "type": "street",
+     "count": 3
+    },
+    {
+     "type": "clear",
+     "tiles": 8
+    }
+   ],
+   "moves": 24,
+   "min": 15,
+   "toolMin": null,
+   "D": 32,
+   "felt": 32,
+   "target": 40,
+   "cas": 0.925,
+   "good": 0.981,
+   "casTool": null
+  },
+  {
+   "id": 49,
+   "seed": 3301443427,
+   "role": "tool",
+   "tool": "extraMoves",
+   "goals": [
+    {
+     "type": "street",
+     "count": 2
+    }
+   ],
+   "moves": 12,
+   "min": 12,
+   "toolMin": 12,
+   "D": 61,
+   "felt": 35,
+   "target": 42,
+   "cas": 0.194,
+   "good": 0.275,
+   "casTool": 0.575
+  },
+  {
+   "id": 50,
+   "seed": 1260218492,
+   "role": "boss",
+   "tool": "wand",
+   "goals": [
+    {
+     "type": "tile",
+     "value": 6
+    },
+    {
+     "type": "score",
+     "points": 280
+    }
+   ],
+   "moves": 22,
+   "min": 22,
+   "toolMin": 3,
+   "D": 80,
+   "felt": 80,
+   "target": 49,
+   "cas": 0.188,
+   "good": 0.125,
+   "casTool": null
+  },
+  {
+   "id": 51,
+   "seed": 2506882239,
+   "role": "relief",
+   "tool": null,
+   "goals": [
+    {
+     "type": "purge",
+     "value": 2,
+     "tiles": 6
+    }
+   ],
+   "moves": 21,
+   "min": 10,
+   "toolMin": null,
+   "D": 19,
+   "felt": 19,
+   "target": 29,
+   "cas": 1,
+   "good": 1,
+   "casTool": null
+  },
+  {
+   "id": 52,
+   "seed": 1499059015,
+   "role": "relief",
+   "tool": null,
+   "goals": [
+    {
+     "type": "score",
+     "points": 320
+    }
+   ],
+   "moves": 21,
+   "min": 8,
+   "toolMin": null,
+   "D": 16,
+   "felt": 16,
+   "target": 34,
+   "cas": 1,
+   "good": 1,
+   "casTool": null
+  },
+  {
+   "id": 53,
+   "seed": 3135038958,
+   "role": "normal",
+   "tool": null,
+   "goals": [
+    {
+     "type": "tile",
+     "value": 6
+    }
+   ],
+   "moves": 25,
+   "min": 18,
+   "toolMin": null,
+   "D": 55,
+   "felt": 55,
+   "target": 38,
+   "cas": 0.4,
+   "good": 0.412,
+   "casTool": null
+  },
+  {
+   "id": 54,
+   "seed": 483488848,
+   "role": "normal",
+   "tool": null,
+   "goals": [
+    {
+     "type": "street",
+     "count": 2
+    },
+    {
+     "type": "score",
+     "points": 280
+    }
+   ],
+   "moves": 26,
+   "min": 12,
+   "toolMin": null,
+   "D": 31,
+   "felt": 31,
+   "target": 43,
+   "cas": 0.731,
+   "good": 0.838,
+   "casTool": null
+  },
+  {
+   "id": 55,
+   "seed": 1644007,
+   "role": "tool",
+   "tool": "rocket",
+   "goals": [
+    {
+     "type": "empty",
+     "max": 3
+    }
+   ],
+   "moves": 5,
+   "min": 5,
+   "toolMin": 3,
+   "D": 79,
+   "felt": 79,
+   "target": 45,
+   "cas": 0,
+   "good": 0,
+   "casTool": null
+  },
+  {
+   "id": 56,
+   "seed": 1534965066,
+   "role": "relief",
+   "tool": null,
+   "goals": [
+    {
+     "type": "street",
+     "count": 2
+    }
+   ],
+   "moves": 22,
+   "min": 9,
+   "toolMin": null,
+   "D": 34,
+   "felt": 34,
+   "target": 32,
+   "cas": 0.456,
+   "good": 0.681,
+   "casTool": null
+  },
+  {
+   "id": 57,
+   "seed": 2733663192,
+   "role": "normal",
+   "tool": null,
+   "goals": [
+    {
+     "type": "make",
+     "value": 5,
+     "count": 2
+    },
+    {
+     "type": "street",
+     "count": 1
+    }
+   ],
+   "moves": 26,
+   "min": 18,
+   "toolMin": null,
+   "D": 37,
+   "felt": 37,
+   "target": 40,
+   "cas": 0.894,
+   "good": 0.938,
+   "casTool": null
+  },
+  {
+   "id": 58,
+   "seed": 1435991671,
+   "role": "normal",
+   "tool": null,
+   "goals": [
+    {
+     "type": "purge",
+     "value": 3,
+     "tiles": 8
+    }
+   ],
+   "moves": 27,
+   "min": 16,
+   "toolMin": null,
+   "D": 27,
+   "felt": 27,
+   "target": 44,
+   "cas": 0.925,
+   "good": 0.981,
+   "casTool": null
+  },
+  {
+   "id": 59,
+   "seed": 1187275822,
+   "role": "tool",
+   "tool": "hint",
+   "goals": [
+    {
+     "type": "street",
+     "count": 2
+    },
+    {
+     "type": "clear",
+     "tiles": 10
+    }
+   ],
+   "moves": 15,
+   "min": 15,
+   "toolMin": 15,
+   "D": 45,
+   "felt": 43,
+   "target": 47,
+   "cas": 0.487,
+   "good": 0.787,
+   "casTool": 0.575
+  },
+  {
+   "id": 60,
+   "seed": 2434163711,
+   "role": "milestone",
+   "tool": null,
+   "goals": [
+    {
+     "type": "tile",
+     "value": 6
+    },
+    {
+     "type": "score",
+     "points": 360
+    }
+   ],
+   "moves": 30,
+   "min": 28,
+   "toolMin": null,
+   "D": 51,
+   "felt": 51,
+   "target": 57,
+   "cas": 0.681,
+   "good": 0.787,
+   "casTool": null
+  },
+  {
+   "id": 61,
+   "seed": 3937951418,
+   "role": "relief",
    "tool": null,
    "goals": [
     {
@@ -1794,207 +1361,773 @@
     },
     {
      "type": "score",
-     "points": 300
+     "points": 180
     }
    ],
-   "moves": 7,
-   "min": 3,
+   "moves": 24,
+   "min": 9,
    "toolMin": null,
-   "D": 58,
-   "felt": 58,
-   "target": 57,
-   "cas": 0.256,
-   "good": 0.756,
+   "D": 85,
+   "felt": 85,
+   "target": 34,
+   "cas": 0,
+   "good": 0.031,
    "casTool": null
   },
   {
-   "id": 85,
+   "id": 62,
+   "seed": 1071447896,
+   "role": "relief",
+   "tool": null,
+   "goals": [
+    {
+     "type": "clear",
+     "tiles": 16
+    }
+   ],
+   "moves": 24,
+   "min": 13,
+   "toolMin": null,
+   "D": 32,
+   "felt": 32,
+   "target": 38,
+   "cas": 0.625,
+   "good": 0.831,
+   "casTool": null
+  },
+  {
+   "id": 63,
+   "seed": 3843328751,
+   "role": "normal",
+   "tool": null,
+   "goals": [
+    {
+     "type": "tile",
+     "value": 7
+    }
+   ],
+   "moves": 28,
+   "min": 16,
+   "toolMin": null,
+   "D": 81,
+   "felt": 81,
+   "target": 43,
+   "cas": 0.069,
+   "good": 0.119,
+   "casTool": null
+  },
+  {
+   "id": 64,
+   "seed": 2283340167,
+   "role": "normal",
+   "tool": null,
+   "goals": [
+    {
+     "type": "long",
+     "count": 1
+    },
+    {
+     "type": "street",
+     "count": 2
+    }
+   ],
+   "moves": 29,
+   "min": 18,
+   "toolMin": null,
+   "D": 47,
+   "felt": 47,
+   "target": 47,
+   "cas": 0.644,
+   "good": 0.475,
+   "casTool": null
+  },
+  {
+   "id": 65,
+   "seed": 348828534,
    "role": "tool",
    "tool": "extraMoves",
    "goals": [
     {
      "type": "make",
      "value": 4,
-     "count": 2
+     "count": 3
     }
    ],
-   "moves": 3,
-   "min": 4,
-   "toolMin": 4,
-   "D": 100,
-   "felt": 41,
-   "target": 59,
-   "cas": 0,
-   "good": 0,
-   "casTool": 0.406
+   "moves": 23,
+   "min": 23,
+   "toolMin": 23,
+   "D": 78,
+   "felt": 68,
+   "target": 50,
+   "cas": 0.156,
+   "good": 0.194,
+   "casTool": 0.25
   },
   {
-   "id": 86,
+   "id": 66,
+   "seed": 826092979,
    "role": "relief",
    "tool": null,
    "goals": [
+    {
+     "type": "make",
+     "value": 3,
+     "count": 3
+    }
+   ],
+   "moves": 25,
+   "min": 11,
+   "toolMin": null,
+   "D": 19,
+   "felt": 19,
+   "target": 36,
+   "cas": 0.988,
+   "good": 0.994,
+   "casTool": null
+  },
+  {
+   "id": 67,
+   "seed": 1605097053,
+   "role": "normal",
+   "tool": null,
+   "goals": [
+    {
+     "type": "long",
+     "count": 1
+    },
     {
      "type": "clear",
      "tiles": 10
     }
    ],
-   "moves": 11,
-   "min": 5,
+   "moves": 30,
+   "min": 15,
    "toolMin": null,
-   "D": 44,
-   "felt": 44,
+   "D": 43,
+   "felt": 43,
    "target": 45,
-   "cas": 0.338,
-   "good": 0.719,
+   "cas": 0.556,
+   "good": 0.631,
    "casTool": null
   },
   {
-   "id": 87,
+   "id": 68,
+   "seed": 1432543506,
    "role": "normal",
    "tool": null,
    "goals": [
     {
-     "type": "combo",
-     "chain": 2
+     "type": "street",
+     "count": 2
+    },
+    {
+     "type": "clear",
+     "tiles": 10
+    }
+   ],
+   "moves": 30,
+   "min": 13,
+   "toolMin": null,
+   "D": 22,
+   "felt": 22,
+   "target": 49,
+   "cas": 1,
+   "good": 1,
+   "casTool": null
+  },
+  {
+   "id": 69,
+   "seed": 2927234367,
+   "role": "tool",
+   "tool": "wand",
+   "goals": [
+    {
+     "type": "tile",
+     "value": 6
+    },
+    {
+     "type": "clear",
+     "tiles": 10
+    }
+   ],
+   "moves": 24,
+   "min": 24,
+   "toolMin": 5,
+   "D": 68,
+   "felt": 68,
+   "target": 52,
+   "cas": 0.25,
+   "good": 0.356,
+   "casTool": null
+  },
+  {
+   "id": 70,
+   "seed": 2096232598,
+   "role": "milestone",
+   "tool": null,
+   "goals": [
+    {
+     "type": "tile",
+     "value": 7
+    },
+    {
+     "type": "make",
+     "value": 5,
+     "count": 2
+    }
+   ],
+   "moves": 34,
+   "min": 23,
+   "toolMin": null,
+   "D": 80,
+   "felt": 80,
+   "target": 62,
+   "cas": 0.119,
+   "good": 0.131,
+   "casTool": null
+  },
+  {
+   "id": 71,
+   "seed": 1006009457,
+   "role": "relief",
+   "tool": null,
+   "goals": [
+    {
+     "type": "tile",
+     "value": 5
+    },
+    {
+     "type": "clear",
+     "tiles": 8
+    },
+    {
+     "type": "street",
+     "count": 1
+    }
+   ],
+   "moves": 27,
+   "min": 16,
+   "toolMin": null,
+   "D": 36,
+   "felt": 36,
+   "target": 39,
+   "cas": 0.887,
+   "good": 0.925,
+   "casTool": null
+  },
+  {
+   "id": 72,
+   "seed": 367589666,
+   "role": "relief",
+   "tool": null,
+   "goals": [
+    {
+     "type": "purge",
+     "value": 3,
+     "tiles": 8
+    }
+   ],
+   "moves": 27,
+   "min": 17,
+   "toolMin": null,
+   "D": 31,
+   "felt": 31,
+   "target": 43,
+   "cas": 0.85,
+   "good": 0.856,
+   "casTool": null
+  },
+  {
+   "id": 73,
+   "seed": 2089026527,
+   "role": "normal",
+   "tool": null,
+   "goals": [
+    {
+     "type": "tile",
+     "value": 7
+    }
+   ],
+   "moves": 32,
+   "min": 18,
+   "toolMin": null,
+   "D": 70,
+   "felt": 70,
+   "target": 47,
+   "cas": 0.131,
+   "good": 0.138,
+   "casTool": null
+  },
+  {
+   "id": 74,
+   "seed": 3356171717,
+   "role": "normal",
+   "tool": null,
+   "goals": [
+    {
+     "type": "make",
+     "value": 5,
+     "count": 2
+    },
+    {
+     "type": "score",
+     "points": 400
+    }
+   ],
+   "moves": 32,
+   "min": 24,
+   "toolMin": null,
+   "D": 52,
+   "felt": 52,
+   "target": 52,
+   "cas": 0.6,
+   "good": 0.769,
+   "casTool": null
+  },
+  {
+   "id": 75,
+   "seed": 3803032883,
+   "role": "tool",
+   "tool": "rocket",
+   "goals": [
+    {
+     "type": "empty",
+     "max": 3
+    },
+    {
+     "type": "score",
+     "points": 220
+    }
+   ],
+   "moves": 15,
+   "min": 15,
+   "toolMin": 4,
+   "D": 94,
+   "felt": 94,
+   "target": 54,
+   "cas": 0,
+   "good": 0,
+   "casTool": null
+  },
+  {
+   "id": 76,
+   "seed": 37484768,
+   "role": "relief",
+   "tool": null,
+   "goals": [
+    {
+     "type": "street",
+     "count": 3
+    },
+    {
+     "type": "clear",
+     "tiles": 10
+    }
+   ],
+   "moves": 28,
+   "min": 13,
+   "toolMin": null,
+   "D": 43,
+   "felt": 43,
+   "target": 41,
+   "cas": 0.369,
+   "good": 0.775,
+   "casTool": null
+  },
+  {
+   "id": 77,
+   "seed": 4113376175,
+   "role": "normal",
+   "tool": null,
+   "goals": [
+    {
+     "type": "score",
+     "points": 500
+    },
+    {
+     "type": "purge",
+     "value": 2,
+     "tiles": 6
+    }
+   ],
+   "moves": 33,
+   "min": 18,
+   "toolMin": null,
+   "D": 26,
+   "felt": 26,
+   "target": 49,
+   "cas": 1,
+   "good": 1,
+   "casTool": null
+  },
+  {
+   "id": 78,
+   "seed": 713879680,
+   "role": "normal",
+   "tool": null,
+   "goals": [
+    {
+     "type": "make",
+     "value": 6,
+     "count": 2
+    }
+   ],
+   "moves": 33,
+   "min": 25,
+   "toolMin": null,
+   "D": 95,
+   "felt": 95,
+   "target": 54,
+   "cas": 0.025,
+   "good": 0.075,
+   "casTool": null
+  },
+  {
+   "id": 79,
+   "seed": 458489055,
+   "role": "tool",
+   "tool": "hint",
+   "goals": [
+    {
+     "type": "tile",
+     "value": 7
     },
     {
      "type": "street",
      "count": 2
     }
    ],
-   "moves": 9,
-   "min": 3,
-   "toolMin": null,
-   "D": 59,
-   "felt": 59,
-   "target": 54,
-   "cas": 0.256,
-   "good": 0.294,
-   "casTool": null
-  },
-  {
-   "id": 88,
-   "role": "normal",
-   "tool": null,
-   "goals": [
-    {
-     "type": "purge",
-     "value": 4,
-     "tiles": 6
-    }
-   ],
-   "moves": 10,
-   "min": 5,
-   "toolMin": null,
-   "D": 56,
-   "felt": 56,
-   "target": 58,
-   "cas": 0.344,
-   "good": 0.356,
-   "casTool": null
-  },
-  {
-   "id": 89,
-   "role": "tool",
-   "tool": "wand",
-   "goals": [
-    {
-     "type": "combo",
-     "chain": 2
-    },
-    {
-     "type": "make",
-     "value": 4,
-     "count": 2
-    }
-   ],
-   "moves": 3,
-   "min": 5,
-   "toolMin": 2,
+   "moves": 23,
+   "min": 23,
+   "toolMin": 23,
    "D": 100,
-   "felt": 26,
-   "target": 61,
-   "cas": 0,
-   "good": 0,
-   "casTool": 0.769
+   "felt": 75,
+   "target": 56,
+   "cas": 0.031,
+   "good": 0.019,
+   "casTool": 0.131
   },
   {
-   "id": 90,
+   "id": 80,
+   "seed": 3887280096,
    "role": "milestone",
    "tool": null,
    "goals": [
     {
      "type": "tile",
-     "value": 5
+     "value": 6
+    },
+    {
+     "type": "clear",
+     "tiles": 12
+    },
+    {
+     "type": "street",
+     "count": 1
+    }
+   ],
+   "moves": 37,
+   "min": 24,
+   "toolMin": null,
+   "D": 37,
+   "felt": 37,
+   "target": 67,
+   "cas": 0.931,
+   "good": 0.944,
+   "casTool": null
+  },
+  {
+   "id": 81,
+   "seed": 2598669954,
+   "role": "relief",
+   "tool": null,
+   "goals": [
+    {
+     "type": "clear",
+     "tiles": 12
+    }
+   ],
+   "moves": 30,
+   "min": 10,
+   "toolMin": null,
+   "D": 13,
+   "felt": 13,
+   "target": 43,
+   "cas": 1,
+   "good": 1,
+   "casTool": null
+  },
+  {
+   "id": 82,
+   "seed": 2910354870,
+   "role": "relief",
+   "tool": null,
+   "goals": [
+    {
+     "type": "long",
+     "count": 1
+    }
+   ],
+   "moves": 30,
+   "min": 11,
+   "toolMin": null,
+   "D": 51,
+   "felt": 51,
+   "target": 48,
+   "cas": 0.269,
+   "good": 0.225,
+   "casTool": null
+  },
+  {
+   "id": 83,
+   "seed": 3159980049,
+   "role": "normal",
+   "tool": null,
+   "goals": [
+    {
+     "type": "tile",
+     "value": 7
     },
     {
      "type": "clear",
      "tiles": 10
     }
    ],
-   "moves": 10,
-   "min": 4,
+   "moves": 35,
+   "min": 23,
    "toolMin": null,
-   "D": 84,
-   "felt": 84,
-   "target": 71,
-   "cas": 0.138,
-   "good": 0.119,
+   "D": 91,
+   "felt": 91,
+   "target": 52,
+   "cas": 0.056,
+   "good": 0.075,
    "casTool": null
   },
   {
-   "id": 91,
+   "id": 84,
+   "seed": 1551148951,
+   "role": "normal",
+   "tool": null,
+   "goals": [
+    {
+     "type": "score",
+     "points": 600
+    },
+    {
+     "type": "clear",
+     "tiles": 10
+    }
+   ],
+   "moves": 35,
+   "min": 18,
+   "toolMin": null,
+   "D": 25,
+   "felt": 25,
+   "target": 57,
+   "cas": 1,
+   "good": 1,
+   "casTool": null
+  },
+  {
+   "id": 85,
+   "seed": 2055944695,
+   "role": "tool",
+   "tool": "extraMoves",
+   "goals": [
+    {
+     "type": "make",
+     "value": 5,
+     "count": 2
+    },
+    {
+     "type": "clear",
+     "tiles": 10
+    }
+   ],
+   "moves": 22,
+   "min": 22,
+   "toolMin": 22,
+   "D": 64,
+   "felt": 57,
+   "target": 59,
+   "cas": 0.231,
+   "good": 0.406,
+   "casTool": 0.338
+  },
+  {
+   "id": 86,
+   "seed": 3015076397,
    "role": "relief",
+   "tool": null,
+   "goals": [
+    {
+     "type": "clear",
+     "tiles": 14
+    }
+   ],
+   "moves": 32,
+   "min": 11,
+   "toolMin": null,
+   "D": 14,
+   "felt": 14,
+   "target": 45,
+   "cas": 1,
+   "good": 1,
+   "casTool": null
+  },
+  {
+   "id": 87,
+   "seed": 3830269138,
+   "role": "normal",
+   "tool": null,
+   "goals": [
+    {
+     "type": "long",
+     "count": 1
+    },
+    {
+     "type": "clear",
+     "tiles": 10
+    }
+   ],
+   "moves": 36,
+   "min": 16,
+   "toolMin": null,
+   "D": 47,
+   "felt": 47,
+   "target": 54,
+   "cas": 0.494,
+   "good": 0.281,
+   "casTool": null
+  },
+  {
+   "id": 88,
+   "seed": 961557610,
+   "role": "normal",
+   "tool": null,
+   "goals": [
+    {
+     "type": "purge",
+     "value": 4,
+     "tiles": 8
+    }
+   ],
+   "moves": 36,
+   "min": 29,
+   "toolMin": null,
+   "D": 56,
+   "felt": 56,
+   "target": 58,
+   "cas": 0.313,
+   "good": 0.569,
+   "casTool": null
+  },
+  {
+   "id": 89,
+   "seed": 2037520653,
+   "role": "tool",
+   "tool": "wand",
+   "goals": [
+    {
+     "type": "tile",
+     "value": 7
+    },
+    {
+     "type": "score",
+     "points": 360
+    }
+   ],
+   "moves": 32,
+   "min": 32,
+   "toolMin": 3,
+   "D": 98,
+   "felt": 98,
+   "target": 61,
+   "cas": 0.063,
+   "good": 0.106,
+   "casTool": null
+  },
+  {
+   "id": 90,
+   "seed": 448513532,
+   "role": "milestone",
    "tool": null,
    "goals": [
     {
      "type": "tile",
-     "value": 5
+     "value": 7
+    },
+    {
+     "type": "clear",
+     "tiles": 12
     }
    ],
-   "moves": 11,
-   "min": 5,
+   "moves": 40,
+   "min": 33,
    "toolMin": null,
-   "D": 47,
-   "felt": 47,
-   "target": 48,
-   "cas": 0.35,
-   "good": 0.4,
+   "D": 73,
+   "felt": 73,
+   "target": 71,
+   "cas": 0.231,
+   "good": 0.269,
    "casTool": null
   },
   {
-   "id": 92,
+   "id": 91,
+   "seed": 91000273,
    "role": "relief",
    "tool": null,
    "goals": [
     {
-     "type": "combo",
-     "chain": 3
-    },
-    {
      "type": "score",
-     "points": 200
+     "points": 500
     }
    ],
-   "moves": 8,
-   "min": 2,
+   "moves": 33,
+   "min": 12,
    "toolMin": null,
-   "D": 68,
-   "felt": 68,
+   "D": 15,
+   "felt": 15,
+   "target": 48,
+   "cas": 0.994,
+   "good": 1,
+   "casTool": null
+  },
+  {
+   "id": 92,
+   "seed": 2292563028,
+   "role": "relief",
+   "tool": null,
+   "goals": [
+    {
+     "type": "score",
+     "points": 360
+    },
+    {
+     "type": "clear",
+     "tiles": 8
+    }
+   ],
+   "moves": 33,
+   "min": 14,
+   "toolMin": null,
+   "D": 21,
+   "felt": 21,
    "target": 52,
-   "cas": 0.163,
-   "good": 0.181,
+   "cas": 1,
+   "good": 1,
    "casTool": null
   },
   {
    "id": 93,
+   "seed": 2857551868,
    "role": "normal",
    "tool": null,
    "goals": [
     {
      "type": "purge",
      "value": 3,
-     "tiles": 6
+     "tiles": 8
     },
     {
      "type": "street",
@@ -2002,22 +2135,23 @@
     },
     {
      "type": "make",
-     "value": 4,
+     "value": 5,
      "count": 2
     }
    ],
-   "moves": 10,
-   "min": 5,
+   "moves": 38,
+   "min": 27,
    "toolMin": null,
-   "D": 57,
-   "felt": 57,
+   "D": 54,
+   "felt": 54,
    "target": 57,
-   "cas": 0.362,
-   "good": 0.662,
+   "cas": 0.55,
+   "good": 0.825,
    "casTool": null
   },
   {
    "id": 94,
+   "seed": 3219669200,
    "role": "normal",
    "tool": null,
    "goals": [
@@ -2027,45 +2161,47 @@
     },
     {
      "type": "tile",
-     "value": 5
+     "value": 6
     }
    ],
-   "moves": 9,
-   "min": 3,
+   "moves": 38,
+   "min": 28,
    "toolMin": null,
-   "D": 62,
-   "felt": 62,
+   "D": 61,
+   "felt": 61,
    "target": 61,
-   "cas": 0.237,
-   "good": 0.263,
+   "cas": 0.388,
+   "good": 0.406,
    "casTool": null
   },
   {
    "id": 95,
+   "seed": 314373800,
    "role": "tool",
    "tool": "rocket",
    "goals": [
     {
      "type": "empty",
-     "max": 3
+     "max": 4
     },
     {
-     "type": "clear",
-     "tiles": 8
+     "type": "score",
+     "points": 260
     }
    ],
-   "moves": 3,
-   "min": 5,
-   "toolMin": 2,
-   "D": 100,
-   "felt": 37,
+   "moves": 17,
+   "min": 17,
+   "toolMin": 3,
+   "D": 88,
+   "felt": 88,
    "target": 64,
    "cas": 0,
-   "good": 0,
-   "casTool": 0.5
+   "good": 0.031,
+   "casTool": null
   },
   {
    "id": 96,
+   "seed": 4115175480,
    "role": "relief",
    "tool": null,
    "goals": [
@@ -2074,67 +2210,65 @@
      "count": 2
     }
    ],
-   "moves": 8,
-   "min": 5,
+   "moves": 35,
+   "min": 12,
    "toolMin": null,
-   "D": 52,
-   "felt": 52,
+   "D": 16,
+   "felt": 16,
    "target": 50,
-   "cas": 0.287,
-   "good": 0.756,
+   "cas": 0.938,
+   "good": 0.963,
    "casTool": null
   },
   {
    "id": 97,
+   "seed": 1272534079,
    "role": "normal",
    "tool": null,
    "goals": [
     {
      "type": "tile",
-     "value": 5
+     "value": 8
+    }
+   ],
+   "moves": 39,
+   "min": 26,
+   "toolMin": null,
+   "D": 83,
+   "felt": 83,
+   "target": 59,
+   "cas": 0.094,
+   "good": 0.05,
+   "casTool": null
+  },
+  {
+   "id": 98,
+   "seed": 3179044366,
+   "role": "normal",
+   "tool": null,
+   "goals": [
+    {
+     "type": "street",
+     "count": 2
     },
     {
      "type": "clear",
      "tiles": 10
     }
    ],
-   "moves": 8,
-   "min": 4,
+   "moves": 39,
+   "min": 17,
    "toolMin": null,
-   "D": 60,
-   "felt": 60,
-   "target": 59,
-   "cas": 0.237,
-   "good": 0.394,
-   "casTool": null
-  },
-  {
-   "id": 98,
-   "role": "normal",
-   "tool": null,
-   "goals": [
-    {
-     "type": "purge",
-     "value": 3,
-     "tiles": 6
-    },
-    {
-     "type": "combo",
-     "chain": 2
-    }
-   ],
-   "moves": 9,
-   "min": 4,
-   "toolMin": null,
-   "D": 57,
-   "felt": 57,
+   "D": 22,
+   "felt": 22,
    "target": 63,
-   "cas": 0.294,
-   "good": 0.35,
+   "cas": 1,
+   "good": 0.994,
    "casTool": null
   },
   {
    "id": 99,
+   "seed": 4099756641,
    "role": "tool",
    "tool": "hint",
    "goals": [
@@ -2144,43 +2278,39 @@
     },
     {
      "type": "score",
-     "points": 200
+     "points": 400
     }
    ],
-   "moves": 5,
-   "min": 4,
-   "toolMin": 4,
-   "D": 88,
+   "moves": 12,
+   "min": 12,
+   "toolMin": 12,
+   "D": 68,
    "felt": 57,
    "target": 66,
-   "cas": 0.087,
-   "good": 0.388,
-   "casTool": 0.45
+   "cas": 0.1,
+   "good": 0.269,
+   "casTool": 0.194
   },
   {
    "id": 100,
-   "seed": 1147260842,
+   "seed": 1298901197,
    "role": "boss",
    "tool": "extraMoves",
    "goals": [
     {
-     "type": "combo",
-     "chain": 2
-    },
-    {
-     "type": "score",
-     "points": 250
+     "type": "tile",
+     "value": 8
     }
    ],
-   "moves": 2,
-   "min": 4,
-   "toolMin": 4,
-   "D": 100,
-   "felt": 64,
+   "moves": 34,
+   "min": 34,
+   "toolMin": 34,
+   "D": 99,
+   "felt": 98,
    "target": 72,
-   "cas": 0,
-   "good": 0,
-   "casTool": 0.356
+   "cas": 0.025,
+   "good": 0.025,
+   "casTool": 0.025
   }
  ]
 }

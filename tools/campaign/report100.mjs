@@ -6,8 +6,8 @@ const root = new URL('../../', import.meta.url);
 const L = JSON.parse(readFileSync(new URL('levels/levels-001-100.json', root), 'utf8')).levels;
 const M = new Map(JSON.parse(readFileSync(new URL('tools/campaign/measure-001-100.json', root), 'utf8')).levels.map(r => [r.id, r]));
 const role = { normal: 'normal', relief: 'Erholung', milestone: 'Meilenstein', tool: 'Werkzeug-Peak', boss: 'Boss' };
-const out = ['# Level 1–100 (launch-15)', '', 'Erzeugt mit `tools/campaign/report100.mjs` aus `levels/levels-001-100.json` und der Messung `tools/campaign/measure-001-100.json`.',
-  'D = Schwierigkeit ohne Werkzeug (100 = im Limit ohne Werkzeug nicht lösbar), gefühlt = mit dem Schlüssel-Werkzeug, Soll = Zielkurve der Planungsseite.',
+const out = ['# Level 1–100 (launch-18)', '', 'Erzeugt mit `tools/campaign/report100.mjs` aus `levels/levels-001-100.json` und der Messung `tools/campaign/measure-001-100.json`.',
+  'Alle Level sind ohne Werkzeug lösbar (gespeicherte Lösung, `Min` = Optimum). D = Schwierigkeit ohne Werkzeug (Spielermodell; 100 = Modellspieler schaffen es im Limit fast nie), gefühlt = mit dem Schlüssel-Werkzeug, Soll = Zielkurve.',
   'Gel. = Gewinnrate Gelegenheitsspieler ohne Werkzeug, mit Wkz = mit dem Schlüssel-Werkzeug.', '',
   '| L | Rolle | Ziele | Züge | Min | Werkzeug | D | gefühlt | Soll | Gel. | mit Wkz |', '|---|---|---|---|---|---|---|---|---|---|---|'];
 for (const lv of L) {
