@@ -475,6 +475,8 @@ Ziel: sehen, wie viele Hilfsmittel beim echten Spielen wann und wo gebraucht wer
 
 **Werkzeug-Level** (`level.tool`): 15, 49, 65, 85, 100 = +3 Züge · 25, 50, 69, 89 = Zauberstab · 35, 55, 75, 95 = Rakete · 45, 59, 79, 99 = Hinweis. Bosse 50 (Zauberstab) und 100 (+3 Züge) brauchen ein Werkzeug.
 
+**Bosse nachgeschärft:** Damit die Bosse wie die übrigen Meilensteine über dem Kapitelschnitt liegen, ist L50 ein neuer Kandidat aus einer längeren Suche (`tools/campaign/search-one.mjs 50`, k 487, gefühlt 55 statt 29) und L100 hat ein engeres Limit (2 statt 3 Züge, `meta.bossTuned`; mit +3 = 5 Züge, Optimum 4, gefühlt 64 statt 55, Gelegenheitsspieler mit +3: 36 %). Einzelne Level ersetzt `tools/campaign/replace-level.mjs <id>:<k>` (gleicher Aufbau wie `build100.mjs --assemble`). Hinweis: Der Such-Cache `tools/campaign/.cache/build100/` ist nicht mehr vollständig; `--assemble` braucht vorher eine neue Suche.
+
 - Höchstens 2★ (`starsFor` deckelt bei gesetztem `level.tool`, auch ohne Werkzeug-Einsatz); Schwellen `toolStars(toolMin, limit, tool)`: 2★ bis zur Mitte zwischen Werkzeug-Optimum und Limit (bei +3: Limit + 3).
 - +3 / Rakete / Zauberstab: ohne Werkzeug im Limit **nicht lösbar** (Solver, vollständige Suche, `tests/levels.test.mjs`); mit dem einen Werkzeug gewinnt die gespeicherte Lösung (`solution`, z. B. `R12 ab…` = Rakete auf Reihe 1/Spalte 2, `W33=3` = Zauberstab macht aus dem Stein eine 3) mit 2★. Rakete/Zauberstab: mindestens 2 verschiedene Einsätze führen zum Ziel.
 - Hinweis-Level: lösbar, aber eng (Limit = Optimum oder +1, Gelegenheitsspieler ≤ 20 %); der Hinweis findet am Start einen Weg.
@@ -488,3 +490,9 @@ Ziel: sehen, wie viele Hilfsmittel beim echten Spielen wann und wo gebraucht wer
 **Kapitel und Sterne-Schranken:** 10 Kapitel à 10 Level, Schranke unverändert 18★ × (Kapitel − 1). Mit dem 2★-Deckel bleiben in den Kapiteln vor jeder Schranke ≥ 256 von 270 Sternen möglich; „überall 2★“ reicht immer.
 
 **Levelauswahl:** 100 Knöpfe in 10 Kapiteln, das nächste Level wird beim Öffnen in die Mitte gescrollt, Kapitel außerhalb des Bildes werden nicht gerendert (`content-visibility`).
+
+**Messung und Kurve (launch-15):** `tools/campaign/measure-001-100.json`, Tabelle `docs/levels-100.md`, Grafik + Tabelle auf der Planungsseite. Kapitelschnitt gefühlt 18 · 26 · 27 · 32 · 33 · 37 · 45 · 49 · 54 · 56; jeder Meilenstein (10, 20, …, 100) über dem Kapitelschnitt, Erholung an Position 6 leichter als 4. Abweichungen vom Soll (≥ 10 Punkte): Werkzeug-Peaks 55, 59, 65, 75, 85, 89, 95 fühlen sich mit dem Werkzeug leichter an (Druck = Werkzeug-Pflicht); zu steil M70 (76/62), M90 (84/71), L83 (64/52), L92 (Erholung, 68/52). Das alte L22-Brett wurde nicht für L59 wiederverwendet (L59 = Kette 3, Hinweis-Peak). Hinweis-Level 45/59/79/99 sind ohne Werkzeug knapp lösbar (nicht erzwungen).
+
+**Ruhe im Level:** Nach dem Levelstart werden Fusions-Blobs vorgewärmt (`fusion.mjs prime`, je 1 Frame im Abstand ~1 s, wie in launch-14); danach 0 Renders/s. Der e2e misst deshalb erst nach dem Einschwingen.
+
+**Tests launch-15:** `node --test tests/*.test.mjs` (67). e2e in `/workspace/squish-e2e/campaign/`: `e2e-launch15.mjs` (Levelauswahl 100, Scrollen, HUD neue Missionen, drei Ziele 390/375 px, Rakete-Level 2★), `e2e-launch15b.mjs [--small]` (L1, 31/41/51/71 durchgespielt, Boss 50 Zauberstab + Boss 100 +3 mit 2★, Ruhe 0 Renders/s, Endlos-Reload, Sterne-Schranke K2), `e2e-launch14-on15.mjs`, `e2e-reset14-on15.mjs`.
