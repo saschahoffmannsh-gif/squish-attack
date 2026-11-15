@@ -21,6 +21,7 @@ for (const lv of data.levels) {
   const s = solveLevel(probe, { maxDepth: 12, maxLayer: 4_000_000 });
   if (!s.exact || !s.solvable) throw new Error(`L${lv.id}: Optimum ohne Werkzeug nicht gefunden (${JSON.stringify({ exact: s.exact, solvable: s.solvable })})`);
   const min = s.minMoves, L = Math.max(lv.moves, min + slack);
+  if (lv.meta.untooled && lv.moves === min + slack) { console.log(`L${lv.id}: schon umgestellt`); continue; }
   const from = { moves: lv.moves, stars: lv.stars };
   lv.sequence = extendSequence(lv.sequence, L + RESERVE, lv.meta.seed);
   lv.moves = L; lv.stars = starThresholds(min, L);
@@ -28,6 +29,7 @@ for (const lv of data.levels) {
   lv.solution = s.solution;                                              // Lösung ohne Werkzeug (Optimum)
   lv.meta.minMoves = min; lv.meta.slack = L - min;
   lv.meta.untooled = { launch: 'launch-16', from };
+  if (lv.meta.note) lv.meta.note = lv.meta.note.replace('Werkzeug-Level', 'Werkzeug-Spitze').replace('Zauberstab nötig', 'Werkzeug-Spitze (Zauberstab)').replace('+3 Züge nötig', 'Werkzeug-Spitze (+3 Züge)');
   validateLevel(lv);
   const rep = replaySolution(lv, s.solution);
   if (!rep.ok || rep.stars !== 3) throw new Error(`L${lv.id}: Lösung ohne Werkzeug ungültig`);
