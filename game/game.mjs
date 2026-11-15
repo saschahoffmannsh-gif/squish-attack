@@ -3,7 +3,7 @@ import {createRng,encodeMove,replayRun,MAX_LOG} from './ranked.mjs?v=launch-16';
 import {createLeaderboard} from './leaderboard.mjs?v=launch-16';
 import { SIZE, START_VALUES, createStartValues, insertTile, nextMergePass, settle, isGameOver } from './game-logic.mjs?v=launch-16';
 import { nextSpawn, spawnProfile } from './balance.mjs';
-import {canContinueRun} from './run-availability.mjs?v=splash-plate-1';
+import {canContinueRun} from './run-availability.mjs?v=launch-16';
 import { createMergeEffects } from './merge-effects.mjs?v=launch-16';
 import { createGameGraphics } from './graphics-adapter.mjs?v=launch-16';
 import { installDeviceMotion } from './device-motion.mjs';
