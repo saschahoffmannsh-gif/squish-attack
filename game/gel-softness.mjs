@@ -1,5 +1,5 @@
 // More elastic excursion with the same idle rhythm and planted geometry.
-// launch-9: the jelly wobble after motion (slide stop, landing, bumps, merge
+// launch-10: the jelly wobble after motion (slide stop, landing, bumps, merge
 // result, ripples) rings ~1.75x longer at the same bouncy frequency; the
 // release/swipe springs are a bit less damped. It still decays to rest, so the
 // renderer stops again once every stone has settled.

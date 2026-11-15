@@ -1,4 +1,4 @@
-import {flags,ios,safari,BUILD} from './flags.mjs?v=launch-9';
+import {flags,ios,safari,BUILD} from './flags.mjs?v=launch-10';
 // Sampled gel foley. Fetching is optional and never holds up the splash;
 // the AudioContext is created/resumed only by a real player gesture.
 // Slide/land use ralph.whitehead's CC0 Plunger Pop (#05); merge/pop use Gniffelbaf's CC0 balloon burst.
@@ -220,7 +220,7 @@ export function createGameSound(button,{
   }
 
   function sampleName(kind){
-    return kind==='land'||kind==='slide'||kind==='star'?'cup':kind==='merge'||kind==='flow'||kind==='pop'?'burst':kind==='squish'||kind==='tap'?'plop':kind==='record'?'suction':kind==='collect'?'count':kind;
+    return kind==='land'||kind==='slide'||kind==='star'||kind==='launch'?'cup':kind==='merge'||kind==='flow'||kind==='pop'||kind==='boom'?'burst':kind==='squish'||kind==='tap'||kind==='magic'?'plop':kind==='record'?'suction':kind==='collect'?'count':kind;
   }
 
   function enqueue(kind,size,{combo=1,pan=0,requestedAt}={}){
@@ -257,7 +257,7 @@ export function createGameSound(button,{
       void Promise.resolve(kick).then(ok=>{if(ok)flushQueue();}).catch(()=>{});
       return;
     }
-    const need=kind==='land'||kind==='slide'||kind==='star'?'cup':kind==='merge'||kind==='flow'||kind==='pop'?'burst':kind==='squish'||kind==='tap'?'plop':kind==='record'?'suction':kind==='collect'?'count':null;
+    const need=kind==='land'||kind==='slide'||kind==='star'||kind==='launch'?'cup':kind==='merge'||kind==='flow'||kind==='pop'||kind==='boom'?'burst':kind==='squish'||kind==='tap'||kind==='magic'?'plop':kind==='record'?'suction':kind==='collect'?'count':null;
     if(need&&!buffers.has(need)){
       enqueue(kind,size,{combo,pan,requestedAt});
       notePlay({kind,name:sampleName(kind),skipped:'decode',t:requestedAt??now()});
@@ -280,8 +280,27 @@ export function createGameSound(button,{
       notePlay({kind,name:'cup',size,rate,volume:+volume.toFixed(3),delay,t:at,skipped:voice?undefined:'failed'});
       return;
     }
+    if(kind==='boom'){
+      // Rakete: tiefer, doppelter Ballon-Knall.
+      sample('burst',{volume:.66,rate:.74,pan,delay,priority:3});
+      sample('burst',{volume:.30,rate:.56,pan,delay:delay+.05,priority:3});
+      notePlay({kind,name:'burst',size,rate:.74,volume:.66,delay,t:requestedAt??now()});
+      return;
+    }
+    if(kind==='launch'){
+      // Raketenstart: schneller, hoher Schiebe-Laut.
+      sample('cup',{volume:.30,rate:1.45,pan,delay,priority:2});
+      notePlay({kind,name:'cup',size,rate:1.45,volume:.30,delay,t:requestedAt??now()});
+      return;
+    }
+    if(kind==='magic'){
+      // Zauberstab: kleines aufsteigendes Plopp-Arpeggio.
+      [1.12,1.4,1.75].forEach((rate,i)=>sample('plop',{volume:.22,rate,pan,delay:delay+i*.07,priority:2}));
+      notePlay({kind,name:'plop',size,rate:1.12,volume:.22,delay,t:requestedAt??now()});
+      return;
+    }
     if(kind==='star'){
-      // Win-dialog stars (launch-9): the soft squish slide sound instead of
+      // Win-dialog stars (launch-10): the soft squish slide sound instead of
       // the balloon bang, a little higher for each star. size = star 1..3.
       const index=Math.max(0,Math.min(2,(size|0)-1));
       const rate=STAR_RATES[index],volume=STAR_VOLUMES[index];

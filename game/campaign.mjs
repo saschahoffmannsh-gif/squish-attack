@@ -274,24 +274,81 @@ export function nextLevel(progress, count) {
 }
 
 // ---------------- Hilfsmittel ----------------
-/** Hammer: entfernt einen Stein (kein Zug). Gibt true zurück, wenn etwas entfernt wurde. */
-export function useHammer(run, row, col) {
+// launch-10: Rakete (ersetzt den Hammer), Hinweis, Zauberstab, +3 Züge.
+// Jedes Hilfsmittel deckelt das Ergebnis auf höchstens 2 Sterne.
+
+/** Rakete: entfernt einen Stein (kein Zug, keine Fusion). true, wenn etwas entfernt wurde. */
+export function useRocket(run, row, col) {
   if (run.status !== 'playing' || !run.board[row]?.[col]) return false;
   run.board = run.board.map(r => r.slice());
   run.board[row][col] = null;
-  markToolUsed(run, 'hammer');
+  markToolUsed(run, 'rocket');
   return true;
 }
 
-export const TOOLS_KEY = 'squish-campaign-tools-v1';
-export const TOOL_TYPES = ['extraMoves', 'hammer'];
-export const emptyInventory = () => ({ version: 1, extraMoves: 0, hammer: 0, gifts: [] });
+/**
+ * Zauberstab – erlaubte Zahlen für einen Stein:
+ *  - 1 … Obergrenze, ohne den aktuellen Wert
+ *  - Obergrenze = kleinster Zielwert eines „Erzeuge“-Ziels − 1 (tile/make);
+ *    gibt es kein solches Ziel: der größte Wert auf Brett/Vorschau (mind. 2)
+ *  - ohne Werte, die durch die anschließenden Fusionen sofort alle Ziele erfüllen würden
+ */
+export function wandCap(run) {
+  const targets = run.level.goals.filter(g => g.type === 'tile' || g.type === 'make').map(g => g.value);
+  if (targets.length) return Math.max(1, Math.min(...targets) - 1);
+  const seen = [...run.board.flat().filter(Boolean).map(t => t.value), ...queueOf(run)];
+  return Math.max(2, ...seen);
+}
+export function wandChoices(run, row, col) {
+  const tile = run.board[row]?.[col];
+  if (run.status !== 'playing' || !tile) return [];
+  const out = [];
+  for (let v = 1; v <= wandCap(run); v++) {
+    if (v === tile.value) continue;
+    if (wandPreview(run, row, col, v).win) continue;
+    out.push(v);
+  }
+  return out;
+}
+function wandPreview(run, row, col, value) {
+  const board = run.board.map(r => r.map(t => (t ? { ...t } : null)));
+  board[row][col] = { ...board[row][col], value };
+  const settled = settle(board);
+  const probe = { ...run, created: { ...run.created }, board: settled.board };
+  tally(probe, settled);
+  return { settled, probe, win: goalsDone(probe) };
+}
+/**
+ * Zauberstab: Stein bekommt einen neuen Wert (gleiche id, kein Zug). Danach gelten
+ * die normalen Regeln: entstehen Gruppen, wird wie nach einem Zug fusioniert und
+ * gezählt (Punkte, Fusionen, Ketten). Rückgabe {ok, settled}.
+ */
+export function useWand(run, row, col, value) {
+  if (!wandChoices(run, row, col).includes(value)) return { ok: false };
+  const { settled } = wandPreview(run, row, col, value);
+  run.board = settled.board;
+  tally(run, settled);
+  markToolUsed(run, 'wand');
+  if (goalsDone(run)) run.status = 'won';
+  else if (isGameOver(run.board) || !hasLegalMove(run)) { run.status = 'lost'; run.lostReason = 'board-full'; }
+  return { ok: true, settled };
+}
 
+/** Zielfortschritt als (gedeckelter) Vektor – Startpunkt für die Hinweis-Suche. */
+export const progressVector = run => run.level.goals.map(g => goalProgress(g, run).current);
+
+export const TOOLS_KEY = 'squish-campaign-tools-v1';
+export const TOOL_TYPES = ['extraMoves', 'rocket', 'hint', 'wand'];
+export const emptyInventory = () => ({ version: 2, extraMoves: 0, rocket: 0, hint: 0, wand: 0, gifts: [] });
+
+/** Lädt das Inventar; alte Spielstände (v1) werden migriert: Hammer → Rakete. */
 export function loadInventory(storage = globalThis.localStorage) {
   try {
     const v = JSON.parse(storage?.getItem(TOOLS_KEY) ?? 'null');
-    if (v && v.version === 1 && Array.isArray(v.gifts)) {
-      return { ...emptyInventory(), ...v, extraMoves: Math.max(0, v.extraMoves | 0), hammer: Math.max(0, v.hammer | 0) };
+    if (v && (v.version === 1 || v.version === 2) && Array.isArray(v.gifts)) {
+      const n = x => Math.max(0, x | 0);
+      return { ...emptyInventory(), gifts: v.gifts.slice(), extraMoves: n(v.extraMoves),
+        rocket: n(v.rocket) + (v.version === 1 ? n(v.hammer) : 0), hint: n(v.hint), wand: n(v.wand) };
     }
   } catch {}
   return emptyInventory();
@@ -306,18 +363,20 @@ export function spendTool(inv, type) {
 }
 
 /**
- * Gratis-Geschenke (docs/kampagne.md): 1× „+3 Züge“ nach Level 10, 1× Hammer nach Level 20,
- * dazu je 10 Sterne ein Hilfsmittel (abwechselnd +3 Züge, Hammer). Jedes Geschenk nur einmal.
+ * Gratis-Geschenke (docs/kampagne.md), jedes nur einmal:
+ *  Level 3 → Hinweis, Level 6 → Zauberstab, Level 10 → +3 Züge, Level 20 → Rakete,
+ *  dazu je 10 Sterne ein Hilfsmittel im Wechsel: +3 Züge, Rakete, Hinweis, Zauberstab.
  * Rückgabe: {inventory, granted:[{id, type}]}.
  */
 export const STARS_PER_GIFT = 10;
+export const LEVEL_GIFTS = Object.freeze([[3, 'hint'], [6, 'wand'], [10, 'extraMoves'], [20, 'rocket']]);
+export const STAR_GIFT_ROTATION = Object.freeze(['extraMoves', 'rocket', 'hint', 'wand']);
 export function grantGifts(inv, progress) {
-  const out = { ...inv, gifts: [...inv.gifts] }, granted = [];
-  const give = (id, type) => { if (out.gifts.includes(id)) return; out.gifts.push(id); out[type] += 1; granted.push({ id, type }); };
-  if (progress.levels['10']) give('level-10', 'extraMoves');
-  if (progress.levels['20']) give('level-20', 'hammer');
+  const out = { ...emptyInventory(), ...inv, gifts: [...inv.gifts] }, granted = [];
+  const give = (id, type) => { if (out.gifts.includes(id)) return; out.gifts.push(id); out[type] = (out[type] | 0) + 1; granted.push({ id, type }); };
+  for (const [n, type] of LEVEL_GIFTS) if (progress.levels[String(n)]) give(`level-${n}`, type);
   const blocks = Math.floor(totalStars(progress) / STARS_PER_GIFT);
-  for (let b = 1; b <= blocks; b++) give(`stars-${b * STARS_PER_GIFT}`, b % 2 ? 'extraMoves' : 'hammer');
+  for (let b = 1; b <= blocks; b++) give(`stars-${b * STARS_PER_GIFT}`, STAR_GIFT_ROTATION[(b - 1) % STAR_GIFT_ROTATION.length]);
   return { inventory: out, granted };
 }
-export const toolName = type => ({ extraMoves: '+3 Züge', hammer: 'Hammer' })[type] ?? type;
+export const toolName = type => ({ extraMoves: '+3 Züge', rocket: 'Rakete', hint: 'Hinweis', wand: 'Zauberstab', hammer: 'Rakete' })[type] ?? type;

@@ -197,7 +197,9 @@ Hilfsmittel, die zu den echten Mechaniken passen:
 | Hilfsmittel | Wirkung | Modell im Solver |
 |---|---|---|
 | **+3 Züge** | Zuglimit +3 (nutzt die Reserve-Steine der Folge), auch zum „Weiterspielen“ nach verlorenem Level | `campaign.mjs`: `addExtraMoves(run, 3)`; Solver: `toolEffect(level, {type:'extraMoves', count:3})` – umgesetzt |
-| **Hammer** | einen Stein entfernen, kein Zug | Zusatzaktion „Feld leeren“ in `expand()`, danach `settle()` |
+| **Rakete** (früher Hammer) | einen Stein entfernen, kein Zug | `useRocket(run, r, c)` – umgesetzt (launch-10); Solver: Zusatzaktion „Feld leeren“ in `expand()`, danach `settle()` |
+| **Hinweis** | spielt die nächsten 2 Züge eines kürzesten Gewinnwegs | `hint-solver.mjs` (BFS vom aktuellen Stand) – umgesetzt (launch-10) |
+| **Zauberstab** | ein Stein bekommt eine gewählte Zahl, kein Zug | `useWand(run, r, c, wert)` – umgesetzt (launch-10) |
 | **Tausch** | nächsten Stein mit dem übernächsten tauschen | Zusatzaktion: Folge an Position d/d+1 tauschen |
 | **Wunschstein** | nächster Stein bekommt einen gewählten Wert (1–max) | Zusatzaktion: `sequence[d]` ersetzen |
 | **Überspringen** | nächsten Stein verwerfen (ans Ende der Folge) | Zusatzaktion: Index +1 ohne Zug |
@@ -218,12 +220,13 @@ Ziel laut Sascha: Level 25 klar lösbar, aber nur mit echtem Planen, evtl. mit
 einem oder zwei Hilfsmitteln, die man unterwegs gratis bekommen hat. Vorschlag:
 
 - **Geschenke unterwegs:** 1× „+3 Züge“ nach Level 10 (Kapitel 1 geschafft),
-  1× „Hammer“ nach Level 20, dazu 1 Hilfsmittel für je 10 gesammelte Sterne.
+  1× „Rakete“ nach Level 20, dazu 1 Hilfsmittel für je 10 gesammelte Sterne
+  (seit launch-10 zusätzlich Hinweis nach Level 3 und Zauberstab nach Level 6).
   Wer bis Level 20 ordentlich spielt, hat 2–4 Stück.
 - **Wirkung laut Spielermodell** (`meta.expectedAttempts`, Gelegenheitsspieler):
   Level 20–25 brauchen ohne Hilfsmittel ca. 2,5–8 Versuche, mit „+3 Züge“ ca.
   1,2–3,5. Level 25: ca. 8 Versuche ohne, ca. 3 mit „+3 Züge“.
-- Der Hammer hilft vor allem bei Straßen- und Doppelziel-Leveln (23–25), wenn
+- Die Rakete hilft vor allem bei Straßen- und Doppelziel-Leveln (23–25), wenn
   ein einzelner falscher Stein eine Linie blockiert.
 - Mit Hilfsmittel gibt es höchstens 2★ – die Kapitel-Schranke (Ø 1,8★) bleibt
   damit erreichbar, 3★ bleibt das Ziel für Knobler.
@@ -238,9 +241,9 @@ Spieldaten (Versuche pro Level) nachkalibriert werden.
 - **Startbildschirm** (3D-Gel-Menü): Kampagne · Endlos · Einstellungen. Der gewählte Modus wird in `localStorage['squish-mode-v1']` gemerkt; beim nächsten Öffnen startet das Menü direkt im zuletzt gewählten Modus, „Zurück“ führt zum Startbildschirm. Erstbesucher sehen den Startbildschirm.
 - **Endlos**: unverändert (Neues Spiel, Weiterspielen, Mehrspieler, Bestenliste) plus „Zurück“. Endlos-Spielstand (`shift3-play-v1`) und gewertete Runden bleiben unberührt; während der Kampagne wird nichts davon gespeichert oder eingereicht.
 - **Kampagne**: „Level N spielen“ (nächstes offenes Level), Levelauswahl (DOM-Dialog, Kapitel à 10, Sterne pro Level, Schloss + Grund, Sterne-Tor pro Kapitel, Gesamtsterne).
-- **Spielansicht**: gleiches Brett/Rendering; Zielkarte mit Fortschritt, Zug-Zähler, Vorschau aus der festen Steinfolge, Hilfsmittel-Leiste (+3 Züge, Hammer). Pause-Menü hat „Zum Menü“ und „Level neu starten“.
+- **Spielansicht**: gleiches Brett/Rendering; Zielkarte mit Fortschritt, Zug-Zähler, Vorschau aus der festen Steinfolge, Hilfsmittel-Leiste (+3 Züge, Hinweis, Rakete, Zauberstab – seit launch-10). Pause-Menü hat „Zum Menü“ und „Level neu starten“.
 - **Ergebnis**: Sterne, Nächstes Level / Nochmal / Zum Menü; bei Niederlage durch Zugende „+3 Züge einsetzen“, wenn vorhanden.
-- **Hilfsmittel** (`squish-campaign-tools-v1`, nur Geschenke, keine Käufe): +3 Züge nach Level 10, Hammer nach Level 20, je 10 Sterne ein Hilfsmittel (abwechselnd +3 Züge und Hammer). Jedes Hilfsmittel deckelt das Level auf 2 ★.
+- **Hilfsmittel** (`squish-campaign-tools-v1`, nur Geschenke, keine Käufe): siehe „Hilfsmittel (launch-10)“ unten. Jedes Hilfsmittel deckelt das Level auf 2 ★.
 - Fortschritt: `squish-campaign-v1` (campaign.mjs). Kein Backend.
 
 ## UI (launch-4, Herbst-Design)
@@ -288,3 +291,42 @@ Spieldaten (Versuche pro Level) nachkalibriert werden.
 - Im Gewinn-Dialog spielt jeder Stern jetzt den weichen Schiebe-Sound der Squishes (Sample `cup`, `sound.play('star',n)`)
   statt des Ballon-Knalls; Tonhöhe steigt pro Stern (Rate 1 / 1,12 / 1,26), weiter synchron zur gestaffelten Stern-Animation.
 - Stumm/Sound-aus und `?nosound=1` gelten wie für alle Sounds. Haptik unverändert.
+
+## Hilfsmittel (launch-10): Rakete, Hinweis, Zauberstab
+
+Werkzeugleiste im Level: **+3 Züge · Hinweis | Vorschau | Rakete · Zauber** (je zwei
+Kacheln links/rechts der schmaleren Vorschau, passt auf 375 und 390 px). Icons sind
+eigene SVGs im Comic-Stil (`tool-icons.mjs`), keine Emoji. Jedes Hilfsmittel deckelt
+das Level auf **höchstens 2 ★**. Nur Geschenke, keine Käufe.
+
+- **Rakete** (ersetzt den Hammer überall): Kachel antippen → Stein antippen. Eine
+  Comic-Rakete fliegt mit Rauchspur von der Kachel zum Stein, dann **BOOM**
+  (Explosionsstern, Funken, leichtes Bildschirmwackeln, Vibration, Sound). Der Stein
+  verschwindet, die Nachbarn wackeln nach. Kein Zug, keine Schwerkraft – wie der
+  alte Hammer (`useRocket`).
+- **Hinweis**: sucht vom **aktuellen** Stand (Brett, Steinfolge, Ziel-Fortschritt,
+  übrige Züge) den kürzesten Gewinnweg (`hint-solver.mjs`, BFS mit
+  Zustandstabelle, im Web Worker `hint-worker.mjs`; Budget 160 000 Zustände /
+  2,5 s, danach Strahlsuche, Notfall ohne Worker 0,9 s). Spielt dann die ersten
+  **2 Züge** automatisch (1 Zug, wenn der Sieg nur noch 1 Zug entfernt ist), vor
+  jedem Zug ein goldenes Band mit Pfeil an der Einschubseite. Die Züge zählen
+  normal. **Kein Weg** → Meldung „Kein Weg mehr zum Ziel – probier Neustart“, der
+  Hinweis wird **nicht** verbraucht und deckelt nichts. Level 1–25 vom Start:
+  Hinweis-Länge = Solver-Minimum, jeweils < 0,3 s (Node).
+- **Zauberstab**: Kachel antippen → Stein antippen → Comic-Auswahl mit
+  Zahl-Pillen in Squish-Farben (Abbrechen/Esc/Tippen daneben bricht ab, nichts
+  verbraucht). Wahl: **1 bis unter das Levelziel** (kleinster Wert der
+  „Erzeuge“-Ziele − 1; ohne solches Ziel bis zum höchsten Wert auf Brett/Vorschau,
+  mind. 2), **nicht** die aktuelle Zahl und **keine** Zahl, die das Level sofort
+  gewinnen würde. Danach gelten die normalen Regeln: entsteht eine Dreierreihe,
+  wird fusioniert (zählt für Ziele und Punkte). Kein Zug. Gibt es keine passende
+  Zahl, kommt ein Hinweis und nichts wird verbraucht.
+- **Sperren**: Während Hinweis/Rakete läuft, sind Wischen und Leiste gesperrt.
+  `prefers-reduced-motion`: keine Flugbahn, kein Wackeln, nur kurze Einblendung.
+  Ton aus / `?nosound`: keine Sounds.
+- **Geschenke** (`grantGifts`, je einmal): Hinweis nach Level 3, Zauberstab nach
+  Level 6, +3 Züge nach Level 10, Rakete nach Level 20; dazu je 10 Sterne ein
+  Hilfsmittel im Wechsel +3 Züge → Rakete → Hinweis → Zauberstab.
+- **Spielstand**: `squish-campaign-tools-v1` jetzt `version: 2`
+  (`extraMoves, rocket, hint, wand, gifts`); alte Stände (v1) werden beim Laden
+  übernommen, Hammer-Anzahl → Raketen.

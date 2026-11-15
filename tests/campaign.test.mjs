@@ -68,7 +68,7 @@ test('Hilfsmittel deckeln auf 2 Sterne', () => {
   assert.equal(starsFor(lv, 5, true, { toolsUsed: 1 }), 2);
   assert.equal(starsFor(lv, 6, true, { toolsUsed: 2 }), 1);
   const run = createLevelRun(base());
-  markToolUsed(run, 'hammer');
+  markToolUsed(run, 'rocket');
   applyLevelMove(run, 'right', 0);
   assert.equal(run.status, 'won');
   assert.equal(starsOfRun(run), 2);
@@ -170,34 +170,41 @@ test('Freischalten: Sterne-Schranke am Kapitelanfang', () => {
   assert.ok(isUnlocked(ch3low, 20));                        // gesperrt wird nur der Kapitelanfang
 });
 
-import { useHammer, emptyInventory, loadInventory, saveInventory, spendTool, grantGifts } from '../game/campaign.mjs';
+import { useRocket, useWand, wandChoices, wandCap, progressVector, emptyInventory, loadInventory, saveInventory, spendTool, grantGifts, toolName } from '../game/campaign.mjs';
+import { findHint, hintState } from '../game/hint-solver.mjs';
+import { readFileSync } from 'node:fs';
 
-test('Hammer entfernt einen Stein, kostet keinen Zug, deckelt auf 2★', () => {
+test('Rakete entfernt einen Stein, kostet keinen Zug, deckelt auf 2★', () => {
   const run = createLevelRun(base());
-  assert.equal(useHammer(run, 2, 2), false);            // leeres Feld
-  assert.equal(useHammer(run, 0, 1), true);
+  assert.equal(useRocket(run, 2, 2), false);            // leeres Feld
+  assert.equal(useRocket(run, 0, 1), true);
   assert.equal(run.board[0][1], null);
   assert.equal(run.moves, 0);
-  assert.deepEqual(run.toolsUsed, ['hammer']);
+  assert.deepEqual(run.toolsUsed, ['rocket']);
   assert.equal(run.level.board[0][1], 1);                // Level-Daten unverändert
 });
 
-test('Inventar: laden, speichern, verbrauchen', () => {
+test('Inventar: laden, speichern, verbrauchen; alter Hammer wird Rakete', () => {
   const mem = new Map(); const storage = { getItem: k => mem.get(k) ?? null, setItem: (k, v) => mem.set(k, v) };
   assert.deepEqual(loadInventory(storage), emptyInventory());
-  const inv = { ...emptyInventory(), extraMoves: 1 };
+  const inv = { ...emptyInventory(), extraMoves: 1, hint: 2 };
   saveInventory(inv, storage);
   assert.deepEqual(loadInventory(storage), inv);
+  assert.equal(spendTool(inv, 'rocket'), null);
   assert.equal(spendTool(inv, 'hammer'), null);
-  assert.equal(spendTool(inv, 'extraMoves').extraMoves, 0);
+  assert.equal(spendTool(inv, 'hint').hint, 1);
   assert.deepEqual(loadInventory({ getItem: () => '{"version":1,"gifts":[],"extraMoves":-3}' }).extraMoves, 0);
+  const old = loadInventory({ getItem: () => '{"version":1,"extraMoves":1,"hammer":2,"gifts":["level-10","stars-20"]}' });
+  assert.deepEqual(old, { version: 2, extraMoves: 1, rocket: 2, hint: 0, wand: 0, gifts: ['level-10', 'stars-20'] });
+  assert.equal(toolName('rocket'), 'Rakete'); assert.equal(toolName('wand'), 'Zauberstab'); assert.equal(toolName('hint'), 'Hinweis');
 });
 
-test('Geschenke: Level 10, Level 20, je 10 Sterne – jeweils nur einmal', () => {
+test('Geschenke: Level 3/6/10/20 und je 10 Sterne im Wechsel – jeweils nur einmal', () => {
   let p = emptyProgress();
   for (let n = 1; n <= 9; n++) p = recordResult(p, n, { stars: 1, moves: 5, now: 1 });   // 9★
   let r = grantGifts(emptyInventory(), p);
-  assert.deepEqual(r.granted, []);
+  assert.deepEqual(r.granted.map(g => g.id), ['level-3', 'level-6']);
+  assert.equal(r.inventory.hint, 1); assert.equal(r.inventory.wand, 1);
   p = recordResult(p, 10, { stars: 2, moves: 5, now: 1 });                                // 11★, Level 10
   r = grantGifts(r.inventory, p);
   assert.deepEqual(r.granted.map(g => g.id), ['level-10', 'stars-10']);
@@ -206,5 +213,66 @@ test('Geschenke: Level 10, Level 20, je 10 Sterne – jeweils nur einmal', () =>
   for (let n = 11; n <= 20; n++) p = recordResult(p, n, { stars: 1, moves: 5, now: 1 });  // 21★, Level 20
   r = grantGifts(r.inventory, p);
   assert.deepEqual(r.granted.map(g => g.id), ['level-20', 'stars-20']);
-  assert.equal(r.inventory.hammer, 2);
+  assert.equal(r.inventory.rocket, 2);
+  for (let n = 1; n <= 20; n++) p = recordResult(p, n, { stars: 2, moves: 4, now: 2 });   // 40★
+  r = grantGifts(r.inventory, p);
+  assert.deepEqual(r.granted, [{ id: 'stars-30', type: 'hint' }, { id: 'stars-40', type: 'wand' }]);
+  // Alter Spielstand mit Hammer-Geschenk: kein doppeltes Geschenk
+  const migrated = loadInventory({ getItem: () => '{"version":1,"extraMoves":0,"hammer":1,"gifts":["level-10","level-20","stars-10","stars-20"]}' });
+  assert.deepEqual(grantGifts(migrated, p).granted.map(g => g.id), ['level-3', 'level-6', 'stars-30', 'stars-40']);
+});
+
+test('Zauberstab: Zahlen 1 … Ziel−1, nicht der aktuelle Wert, kein Sofort-Sieg; danach normale Fusion', () => {
+  // Ziel 4er; Brett: 3 3 1 . .
+  const lv = base({ board: [[3, 3, 1, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E]],
+    goals: [{ type: 'tile', value: 4 }], moves: 3, stars: { three: 1, two: 2 } });
+  const run = createLevelRun(lv);
+  assert.equal(wandCap(run), 3);
+  // 1 → 3 würde 3,3,3 verbinden und sofort den 4er erzeugen → gesperrt
+  assert.deepEqual(wandChoices(run, 0, 2), [2]);
+  assert.deepEqual(wandChoices(run, 0, 0), [1, 2]);
+  assert.deepEqual(wandChoices(run, 2, 2), []);              // leeres Feld
+  assert.equal(useWand(run, 0, 2, 3).ok, false);
+  const id = run.board[0][2].id;
+  assert.equal(useWand(run, 0, 2, 2).ok, true);
+  assert.equal(run.board[0][2].value, 2); assert.equal(run.board[0][2].id, id);
+  assert.equal(run.moves, 0); assert.deepEqual(run.toolsUsed, ['wand']); assert.equal(run.status, 'playing');
+  // Fusion nach dem Zauberstab: Ziel 5er, 2 2 1 → 1 wird 2 → drei 2er fusionieren zu 3
+  const lv2 = base({ board: [[2, 2, 1, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E]],
+    goals: [{ type: 'tile', value: 5 }], moves: 3, stars: { three: 1, two: 2 } });
+  const run2 = createLevelRun(lv2);
+  const res = useWand(run2, 0, 2, 2);
+  assert.ok(res.ok);
+  assert.equal(run2.board.flat().filter(Boolean).length, 1);
+  assert.equal(run2.board.flat().find(Boolean).value, 3);
+  assert.ok(run2.merges >= 1 && run2.score > 0);
+  // Ohne tile/make-Ziel: höchster Wert auf Brett/Vorschau
+  const run3 = createLevelRun(base({ goals: [{ type: 'score', points: 999 }], sequence: [1, 5, 3] }));
+  assert.equal(wandCap(run3), 5);
+});
+
+test('Hinweis-Suche: kürzester Weg wie der Solver, Züge gewinnen wirklich; kein Weg wird erkannt', () => {
+  const levels = JSON.parse(readFileSync(new URL('../levels/levels-001-025.json', import.meta.url), 'utf8')).levels;
+  for (const lv of levels) {
+    const run = createLevelRun(lv);
+    const h = findHint(hintState(run, { movesLeft: movesLeft(run), vec: progressVector(run) }));
+    assert.ok(h.found && h.exact, `Level ${lv.id}`);
+    assert.equal(h.minMoves, lv.meta.minMoves, `Level ${lv.id}: Optimum`);
+    assert.equal(h.moves.length, Math.min(2, h.minMoves));
+    // Hinweis-Züge spielen, dann jeweils neu suchen, bis gewonnen – darf nie länger als das Optimum dauern
+    let guard = 0;
+    while (run.status === 'playing' && guard++ < 10) {
+      const k = findHint(hintState(run, { movesLeft: movesLeft(run), vec: progressVector(run) }));
+      assert.ok(k.found, `Level ${lv.id}: Weg verloren`);
+      for (const ch of k.moves) { const m = decodeMove(ch); applyLevelMove(run, m.direction, m.line); }
+    }
+    assert.equal(run.status, 'won'); assert.equal(run.moves, lv.meta.minMoves, `Level ${lv.id}: Hinweise spielen optimal`);
+  }
+  // Kein Weg: zu wenig Züge übrig
+  const lv = levels[24], run = createLevelRun(lv);
+  const none = findHint(hintState(run, { movesLeft: lv.meta.minMoves - 1, vec: progressVector(run) }));
+  assert.equal(none.found, false); assert.equal(none.reason, 'none');
+  // Budget: Beam statt Absturz
+  const tight = findHint(hintState(run, { movesLeft: movesLeft(run), vec: progressVector(run) }), { maxStates: 50, beamWidth: 30 });
+  assert.equal(tight.exact, false);
 });

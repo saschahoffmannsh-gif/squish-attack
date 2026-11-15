@@ -1,6 +1,7 @@
 // Kampagne: DOM-Teile (Ziel-Anzeige, Züge, Hilfsmittel, Ergebnis-Dialog, Levelauswahl).
 // Reine Darstellung; Spiellogik und Speichern liegen in game.mjs / campaign.mjs.
-import {goalProgress,goalText,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName} from './campaign.mjs?v=launch-9';
+import {TOOL_ICONS} from './tool-icons.mjs?v=launch-10';
+import {goalProgress,goalText,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName} from './campaign.mjs?v=launch-10';
 
 const $=id=>document.getElementById(id);
 const fmt=n=>Number(n||0).toLocaleString('de-DE');
@@ -14,7 +15,8 @@ export function lockText(lock){
 
 export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,onCloseSelect,onStar,reduceMotion}={}){
   const hud=$('campaign-hud'),levelEl=$('campaign-level'),goalsEl=$('campaign-goals'),movesEl=$('campaign-moves');
-  const tools=$('campaign-tools'),extraBtn=$('tool-extra'),hammerBtn=$('tool-hammer');
+  const tools=$('campaign-tools'),extraBtn=$('tool-extra'),hintBtn=$('tool-hint'),rocketBtn=$('tool-rocket'),wandBtn=$('tool-wand');
+  for(const b of [hintBtn,rocketBtn,wandBtn]){const ico=b.querySelector('[data-icon]');if(ico&&!ico.firstChild)ico.innerHTML=TOOL_ICONS[ico.dataset.icon];}
   const result=$('campaign-result'),rKicker=$('campaign-result-kicker'),rTitle=$('campaign-result-title'),rStars=$('campaign-result-stars');
   const rMessage=$('campaign-result-message'),rGift=$('campaign-result-gift');
   const bNext=$('campaign-next'),bExtra=$('campaign-extra'),bRetry=$('campaign-retry'),bMenu=$('campaign-menu');
@@ -42,22 +44,25 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
     movesEl.closest('.campaign-moves').classList.toggle('is-low',left<=2);
     movesEl.setAttribute('aria-label',`Noch ${left} Züge`);
   }
-  function renderTools(inv,{canExtra=true,hammerArmed=false}={}){
+  // armed: 'rocket' | 'wand' | null; busy: 'hint' während der Suche/Vorführung.
+  function renderTools(inv,{canExtra=true,armed=null,busy=null,locked=false}={}){
     tools.hidden=false;
-    extraBtn.querySelector('[data-count]').textContent=String(inv.extraMoves);
-    hammerBtn.querySelector('[data-count]').textContent=String(inv.hammer);
-    extraBtn.querySelector('[data-count]').classList.toggle('is-zero',!(inv.extraMoves>0));
-    hammerBtn.querySelector('[data-count]').classList.toggle('is-zero',!(inv.hammer>0));
-    extraBtn.disabled=!(inv.extraMoves>0&&canExtra);
-    hammerBtn.disabled=!(inv.hammer>0)&&!hammerArmed;
-    hammerBtn.classList.toggle('is-armed',hammerArmed);
-    hammerBtn.setAttribute('aria-pressed',String(hammerArmed));
-    extraBtn.setAttribute('aria-label',`Hilfsmittel +3 Züge, ${inv.extraMoves} vorhanden`);
-    hammerBtn.setAttribute('aria-label',`Hilfsmittel Hammer: einen Stein entfernen, ${inv.hammer} vorhanden`);
+    const set=(btn,n,enabled,label)=>{
+      const c=btn.querySelector('[data-count]');c.textContent=String(n|0);c.classList.toggle('is-zero',!(n>0));
+      btn.disabled=!enabled;btn.setAttribute('aria-label',`${label}, ${n|0} vorhanden`);
+    };
+    set(extraBtn,inv.extraMoves,inv.extraMoves>0&&canExtra&&!locked,'Hilfsmittel +3 Züge');
+    set(hintBtn,inv.hint,(inv.hint>0&&!locked)||busy==='hint','Hilfsmittel Hinweis: spielt 2 Züge zum Ziel');
+    set(rocketBtn,inv.rocket,(inv.rocket>0&&!locked)||armed==='rocket','Hilfsmittel Rakete: einen Stein wegsprengen');
+    set(wandBtn,inv.wand,(inv.wand>0&&!locked)||armed==='wand','Hilfsmittel Zauberstab: Zahl eines Steins wählen');
+    for(const [btn,type] of [[rocketBtn,'rocket'],[wandBtn,'wand']]){btn.classList.toggle('is-armed',armed===type);btn.setAttribute('aria-pressed',String(armed===type));}
+    hintBtn.classList.toggle('is-busy',busy==='hint');hintBtn.classList.toggle('is-armed',busy==='hint');
   }
   function hide(){hud.hidden=true;tools.hidden=true;hideResult();}
   extraBtn.addEventListener('click',()=>onTool?.('extraMoves'));
-  hammerBtn.addEventListener('click',()=>onTool?.('hammer'));
+  hintBtn.addEventListener('click',()=>onTool?.('hint'));
+  rocketBtn.addEventListener('click',()=>onTool?.('rocket'));
+  wandBtn.addEventListener('click',()=>onTool?.('wand'));
 
   // ---------- Ergebnis ----------
   function showResult({n,won,stars,moves,limit,lostReason,canNext,nextLock,gifts=[],extraAvailable=0,toolsUsed=0}){
@@ -153,6 +158,6 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
   $('campaign-close').addEventListener('click',()=>closeSelect());
   select.addEventListener('click',ev=>{if(ev.target===select)closeSelect();});
 
-  return {renderHud,renderTools,hide,showResult,hideResult,openSelect,closeSelect,mark,timeline,
+  return {toolButton:type=>({extraMoves:extraBtn,hint:hintBtn,rocket:rocketBtn,wand:wandBtn})[type],renderHud,renderTools,hide,showResult,hideResult,openSelect,closeSelect,mark,timeline,
     get resultOpen(){return !result.hidden;},get selectOpen(){return !select.hidden;}};
 }

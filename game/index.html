@@ -111,16 +111,17 @@
         </style>
     <link rel="stylesheet" href="graphics.css" />
     <link rel="stylesheet" href="fixed-screen.css?v=glass-menu-1" />
-    <link rel="stylesheet" href="duel.css?v=launch-9" />
+    <link rel="stylesheet" href="duel.css?v=launch-10" />
     <link rel="stylesheet" href="reward-effects.css?v=vfx-1" />
     <link rel="stylesheet" href="menu.css?v=glass-title-1" />
     <link rel="stylesheet" href="title-menu.css?v=3" />
-    <link rel="stylesheet" href="clean-screen.css?v=launch-9" />
+    <link rel="stylesheet" href="clean-screen.css?v=launch-10" />
     <link rel="stylesheet" href="combo.css?v=combo-1" />
-    <link rel="stylesheet" href="leaderboard.css?v=launch-9" />
-    <link rel="stylesheet" href="campaign.css?v=launch-9" />
-    <link rel="stylesheet" href="autumn-ui.css?v=launch-9" />
-    <link rel="stylesheet" href="comic-ui.css?v=launch-9" />
+    <link rel="stylesheet" href="leaderboard.css?v=launch-10" />
+    <link rel="stylesheet" href="campaign.css?v=launch-10" />
+    <link rel="stylesheet" href="autumn-ui.css?v=launch-10" />
+    <link rel="stylesheet" href="comic-ui.css?v=launch-10" />
+    <link rel="stylesheet" href="tools.css?v=launch-10" />
   </head>
   <body>
     <div class="aw-bg" id="aw-bg" aria-hidden="true"></div>
@@ -231,7 +232,9 @@
       </section>
       <div class="campaign-tools" id="campaign-tools" hidden>
         <button class="campaign-tool" id="tool-extra" type="button"><span class="ct-ico ct-plus" aria-hidden="true">+3</span><small>Züge</small><b data-count>0</b></button>
-        <button class="campaign-tool" id="tool-hammer" type="button" aria-pressed="false"><span class="ct-ico" aria-hidden="true"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M27 21 10.5 37.5a3.2 3.2 0 0 0 4.5 4.5L31.5 25.5" fill="#d98a3a" stroke="#4a2200" stroke-width="2.4" stroke-linejoin="round"/><path d="M24.5 23.5 13 35" stroke="#ffd09a" stroke-width="1.8" stroke-linecap="round" opacity=".7"/><path d="M19 13.5 28.5 4l5 2.5L45 18l-4.5 4.5-6-3-4.5 4.5L20.5 14.5z" fill="#c9d2e6" stroke="#252b45" stroke-width="2.4" stroke-linejoin="round"/><path d="M28.6 7.6 41 19.5" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".75"/></svg></span><small>Hammer</small><b data-count>0</b></button>
+        <button class="campaign-tool" id="tool-hint" type="button"><span class="ct-ico" data-icon="hint" aria-hidden="true"></span><small>Hinweis</small><b data-count>0</b></button>
+        <button class="campaign-tool" id="tool-rocket" type="button" aria-pressed="false"><span class="ct-ico" data-icon="rocket" aria-hidden="true"></span><small>Rakete</small><b data-count>0</b></button>
+        <button class="campaign-tool" id="tool-wand" type="button" aria-pressed="false"><span class="ct-ico" data-icon="wand" aria-hidden="true"></span><small>Zauber</small><b data-count>0</b></button>
       </div>
       </div>
     </main>
@@ -362,10 +365,10 @@
         <button class="duel-back" id="board-close" type="button">Zurück zum Menü</button>
       </div>
     </section>
-    <script src="config.js?v=launch-9"></script>
+    <script src="config.js?v=launch-10"></script>
     <script>
     (function(){
-      var BUILD='launch-9';
+      var BUILD='launch-10';
       var key='squish-build-reload';
       fetch('build.txt?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.text();}).then(function(v){
         v=(v||'').trim();
@@ -376,7 +379,7 @@
       }).catch(function(){});
     })();
     </script>
-    <script type="module" src="debug-overlay.mjs?v=launch-9"></script>
-    <script type="module" src="loading-screen.mjs?v=launch-9"></script>
+    <script type="module" src="debug-overlay.mjs?v=launch-10"></script>
+    <script type="module" src="loading-screen.mjs?v=launch-10"></script>
   </body>
 </html>

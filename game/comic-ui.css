@@ -211,7 +211,7 @@ html.aw .veil .dialog .menu-button:active:not(:disabled) {transform:translateY(3
   box-shadow:inset 0 2px 0 #ffffffa0,inset 0 -5px 0 #b45a00,0 0 0 3px #ffd25a,0 0 18px #ffb84dcc;}
 .aw .campaign-tool.is-armed small {text-shadow:1.2px 0 0 #6a3304,-1.2px 0 0 #6a3304,0 1.2px 0 #6a3304,0 -1.2px 0 #6a3304,0 2px 0 #6a3304;}
 #tool-extra {left:3%;}
-#tool-hammer {right:3%;}
+
 
 /* Pause-Knopf: blaue Kachel wie das Zahnrad */
 .aw .pause {width:clamp(40px,11cqw,50px);border-radius:14px;border:2px solid #14163e;color:transparent;font-size:0;
