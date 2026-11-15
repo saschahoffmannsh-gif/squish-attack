@@ -1,14 +1,14 @@
 import {createContactSolver} from './dense-contacts.mjs?v=dense-board-1';
-import {configureRenderQuality} from './render-quality.mjs?v=launch-14';
+import {configureRenderQuality} from './render-quality.mjs?v=launch-15';
 import {enqueueRippleImpulse} from './merge-ripple.mjs?v=swarm-fx-3';
 import {installPressureWave} from './pressure-wave.mjs?v=soft-gel-1';
-import {applyGelSoftness,softWobblePower,wobbleDecayFactor} from './gel-softness.mjs?v=launch-14';
+import {applyGelSoftness,softWobblePower,wobbleDecayFactor} from './gel-softness.mjs?v=launch-15';
 import {applyNeonGlassLighting} from './gel-lighting.mjs?v=menu-1';
-import {createCrispLabelFactory} from './crisp-labels.mjs?v=launch-14';
-import {applyComic,comicBodyMaterial,setComicValue} from './comic-style.mjs?v=launch-14';
-import {installCleanScreen} from './clean-screen.mjs?v=launch-14';
-import {createFusion} from './fusion.mjs?v=launch-14';
-import {flags} from './flags.mjs?v=launch-14';
+import {createCrispLabelFactory} from './crisp-labels.mjs?v=launch-15';
+import {applyComic,comicBodyMaterial,setComicValue} from './comic-style.mjs?v=launch-15';
+import {installCleanScreen} from './clean-screen.mjs?v=launch-15';
+import {createFusion} from './fusion.mjs?v=launch-15';
+import {flags} from './flags.mjs?v=launch-15';
 import {createSquishGraphics,THREE,PARAMETERS} from '../squish/squish-graphics.js?v=play-sharp-1';
 import {buildSquishy,createLabel,bindGelOptics,initializeMotion,updateSquishy,PARAMETERS as HUD_PARAMETERS} from './original-gel-models.js?v=menu-1';
 

@@ -1,7 +1,7 @@
 // Dummy-Werbung (launch-13, Testphase): leeres Hilfsmittel → „Werbeclip (Dummy)“ → „Ansehen“ gibt sofort 1 Stück.
 // Keine echte Werbung, kein Warten, kein Netz. Comic-Stil wie der Shop.
-import { TOOL_ICONS } from './tool-icons.mjs?v=launch-14';
-import { toolName } from './campaign.mjs?v=launch-14';
+import { TOOL_ICONS } from './tool-icons.mjs?v=launch-15';
+import { toolName } from './campaign.mjs?v=launch-15';
 
 const DESC = { extraMoves: 'Drei Züge mehr im Level', hint: 'Spielt 2 Züge zum Ziel', rocket: 'Sprengt einen Stein weg', wand: 'Stein bekommt deine Zahl' };
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
