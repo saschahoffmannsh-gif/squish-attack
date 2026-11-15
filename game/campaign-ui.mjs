@@ -5,6 +5,7 @@ import {goalProgress,goalText,goalShort,movesLeft,totalStars,lockReason,chapterO
 
 const $=id=>document.getElementById(id);
 export const TOOL_ARTICLE={extraMoves:'+3 Züge',hint:'den Hinweis',rocket:'die Rakete',wand:'den Zauberstab'};
+export const TOOL_NOM={extraMoves:'+3 Züge',hint:'der Hinweis',rocket:'die Rakete',wand:'der Zauberstab'};
 const fmt=n=>Number(n||0).toLocaleString('de-DE');
 const starText=(n,max=3)=>'★'.repeat(n)+'☆'.repeat(Math.max(0,max-n));
 
@@ -32,7 +33,7 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
 
   function renderHud(run,n){
     hud.hidden=false;
-    levelEl.textContent=`LEVEL ${n}${run.level.tool?' · WERKZEUG':''}`;
+    levelEl.textContent=`LEVEL ${n}${run.level.tool?' · SCHWER':''}`;
     const three=run.level.goals.length>=3;
     goalsEl.classList.toggle('is-three',three);
     goalsEl.replaceChildren(...run.level.goals.map(goal=>{
@@ -84,9 +85,9 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
     rMoves.textContent=won?String(moves):`${moves}/${limit}`;
     rStarCount.textContent=won?`${stars} / 3`:'–';
     rMessage.textContent=won
-      ?(toolLevel?(stars>=2?'Werkzeug-Level: 2 ★ sind hier das Maximum.':'Werkzeug-Level: mit weniger Zügen gibt es 2 ★.'):toolsUsed?'Mit Hilfsmittel gibt es höchstens 2 ★.':stars<3?'Mit weniger Zügen gibt es mehr Sterne.':'Bestmöglich gelöst!')
+      ?(toolsUsed?'Mit Hilfsmittel gibt es höchstens 2 ★.':stars<3?'Mit weniger Zügen gibt es mehr Sterne.':'Bestmöglich gelöst!')
       :(lostReason==='board-full'?'Das Brett ist voll.':'Das Ziel ist noch nicht erreicht.')+(extraOffer&&lostReason==='moves'?' Mit +3 Zügen kannst du weiterspielen (dann höchstens 2 ★).':' Versuch es noch einmal!')
-        +(toolLevel&&toolLevel!=='extraMoves'?` Tipp: Werkzeug-Level – nimm ${TOOL_ARTICLE[toolLevel]}.`:'');
+        +(toolLevel&&toolLevel!=='extraMoves'?` Tipp: sehr schweres Level – ${TOOL_NOM[toolLevel]} hilft.`:'');
     if(won&&!canNext&&nextLock)rMessage.textContent+=' '+lockText(nextLock);
     else if(won&&!canNext)rMessage.textContent+=' Alle Level geschafft!';
     setGifts(gifts);
@@ -160,10 +161,10 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
         if(!lock&&!rec&&!nextMarked){b.classList.add('is-next');nextMarked=true;}
         const num=document.createElement('span');num.className='num';num.textContent=lock?'🔒':String(n);
         const st=document.createElement('span');st.className='stars';
-        const maxS=toolOf(n)?2:3;
+        const maxS=3;
         if(rec){const b=document.createElement('b');b.textContent='★'.repeat(rec.stars);st.append(b,'☆'.repeat(Math.max(0,maxS-rec.stars)));}else st.textContent=lock?'':'☆'.repeat(maxS);
         b.append(num,st);
-        b.setAttribute('aria-label',(lock?`Level ${n}, gesperrt. ${lockText(lock)}`:`Level ${n}${rec?`, ${rec.stars} von ${maxS} Sternen`:', noch nicht gespielt'}`)+(toolOf(n)?`. Werkzeug-Level (${toolName(toolOf(n))}), höchstens 2 Sterne`:''));
+        b.setAttribute('aria-label',(lock?`Level ${n}, gesperrt. ${lockText(lock)}`:`Level ${n}${rec?`, ${rec.stars} von ${maxS} Sternen`:', noch nicht gespielt'}`)+(toolOf(n)?`. Sehr schweres Level, Tipp: ${toolName(toolOf(n))}`:''));
         b.addEventListener('click',()=>{
           if(lock){lockNote.textContent=`Level ${n}: ${lockText(lock)}`;b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');return;}
           closeSelect(true);onPlay?.(n);

@@ -280,3 +280,47 @@ export function evaluate(id, k) {
     Dfelt: best.Dfelt, cost: best.cost + (goodStarts < 4 ? 2 : 0), solution: null, toolSolution: wt.path.trim().replace(' ', ' '), goodStarts,
     cas: M.cas(L), good: M.good(L), rnd: M.rnd(L), greedy: M.greedy(L), casTool: best.casTool, goodTool: best.goodTool };
 }
+
+/**
+ * launch-16: Werkzeug-Spitze nach neuer Regel – ohne Werkzeug lösbar, Zuglimit = Optimum (sehr eng),
+ * mit dem Schlüssel-Werkzeug deutlich leichter. Rückgabe im selben Format wie evaluate().
+ *   +3: Limit = Optimum m, gefühlt = bei m + 3 Zügen.  Rakete/Zauberstab: Werkzeug-Optimum ≤ m − 2, gefühlt nach dem Einsatz.
+ * cost = |gefühlt − Soll| + Strafe, wenn die Spitze ohne Werkzeug nicht deutlich über dem Soll liegt (D ohne < Soll + 15).
+ */
+export function evaluatePeak(id, k) {
+  const role = roleOf(id), tool = TOOL_LEVELS[id], target = targetD(id), seed = seedFor(id, k);
+  if (!tool || tool === 'hint') return evaluate(id, k);
+  const c = makeLevel(id, k);
+  if (!c) return why('p1');
+  const G = c.goals.length, Lmax = 7;
+  const sol = solveLevel(asLevel(id, c, Lmax), { maxDepth: Lmax, maxLayer: 150000 });
+  if (!sol.solvable || !sol.exact || sol.minMoves < 4) return why('p2');
+  const m = sol.minMoves, L = m, top = m + (tool === 'extraMoves' ? 3 : 0);
+  const lv = asLevel(id, c, top), M = metricsFrom(lv, startBoard(lv), lv.goals.map(() => 0), 0, top, seed);
+  const Dno = Dat(M, L, m, G);
+  let Dfelt, casTool, goodTool, toolMin = m, toolSolution = sol.solution, goodStarts = null;
+  if (tool === 'extraMoves') { Dfelt = Dat(M, L + 3, m, G); casTool = M.cas(L + 3); goodTool = M.good(L + 3); }
+  else {
+    const T = tool === 'rocket' ? 'rocket' : 'wand', probe = asLevel(id, c, L);
+    const wt = solveWithTool(probe, L - 2, T, { startOnly: true, maxLayer: 60000 });
+    if (wt.min == null || wt.min < 1 || wt.min > m - 2) return why('p3');
+    toolMin = wt.min; toolSolution = wt.path.trim();
+    const act = toolSolution.split(' ')[0];
+    const after = toolVariants(probe, startBoard(probe), probe.goals.map(() => 0), 0, L, T).find(v => v.act === act);
+    if (!after) return why('p4');
+    const Mt = metricsFrom(probe, after.board, after.vec, 0, L, seed ^ 0x70);
+    Dfelt = Dat(Mt, L, toolMin, G); casTool = Mt.cas(L); goodTool = Mt.good(L);
+    goodStarts = 0;
+    for (const v of toolVariants(probe, startBoard(probe), probe.goals.map(() => 0), 0, L, T)) {
+      if (v.win) { goodStarts++; continue; }
+      const s = solveLevel({ ...probe, board: v.board.map(r => r.map(t => (t ? t.value : null))) }, { maxDepth: L, maxLayer: 8000, beam: true });
+      if (s.solvable) goodStarts++;
+      if (goodStarts >= 12) break;
+    }
+    if (goodStarts < 2) return why('p5');
+  }
+  if (casTool < (role === 'boss' ? 0.25 : 0.35)) return why('p6');
+  const cost = Math.abs(Dfelt - target) + Math.max(0, target + 15 - Dno) * 0.5;
+  return { id, k, seed, role, tool, limit: L, min: m, toolMin, D: Dno, Dfelt, cost, solution: sol.solution, toolSolution,
+    optimal: sol.optimalSolutions, pOpt: sol.pOpt, cas: M.cas(L), good: M.good(L), rnd: M.rnd(L), greedy: M.greedy(L), casTool, goodTool, ...(goodStarts != null ? { goodStarts } : {}) };
+}

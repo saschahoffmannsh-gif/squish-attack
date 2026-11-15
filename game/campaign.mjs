@@ -221,8 +221,8 @@ export function applyLevelMove(run, direction, line) {
 export function starsFor(level, movesUsed, won = true, { toolsUsed = 0 } = {}) {
   if (!won) return 0;
   let stars = movesUsed <= level.stars.three ? 3 : movesUsed <= level.stars.two ? 2 : 1;
-  // Werkzeug-Level (launch-15): immer höchstens 2★ – auch wer es ohne Werkzeug schafft.
-  if (toolsUsed > 0 || level.tool) stars = Math.min(stars, MAX_STARS_WITH_TOOLS);
+  // launch-16: Werkzeug-Spitzen sind ohne Werkzeug lösbar → 3★ möglich; nur der Einsatz eines Hilfsmittels deckelt auf 2★.
+  if (toolsUsed > 0) stars = Math.min(stars, MAX_STARS_WITH_TOOLS);
   return stars;
 }
 export const MAX_STARS_WITH_TOOLS = 2;

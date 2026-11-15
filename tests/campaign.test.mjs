@@ -539,13 +539,14 @@ test('launch-15: „höchstens N Steine“ – Stand = Steine auf dem Brett; Rak
   assert.equal(starsOfRun(run), 2);
 });
 
-test('launch-15: Werkzeug-Level geben höchstens 2★ – auch ohne Werkzeug', () => {
+test('launch-16: Werkzeug-Spitzen – ohne Werkzeug 3★ möglich, mit Hilfsmittel höchstens 2★', () => {
   for (const tool of TOOL_KEYS) {
     const lv = base({ tool, sequence: [1, 2, 3, 4, 5, 6], stars: { three: 1, two: 2 } });
     validateLevel(lv);
     const r = replaySolution(lv, encodeMove('right', 0));
     assert.ok(r.ok);
-    assert.equal(r.stars, 2, tool);
+    assert.equal(r.stars, 3, tool);
+    assert.equal(starsFor(lv, 1, true, { toolsUsed: 1 }), 2, tool);
   }
   assert.throws(() => validateLevel(base({ tool: 'hammer' })));
   // +3-Level: 2★-Schwelle darf in den Extra-Zügen liegen, braucht aber Reserve-Steine
@@ -566,7 +567,7 @@ test('launch-15: 100 Level = 10 Kapitel; Schranke 18★ × (Kapitel − 1) bis L
   assert.equal(chapterOf(90), 9);
   assert.equal(starGate(10), 162);
   const p = emptyProgress();
-  for (let n = 1; n <= 90; n++) p.levels[String(n)] = { stars: 2, moves: 5, at: 0 };   // überall 2★ (auch Werkzeug-Level) reicht
+  for (let n = 1; n <= 90; n++) p.levels[String(n)] = { stars: 2, moves: 5, at: 0 };   // überall 2★ reicht
   assert.equal(lockReason(p, 91), null);
   assert.equal(nextLevel(p, 100), 91);
   p.levels['90'].stars = 1; for (let n = 1; n <= 19; n++) p.levels[String(n)].stars = 1;

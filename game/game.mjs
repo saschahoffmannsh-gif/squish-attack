@@ -16,7 +16,7 @@ import {createConfetti} from './confetti.mjs?v=launch-16';
 import {createHaptics} from './haptics.mjs?v=launch-16';
 import {planMergeRipple} from './merge-ripple.mjs?v=swarm-fx-3';
 import * as Camp from './campaign.mjs?v=launch-16';
-import {createCampaignUI,TOOL_ARTICLE} from './campaign-ui.mjs?v=launch-16';
+import {createCampaignUI,TOOL_ARTICLE,TOOL_NOM} from './campaign-ui.mjs?v=launch-16';
 import {createToolFx} from './tool-fx.mjs?v=launch-16';
 import {hintState,findHint} from './hint-solver.mjs?v=launch-16';
 import {comicColors} from './comic-style.mjs?v=launch-16';
@@ -306,7 +306,7 @@ async function playLevel(n){
   await prepareLevel(n);
   await enterGame();
   const tl=camp.level.tool;
-  showNote(`Level ${n}: ${camp.level.goals.map(Camp.goalText).join(' + ')}`+(tl?` · Werkzeug-Level: ${tl==='extraMoves'?'mit +3 Zügen schaffst du es':'nimm '+TOOL_ARTICLE[tl]} (höchstens 2 ★)`:''),tl?4200:2600);
+  showNote(`Level ${n}: ${camp.level.goals.map(Camp.goalText).join(' + ')}`+(tl?` · Sehr schwer – ${tl==='extraMoves'?'mit +3 Zügen wird es leichter':TOOL_NOM[tl][0].toUpperCase()+TOOL_NOM[tl].slice(1)+' hilft'} (mit Hilfsmittel höchstens 2 ★)`:''),tl?4200:2600);
 }
 async function moveCampaign(direction,line){
   const r=camp.run;

@@ -54,11 +54,11 @@ test(`${file}: ${expected} gültige, eindeutige Level mit fortlaufender ID`, () 
   assert.equal(new Set(levels.map(lv => JSON.stringify(lv.board))).size, expected);
 });
 
-test(`${file}: keine Felsen; Sterne: normal 3★ = Optimum + 1 / Mitte, Werkzeug-Level eigene Schwellen`, () => {
+test(`${file}: keine Felsen; Sterne: 3★ = Optimum + 1 / Mitte (launch-16 auch für Werkzeug-Spitzen)`, () => {
   for (const lv of levels) {
     assert.ok(lv.board.flat().every(v => v === null || Number.isInteger(v)) && lv.sequence.every(Number.isInteger), `Level ${lv.id}`);
-    if (tool(lv)) { assert.deepEqual(lv.stars, toolStars(lv.meta.toolMin, lv.moves, lv.tool), `Level ${lv.id}`); continue; }
     assert.deepEqual(lv.stars, starThresholds(lv.meta.minMoves, lv.moves), `Level ${lv.id}`);
+    if (tool(lv)) { assert.ok(lv.meta.minMoves <= lv.moves, `Level ${lv.id}: ohne Werkzeug im Limit`); continue; }   // Spitze: eng, Stufen fallen zusammen
     assert.equal(lv.stars.three, lv.meta.minMoves + 1);
     assert.ok(lv.stars.three < lv.stars.two && lv.stars.two < lv.moves, `Level ${lv.id}: drei Stufen`);
   }
@@ -79,8 +79,8 @@ test(`${file}: Startbrett löst nichts von selbst auf`, () => {
   for (const lv of levels) assert.equal(settle(createLevelRun(lv).board).passes.length, 0, `Level ${lv.id}`);
 });
 
-test(`${file}: normale Level – gespeicherte Lösung gewinnt mit der echten Spiellogik mit 3 Sternen`, () => {
-  for (const lv of levels.filter(l => !tool(l))) {
+test(`${file}: alle Level – gespeicherte Lösung (ohne Werkzeug) gewinnt mit der echten Spiellogik mit 3 Sternen`, () => {
+  for (const lv of levels) {
     const r = replaySolution(lv, lv.solution);
     assert.ok(r.ok, `Level ${lv.id}: ${r.reason ?? r.run.status}`);
     assert.equal(lv.solution.length, lv.meta.minMoves, `Level ${lv.id}`);
@@ -88,9 +88,9 @@ test(`${file}: normale Level – gespeicherte Lösung gewinnt mit der echten Spi
   }
 });
 
-test(`${file}: Solver bestätigt Lösbarkeit und Minimalzüge (normale Level)`, () => {
+test(`${file}: Solver bestätigt Lösbarkeit ohne Werkzeug und Minimalzüge (alle Werkzeug-Spitzen + Stichprobe)`, () => {
   const full = process.env.FULL === '1' || levels.length <= 25;
-  const sample = levels.filter((l, i) => !tool(l) && (full || i % 10 === 0 || i < 3 || i % 10 === 9));
+  const sample = levels.filter((l, i) => tool(l) || full || i % 10 === 0 || i < 3 || i % 10 === 9);
   for (const lv of sample) {
     const s = solveLevel(lv, { maxLayer: 2_000_000 });
     assert.ok(s.solvable && s.exact, `Level ${lv.id}`);
@@ -118,7 +118,7 @@ test('launch-15: Level 1–10, 13, 14 unverändert; 11/12/16/17/18/20/24 nur meh
   }
 });
 
-test('launch-15: Werkzeug-Level genau laut Plan, Bosse 50 und 100 brauchen ein Werkzeug, 1–14 ohne', () => {
+test('launch-15: Werkzeug-Spitzen genau laut Plan, Bosse 50 und 100 sind Werkzeug-Spitzen, 1–14 ohne', () => {
   const got = Object.fromEntries(L100.filter(l => l.tool).map(l => [l.id, l.tool]));
   assert.deepEqual(got, Object.fromEntries(Object.entries(TOOL_LEVELS).map(([k, v]) => [Number(k), v])));
   for (const b of BOSSES) assert.ok(L100[b - 1].tool && L100[b - 1].meta.role === 'boss', `Boss ${b}`);
@@ -127,39 +127,36 @@ test('launch-15: Werkzeug-Level genau laut Plan, Bosse 50 und 100 brauchen ein W
   for (const l of L100.filter(l => l.tool && l.id % 10 === 5)) assert.ok(!L100[l.id].tool && L100[l.id].meta.role === 'relief', `nach ${l.id}`);
 });
 
-test('launch-15: Werkzeug-Level – ohne Werkzeug kein 3★ (Deckel), mit dem einen Werkzeug 2★', () => {
+test('launch-16: Werkzeug-Spitzen – ohne Werkzeug lösbar, aber sehr eng; mit dem Schlüssel-Werkzeug deutlich leichter (2★-Deckel)', () => {
   for (const lv of L100.filter(l => l.tool)) {
     const id = `Level ${lv.id} (${lv.tool})`;
+    // ohne Werkzeug: Optimum im Limit, höchstens 1 Zug Luft
+    const plain = replaySolution(lv, lv.solution);
+    assert.ok(plain.ok && plain.stars === 3, `${id}: ohne Werkzeug 3★`);
+    assert.ok(lv.moves - lv.meta.minMoves <= 1, `${id}: eng (Limit ${lv.moves}, Optimum ${lv.meta.minMoves})`);
+    const ts = lv.meta.toolSolution;
     if (lv.tool === 'extraMoves') {
-      // ohne Werkzeug unlösbar im Limit; mit +3 gewinnt die Lösung mit 2★
-      assert.ok(lv.meta.minMoves > lv.moves && lv.meta.minMoves <= lv.moves + 3, id);
-      assert.equal(replaySolution(lv, lv.solution).ok, false, id);
-      const r = replayWithTool(lv, lv.solution, { extra: true });
-      assert.ok(r.ok, id); assert.equal(r.stars, 2, id);
+      const r = replayWithTool(lv, ts, { extra: true });
+      assert.ok(r.ok, id); assert.equal(r.stars, 2, `${id}: mit Werkzeug höchstens 2★`);
     } else if (lv.tool === 'hint') {
-      // lösbar, aber eng; Hinweis findet am Start einen Weg; Ergebnis höchstens 2★
       const h = findHint({ board: lv.board, goals: lv.goals, sequence: lv.sequence, index: 0, movesLeft: lv.moves, vec: lv.goals.map(() => 0) }, { want: 2, maxMs: 8000, now: () => 0 });
       assert.ok(h.found && h.moves.length >= 2, id);
-      assert.ok(lv.meta.estimate.casual <= 0.2, id);
       const r = replayWithTool(lv, lv.solution, { hint: true });
-      assert.ok(r.ok, id); assert.equal(r.stars, 2, id);
-      assert.equal(replaySolution(lv, lv.solution).stars, 2, `${id}: auch ohne Werkzeug nur 2★`);
+      assert.ok(r.ok, id); assert.equal(r.stars, 2, `${id}: mit Hinweis höchstens 2★`);
     } else {
-      // Rakete/Zauberstab: dieselben Züge ohne Werkzeug gewinnen nicht; mit Werkzeug 2★
-      const r = replayWithTool(lv, lv.solution);
+      // Rakete/Zauberstab sparen Züge: Werkzeug-Optimum < Optimum ohne Werkzeug
+      const r = replayWithTool(lv, ts);
       assert.ok(r.ok, `${id}: ${r.reason ?? r.run.status}`); assert.equal(r.stars, 2, id);
-      assert.ok(r.run.moves <= lv.stars.two, id);
-      assert.ok(!replaySolution(lv, toolMoves(lv.solution)).ok, id);
-      assert.ok(lv.meta.estimate.goodStarts >= 2, `${id}: mehr als ein Trick`);
+      assert.ok(lv.meta.toolMin < lv.meta.minMoves, `${id}: Werkzeug spart Züge`);
     }
   }
 });
 
-test('launch-15: Rakete/Zauberstab/+3 – Solver bestätigt: ohne Werkzeug nicht im Limit lösbar', () => {
-  for (const lv of L100.filter(l => l.tool && l.tool !== 'hint')) {
-    const s = solveLevel(lv, { maxDepth: lv.moves, maxLayer: 2_000_000 });
-    assert.ok(s.exact, `Level ${lv.id}: Suche vollständig`);
-    assert.equal(s.solvable, false, `Level ${lv.id}`);
+test('launch-16: kein Level ist ohne Werkzeug unlösbar (Solver, vollständige Suche im Limit)', () => {
+  for (const lv of L100.filter(l => l.tool)) {
+    const s = solveLevel({ ...lv, tool: undefined }, { maxDepth: lv.moves, maxLayer: 2_000_000 });
+    assert.ok(s.exact && s.solvable, `Level ${lv.id}`);
+    assert.equal(s.minMoves, lv.meta.minMoves, `Level ${lv.id}`);
   }
 });
 
@@ -181,7 +178,7 @@ test('launch-15: neue Missionen eingeführt – leer (31), Straße aus 4 (41), W
 test('launch-15: Sterne-Schranken bleiben mit 2★-Deckel gut erreichbar', () => {
   for (let k = 2; k <= 10; k++) {
     const before = L100.slice(0, (k - 1) * CHAPTER_SIZE);
-    const max = before.reduce((n, l) => n + (l.tool ? 2 : 3), 0);
+    const max = before.reduce((n, l) => n + 3, 0);   // launch-16: 3★ überall möglich (ohne Werkzeug)
     assert.ok(starGate(k) <= 0.65 * max, `Kapitel ${k}: ${starGate(k)} von ${max}`);
     assert.ok(starGate(k) <= 2 * before.length, `Kapitel ${k}: überall 2★ reicht`);
   }
@@ -198,4 +195,13 @@ test('launch-15: gemessene Kurve – 1–10 leicht, steigend, Meilensteine oben,
   for (let k = 2; k <= 10; k++) assert.ok(felt(k * 10) >= avg(ch(k)), `Meilenstein ${k * 10} über dem Kapitelschnitt`);
   for (let k = 2; k <= 10; k++) assert.ok(felt(k * 10 - 4) < felt(k * 10 - 6), `Erholung ${k * 10 - 4}: leichter als der Aufbau davor`);
   for (const r of M.filter(r => r.tool && r.tool !== 'hint')) assert.ok(r.casTool >= 0.35, `Level ${r.id}: mit Werkzeug bequem (${r.casTool})`);
+});
+
+test('launch-16: keine Ketten-Level mehr – kein Level und kein Plan-Eintrag hat ein combo-Ziel', async () => {
+  const { MISSIONS, RETIRED_GOALS } = await import('../tools/campaign/plan100.mjs');
+  assert.ok(RETIRED_GOALS.includes('combo'));
+  assert.deepEqual(L100.filter(l => l.goals.some(g => g.type === 'combo')).map(l => l.id), []);
+  assert.deepEqual(Object.entries(MISSIONS).filter(([, m]) => m.goals.some(g => RETIRED_GOALS.includes(g.type))).map(([id]) => id), []);
+  // Rollen bleiben: Werkzeug-Level und Bosse wie geplant (s. o.), Kette-Plätze jetzt mit anderen Zielarten
+  for (const id of [21, 22, 28, 47, 54, 73, 81, 92]) assert.ok(!L100[id - 1].tool, `Level ${id} ohne Werkzeug`);
 });
