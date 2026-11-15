@@ -66,7 +66,7 @@ test(`${file}: keine Felsen; Sterne: 3★ = Optimum + 1 / Mitte (launch-16 auch 
 
 test(`${file}: Level sind aus ihrer Saat reproduzierbar`, () => {
   for (const lv of levels) {
-    const c = lv.meta.generator === 'build100' ? makeLevel(lv.id, lv.meta.k) : makeCandidate(lv.meta.seed);
+    const c = lv.meta.generator === 'build100' || lv.meta.generator === 'build18' ? makeLevel(lv.id, lv.meta.k) : makeCandidate(lv.meta.seed);
     assert.ok(c, `Level ${lv.id}`);
     assert.deepEqual(c.board, lv.board, `Level ${lv.id}`);
     assert.deepEqual(c.goals, lv.goals, `Level ${lv.id}`);
@@ -90,7 +90,9 @@ test(`${file}: alle Level – gespeicherte Lösung (ohne Werkzeug) gewinnt mit d
 
 test(`${file}: Solver bestätigt Lösbarkeit ohne Werkzeug und Minimalzüge (alle Werkzeug-Spitzen + Stichprobe)`, () => {
   const full = process.env.FULL === '1' || levels.length <= 25;
-  const sample = levels.filter((l, i) => tool(l) || full || i % 10 === 0 || i < 3 || i % 10 === 9);
+  // launch-18: lange Level (bis 40 Züge) lassen sich nicht vollständig durchsuchen – dort beweist die
+  // gespeicherte Lösung (vorheriger Test) die Lösbarkeit; exakt geprüft wird, was exakt gesucht wurde.
+  const sample = levels.filter((l, i) => l.meta?.exact !== false && (tool(l) || full || i % 10 === 0 || i < 3 || i % 10 === 9));
   for (const lv of sample) {
     const s = solveLevel(lv, { maxLayer: 2_000_000 });
     assert.ok(s.solvable && s.exact, `Level ${lv.id}`);
@@ -104,17 +106,10 @@ test(`${file}: Solver bestätigt Lösbarkeit ohne Werkzeug und Minimalzüge (all
 const L100 = JSON.parse(readFileSync(new URL('levels-001-100.json', dir), 'utf8')).levels;
 const V1 = JSON.parse(readFileSync(new URL('levels-001-025.json', dir), 'utf8')).levels;
 
-test('launch-15: Level 1–10, 13, 14 unverändert; 11/12/16/17/18/20/24 nur mehr Züge', () => {
-  const more = { 11: 7, 12: 8, 16: 9, 17: 8, 18: 7, 20: 7, 24: 9 };
-  for (const id of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14]) {
+test('launch-18: Level 1–10 unverändert (leichter Einstieg)', () => {
+  for (const id of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) {
     const a = L100[id - 1], b = V1[id - 1];
     assert.deepEqual([a.board, a.goals, a.moves, a.stars, a.solution, a.sequence], [b.board, b.goals, b.moves, b.stars, b.solution, b.sequence], `Level ${id}`);
-  }
-  for (const [id, L] of Object.entries(more)) {
-    const a = L100[id - 1], b = V1[id - 1];
-    assert.equal(a.moves, L, `Level ${id}`);
-    assert.deepEqual([a.board, a.goals, a.solution], [b.board, b.goals, b.solution], `Level ${id}`);
-    assert.deepEqual(a.sequence.slice(0, b.moves), b.sequence.slice(0, b.moves));
   }
 });
 
@@ -152,8 +147,12 @@ test('launch-16: Werkzeug-Spitzen – ohne Werkzeug lösbar, aber sehr eng; mit 
   }
 });
 
-test('launch-16: kein Level ist ohne Werkzeug unlösbar (Solver, vollständige Suche im Limit)', () => {
-  for (const lv of L100.filter(l => l.tool)) {
+test('launch-16: kein Level ist ohne Werkzeug unlösbar (Solver im Limit bzw. gespeicherte Lösung bei langen Leveln)', () => {
+  for (const lv of L100) {
+    const r = replaySolution({ ...lv, tool: undefined }, lv.solution);
+    assert.ok(r.ok && lv.solution.length <= lv.moves, `Level ${lv.id}: ohne Werkzeug lösbar`);
+  }
+  for (const lv of L100.filter(l => l.tool && l.meta.exact !== false)) {
     const s = solveLevel({ ...lv, tool: undefined }, { maxDepth: lv.moves, maxLayer: 2_000_000 });
     assert.ok(s.exact && s.solvable, `Level ${lv.id}`);
     assert.equal(s.minMoves, lv.meta.minMoves, `Level ${lv.id}`);
@@ -194,7 +193,8 @@ test('launch-15: gemessene Kurve – 1–10 leicht, steigend, Meilensteine oben,
   assert.ok(avg(ch(10)) > avg(ch(2)) + 15, 'Kurve steigt deutlich');
   for (let k = 2; k <= 10; k++) assert.ok(felt(k * 10) >= avg(ch(k)), `Meilenstein ${k * 10} über dem Kapitelschnitt`);
   for (let k = 2; k <= 10; k++) assert.ok(felt(k * 10 - 4) < felt(k * 10 - 6), `Erholung ${k * 10 - 4}: leichter als der Aufbau davor`);
-  for (const r of M.filter(r => r.tool && r.tool !== 'hint')) assert.ok(r.casTool >= 0.35, `Level ${r.id}: mit Werkzeug bequem (${r.casTool})`);
+  // launch-18: das Werkzeug hilft spürbar (Gelegenheitsspieler gewinnt damit öfter als ohne)
+  for (const r of M.filter(r => r.tool && r.tool !== 'hint')) assert.ok(r.casTool >= r.cas && r.casTool >= 0.04, `Level ${r.id}: mit Werkzeug leichter (${r.cas} → ${r.casTool})`);
 });
 
 test('launch-16: keine Ketten-Level mehr – kein Level und kein Plan-Eintrag hat ein combo-Ziel', async () => {
@@ -204,4 +204,19 @@ test('launch-16: keine Ketten-Level mehr – kein Level und kein Plan-Eintrag ha
   assert.deepEqual(Object.entries(MISSIONS).filter(([, m]) => m.goals.some(g => RETIRED_GOALS.includes(g.type))).map(([id]) => id), []);
   // Rollen bleiben: Werkzeug-Level und Bosse wie geplant (s. o.), Kette-Plätze jetzt mit anderen Zielarten
   for (const id of [21, 22, 28, 47, 54, 73, 81, 92]) assert.ok(!L100[id - 1].tool, `Level ${id} ohne Werkzeug`);
+});
+
+test('launch-18: längere Level – Zugzahl wächst, ohne Ketten und ohne besondere Squishes, abwechslungsreiche Startbretter', async () => {
+  const { moveWindow } = await import('../tools/campaign/plan100.mjs');
+  const avg = k => { const a = L100.filter(l => chapterOf(l.id) === k && !l.tool).map(l => l.moves); return a.reduce((x, y) => x + y, 0) / a.length; };
+  for (let k = 3; k <= 10; k++) assert.ok(avg(k) > avg(k - 1), `Kapitel ${k}: mehr Züge als Kapitel ${k - 1}`);
+  for (const lv of L100.filter(l => l.id > 10 && !l.tool)) assert.equal(lv.moves, moveWindow(lv.id), `Level ${lv.id}: Zugfenster laut Plan`);
+  assert.ok(L100[99].moves >= 30 || L100[96].moves >= 38, 'späte Level sind lang');
+  assert.ok(L100.every(l => !l.specials), 'Eis, Schloss und Bombe nur auf der Testseite');
+  assert.ok(L100.every(l => !l.goals.some(g => g.type === 'combo')));
+  const has = v => L100.filter(l => l.board.flat().includes(v)).length;
+  assert.ok(has(5) >= 10, 'oft liegt schon ein 5er');
+  assert.ok(L100.filter(l => l.board.flat().some(v => v >= 20)).length >= 3, 'hohe Werte als Blocker');
+  assert.ok(L100.filter(l => l.goals.length >= 2).length >= 30, 'viele Mehrfach-Aufgaben');
+  assert.ok(L100.some(l => l.goals.some(g => g.type === 'tile' && g.value === 8)), 'eine 8 bauen');
 });

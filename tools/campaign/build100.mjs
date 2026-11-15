@@ -101,7 +101,7 @@ function assemble() {
       target: targetD(id), estimate: { D: b.D, Dfelt: b.Dfelt, casual: +b.cas.toFixed(3), good: +b.good.toFixed(3), random: +b.rnd.toPrecision(3), greedy: !!b.greedy,
         ...(tool ? { casualTool: +b.casTool.toFixed(3), goodTool: +b.goodTool.toFixed(3) } : {}), ...(b.goodStarts != null ? { goodStarts: b.goodStarts } : {}) },
       ...(b.hintMoves ? { hintMoves: b.hintMoves } : {}), ...(b.toolSolution ? { toolSolution: b.toolSolution } : {}),
-      searched: { tried: st.tried, usable: st.ok },
+      exact: !!b.exact, searched: { tried: st.tried, usable: st.ok },
     };
     validateLevel(lv);
     if (!tool) {
