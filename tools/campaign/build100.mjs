@@ -90,9 +90,10 @@ function assemble() {
       continue;
     }
     const file = join(cacheDir, `L${id}.json`);
-    if (!existsSync(file)) throw new Error(`L${id}: keine Suche gelaufen`);
+    const partial = process.env.PARTIAL === '1';
+    if (!existsSync(file)) { if (partial) continue; throw new Error(`L${id}: keine Suche gelaufen`); }
     const st = JSON.parse(readFileSync(file, 'utf8')), b = st.best;
-    if (!b) throw new Error(`L${id}: kein Kandidat`);
+    if (!b) { if (partial) continue; throw new Error(`L${id}: kein Kandidat`); }
     const c = makeLevel(id, b.k), L = b.limit, tool = TOOL_LEVELS[id] || null;
     const lv = {
       id, chapter: chapterOf(id), kind: kindOf(c.goals), board: c.board, sequence: c.sequence.slice(0, L + RESERVE), moves: L, goals: c.goals,
@@ -117,7 +118,7 @@ function assemble() {
     levels.push(lv);
   }
   const out = { version: 2, generator: { tool: 'tools/campaign/build100.mjs', plan: 'tools/campaign/plan100.mjs', reserve: RESERVE, v1: 'Level 1–25 aus Generator v1 (Saat 20261114)' }, count: levels.length, levels };
-  writeFileSync(join(root, 'levels', 'levels-001-100.json'), JSON.stringify(out, null, 1) + '\n');
+  writeFileSync(process.env.PARTIAL === '1' ? '/tmp/levels-partial.json' : join(root, 'levels', 'levels-001-100.json'), JSON.stringify(out, null, 1) + '\n');
   console.log(`Geschrieben: levels/levels-001-100.json (${levels.length} Level)`);
 }
 
