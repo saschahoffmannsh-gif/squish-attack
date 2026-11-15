@@ -6,7 +6,7 @@ import { validateLevel, starThresholds, tilesOn, goalTarget } from '../../game/c
 import { findHint } from '../../game/hint-solver.mjs';
 import { solveLevel, randomPlayouts, playerModel, greedy, expand } from './solver.mjs';
 import { solveWithTool, playerFrom, startBoard, toolVariants, stateAfter } from './tools-solver.mjs';
-import { MISSIONS, TOOL_LEVELS, GEN, targetD, roleOf } from './plan100.mjs';
+import { MISSIONS, TOOL_LEVELS, GEN, targetD, roleOf, RETIRED_GOALS } from './plan100.mjs';
 
 export const RESERVE = 5;
 export const STATS = {};
@@ -102,6 +102,7 @@ function plant(rng, spec, maxV, sequence) {
 }
 /** Kandidat (Brett + Steinfolge) für Level id aus Saat k. */
 export function makeLevel(id, k, seqLen = 18) {
+  if (MISSIONS[id].goals.some(g => RETIRED_GOALS.includes(g.type))) throw new Error(`L${id}: Zielart nicht mehr im Pool`);
   const goals = MISSIONS[id].goals, rng = createRng(seedFor(id, k)), p = params(goals, id), gen = GEN[id] || {};
   const tilesR = gen.tiles || p.tiles, P = gen.plant;
   for (let attempt = 0; attempt < 400; attempt++) {
