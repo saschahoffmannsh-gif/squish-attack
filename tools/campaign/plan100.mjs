@@ -203,5 +203,5 @@ export const GEN = {
   82: { plant: { kind: 'long5', at: [0, 2], missing: [1, 1] } },
   84: { plant: { kind: 'pairs', n: [2, 3] }, tiles: [7, 10] },
   94: { plant: { kind: 'long5', at: [0, 3], missing: [1, 2] } },
-  95: { plant: { kind: 'pairs', n: [3, 4] }, tiles: [8, 10] },
+  95: { plant: { kind: 'pairs', n: [2, 3] }, tiles: [13, 16] },
 };
