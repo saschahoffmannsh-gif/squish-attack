@@ -16,7 +16,7 @@ import {createConfetti} from './confetti.mjs?v=launch-14';
 import {createHaptics} from './haptics.mjs?v=launch-14';
 import {planMergeRipple} from './merge-ripple.mjs?v=swarm-fx-3';
 import * as Camp from './campaign.mjs?v=launch-14';
-import {createCampaignUI} from './campaign-ui.mjs?v=launch-14';
+import {createCampaignUI,TOOL_ARTICLE} from './campaign-ui.mjs?v=launch-14';
 import {createToolFx} from './tool-fx.mjs?v=launch-14';
 import {hintState,findHint} from './hint-solver.mjs?v=launch-14';
 import {comicColors} from './comic-style.mjs?v=launch-14';
@@ -138,11 +138,11 @@ const worldMenu=createHomeMenu({sound,reduceMotion,hooks:{
 const newTile = value => ({ id: nextId++, value });
 
 // ---------- Kampagne ----------
-// Feste Rätsel-Level (levels/levels-001-025.json). Der Endlos-Spielstand bleibt
+// Feste Rätsel-Level (levels/levels-001-100.json). Der Endlos-Spielstand bleibt
 // in localStorage unangetastet: während der Kampagne wird nichts davon gespeichert,
 // beim Verlassen wird er wieder geladen.
 const MODE_KEY='squish-mode-v1';
-const LEVELS_URL=new URL('../levels/levels-001-025.json?v=launch-14',import.meta.url);
+const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-14',import.meta.url);
 function storedMode(){try{return localStorage.getItem(MODE_KEY)||'';}catch{return '';}}
 let campaignMode=false,camp=null,levels=null,levelsLoading=null,stashedBestTile=null,needsEntry=false,armedTool=null,hintBusy=false,wandPicker=null;
 let campaignProgress=Camp.loadProgress(),inventory=Camp.loadInventory();
@@ -305,7 +305,8 @@ async function playLevel(n){
   started=false;
   await prepareLevel(n);
   await enterGame();
-  showNote(`Level ${n}: ${camp.level.goals.map(Camp.goalText).join(' + ')}`,2600);
+  const tl=camp.level.tool;
+  showNote(`Level ${n}: ${camp.level.goals.map(Camp.goalText).join(' + ')}`+(tl?` · Werkzeug-Level: ${tl==='extraMoves'?'mit +3 Zügen schaffst du es':'nimm '+TOOL_ARTICLE[tl]} (höchstens 2 ★)`:''),tl?4200:2600);
 }
 async function moveCampaign(direction,line){
   const r=camp.run;
@@ -360,7 +361,7 @@ async function finishLevel(){
   if(turn!==generation||!campaignMode){confetti.stop();return;}
   paused=true;releaseGesture();phoneMotion.reset();
   const count=levels.length,nextLock=n<count?Camp.lockReason(campaignProgress,n+1):null;
-  campaignUI.showResult({n,won,stars,moves:r.moves,limit:Camp.moveLimit(r),lostReason:r.lostReason,
+  campaignUI.showResult({n,won,stars,moves:r.moves,limit:Camp.moveLimit(r),lostReason:r.lostReason,toolLevel:r.level.tool||null,
     canNext:won&&n<count&&!nextLock,nextLock,gifts:Camp.TOOL_STOCK&&Camp.TOOL_GIFTS?inventory.pending.slice():gifts,extraAvailable:availableTools().extraMoves,extraAd:adsEnabled(),toolsUsed:r.toolsUsed.length});
   renderCampaign();
 }
@@ -421,6 +422,8 @@ async function rocketAt(tileId){
     board=board.map(row=>row.slice());board[cell[0]][cell[1]]=null;
     renderBoard();
   }finally{if(turn===generation){busy=false;renderCampaign();}}
+  // launch-15: „höchstens N Steine übrig“ kann direkt durch die Rakete erfüllt werden
+  if(turn===generation&&camp?.run?.status==='won')await finishLevel();
   return true;
 }
 function wandAt(tileId){

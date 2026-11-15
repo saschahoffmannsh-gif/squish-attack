@@ -11,7 +11,7 @@
 // Wird eine Schicht zu groß, bricht die exakte Suche ab (oder läuft als
 // Beam-Suche weiter, dann ist das Ergebnis als ungenau markiert).
 import { SIZE, insertTile, settle } from '../../game/game-logic.mjs';
-import { ALL_MOVES, encodeMove, createLevelRun, applyLevelMove } from '../../game/campaign.mjs';
+import { ALL_MOVES, encodeMove, createLevelRun, applyLevelMove, advanceGoals, goalTarget } from '../../game/campaign.mjs';
 import { createRng } from '../../game/ranked.mjs';
 
 const MOVE_CHARS = ALL_MOVES.map(m => encodeMove(m.direction, m.line));
@@ -37,32 +37,9 @@ export function boardFromKey(key) {
   return { board };
 }
 
-const freshProgress = () => ({ score: 0, cleared: 0, merges: 0, streets: 0, bestCombo: 0, created: {} });
 
-/**
- * Schnelle Fortschrittsrechnung direkt auf dem gedeckelten Zielvektor.
- * Muss exakt goalProgress()/tally() aus campaign.mjs entsprechen; das prüft
- * tests/solver.test.mjs gegen echte Partien.
- */
-export function advanceVec(goals, vec, settled) {
-  const out = vec.slice();
-  let done = true;
-  for (let i = 0; i < goals.length; i++) {
-    const g = goals[i];
-    let v = out[i];
-    switch (g.type) {
-      case 'tile': for (const pass of settled.passes) for (const x of pass) if (x.nextValue > v) v = x.nextValue; v = Math.min(v, g.value); break;
-      case 'make': for (const pass of settled.passes) for (const x of pass) if (x.nextValue >= g.value) v++; v = Math.min(v, g.count); break;
-      case 'score': v = Math.min(v + settled.points, g.points); break;
-      case 'clear': for (const pass of settled.passes) for (const x of pass) v += x.cells.length - 1; v = Math.min(v, g.tiles); break;
-      case 'street': for (const pass of settled.passes) for (const x of pass) if (x.street) v++; v = Math.min(v, g.count); break;
-      case 'combo': v = Math.min(Math.max(v, settled.passes.length), g.chain); break;
-    }
-    out[i] = v;
-    if (v < targetOf(g)) done = false;
-  }
-  return { vec: out, win: done };
-}
+/** Fortschritt weiterrechnen – gemeinsame Zählung aus campaign.mjs (advanceGoals). */
+export const advanceVec = advanceGoals;
 
 /** Alle Nachfolger eines Zustands. Gibt [{move, board, vec, win}] zurück. */
 export function expand(level, board, vec, depth) {
@@ -136,7 +113,7 @@ export function solveLevel(level, { maxDepth = level.moves, maxLayer = 400000, b
   }
   return { solvable: false, exact: !approximate, reason: 'limit', states, layers, ms: performance.now() - t0 };
 }
-const targetOf = g => ({ tile: g.value, make: g.count, score: g.points, clear: g.tiles, street: g.count, combo: g.chain })[g.type];
+const targetOf = goalTarget;
 
 /**
  * Zufallsspieler (feste Saat): Anteil gewonnener Partien je Zuglimit.

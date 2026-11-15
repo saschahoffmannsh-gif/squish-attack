@@ -485,3 +485,90 @@ test('launch-14: Abenteuer einmalig zurückgesetzt (Fortschritt + Geschenke), Re
   const st2 = memStore(); const f = resetCampaignOnce(emptyP14(), emptyInventory(), st2);
   assert.equal(f.reset, true); assert.equal(st2.getItem(CAMPAIGN_RESET_KEY), CAMPAIGN_RESET);
 });
+
+// ---------------- launch-15: neue Missionen, Werkzeug-Level ----------------
+import { tally, vanished, goalShort, advanceGoals, toolStars, TOOL_KEYS, GOAL_TYPES } from '../game/campaign.mjs';
+import { settle as settle15 } from '../game/game-logic.mjs';
+const T15 = v => (v == null ? null : { value: v });
+const row15 = r => [r, [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E]];
+
+test('launch-15: neue Zieltypen empty/long/purge – gültig, Text, Kurztext', () => {
+  for (const t of ['empty', 'long', 'purge']) assert.ok(GOAL_TYPES.includes(t));
+  assert.ok(!GOAL_TYPES.includes('group'));
+  validateLevel(base({ goals: [{ type: 'empty', max: 4 }] }));
+  validateLevel(base({ goals: [{ type: 'long', count: 1 }] }));
+  validateLevel(base({ goals: [{ type: 'purge', value: 2, tiles: 6 }] }));
+  assert.throws(() => validateLevel(base({ goals: [{ type: 'purge', value: 2 }] })));
+  assert.throws(() => validateLevel(base({ goals: [{ type: 'empty' }] })));
+  assert.match(goalText({ type: 'empty', max: 4 }), /4/);
+  assert.match(goalText({ type: 'long', count: 1 }), /4/);
+  assert.match(goalText({ type: 'purge', value: 3, tiles: 8 }), /3/);
+  // Kurztexte für drei Ziele: knapp (passt in ein Drittel von 375 px)
+  for (const g of [{ type: 'empty', max: 4 }, { type: 'long', count: 2 }, { type: 'purge', value: 3, tiles: 8 }, { type: 'score', points: 1200 }, { type: 'make', value: 5, count: 2 }])
+    assert.ok(goalShort(g).length <= 18, goalShort(g));
+});
+
+test('launch-15: Straße aus 4 zählt als lange Straße; Werte, die verschwinden (purge)', () => {
+  const run = createLevelRun(base());
+  const s = settle15(row15([1, 2, 3, 4, E]).map(r => r.map(T15)));
+  tally(run, s);
+  assert.equal(run.streets, 1);
+  assert.equal(run.longStreets, 1);
+  assert.deepEqual(run.purged, { 1: 1, 2: 1, 3: 1, 4: 1 });      // Zielstein 4 wird zur 5 → auch die 4 verschwindet
+  assert.equal(goalProgress({ type: 'long', count: 1 }, run).done, true);
+  assert.deepEqual(goalProgress({ type: 'purge', value: 2, tiles: 3 }, run), { current: 1, target: 3, done: false });
+  // Straße aus 3: Zielstein bleibt stehen → sein Wert verschwindet nicht
+  const s3 = settle15(row15([1, 2, 3, E, E]).map(r => r.map(T15)));
+  assert.deepEqual(Object.fromEntries(vanished(s3.passes[0][0])), { 1: 1, 2: 1 });
+  const run3 = createLevelRun(base()); tally(run3, s3);
+  assert.equal(run3.longStreets, 0);
+  // Fusion: alle Steine des Werts verschwinden
+  assert.deepEqual(vanished({ street: false, value: 2, cells: [[0, 0], [0, 1], [0, 2]] }), [[2, 3]]);
+  // Solver-Zählung = Spiel-Zählung
+  const goals = [{ type: 'long', count: 1 }, { type: 'purge', value: 3, tiles: 1 }, { type: 'empty', max: 1 }];
+  assert.deepEqual(advanceGoals(goals, [0, 0, 0], s), { vec: [1, 1, 1], win: true });
+});
+
+test('launch-15: „höchstens N Steine“ – Stand = Steine auf dem Brett; Rakete kann das Ziel erfüllen', () => {
+  const lv = base({ board: row15([1, 3, E, E, 5]), goals: [{ type: 'empty', max: 2 }], stars: { three: 1, two: 2 } });
+  const run = createLevelRun(lv);
+  assert.deepEqual(goalProgress(lv.goals[0], run), { current: 3, target: 2, done: false });
+  assert.ok(useRocket(run, 0, 4));
+  assert.equal(run.status, 'won');
+  assert.equal(run.moves, 0);
+  assert.equal(starsOfRun(run), 2);
+});
+
+test('launch-15: Werkzeug-Level geben höchstens 2★ – auch ohne Werkzeug', () => {
+  for (const tool of TOOL_KEYS) {
+    const lv = base({ tool, sequence: [1, 2, 3, 4, 5, 6], stars: { three: 1, two: 2 } });
+    validateLevel(lv);
+    const r = replaySolution(lv, encodeMove('right', 0));
+    assert.ok(r.ok);
+    assert.equal(r.stars, 2, tool);
+  }
+  assert.throws(() => validateLevel(base({ tool: 'hammer' })));
+  // +3-Level: 2★-Schwelle darf in den Extra-Zügen liegen, braucht aber Reserve-Steine
+  validateLevel(base({ tool: 'extraMoves', moves: 3, sequence: [1, 2, 3, 4, 5, 6], stars: { three: 4, two: 5 } }));
+  assert.throws(() => validateLevel(base({ tool: 'extraMoves', moves: 3, sequence: [1, 2, 3, 4], stars: { three: 1, two: 2 } })));
+  assert.throws(() => validateLevel(base({ moves: 3, sequence: [1, 2, 3, 4, 5, 6], stars: { three: 4, two: 5 } })));
+});
+
+test('launch-15: Sterne-Schwellen für Werkzeug-Level', () => {
+  assert.deepEqual(toolStars(7, 5, 'extraMoves'), { three: 7, two: 8 });   // eff 8: Mitte zwischen 7 und 8
+  assert.deepEqual(toolStars(3, 7, 'wand'), { three: 3, two: 5 });
+  assert.deepEqual(toolStars(5, 5, 'hint'), { three: 5, two: 5 });
+});
+
+test('launch-15: 100 Level = 10 Kapitel; Schranke 18★ × (Kapitel − 1) bis Level 91', () => {
+  assert.equal(chapterOf(100), 10);
+  assert.equal(chapterOf(91), 10);
+  assert.equal(chapterOf(90), 9);
+  assert.equal(starGate(10), 162);
+  const p = emptyProgress();
+  for (let n = 1; n <= 90; n++) p.levels[String(n)] = { stars: 2, moves: 5, at: 0 };   // überall 2★ (auch Werkzeug-Level) reicht
+  assert.equal(lockReason(p, 91), null);
+  assert.equal(nextLevel(p, 100), 91);
+  p.levels['90'].stars = 1; for (let n = 1; n <= 19; n++) p.levels[String(n)].stars = 1;
+  assert.deepEqual(lockReason(p, 91), { reason: 'stars', need: 162, have: 160, chapter: 10 });
+});

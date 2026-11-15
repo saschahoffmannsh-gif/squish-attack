@@ -6,7 +6,11 @@ import { SIZE, insertTile, settle, isGameOver } from './game-logic.mjs';
 
 export const DIRECTIONS = ['left', 'right', 'up', 'down'];
 export const QUEUE_PREVIEW = 3;
-export const GOAL_TYPES = ['tile', 'make', 'score', 'clear', 'street', 'combo'];
+export const GOAL_TYPES = ['tile', 'make', 'score', 'clear', 'street', 'combo', 'empty', 'long', 'purge'];
+/** launch-15: neue Missionen – empty: höchstens `max` Steine auf dem Brett; long: `count` Straßen aus ≥ 4 Steinen;
+ *  purge: `tiles` Steine mit dem Wert `value` auflösen. Werkzeug-Level: level.tool = 'extraMoves'|'hint'|'rocket'|'wand'. */
+export const TOOL_KEYS = ['extraMoves', 'hint', 'rocket', 'wand'];
+export const LONG_STREET = 4;
 
 /** Ein Zug als Buchstabe, identisch zu ranked.mjs: 'a'..'t'. */
 export function encodeMove(direction, line) {
@@ -33,11 +37,13 @@ export function validateLevel(level) {
   if (!Array.isArray(level.goals) || !level.goals.length) fail('goals fehlt');
   for (const g of level.goals) {
     if (!GOAL_TYPES.includes(g.type)) fail(`unbekanntes Ziel ${g.type}`);
-    const need = { tile: ['value'], make: ['value', 'count'], score: ['points'], clear: ['tiles'], street: ['count'], combo: ['chain'] }[g.type];
+    const need = { tile: ['value'], make: ['value', 'count'], score: ['points'], clear: ['tiles'], street: ['count'], combo: ['chain'], empty: ['max'], long: ['count'], purge: ['value', 'tiles'] }[g.type];
     for (const k of need) if (!Number.isInteger(g[k]) || g[k] < 1) fail(`Ziel ${g.type}: ${k} fehlt`);
   }
-  const s = level.stars;
-  if (!s || !Number.isInteger(s.three) || !Number.isInteger(s.two) || !(s.three >= 1 && s.three <= s.two && s.two <= level.moves)) fail('stars ungültig');
+  if (level.tool != null && !TOOL_KEYS.includes(level.tool)) fail('tool ungültig');
+  const s = level.stars, room = level.tool === 'extraMoves' ? 3 : 0;   // +3-Level: 2★ auch mit den 3 Extra-Zügen
+  if (!s || !Number.isInteger(s.three) || !Number.isInteger(s.two) || !(s.three >= 1 && s.three <= s.two && s.two <= level.moves + room)) fail('stars ungültig');
+  if (room && level.sequence.length < level.moves + 3) fail('Reserve-Steine für +3 fehlen');
   return level;
 }
 
@@ -52,7 +58,8 @@ export function createLevelRun(level) {
     level, board, ctx,
     index: 0,                 // Position in level.sequence
     moves: 0,                 // gemachte Züge
-    score: 0, cleared: 0, merges: 0, streets: 0, bestCombo: 0,
+    score: 0, cleared: 0, merges: 0, streets: 0, bestCombo: 0, longStreets: 0,
+    purged: {},               // Wert -> Anzahl aufgelöster Steine dieses Werts
     created: {},              // Wert -> Anzahl durch Fusion erzeugter Steine
     extraMoves: 0,            // durch Hilfsmittel gewonnene Züge
     toolsUsed: [],            // eingesetzte Hilfsmittel (Typen)
@@ -91,11 +98,58 @@ export function addExtraMoves(run, n = 3) {
 export function tally(run, settled) {
   run.score += settled.points;
   run.bestCombo = Math.max(run.bestCombo, settled.passes.length);
+  run.purged ??= {}; run.longStreets ??= 0;
   for (const pass of settled.passes) for (const g of pass) {
     run.cleared += g.cells.length - 1;
-    if (g.street) run.streets += 1; else run.merges += 1;
+    if (g.street) { run.streets += 1; if (g.cells.length >= LONG_STREET) run.longStreets += 1; } else run.merges += 1;
     run.created[g.nextValue] = (run.created[g.nextValue] ?? 0) + 1;
+    for (const [v, n] of vanished(g)) run.purged[v] = (run.purged[v] ?? 0) + n;
   }
+}
+/**
+ * Welche Werte verschwinden durch eine Gruppe? → [[Wert, Anzahl]].
+ * Fusion: alle Steine des Werts (einer wird zum höheren Wert). Straße: die Werte steigen
+ * entlang der Straße um 1, der Zielstein ist der höchste; er bleibt bei Länge 3 stehen.
+ */
+export function vanished(g) {
+  if (!g.street) return [[g.value, g.cells.length]];
+  const ti = g.cells.findIndex(([r, c]) => r === g.target[0] && c === g.target[1]);
+  const out = new Map();
+  g.cells.forEach((_, i) => {
+    if (i === ti && g.nextValue === g.value) return;
+    const v = g.value - Math.abs(i - ti);
+    out.set(v, (out.get(v) ?? 0) + 1);
+  });
+  return [...out];
+}
+export const tilesOn = board => { let n = 0; for (const row of board) for (const t of row) if (t) n++; return n; };
+/** Zielwert in Einheiten des Fortschritts-Vektors (Solver/Hinweis). */
+export const goalTarget = g => ({ tile: g.value, make: g.count, score: g.points, clear: g.tiles, street: g.count, combo: g.chain, empty: 1, long: g.count, purge: g.tiles })[g.type];
+/**
+ * Fortschritts-Vektor nach einem settle()-Ergebnis weiterrechnen (gedeckelt). Gleiche Zählung wie
+ * tally()/goalProgress(); genutzt von Solver, Generator und Hinweis. „empty“ hängt nur vom Brett ab (0/1).
+ */
+export function advanceGoals(goals, vec, settled) {
+  const out = vec.slice();
+  let done = true;
+  for (let i = 0; i < goals.length; i++) {
+    const g = goals[i];
+    let v = out[i];
+    switch (g.type) {
+      case 'tile': for (const pass of settled.passes) for (const x of pass) if (x.nextValue > v) v = x.nextValue; v = Math.min(v, g.value); break;
+      case 'make': for (const pass of settled.passes) for (const x of pass) if (x.nextValue >= g.value) v++; v = Math.min(v, g.count); break;
+      case 'score': v = Math.min(v + settled.points, g.points); break;
+      case 'clear': for (const pass of settled.passes) for (const x of pass) v += x.cells.length - 1; v = Math.min(v, g.tiles); break;
+      case 'street': for (const pass of settled.passes) for (const x of pass) if (x.street) v++; v = Math.min(v, g.count); break;
+      case 'combo': v = Math.min(Math.max(v, settled.passes.length), g.chain); break;
+      case 'long': for (const pass of settled.passes) for (const x of pass) if (x.street && x.cells.length >= LONG_STREET) v++; v = Math.min(v, g.count); break;
+      case 'purge': for (const pass of settled.passes) for (const x of pass) for (const [val, n] of vanished(x)) if (val === g.value) v += n; v = Math.min(v, g.tiles); break;
+      case 'empty': v = tilesOn(settled.board) <= g.max ? 1 : 0; break;
+    }
+    out[i] = v;
+    if (v < goalTarget(g)) done = false;
+  }
+  return { vec: out, win: done };
 }
 
 /** Fortschritt eines Ziels: {current, target, done}. */
@@ -116,6 +170,12 @@ export function goalProgress(goal, run) {
     case 'clear': target = goal.tiles; current = run.cleared; break;
     case 'street': target = goal.count; current = run.streets; break;
     case 'combo': target = goal.chain; current = run.bestCombo; break;
+    case 'long': target = goal.count; current = run.longStreets ?? 0; break;
+    case 'purge': target = goal.tiles; current = run.purged?.[goal.value] ?? 0; break;
+    case 'empty': {   // Stand: Steine auf dem Brett, Ziel: höchstens max
+      const n = tilesOn(run.board);
+      return { current: n, target: goal.max, done: n <= goal.max };
+    }
   }
   return { current: Math.min(current, target), target, done: current >= target };
 }
@@ -161,13 +221,23 @@ export function applyLevelMove(run, direction, line) {
 export function starsFor(level, movesUsed, won = true, { toolsUsed = 0 } = {}) {
   if (!won) return 0;
   let stars = movesUsed <= level.stars.three ? 3 : movesUsed <= level.stars.two ? 2 : 1;
-  if (toolsUsed > 0) stars = Math.min(stars, MAX_STARS_WITH_TOOLS);
+  // Werkzeug-Level (launch-15): immer höchstens 2★ – auch wer es ohne Werkzeug schafft.
+  if (toolsUsed > 0 || level.tool) stars = Math.min(stars, MAX_STARS_WITH_TOOLS);
   return stars;
 }
 export const MAX_STARS_WITH_TOOLS = 2;
 /** Sterne für einen fertigen Lauf (berücksichtigt Hilfsmittel). */
 export const starsOfRun = run => starsFor(run.level, run.moves, run.status === 'won', { toolsUsed: run.toolsUsed.length });
 
+/**
+ * Sterne-Schwellen für Werkzeug-Level (launch-15): Ergebnis ist ohnehin auf 2★ gedeckelt.
+ * eff = Limit (+3 bei „+3 Züge“); 2★ bis zur Mitte zwischen Werkzeug-Optimum und eff.
+ */
+export function toolStars(toolMin, limit, tool) {
+  const eff = limit + (tool === 'extraMoves' ? 3 : 0);
+  const two = Math.min(eff, toolMin + Math.ceil((eff - toolMin) / 2));
+  return { three: Math.min(toolMin, two), two };
+}
 /** Sterne-Schwellen aus Optimum und Zuglimit: 3★ = Optimum + 1, 2★ = Mitte bis zum Limit. */
 export function starThresholds(minMoves, limit) {
   const three = Math.min(limit, minMoves + 1);
@@ -186,6 +256,21 @@ export function replaySolution(level, log) {
   return { ok: run.status === 'won', run, stars: starsOfRun(run) };
 }
 
+/** Sehr kurzer Zieltext für die Ziel-Karte, wenn drei Ziele gleichzeitig gelten (passt auf 375 px). */
+export function goalShort(goal) {
+  switch (goal.type) {
+    case 'tile': return `${goal.value}er bauen`;
+    case 'make': return `${goal.count}× ${goal.value}er+`;
+    case 'score': return `${goal.points.toLocaleString('de-DE')} Punkte`;
+    case 'clear': return `${goal.tiles} Steine lösen`;
+    case 'street': return goal.count === 1 ? '1 Straße' : `${goal.count} Straßen`;
+    case 'combo': return `Kette ${goal.chain}`;
+    case 'empty': return `≤ ${goal.max} Steine`;
+    case 'long': return goal.count === 1 ? `Straße aus ${LONG_STREET}` : `${goal.count}× Straße aus ${LONG_STREET}`;
+    case 'purge': return `${goal.tiles}× die ${goal.value}`;
+  }
+  return '';
+}
 /** Kurzer deutscher Zieltext für die UI. */
 export function goalText(goal) {
   switch (goal.type) {
@@ -195,6 +280,9 @@ export function goalText(goal) {
     case 'clear': return `Löse ${goal.tiles} Steine auf`;
     case 'street': return goal.count === 1 ? 'Bilde eine Straße' : `Bilde ${goal.count} Straßen`;
     case 'combo': return `Kettenreaktion: ${goal.chain} Fusionen in einem Zug`;
+    case 'empty': return `Höchstens ${goal.max} Steine übrig`;
+    case 'long': return goal.count === 1 ? `Bilde eine Straße aus ${LONG_STREET} Steinen` : `Bilde ${goal.count} Straßen aus ${LONG_STREET} Steinen`;
+    case 'purge': return `Löse ${goal.tiles}× die ${goal.value} auf`;
   }
   return '';
 }
@@ -283,6 +371,7 @@ export function useRocket(run, row, col) {
   run.board = run.board.map(r => r.slice());
   run.board[row][col] = null;
   markToolUsed(run, 'rocket');
+  if (goalsDone(run)) run.status = 'won';   // z. B. „höchstens N Steine übrig“
   return true;
 }
 
@@ -335,7 +424,7 @@ export function useWand(run, row, col, value) {
 }
 
 /** Zielfortschritt als (gedeckelter) Vektor – Startpunkt für die Hinweis-Suche. */
-export const progressVector = run => run.level.goals.map(g => goalProgress(g, run).current);
+export const progressVector = run => run.level.goals.map(g => (g.type === 'empty' ? (goalProgress(g, run).done ? 1 : 0) : goalProgress(g, run).current));
 
 export const TOOLS_KEY = 'squish-campaign-tools-v1';
 export const TOOL_TYPES = ['extraMoves', 'rocket', 'hint', 'wand'];

@@ -1,9 +1,10 @@
 // Kampagne: DOM-Teile (Ziel-Anzeige, Züge, Hilfsmittel, Ergebnis-Dialog, Levelauswahl).
 // Reine Darstellung; Spiellogik und Speichern liegen in game.mjs / campaign.mjs.
 import {TOOL_ICONS,GIFT_SVG} from './tool-icons.mjs?v=launch-14';
-import {goalProgress,goalText,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName} from './campaign.mjs?v=launch-14';
+import {goalProgress,goalText,goalShort,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName} from './campaign.mjs?v=launch-14';
 
 const $=id=>document.getElementById(id);
+export const TOOL_ARTICLE={extraMoves:'+3 Züge',hint:'den Hinweis',rocket:'die Rakete',wand:'den Zauberstab'};
 const fmt=n=>Number(n||0).toLocaleString('de-DE');
 const starText=(n,max=3)=>'★'.repeat(n)+'☆'.repeat(Math.max(0,max-n));
 
@@ -31,12 +32,15 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
 
   function renderHud(run,n){
     hud.hidden=false;
-    levelEl.textContent=`LEVEL ${n}`;
+    levelEl.textContent=`LEVEL ${n}${run.level.tool?' · WERKZEUG':''}`;
+    const three=run.level.goals.length>=3;
+    goalsEl.classList.toggle('is-three',three);
     goalsEl.replaceChildren(...run.level.goals.map(goal=>{
       const p=goalProgress(goal,run),li=document.createElement('li');
-      li.className=p.done?'is-done':'';
-      const t=document.createElement('span');t.textContent=goalText(goal);
-      const v=document.createElement('b');v.textContent=p.done?'✓':goal.type==='tile'?`${Math.min(p.target,Math.max(p.current,...run.board.flat().filter(Boolean).map(t=>t.value)))}/${p.target}`:`${fmt(p.current)}/${fmt(p.target)}`;
+      li.className=p.done?'is-done':'';li.dataset.type=goal.type;
+      const t=document.createElement('span');t.textContent=three?goalShort(goal):goalText(goal);
+      if(three)t.title=goalText(goal);
+      const v=document.createElement('b');v.textContent=p.done?'✓':goal.type==='tile'?`${Math.min(p.target,Math.max(p.current,...run.board.flat().filter(Boolean).map(t=>t.value)))}/${p.target}`:goal.type==='empty'?`${p.current}→${p.target}`:`${fmt(p.current)}/${fmt(p.target)}`;
       li.append(t,v);return li;
     }));
     const left=Math.max(0,movesLeft(run));
@@ -70,7 +74,7 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
   wandBtn.addEventListener('click',()=>onTool?.('wand'));
 
   // ---------- Ergebnis ----------
-  function showResult({n,won,stars,moves,limit,lostReason,canNext,nextLock,gifts=[],extraAvailable=0,extraAd=false,toolsUsed=0}){
+  function showResult({n,won,stars,moves,limit,lostReason,canNext,nextLock,gifts=[],extraAvailable=0,extraAd=false,toolsUsed=0,toolLevel=null}){
     const extraOffer=extraAvailable>0||extraAd;
     result.dataset.outcome=won?'won':'lost';
     rKicker.textContent=`LEVEL ${n}`;
@@ -80,8 +84,9 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
     rMoves.textContent=won?String(moves):`${moves}/${limit}`;
     rStarCount.textContent=won?`${stars} / 3`:'–';
     rMessage.textContent=won
-      ?(toolsUsed?'Mit Hilfsmittel gibt es höchstens 2 ★.':stars<3?'Mit weniger Zügen gibt es mehr Sterne.':'Bestmöglich gelöst!')
-      :(lostReason==='board-full'?'Das Brett ist voll.':'Das Ziel ist noch nicht erreicht.')+(extraOffer&&lostReason==='moves'?' Mit +3 Zügen kannst du weiterspielen (dann höchstens 2 ★).':' Versuch es noch einmal!');
+      ?(toolLevel?(stars>=2?'Werkzeug-Level: 2 ★ sind hier das Maximum.':'Werkzeug-Level: mit weniger Zügen gibt es 2 ★.'):toolsUsed?'Mit Hilfsmittel gibt es höchstens 2 ★.':stars<3?'Mit weniger Zügen gibt es mehr Sterne.':'Bestmöglich gelöst!')
+      :(lostReason==='board-full'?'Das Brett ist voll.':'Das Ziel ist noch nicht erreicht.')+(extraOffer&&lostReason==='moves'?' Mit +3 Zügen kannst du weiterspielen (dann höchstens 2 ★).':' Versuch es noch einmal!')
+        +(toolLevel&&toolLevel!=='extraMoves'?` Tipp: Werkzeug-Level – nimm ${TOOL_ARTICLE[toolLevel]}.`:'');
     if(won&&!canNext&&nextLock)rMessage.textContent+=' '+lockText(nextLock);
     else if(won&&!canNext)rMessage.textContent+=' Alle Level geschafft!';
     setGifts(gifts);
@@ -133,6 +138,7 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
   // ---------- Levelauswahl ----------
   function onKey(ev){if(ev.key==='Escape'){ev.preventDefault();closeSelect();}}
   function openSelect({levels,progress}){
+    const toolOf=n=>levels[n-1]?.tool||null;
     lastFocus=document.activeElement;
     const count=levels.length,total=totalStars(progress);
     selTotal.textContent=`★ ${total} von ${count*3}`;
@@ -150,12 +156,14 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
         const b=document.createElement('button');b.type='button';b.className='campaign-level-btn';b.dataset.level=String(n);
         if(lock){b.classList.add('is-locked');b.setAttribute('aria-disabled','true');}
         if(rec)b.classList.add('is-done');
+        if(toolOf(n)){b.classList.add('is-tool');b.dataset.tool=toolOf(n);}
         if(!lock&&!rec&&!nextMarked){b.classList.add('is-next');nextMarked=true;}
         const num=document.createElement('span');num.className='num';num.textContent=lock?'🔒':String(n);
         const st=document.createElement('span');st.className='stars';
-        if(rec){const b=document.createElement('b');b.textContent='★'.repeat(rec.stars);st.append(b,'☆'.repeat(3-rec.stars));}else st.textContent=lock?'':'☆☆☆';
+        const maxS=toolOf(n)?2:3;
+        if(rec){const b=document.createElement('b');b.textContent='★'.repeat(rec.stars);st.append(b,'☆'.repeat(Math.max(0,maxS-rec.stars)));}else st.textContent=lock?'':'☆'.repeat(maxS);
         b.append(num,st);
-        b.setAttribute('aria-label',lock?`Level ${n}, gesperrt. ${lockText(lock)}`:`Level ${n}${rec?`, ${rec.stars} von 3 Sternen`:', noch nicht gespielt'}`);
+        b.setAttribute('aria-label',(lock?`Level ${n}, gesperrt. ${lockText(lock)}`:`Level ${n}${rec?`, ${rec.stars} von 3 Sternen`:', noch nicht gespielt'}`)+(toolOf(n)?`. Werkzeug-Level (${toolName(toolOf(n))}), höchstens 2 Sterne`:''));
         b.addEventListener('click',()=>{
           if(lock){lockNote.textContent=`Level ${n}: ${lockText(lock)}`;b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');return;}
           closeSelect(true);onPlay?.(n);
@@ -166,6 +174,9 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
     }
     chapters.replaceChildren(...groups);
     select.hidden=false;selPanel.focus({preventScroll:true});
+    // 100 Level: das nächste Level in die Mitte holen (ohne Animation)
+    const nextBtn=chapters.querySelector('.is-next');
+    if(nextBtn&&Number(nextBtn.dataset.level)>CHAPTER_SIZE)nextBtn.scrollIntoView({block:'center',behavior:'instant'});
     document.addEventListener('keydown',onKey);
   }
   function closeSelect(silent=false){

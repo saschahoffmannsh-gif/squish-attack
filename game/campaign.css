@@ -54,3 +54,10 @@
 @keyframes campaign-shake {25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
 .campaign-lock-note {min-height:18px;color:#ffbbc6 !important;font-weight:700;}
 @media(prefers-reduced-motion:reduce){.campaign-level-btn.shake{animation:none;}}
+
+/* launch-15: drei Ziele gleichzeitig – kurze Texte, etwas kleiner (375 px) */
+.campaign-goal ul.is-three {gap:.3cqw;}
+.campaign-goal ul.is-three li {font-size:clamp(9.5px,2.75cqw,13px);line-height:1.12;}
+/* Werkzeug-Level in der Levelauswahl: kleines Werkzeug-Symbol, höchstens 2 ★ */
+.campaign-level-btn.is-tool::after {content:"🔧";position:absolute;top:-6px;right:-5px;font-size:13px;line-height:1;filter:drop-shadow(0 1px 1px #0008);}
+.campaign-level-btn {position:relative;}

@@ -4,10 +4,10 @@
 // Zielfortschritt, Steinfolge-Position = Tiefe). Liefert nur die ersten
 // Züge (Standard 2). Reine Logik ohne DOM – läuft im Worker oder direkt.
 import { SIZE, insertTile, settle } from './game-logic.mjs';
-import { ALL_MOVES, encodeMove } from './campaign.mjs?v=launch-14';
+import { ALL_MOVES, encodeMove, advanceGoals, goalTarget } from './campaign.mjs?v=launch-14';
 
 const MOVE_CHARS = ALL_MOVES.map(m => encodeMove(m.direction, m.line));
-export const targetOf = g => ({ tile: g.value, make: g.count, score: g.points, clear: g.tiles, street: g.count, combo: g.chain })[g.type];
+export const targetOf = goalTarget;
 
 function keyOf(board) {
   let s = '';
@@ -19,22 +19,7 @@ function boardOf(key) {
   for (let r = 0; r < SIZE; r++) { const row = []; for (let c = 0; c < SIZE; c++) { const ch = key[r * SIZE + c]; row.push(ch === '.' ? null : { value: parseInt(ch, 36) }); } b.push(row); }
   return b;
 }
-function advance(goals, vec, settled) {
-  const out = vec.slice(); let done = true;
-  for (let i = 0; i < goals.length; i++) {
-    const g = goals[i]; let v = out[i];
-    switch (g.type) {
-      case 'tile': for (const p of settled.passes) for (const x of p) if (x.nextValue > v) v = x.nextValue; v = Math.min(v, g.value); break;
-      case 'make': for (const p of settled.passes) for (const x of p) if (x.nextValue >= g.value) v++; v = Math.min(v, g.count); break;
-      case 'score': v = Math.min(v + settled.points, g.points); break;
-      case 'clear': for (const p of settled.passes) for (const x of p) v += x.cells.length - 1; v = Math.min(v, g.tiles); break;
-      case 'street': for (const p of settled.passes) for (const x of p) if (x.street) v++; v = Math.min(v, g.count); break;
-      case 'combo': v = Math.min(Math.max(v, settled.passes.length), g.chain); break;
-    }
-    out[i] = v; if (v < targetOf(g)) done = false;
-  }
-  return { vec: out, win: done };
-}
+const advance = advanceGoals;
 
 /**
  * state: {board: Zahlen/null 5×5, goals, sequence, index, movesLeft, vec}
