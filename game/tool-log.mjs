@@ -33,16 +33,17 @@ export function startAttempt(log, level, { limit = null, t = now() } = {}) {
   return a;
 }
 /**
- * Ereignis im laufenden Versuch: kind 'ad' (Dummy-Werbung angesehen → +1) oder 'use' (Hilfsmittel eingesetzt).
+ * Ereignis: kind 'ad' (Dummy-Werbung angesehen → +1), 'gift' (Level-Geschenk eingesammelt → +1)
+ * oder 'use' (Hilfsmittel eingesetzt). source: 'ad' | 'gift' bei Gutschriften, null beim Einsatz.
  * ctx = {move, movesLeft, progress:[{type,current,target}]}. Ausgang wird beim Versuchsende nachgetragen.
  */
 export function logEvent(log, attemptId, kind, tool, ctx = {}, t = now()) {
-  if (!TYPES.includes(tool) || !['ad', 'use'].includes(kind)) return null;
+  if (!TYPES.includes(tool) || !['ad', 'gift', 'use'].includes(kind)) return null;
   const a = openAttempt(log, attemptId);
-  const e = { id: ++log.seq, t, kind, tool, level: a?.level ?? ctx.level ?? null, attempt: a?.attempt ?? null, attemptId: a?.id ?? null,
+  const e = { id: ++log.seq, t, kind, source: kind === 'use' ? null : kind, tool, level: ctx.giftLevel ?? a?.level ?? ctx.level ?? null, giftId: ctx.giftId ?? null, attempt: a?.attempt ?? null, attemptId: a?.id ?? null,
     move: ctx.move ?? null, movesLeft: ctx.movesLeft ?? null, progress: ctx.progress ?? null, outcome: a?.outcome ?? null, where: ctx.where ?? null };
   log.events.push(e);
-  if (a) { if (kind === 'ad') a.ads++; else a.tools.push(tool); }
+  if (a) { if (kind === 'ad') a.ads++; else if (kind === 'gift') a.gifts = (a.gifts | 0) + 1; else a.tools.push(tool); }
   return e;
 }
 /** Versuch beenden: outcome 'won' | 'lost' | 'quit'; trägt den Ausgang an allen Ereignissen des Versuchs nach. */
@@ -62,9 +63,10 @@ export function reopenAttempt(log, attemptId) {
   return a;
 }
 
-/** Übersicht je Level + Summen: Versuche, Siege, Niederlagen, Abbrüche, Einsätze je Typ, Werbung je Typ. */
+/** Übersicht je Level + Summen: Versuche, Siege, Niederlagen, Abbrüche, Einsätze, Werbung und Geschenke je Typ. */
 export function summarize(log) {
-  const blank = () => ({ attempts: 0, wins: 0, losses: 0, quits: 0, use: Object.fromEntries(TYPES.map(t => [t, 0])), ads: Object.fromEntries(TYPES.map(t => [t, 0])), bestStars: 0 });
+  const zero = () => Object.fromEntries(TYPES.map(t => [t, 0]));
+  const blank = () => ({ attempts: 0, wins: 0, losses: 0, quits: 0, use: zero(), ads: zero(), gifts: zero(), bestStars: 0 });
   const levels = new Map(), total = blank();
   const get = n => { if (!levels.has(n)) levels.set(n, blank()); return levels.get(n); };
   for (const a of log.attempts) {
@@ -77,7 +79,7 @@ export function summarize(log) {
   }
   for (const e of log.events) {
     if (e.level == null) continue;
-    const s = get(e.level), key = e.kind === 'ad' ? 'ads' : 'use';
+    const s = get(e.level), key = e.kind === 'ad' ? 'ads' : e.kind === 'gift' ? 'gifts' : 'use';
     s[key][e.tool]++; total[key][e.tool]++;
   }
   return { levels: [...levels.entries()].sort((a, b) => a[0] - b[0]).map(([level, s]) => ({ level, ...s })), total };

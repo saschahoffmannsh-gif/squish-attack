@@ -1,7 +1,7 @@
 // Werkzeug-Statistik (launch-13, Testphase): Übersicht aus dem lokalen Protokoll, Export, Zurücksetzen.
-import { TOOL_ICONS } from './tool-icons.mjs?v=launch-13';
-import { toolName } from './campaign.mjs?v=launch-13';
-import { summarize, exportLog } from './tool-log.mjs?v=launch-13';
+import { TOOL_ICONS } from './tool-icons.mjs?v=launch-14';
+import { toolName } from './campaign.mjs?v=launch-14';
+import { summarize, exportLog } from './tool-log.mjs?v=launch-14';
 
 const TYPES = ['extraMoves', 'hint', 'rocket', 'wand'];
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
@@ -16,10 +16,11 @@ export function createStatsUI({ getLog, onReset, build = '', sound } = {}) {
   function cells(row, s) {
     for (const t of TYPES) {
       const td = el('td', 'ts-num');
-      const u = s.use[t], a = s.ads[t];
-      td.textContent = u || a ? `${u}` : '–';
+      const u = s.use[t], a = s.ads[t], g = s.gifts?.[t] | 0;
+      td.textContent = u || a || g ? `${u}` : '–';
       if (a) td.append(el('sup', 'ts-ad', `${a}▶`));
-      td.setAttribute('aria-label', `${toolName(t)}: ${u} eingesetzt, ${a} per Werbung`);
+      if (g) td.append(el('sup', 'ts-gift', `${g}🎁`));
+      td.setAttribute('aria-label', `${toolName(t)}: ${u} eingesetzt, ${a} per Werbung, ${g} geschenkt`);
       row.append(td);
     }
   }
@@ -33,13 +34,13 @@ export function createStatsUI({ getLog, onReset, build = '', sound } = {}) {
     const title = el('h2', 'ad-title', 'Werkzeug-Statistik'); title.id = 'ts-title';
     const t = sm.total;
     const tiles = el('div', 'ts-totals');
-    for (const [v, l] of [[t.attempts, 'Versuche'], [t.wins, 'Siege'], [sum(t.use), 'Einsätze'], [sum(t.ads), 'Werbung']]) {
+    for (const [v, l] of [[t.attempts, 'Versuche'], [t.wins, 'Siege'], [sum(t.use), 'Einsätze'], [sum(t.ads), 'Werbung'], [sum(t.gifts), 'Geschenke']]) {
       const d = el('div', 'ts-tile'); d.append(el('b', '', String(v)), el('small', '', l)); tiles.append(d);
     }
     const perType = el('div', 'ts-types');
     for (const ty of TYPES) {
-      const d = el('div', 'ts-type'); d.append(ico(ty), el('b', '', String(t.use[ty])), el('small', '', `${t.ads[ty]}▶`));
-      d.setAttribute('aria-label', `${toolName(ty)}: ${t.use[ty]} eingesetzt, ${t.ads[ty]} per Werbung`); perType.append(d);
+      const d = el('div', 'ts-type'); d.append(ico(ty), el('b', '', String(t.use[ty])), el('small', '', `${t.ads[ty]}▶`), el('small', 'ts-gift', `${t.gifts[ty]}🎁`));
+      d.setAttribute('aria-label', `${toolName(ty)}: ${t.use[ty]} eingesetzt, ${t.ads[ty]} per Werbung, ${t.gifts[ty]} geschenkt`); perType.append(d);
     }
     const wrap = el('div', 'ts-table-wrap');
     if (sm.levels.length) {
@@ -56,7 +57,7 @@ export function createStatsUI({ getLog, onReset, build = '', sound } = {}) {
       }
       table.append(thead, tbody); wrap.append(table);
     } else wrap.append(el('p', 'ts-empty', 'Noch keine Level gespielt. Spiel ein paar Level – hier siehst du dann, wo du welche Hilfe gebraucht hast.'));
-    const legend = el('p', 'ts-legend', 'Zahl = eingesetzt · ▶ = per Werbung geholt');
+    const legend = el('p', 'ts-legend', 'Zahl = eingesetzt · ▶ = per Werbung · 🎁 = Geschenk');
     const acts = el('div', 'ts-actions');
     const exp = el('button', 'ad-watch ts-export', 'Exportieren'); exp.type = 'button'; exp.id = 'ts-export';
     exp.addEventListener('click', () => void doExport());

@@ -33,14 +33,16 @@
 
 /* Werkzeug-Statistik */
 .ts-panel {width:min(100%,380px);gap:8px;}
-.ts-totals {display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.ts-totals {display:grid;grid-template-columns:repeat(5,1fr);gap:5px;}
 .ts-tile {display:flex;flex-direction:column;align-items:center;padding:6px 2px 7px;border-radius:14px;border:2px solid #0b0a16;background:linear-gradient(180deg,#ffd25a,#e8a21a);color:#3a2405;box-shadow:inset 0 2px 0 #ffffff90,0 2px 0 #0b0a16;}
 .ts-tile b {font:700 22px/1 var(--aw-comic);}
-.ts-tile small {font:700 11px/1.1 var(--aw-comic);}
+.ts-tile small {font:700 10.5px/1.1 var(--aw-comic);max-width:100%;overflow:hidden;text-overflow:ellipsis;}
 .ts-types {display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
 .ts-type {display:flex;align-items:center;justify-content:center;gap:3px;padding:4px 2px;border-radius:12px;border:2px solid #0b0a16;background:#2a2952;}
 .ts-type b {font:700 16px/1 var(--aw-comic);}
+.ts-type {flex-wrap:wrap;}
 .ts-type small {font:700 11px/1 var(--aw-comic);color:#9be7ff;}
+.ts-type small.ts-gift,.ts-gift {color:#ff9fd8;}
 .ts-ico {display:inline-grid;place-items:center;width:24px;height:24px;font-style:normal;}
 .ts-ico svg {width:24px;height:24px;display:block;}
 .ts-table-wrap {flex:1 1 auto;min-height:60px;overflow:auto;overscroll-behavior:contain;border-radius:14px;border:2px solid #0b0a16;background:#232248;}
@@ -49,7 +51,8 @@
 .ts-table td {padding:5px 2px;text-align:center;border-top:1px solid #ffffff14;}
 .ts-table .ts-lvl {color:#ffd25a;}
 .ts-table .is-win {color:#9df25a;}
-.ts-ad {margin-left:2px;font-size:10px;color:#9be7ff;vertical-align:super;}
+.ts-ad,.ts-gift {margin-left:2px;font-size:10px;color:#9be7ff;vertical-align:super;}
+sup.ts-gift {color:#ff9fd8;}
 .ts-empty {margin:0;padding:14px 12px;text-align:center;font:600 13.5px/1.35 var(--aw-text,system-ui);color:#ffffffc0;}
 .ts-legend {margin:0;text-align:center;font:600 11.5px/1.2 var(--aw-text,system-ui);color:#ffffff99;}
 .ts-actions {display:grid;grid-template-columns:1fr 1fr;gap:8px;}

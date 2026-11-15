@@ -348,7 +348,7 @@ export function loadInventory(storage = globalThis.localStorage) {
     const v = JSON.parse(storage?.getItem(TOOLS_KEY) ?? 'null');
     if (v && [1, 2, 3].includes(v.version) && Array.isArray(v.gifts)) {
       const n = x => Math.max(0, x | 0);
-      const pending = Array.isArray(v.pending) ? v.pending.filter(g => g && typeof g.id === 'string' && TOOL_TYPES.includes(g.type)).map(g => ({ id: g.id, type: g.type })) : [];
+      const pending = Array.isArray(v.pending) ? v.pending.filter(g => g && typeof g.id === 'string' && TOOL_TYPES.includes(g.type) && !g.id.startsWith('stars-')).map(g => ({ id: g.id, type: g.type })) : [];
       return { ...emptyInventory(), gifts: v.gifts.slice(), pending, extraMoves: n(v.extraMoves),
         rocket: n(v.rocket) + (v.version === 1 ? n(v.hammer) : 0), hint: n(v.hint), wand: n(v.wand) };
     }
@@ -366,14 +366,14 @@ export function saveInventory(inv, storage = globalThis.localStorage) {
  *    und Shop-Käufe. Aus = kein Vorrat, keine Geschenke, kein Shop.
  * Altes Verhalten (launch-10): FREE_TOOLS_PER_LEVEL = 0, TOOL_STOCK = true.
  *  - AD_TOOLS (launch-13, Testphase): leeres Hilfsmittel → Dummy-Werbung „Ansehen“ gibt 1 Stück.
- *  - TOOL_GIFTS (launch-13 aus): Level-/Sterne-Geschenke. Aus, damit das Protokoll echten Bedarf zeigt.
+ *  - TOOL_GIFTS (launch-13 aus, launch-14 wieder an): Level-Geschenke (3/6/10/20). Sterne-Geschenke gibt es nicht mehr.
  *  - TOOL_STOCK_RESET (launch-13): einmalig beim Laden Vorrat + offene Geschenke leeren.
- * Zurück zu launch-12: FREE_TOOLS_PER_LEVEL = 1, AD_TOOLS = false, TOOL_GIFTS = true, SHOP_CONFIG.enabled = true.
+ * Zurück zu launch-12 (ohne Sterne-Geschenke): FREE_TOOLS_PER_LEVEL = 1, AD_TOOLS = false, SHOP_CONFIG.enabled = true.
  */
 export const FREE_TOOLS_PER_LEVEL = 0;
 export const TOOL_STOCK = true;
 export const AD_TOOLS = true;
-export const TOOL_GIFTS = false;
+export const TOOL_GIFTS = true;
 export const TOOL_STOCK_RESET = 'launch-13';
 export const TOOL_RESET_KEY = 'squish-campaign-tools-reset';
 /**
@@ -418,18 +418,16 @@ export function addToStock(inv, items) {
 
 /**
  * Gratis-Geschenke (docs/kampagne.md), jedes nur einmal:
- *  Level 3 → Hinweis, Level 6 → Zauberstab, Level 10 → +3 Züge, Level 20 → Rakete,
- *  dazu je 10 Sterne ein Hilfsmittel im Wechsel: +3 Züge, Rakete, Hinweis, Zauberstab.
+ *  Level 3 → Hinweis, Level 6 → Zauberstab, Level 10 → +3 Züge, Level 20 → Rakete.
+ * (Die früheren Sterne-Geschenke „je 10 Sterne ein Hilfsmittel“ sind seit launch-14 entfernt.)
  */
-export const STARS_PER_GIFT = 10;
 export const LEVEL_GIFTS = Object.freeze([[3, 'hint'], [6, 'wand'], [10, 'extraMoves'], [20, 'rocket']]);
-export const STAR_GIFT_ROTATION = Object.freeze(['extraMoves', 'rocket', 'hint', 'wand']);
+/** Level, für das ein Geschenk vergeben wird ('level-3' → 3), sonst null. */
+export const giftLevel = id => { const m = /^level-(\d+)$/.exec(String(id)); return m ? Number(m[1]) : null; };
 function dueGifts(inv, progress) {
   const due = [], seen = new Set(inv.gifts || []);
   const add = (id, type) => { if (!seen.has(id)) { seen.add(id); due.push({ id, type }); } };
   for (const [n, type] of LEVEL_GIFTS) if (progress.levels[String(n)]) add(`level-${n}`, type);
-  const blocks = Math.floor(totalStars(progress) / STARS_PER_GIFT);
-  for (let b = 1; b <= blocks; b++) add(`stars-${b * STARS_PER_GIFT}`, STAR_GIFT_ROTATION[(b - 1) % STAR_GIFT_ROTATION.length]);
   return due;
 }
 /** Sofort gutschreiben (alt, launch-10). Rückgabe {inventory, granted:[{id, type}]}. */

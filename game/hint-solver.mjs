@@ -4,7 +4,7 @@
 // Zielfortschritt, Steinfolge-Position = Tiefe). Liefert nur die ersten
 // Züge (Standard 2). Reine Logik ohne DOM – läuft im Worker oder direkt.
 import { SIZE, insertTile, settle } from './game-logic.mjs';
-import { ALL_MOVES, encodeMove } from './campaign.mjs?v=launch-13';
+import { ALL_MOVES, encodeMove } from './campaign.mjs?v=launch-14';
 
 const MOVE_CHARS = ALL_MOVES.map(m => encodeMove(m.direction, m.line));
 export const targetOf = g => ({ tile: g.value, make: g.count, score: g.points, clear: g.tiles, street: g.count, combo: g.chain })[g.type];

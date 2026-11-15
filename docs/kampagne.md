@@ -443,3 +443,12 @@ Ziel: sehen, wie viele Hilfsmittel beim echten Spielen wann und wo gebraucht wer
   `TOOL_GIFTS = true`, `TOOL_STOCK_RESET = null` in `game/campaign.mjs`;
   `SHOP_CONFIG.enabled = true` in `game/shop.mjs`. Protokoll und Statistik können
   bleiben oder mit dem Knopf in den Einstellungen entfernt werden.
+
+## Level-Geschenke wieder an, Sterne-Geschenke entfernt (launch-14, temporär)
+
+- `TOOL_GIFTS = true`: nur die Level-Geschenke (`LEVEL_GIFTS`): Hinweis nach Level 3, Zauberstab nach 6, +3 Züge nach 10, Rakete nach 20 – wie gehabt als antippbare Geschenk-Blase.
+- Die Sterne-Geschenke („1 Werkzeug je 10 gesammelte Sterne“) sind komplett entfernt (`STARS_PER_GIFT`/`STAR_GIFT_ROTATION` gelöscht). `loadInventory` verwirft noch offene `stars-…`-Geschenke.
+- Unverändert: Vorrat-Reset einmalig (`TOOL_STOCK_RESET = 'launch-13'`, kein zweiter Reset), keine Gratis-Ladungen (`FREE_TOOLS_PER_LEVEL = 0`), Dummy-Werbung (`AD_TOOLS = true`), Shop versteckt.
+- Bereits vergebene Geschenk-ids bleiben vergeben (der Reset hat sie behalten) – schon verdiente Level-Geschenke kommen nicht noch einmal.
+- Werkzeug-Protokoll: Geschenke werden als `kind: 'gift'`, `source: 'gift'` mit `giftId` und dem Level des Geschenks protokolliert; Werbung hat `source: 'ad'`. `summarize` zählt `gifts` je Werkzeug und Level, die Statistik zeigt eine Kachel „Geschenke“ und 🎁 je Zelle.
+- Zurück zu launch-13: `TOOL_GIFTS = false`.

@@ -1,2 +1,2 @@
-import {installStartMenu} from './start-menu.mjs?v=launch-13';
+import {installStartMenu} from './start-menu.mjs?v=launch-14';
 installStartMenu();

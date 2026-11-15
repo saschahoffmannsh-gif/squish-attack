@@ -1,32 +1,32 @@
-import {apiFetch,hasSaveToken} from './api.mjs?v=launch-13';
-import {createRng,encodeMove,replayRun,MAX_LOG} from './ranked.mjs?v=launch-13';
-import {createLeaderboard} from './leaderboard.mjs?v=launch-13';
+import {apiFetch,hasSaveToken} from './api.mjs?v=launch-14';
+import {createRng,encodeMove,replayRun,MAX_LOG} from './ranked.mjs?v=launch-14';
+import {createLeaderboard} from './leaderboard.mjs?v=launch-14';
 import { SIZE, START_VALUES, createStartValues, insertTile, nextMergePass, settle, isGameOver } from './game-logic.mjs?v=automatic-streets-2';
 import { nextSpawn, spawnProfile } from './balance.mjs';
 import {canContinueRun} from './run-availability.mjs?v=splash-plate-1';
-import { createMergeEffects } from './merge-effects.mjs?v=launch-13';
-import { createGameGraphics } from './graphics-adapter.mjs?v=launch-13';
+import { createMergeEffects } from './merge-effects.mjs?v=launch-14';
+import { createGameGraphics } from './graphics-adapter.mjs?v=launch-14';
 import { installDeviceMotion } from './device-motion.mjs';
-import { createGameSound } from './sound.mjs?v=launch-13';
+import { createGameSound } from './sound.mjs?v=launch-14';
 import { installSettings } from './settings.mjs?v=woodland-menu-1';
-import { createDuelClient } from './duel-client.mjs?v=launch-13';
+import { createDuelClient } from './duel-client.mjs?v=launch-14';
 import {installFullscreen} from './fullscreen.mjs?v=timed-duel-1';
-import {createHomeMenu} from './home-menu.mjs?v=launch-13';
-import {createConfetti} from './confetti.mjs?v=launch-13';
-import {createHaptics} from './haptics.mjs?v=launch-13';
+import {createHomeMenu} from './home-menu.mjs?v=launch-14';
+import {createConfetti} from './confetti.mjs?v=launch-14';
+import {createHaptics} from './haptics.mjs?v=launch-14';
 import {planMergeRipple} from './merge-ripple.mjs?v=swarm-fx-3';
-import * as Camp from './campaign.mjs?v=launch-13';
-import {createCampaignUI} from './campaign-ui.mjs?v=launch-13';
-import {createToolFx} from './tool-fx.mjs?v=launch-13';
-import {hintState,findHint} from './hint-solver.mjs?v=launch-13';
-import {comicColors} from './comic-style.mjs?v=launch-13';
-import * as Shop from './shop.mjs?v=launch-13';
-import {createShopUI} from './shop-ui.mjs?v=launch-13';
-import {createGiftFx} from './gift-fx.mjs?v=launch-13';
-import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-13';
-import {createAdUI} from './ad-ui.mjs?v=launch-13';
-import {createStatsUI} from './stats-ui.mjs?v=launch-13';
-import * as ToolLog from './tool-log.mjs?v=launch-13';
+import * as Camp from './campaign.mjs?v=launch-14';
+import {createCampaignUI} from './campaign-ui.mjs?v=launch-14';
+import {createToolFx} from './tool-fx.mjs?v=launch-14';
+import {hintState,findHint} from './hint-solver.mjs?v=launch-14';
+import {comicColors} from './comic-style.mjs?v=launch-14';
+import * as Shop from './shop.mjs?v=launch-14';
+import {createShopUI} from './shop-ui.mjs?v=launch-14';
+import {createGiftFx} from './gift-fx.mjs?v=launch-14';
+import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-14';
+import {createAdUI} from './ad-ui.mjs?v=launch-14';
+import {createStatsUI} from './stats-ui.mjs?v=launch-14';
+import * as ToolLog from './tool-log.mjs?v=launch-14';
 const playfield = document.getElementById('playfield');
 const gameElement = document.querySelector('.game');
 const visual = createGameGraphics(document.getElementById('graphics'));
@@ -142,13 +142,13 @@ const newTile = value => ({ id: nextId++, value });
 // in localStorage unangetastet: während der Kampagne wird nichts davon gespeichert,
 // beim Verlassen wird er wieder geladen.
 const MODE_KEY='squish-mode-v1';
-const LEVELS_URL=new URL('../levels/levels-001-025.json?v=launch-13',import.meta.url);
+const LEVELS_URL=new URL('../levels/levels-001-025.json?v=launch-14',import.meta.url);
 function storedMode(){try{return localStorage.getItem(MODE_KEY)||'';}catch{return '';}}
 let campaignMode=false,camp=null,levels=null,levelsLoading=null,stashedBestTile=null,needsEntry=false,armedTool=null,hintBusy=false,wandPicker=null;
 let campaignProgress=Camp.loadProgress(),inventory=Camp.loadInventory();
 // launch-13 (Testphase): Vorrat einmalig leeren; Werkzeug-Protokoll nur lokal (tool-log.mjs).
 if(Camp.TOOL_STOCK_RESET)inventory=Camp.resetStockOnce(inventory).inventory;
-const BUILD_LABEL='launch-13';
+const BUILD_LABEL='launch-14';
 let toolLog=ToolLog.loadLog(),logAttempt=null;
 // Versuche, die beim letzten Mal offen blieben (Seite geschlossen), gelten als abgebrochen.
 if(toolLog.attempts.some(a=>!a.outcome)){for(const a of toolLog.attempts)if(!a.outcome)ToolLog.endAttempt(toolLog,a.id,{outcome:'quit',moves:a.moves});ToolLog.saveLog(toolLog);}
@@ -252,6 +252,7 @@ async function openGift(){
   await giftFx.open({items:[{type:gift.type,count:1}],targetFor:target,onPop:()=>{
     const c=Camp.collectGift(inventory,gift.id);if(!c)return;
     inventory=c.inventory;Camp.saveInventory(inventory);
+    logTool('gift',gift.type,{...logCtx(campaignUI.resultOpen?'result':campaignMode?'level':'menu'),giftId:gift.id,giftLevel:Camp.giftLevel(gift.id)});   // launch-14: Geschenke im Protokoll
     renderCampaign();if(campaignUI.resultOpen)campaignUI.setGifts(inventory.pending);
   }});
   if(campaignUI.resultOpen)campaignUI.setGifts(inventory.pending);
@@ -460,7 +461,7 @@ let hintWorker=null,hintSeq=0;
 function searchHint(state){
   const budget={want:2,maxStates:160000,maxMs:2500};
   try{
-    hintWorker||=new Worker(new URL('./hint-worker.mjs?v=launch-13',import.meta.url),{type:'module'});
+    hintWorker||=new Worker(new URL('./hint-worker.mjs?v=launch-14',import.meta.url),{type:'module'});
   }catch{hintWorker=null;}
   if(!hintWorker)return Promise.resolve(findHint(state,{...budget,maxMs:900}));
   const id=++hintSeq;

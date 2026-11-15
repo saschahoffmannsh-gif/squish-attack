@@ -201,27 +201,26 @@ test('Inventar: laden, speichern, verbrauchen; alter Hammer wird Rakete', () => 
   assert.equal(toolName('rocket'), 'Rakete'); assert.equal(toolName('wand'), 'Zauberstab'); assert.equal(toolName('hint'), 'Hinweis');
 });
 
-test('Geschenke: Level 3/6/10/20 und je 10 Sterne im Wechsel – jeweils nur einmal', () => {
+test('Geschenke (launch-14): nur Level 3/6/10/20, keine Sterne-Geschenke – jeweils nur einmal', () => {
   let p = emptyProgress();
-  for (let n = 1; n <= 9; n++) p = recordResult(p, n, { stars: 1, moves: 5, now: 1 });   // 9★
+  for (let n = 1; n <= 9; n++) p = recordResult(p, n, { stars: 3, moves: 5, now: 1 });   // 27★
   let r = grantGifts(emptyInventory(), p);
-  assert.deepEqual(r.granted.map(g => g.id), ['level-3', 'level-6']);
+  assert.deepEqual(r.granted.map(g => g.id), ['level-3', 'level-6']);                      // trotz 27★ kein Sterne-Geschenk
   assert.equal(r.inventory.hint, 1); assert.equal(r.inventory.wand, 1);
-  p = recordResult(p, 10, { stars: 2, moves: 5, now: 1 });                                // 11★, Level 10
+  p = recordResult(p, 10, { stars: 3, moves: 5, now: 1 });
   r = grantGifts(r.inventory, p);
-  assert.deepEqual(r.granted.map(g => g.id), ['level-10', 'stars-10']);
-  assert.equal(r.inventory.extraMoves, 2);
+  assert.deepEqual(r.granted.map(g => g.id), ['level-10']);
+  assert.equal(r.inventory.extraMoves, 1);
   assert.deepEqual(grantGifts(r.inventory, p).granted, []);                               // nicht doppelt
-  for (let n = 11; n <= 20; n++) p = recordResult(p, n, { stars: 1, moves: 5, now: 1 });  // 21★, Level 20
+  for (let n = 11; n <= 25; n++) p = recordResult(p, n, { stars: 3, moves: 4, now: 2 });  // 75★
   r = grantGifts(r.inventory, p);
-  assert.deepEqual(r.granted.map(g => g.id), ['level-20', 'stars-20']);
-  assert.equal(r.inventory.rocket, 2);
-  for (let n = 1; n <= 20; n++) p = recordResult(p, n, { stars: 2, moves: 4, now: 2 });   // 40★
-  r = grantGifts(r.inventory, p);
-  assert.deepEqual(r.granted, [{ id: 'stars-30', type: 'hint' }, { id: 'stars-40', type: 'wand' }]);
-  // Alter Spielstand mit Hammer-Geschenk: kein doppeltes Geschenk
-  const migrated = loadInventory({ getItem: () => '{"version":1,"extraMoves":0,"hammer":1,"gifts":["level-10","level-20","stars-10","stars-20"]}' });
-  assert.deepEqual(grantGifts(migrated, p).granted.map(g => g.id), ['level-3', 'level-6', 'stars-30', 'stars-40']);
+  assert.deepEqual(r.granted, [{ id: 'level-20', type: 'rocket' }]);
+  assert.ok(!r.inventory.gifts.some(id => id.startsWith('stars-')));
+  // Alter Spielstand: vergebene Geschenke bleiben vergeben, offene Sterne-Geschenke fallen weg
+  const migrated = loadInventory({ getItem: () => '{"version":3,"extraMoves":0,"rocket":0,"hint":0,"wand":0,"gifts":["level-10","stars-10"],"pending":[{"id":"stars-10","type":"wand"},{"id":"level-10","type":"extraMoves"}]}' });
+  assert.deepEqual(migrated.pending, [{ id: 'level-10', type: 'extraMoves' }]);
+  assert.deepEqual(grantGifts(migrated, p).granted.map(g => g.id), ['level-3', 'level-6', 'level-20']);
+  assert.equal(giftLevel('level-20'), 20); assert.equal(giftLevel('stars-10'), null);
 });
 
 test('Zauberstab: Zahlen 1 … Zielwert, nicht der aktuelle Wert, kein Sofort-Sieg; danach normale Fusion', () => {
@@ -313,19 +312,19 @@ test('Geschenke als offene Pakete: einreihen, einzeln einsammeln, gespeichert, n
   let p = emptyProgress();
   for (let n = 1; n <= 10; n++) p = recordResult(p, n, { stars: 1, moves: 5, now: 1 });   // 10★, Level 3/6/10
   let q = queueGifts(emptyInventory(), p);
-  assert.deepEqual(q.queued.map(g => g.id), ['level-3', 'level-6', 'level-10', 'stars-10']);
+  assert.deepEqual(q.queued.map(g => g.id), ['level-3', 'level-6', 'level-10']);
   assert.deepEqual(q.inventory.pending, q.queued);
   assert.equal(q.inventory.hint, 0);                                                      // noch nicht gutgeschrieben
   assert.deepEqual(queueGifts(q.inventory, p).queued, []);                                // nicht doppelt
   const mem = new Map(); const storage = { getItem: k => mem.get(k) ?? null, setItem: (k, v) => mem.set(k, v) };
   saveInventory(q.inventory, storage);
   let inv = loadInventory(storage);
-  assert.deepEqual(inv.pending.map(g => g.id), ['level-3', 'level-6', 'level-10', 'stars-10']);   // bleibt bis zum Einsammeln
+  assert.deepEqual(inv.pending.map(g => g.id), ['level-3', 'level-6', 'level-10']);   // bleibt bis zum Einsammeln
   const c = collectGift(inv);
   assert.deepEqual(c.gift, { id: 'level-3', type: 'hint' });
-  assert.equal(c.inventory.hint, 1); assert.equal(c.inventory.pending.length, 3);
-  const d = collectGift(c.inventory, 'stars-10');
-  assert.equal(d.inventory.extraMoves, 1); assert.deepEqual(d.inventory.pending.map(g => g.id), ['level-6', 'level-10']);
+  assert.equal(c.inventory.hint, 1); assert.equal(c.inventory.pending.length, 2);
+  const d = collectGift(c.inventory, 'level-10');
+  assert.equal(d.inventory.extraMoves, 1); assert.deepEqual(d.inventory.pending.map(g => g.id), ['level-6']);
   assert.equal(collectGift(d.inventory, 'nope'), null);
   assert.equal(collectGift(emptyInventory()), null);
   assert.deepEqual(queueGifts(d.inventory, p).queued, []);                                // eingesammelt = vergeben
@@ -365,14 +364,14 @@ test('Shop: eine Preistabelle, Testkauf legt in den Vorrat, Schnittstelle für n
   assert.equal(activeStore().kind, 'test');
 });
 
-import { AD_TOOLS, TOOL_GIFTS, resetStockOnce, TOOL_RESET_KEY, loadInventory as loadInv13 } from '../game/campaign.mjs';
+import { AD_TOOLS, TOOL_GIFTS, giftLevel, resetStockOnce, TOOL_RESET_KEY, loadInventory as loadInv13 } from '../game/campaign.mjs';
 import { loadLog, saveLog, startAttempt, logEvent, endAttempt, reopenAttempt, summarize, exportLog, emptyLog, TOOL_LOG_KEY } from '../game/tool-log.mjs';
 const memStore = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k), m }; };
 
-test('launch-13: Testphase-Schalter – keine Gratis-Ladungen, Werbung an, Geschenke aus', () => {
+test('Testphase-Schalter (launch-14): keine Gratis-Ladungen, Werbung an, Level-Geschenke an', () => {
   assert.equal(FREE_TOOLS_PER_LEVEL, 0);
   assert.deepEqual(freeToolCharges(), { extraMoves: 0, rocket: 0, hint: 0, wand: 0 });
-  assert.equal(AD_TOOLS, true); assert.equal(TOOL_GIFTS, false);
+  assert.equal(AD_TOOLS, true); assert.equal(TOOL_GIFTS, true);
   assert.deepEqual(toolsAvailable(emptyInventory(), freeToolCharges()), { extraMoves: 0, rocket: 0, hint: 0, wand: 0 });
 });
 
@@ -436,4 +435,23 @@ test('launch-13: Werkzeug-Protokoll – Versuche, Werbung, Einsatz mit Kontext, 
 test('launch-13: Werkzeuge deckeln weiterhin auf 2 Sterne', () => {
   assert.equal(starsFor({ stars: { three: 3, two: 5 } }, 3, true, { toolsUsed: 1 }), 2);
   assert.equal(starsFor({ stars: { three: 3, two: 5 } }, 3, true, { toolsUsed: 0 }), 3);
+});
+
+test('launch-14: Geschenk-Gutschriften im Protokoll mit Quelle „gift“, getrennt von Werbung', () => {
+  const log = emptyLog();
+  const a = startAttempt(log, 3);
+  endAttempt(log, a.id, { outcome: 'won', moves: 2, stars: 3 });
+  const g = logEvent(log, a.id, 'gift', 'hint', { where: 'result', giftId: 'level-3', giftLevel: 3 });
+  const ad = logEvent(log, null, 'ad', 'rocket', { level: 4, where: 'level' });
+  const u = logEvent(log, null, 'use', 'hint', { level: 4 });
+  assert.deepEqual([g.kind, g.source, g.level, g.giftId, g.outcome], ['gift', 'gift', 3, 'level-3', 'won']);
+  assert.equal(ad.source, 'ad'); assert.equal(u.source, null);
+  assert.equal(a.gifts, 1); assert.equal(a.ads, 0);
+  // Geschenk aus dem Menü (kein Versuch offen) zählt beim Geschenk-Level
+  logEvent(log, null, 'gift', 'wand', { where: 'menu', giftId: 'level-6', giftLevel: 6 });
+  const sm = summarize(log);
+  assert.deepEqual(sm.total.gifts, { extraMoves: 0, rocket: 0, hint: 1, wand: 1 });
+  assert.deepEqual(sm.total.ads, { extraMoves: 0, rocket: 1, hint: 0, wand: 0 });
+  assert.deepEqual(sm.levels.map(l => l.level), [3, 4, 6]);
+  assert.equal(sm.levels[0].gifts.hint, 1); assert.equal(sm.levels[2].gifts.wand, 1);
 });
