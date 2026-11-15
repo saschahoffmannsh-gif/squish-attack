@@ -10,33 +10,15 @@
 //  - die Anzahl optimaler Zugfolgen und den Anteil an allen Zugfolgen dieser Länge.
 // Wird eine Schicht zu groß, bricht die exakte Suche ab (oder läuft als
 // Beam-Suche weiter, dann ist das Ergebnis als ungenau markiert).
-import { SIZE, insertTile, settle } from '../../game/game-logic.mjs';
-import { ALL_MOVES, encodeMove, createLevelRun, applyLevelMove, advanceGoals, goalTarget } from '../../game/campaign.mjs';
+import { SIZE, insertTile, settle, boardCode, boardFromCode } from '../../game/game-logic.mjs';
+import { ALL_MOVES, encodeMove, createLevelRun, applyLevelMove, advanceGoals, goalTarget, stepBoard, tickLevelBombs, progressVector } from '../../game/campaign.mjs';
 import { createRng } from '../../game/ranked.mjs';
 
 const MOVE_CHARS = ALL_MOVES.map(m => encodeMove(m.direction, m.line));
 
-export function boardKey(board) {
-  let s = '';
-  for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
-    const t = board[r][c];
-    s += t === null ? '.' : t.value.toString(36);
-  }
-  return s;
-}
-export function boardFromKey(key) {
-  const board = [];
-  for (let r = 0; r < SIZE; r++) {
-    const row = [];
-    for (let c = 0; c < SIZE; c++) {
-      const ch = key[r * SIZE + c];
-      row.push(ch === '.' ? null : { value: parseInt(ch, 36) });
-    }
-    board.push(row);
-  }
-  return { board };
-}
-
+// launch-16: ein Zeichen je Zelle inkl. besonderer Squishes (Eis, Kette, Bombe) – siehe game-logic.mjs.
+export const boardKey = boardCode;
+export function boardFromKey(key) { return { board: boardFromCode(key) }; }
 
 /** Fortschritt weiterrechnen – gemeinsame Zählung aus campaign.mjs (advanceGoals). */
 export const advanceVec = advanceGoals;
@@ -47,10 +29,8 @@ export function expand(level, board, vec, depth) {
   const out = [];
   for (let i = 0; i < ALL_MOVES.length; i++) {
     const { direction, line } = ALL_MOVES[i];
-    const tile = { value: raw };
-    const ins = insertTile(board, direction, line, tile);
-    if (!ins.accepted) continue;
-    const settled = settle(ins.board);
+    const settled = stepBoard(board, direction, line, { value: raw });
+    if (!settled) continue;
     const a = advanceVec(level.goals, vec, settled);
     out.push({ move: MOVE_CHARS[i], board: settled.board, vec: a.vec, win: a.win });
   }
@@ -209,4 +189,34 @@ export function toolEffect(level, tool, { n = 200, seed = 11, skill = 0.4 } = {}
   const pm = playerModel(level, { n, seed, skill, depth });
   const before = pm.rate(level.moves), after = pm.rate(depth);
   return { before, after, attemptsBefore: before ? 1 / before : Infinity, attemptsAfter: after ? 1 / after : Infinity };
+}
+
+/**
+ * launch-16: Echtzeit-Simulation für Bomben-Level (der Solver kann die Uhr nur grob modellieren).
+ * Spielermodell wie playerModel (1 Zug Vorausschau, Softmax), dazu Bedenkzeit je Zug gleichverteilt
+ * in [secMin, secMax] Sekunden; die Bomben-Uhr läuft mit dieser Zeit (tickLevelBombs, wie im Spiel).
+ * Liefert Gewinnrate im Zuglimit und Anteil Partien mit Explosion.
+ */
+export function simulateRealtime(level, { n = 200, seed = 5, skill = 0.6, secMin = 1.5, secMax = 5 } = {}) {
+  const rng = createRng(seed);
+  const temp = 0.05 + (1 - skill) * 1.5;
+  let wins = 0, boom = 0;
+  for (let k = 0; k < n; k++) {
+    const run = createLevelRun(level);
+    let vec = level.goals.map(() => 0);
+    while (run.status === 'playing') {
+      const kids = expand(level, run.board, vec, run.index).map((x, i) => ({ ...x, i }));
+      if (!kids.length) break;
+      const vals = kids.map(x => (x.win ? 3 : 0) + 3 * x.vec.reduce((s, v, i) => s + v / targetOf(level.goals[i]), 0) + boardShape(x.board));
+      const m = Math.max(...vals), w = vals.map(v => Math.exp((v - m) / temp)), sum = w.reduce((a, b) => a + b);
+      let r = rng() * sum, pick = 0;
+      for (; pick < w.length - 1; pick++) { r -= w[pick]; if (r < 0) break; }
+      const mv = ALL_MOVES[MOVE_CHARS.indexOf(kids[pick].move)];
+      if (run.bombClock) { if (tickLevelBombs(run, (secMin + rng() * (secMax - secMin)) * 1000).length) boom++; if (run.status !== 'playing') break; }
+      applyLevelMove(run, mv.direction, mv.line);
+      vec = progressVector(run);
+    }
+    if (run.status === 'won') wins++;
+  }
+  return { n, winRate: wins / n, explodedRate: boom / n };
 }

@@ -3,22 +3,15 @@
 // Zugtiefe mit Transpositionstabelle; Zustand = Brett + gedeckelter
 // Zielfortschritt, Steinfolge-Position = Tiefe). Liefert nur die ersten
 // Züge (Standard 2). Reine Logik ohne DOM – läuft im Worker oder direkt.
-import { SIZE, insertTile, settle } from './game-logic.mjs';
-import { ALL_MOVES, encodeMove, advanceGoals, goalTarget } from './campaign.mjs?v=launch-16';
+import { SIZE, boardCode, boardFromCode } from './game-logic.mjs?v=launch-16';
+import { ALL_MOVES, encodeMove, advanceGoals, goalTarget, stepBoard } from './campaign.mjs?v=launch-16';
 
 const MOVE_CHARS = ALL_MOVES.map(m => encodeMove(m.direction, m.line));
 export const targetOf = goalTarget;
 
-function keyOf(board) {
-  let s = '';
-  for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) { const t = board[r][c]; s += t === null ? '.' : t.value.toString(36); }
-  return s;
-}
-function boardOf(key) {
-  const b = [];
-  for (let r = 0; r < SIZE; r++) { const row = []; for (let c = 0; c < SIZE; c++) { const ch = key[r * SIZE + c]; row.push(ch === '.' ? null : { value: parseInt(ch, 36) }); } b.push(row); }
-  return b;
-}
+// launch-16: Schlüssel inkl. besonderer Squishes (Eis, Kette, Bombe).
+const keyOf = boardCode;
+const boardOf = boardFromCode;
 const advance = advanceGoals;
 
 /**
@@ -29,7 +22,7 @@ const advance = advanceGoals;
  */
 export function findHint(state, { want = 2, maxStates = 160000, maxMs = 2500, beamWidth = 12000, now = () => performance.now() } = {}) {
   const t0 = now(), { goals, sequence } = state;
-  const startBoard = state.board.map(row => row.map(v => (v == null ? null : { value: v })));
+  const startBoard = state.board.map(row => row.map(v => (v == null ? null : typeof v === 'number' ? { value: v } : { ...v })));
   let layer = new Map([[keyOf(startBoard) + '|' + state.vec.join(','), { prefix: '', vec: state.vec.slice() }]]);
   let states = 1, exact = true;
   const score = vec => vec.reduce((s, v, i) => s + v / targetOf(goals[i]), 0);
@@ -41,9 +34,8 @@ export function findHint(state, { want = 2, maxStates = 160000, maxMs = 2500, be
       const board = boardOf(key.slice(0, SIZE * SIZE));
       for (let i = 0; i < ALL_MOVES.length; i++) {
         const { direction, line } = ALL_MOVES[i];
-        const ins = insertTile(board, direction, line, { value: raw });
-        if (!ins.accepted) continue;
-        const settled = settle(ins.board);
+        const settled = stepBoard(board, direction, line, { value: raw });
+        if (!settled) continue;
         const a = advance(goals, node.vec, settled);
         const prefix = node.prefix.length < want ? node.prefix + MOVE_CHARS[i] : node.prefix;
         if (a.win) return { found: true, moves: prefix, minMoves: d + 1, exact, states, ms: now() - t0 };
@@ -65,6 +57,6 @@ export function findHint(state, { want = 2, maxStates = 160000, maxMs = 2500, be
 
 /** Zustand aus einem laufenden Kampagnen-Lauf (game/campaign.mjs createLevelRun). */
 export function hintState(run, { movesLeft, vec }) {
-  return { board: run.board.map(row => row.map(t => (t ? t.value : null))), goals: run.level.goals,
+  return { board: run.board.map(row => row.map(t => (t ? (t.ice || t.bound || t.bomb != null ? { value: t.value, ice: t.ice || undefined, bound: t.bound || undefined, bomb: t.bomb ?? undefined } : t.value) : null))), goals: run.level.goals,
     sequence: run.level.sequence, index: run.index, movesLeft, vec };
 }
