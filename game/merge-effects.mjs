@@ -1,6 +1,7 @@
 import {createScoreLedger} from './score-ledger.mjs?v=reward-fx-1';
-import {createFlipbookLayer,hexColor} from './vfx-flipbooks.mjs?v=launch-22';
+import {createFlipbookLayer,hexColor} from './vfx-flipbooks.mjs?v=launch-23';
 import {createComboMeter,comboTint} from './combo-meter.mjs?v=combo-1';
+import { t, fmtNum } from './i18n.mjs?v=launch-23';
 const palette=['#00b5ff','#f31954','#00dc45','#ff850c','#9239ff','#ffc829','#f44ebd','#20d8ce'];
 const gold='#ffce70',ivory='#fff8dd';
 const GOLD=hexColor('#ffc964'),IVORY=hexColor(ivory);
@@ -15,12 +16,12 @@ export function mergeProfile(group,combo=1){
   return {kind,color:hue(group.nextValue),power:kind==='super'?1.85:kind==='quad'?1.35:kind==='street'?1.15:1,particles:Math.min(32,(kind==='super'?32:kind==='quad'?24:kind==='street'?18:16)+Math.min(3,combo-1)*2),rings:kind==='super'?3:kind==='quad'?2:1,points:group.nextValue*count*10};
 }
 export function celebrationFor(group,combo=1){
-  if(combo>=4)return {title:'SQUISHTASTISCH!',subtitle:`KETTE ×${combo}`,priority:4};
-  if(combo===3)return {title:'FANTASTISCH!',subtitle:'KETTE ×3',priority:3};
-  if(group&&!group.street&&group.cells.length>=5)return {title:'MEGA SQUISH!',subtitle:'+2 STUFEN',priority:3};
-  if(combo===2)return {title:'SÜSS!',subtitle:'KETTE ×2',priority:2};
-  if(group?.street&&group.cells.length>=4)return {title:'FLOW!',subtitle:'PERFEKTE STRASSE',priority:1};
-  if(group&&!group.street&&group.cells.length===4)return {title:'SQUISH!',subtitle:'VIER AUF EINEN STREICH',priority:1};
+  if(combo>=4)return {title:t('fx.squishtastic'),subtitle:t('fx.chain',{n:combo}),priority:4};
+  if(combo===3)return {title:t('fx.fantastic'),subtitle:t('fx.chain',{n:3}),priority:3};
+  if(group&&!group.street&&group.cells.length>=5)return {title:t('fx.mega'),subtitle:t('fx.plus2'),priority:3};
+  if(combo===2)return {title:t('fx.sweet'),subtitle:t('fx.chain',{n:2}),priority:2};
+  if(group?.street&&group.cells.length>=4)return {title:t('fx.flow'),subtitle:t('fx.perfectStreet'),priority:1};
+  if(group&&!group.street&&group.cells.length===4)return {title:t('fx.squish'),subtitle:t('fx.four'),priority:1};
   return null;
 }
 // Which rendered layers one merge plays. Triggers that fire together are
@@ -41,7 +42,7 @@ export function createMergeEffects(layer,reduceMotion,{
   // Merges are real gel now (fusion.mjs); only the light bits and the combo
   // cushions remain as rendered sprites.
   setTimeout(()=>vfx.preload(['bits','cushion']),400);
-  const counter=scoreElement?.closest('.run-score'),format=new Intl.NumberFormat('de-DE');
+  const counter=scoreElement?.closest('.run-score'),format={format:n=>fmtNum(n)};
   const ledger=createScoreLedger(value=>{if(scoreElement)scoreElement.textContent=format.format(value);});
   const announcement=page.getElementById?.('score-announcement');
   const labels=new Set();
@@ -131,7 +132,7 @@ export function createMergeEffects(layer,reduceMotion,{
     raf=0;if(disposed||page.hidden)return;
     const began=now();
     const wasCounting=ledger.busy;ledger.update(time);
-    if(wasCounting&&!ledger.busy&&announcement)announcement.textContent=`${format.format(ledger.target)} Punkte`;
+    if(wasCounting&&!ledger.busy&&announcement)announcement.textContent=t('fx.points',{n:format.format(ledger.target)});
     const kept=[];
     for(const job of jobs){
       const age=time-job.start;if(age<0){kept.push(job);continue;}
@@ -176,7 +177,7 @@ export function createMergeEffects(layer,reduceMotion,{
     merge(group,combo=1){showHero(celebrationFor(group,combo));},
     // Points: the +N rises from the popped body and the counter rolls up.
     award(groups,from,to){
-      if(reduceMotion.matches||page.hidden){resetFlights();ledger.sync(to,true);if(announcement)announcement.textContent=`${format.format(to)} Punkte`;return;}
+      if(reduceMotion.matches||page.hidden){resetFlights();ledger.sync(to,true);if(announcement)announcement.textContent=t('fx.points',{n:format.format(to)});return;}
       const start=now();
       const awards=groups.map((g,index)=>({points:g.nextValue*g.cells.length*10,delay:140+index*60}));
       if(!ledger.queue(from,to,awards,start))return;
@@ -190,7 +191,7 @@ export function createMergeEffects(layer,reduceMotion,{
     },
     record(position,value,reward){
       if(page.hidden)return;
-      showHero({title:'NEUER REKORD!',subtitle:`DEIN ${format.format(value)}ER SQUISH`,priority:5});
+      showHero({title:t('fx.newRecord'),subtitle:t('fx.yourSquish',{n:format.format(value)}),priority:5});
       recordLabel?.getAnimations().forEach(a=>a.cancel());recordLabel?.remove();
       for(const f of flights)if(f.purpose==='record'){for(const s of f.sprites)s.life=0;flights.delete(f);}
       jobs=jobs.filter(j=>j.kind!=='record'&&!(j.kind==='swarm'&&j.purpose==='record'));

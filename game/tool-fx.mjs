@@ -1,7 +1,8 @@
 // 2D-Comic-Effekte der Hilfsmittel (launch-12): Raketenflug mit Rauchspur,
 // BOOM-Explosion, Funkeln (Zauberstab), Hinweis-Pfeil und Zahlen-Auswahl.
 // Eigene Ebene über allem (position:fixed), Koordinaten = Client-Pixel.
-import {TOOL_ICONS,boomSvg,SPARK_SVG,ARROW_SVG} from './tool-icons.mjs?v=launch-22';
+import {TOOL_ICONS,boomSvg,SPARK_SVG,ARROW_SVG} from './tool-icons.mjs?v=launch-23';
+import { t } from './i18n.mjs?v=launch-23';
 
 export function createToolFx({reduceMotion,root=document.body,shakeTarget=null}={}){
   const layer=document.createElement('div');layer.className='tool-fx';layer.setAttribute('aria-hidden','true');root.append(layer);
@@ -73,19 +74,19 @@ export function createToolFx({reduceMotion,root=document.body,shakeTarget=null}=
   function picker({anchor,choices,colors,current,onPick,onCancel}){
     stats.pickers++;
     const veil=add('tfx-picker-veil');veil.style.pointerEvents='auto';
-    const panel=add('tfx-picker','',veil);panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-label','Zauberstab: neue Zahl wählen');
-    const title=document.createElement('div');title.className='tfx-picker-title';title.textContent='Zauberstab';
-    const sub=document.createElement('div');sub.className='tfx-picker-sub';sub.textContent=`Aus der ${current} wird …`;
+    const panel=add('tfx-picker','',veil);panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-label',t('tool.pickerAria'));
+    const title=document.createElement('div');title.className='tfx-picker-title';title.textContent=t('tool.wand');
+    const sub=document.createElement('div');sub.className='tfx-picker-sub';sub.textContent=t('tool.pickerSub',{n:current});
     const grid=document.createElement('div');grid.className='tfx-picker-grid';
     let done=false;
     const close=()=>{if(done)return;done=true;document.removeEventListener('keydown',key);veil.remove();};
     for(const v of choices){
       const b=document.createElement('button');b.type='button';b.className='tfx-num';b.textContent=String(v);b.dataset.value=String(v);
       const c=colors(v);b.style.setProperty('--hi',c.hi);b.style.setProperty('--mid',c.mid);b.style.setProperty('--lo',c.lo);
-      b.setAttribute('aria-label',`Zahl ${v}`);
+      b.setAttribute('aria-label',t('tool.numberAria',{n:v}));
       b.addEventListener('click',ev=>{ev.stopPropagation();close();onPick?.(v);});grid.append(b);
     }
-    const cancel=document.createElement('button');cancel.type='button';cancel.className='tfx-cancel';cancel.textContent='Abbrechen';
+    const cancel=document.createElement('button');cancel.type='button';cancel.className='tfx-cancel';cancel.textContent=t('tool.cancel');
     cancel.addEventListener('click',ev=>{ev.stopPropagation();close();onCancel?.();});
     veil.addEventListener('pointerdown',ev=>{if(ev.target===veil){ev.preventDefault();close();onCancel?.();}});
     function key(ev){if(ev.key==='Escape'){ev.preventDefault();close();onCancel?.();}}

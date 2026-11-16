@@ -1,10 +1,11 @@
+import {t} from './i18n.mjs?v=launch-23';
 const controllerKey=Symbol.for('squish.start-menu-controller');
 
 // The splash hands over to the 2D start screen (home-menu.mjs). The legacy
 // title panel only keeps the loading status and retry for failures.
 export function installStartMenu({
   page=document,
-  loadGame=()=>import('./game.mjs?v=launch-22'),
+  loadGame=()=>import('./game.mjs?v=launch-23'),
   paint=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))),
   delay=ms=>new Promise(resolve=>setTimeout(resolve,ms)),
   splashMs=4000,timeoutMs=30000,
@@ -26,7 +27,7 @@ export function installStartMenu({
     splash.dataset.loading='running';
     function complete(){
       clearTimeout(tick);progress?.setAttribute('aria-valuenow','100');
-      splash.dataset.loading='complete';if(caption)caption.textContent='Bereit zum Ploppen!';
+      splash.dataset.loading='complete';if(caption)caption.textContent=t('splash.ready');
     }
     function update(){
       const value=duration?Math.min(100,Math.floor((Date.now()-start)/duration*100)):100;
@@ -39,7 +40,7 @@ export function installStartMenu({
     if(inWorld||!introDone||!available||failed||launching)return;
     inWorld=true;overlay.dataset.mode='home';overlay.dataset.phase='menu';
     panel.setAttribute('aria-busy','false');status.textContent='';
-    void app.menuActions.world.open({launch}).catch(()=>failure('Das Menü konnte nicht geladen werden. Bitte erneut laden.'));
+    void app.menuActions.world.open({launch}).catch(()=>failure(t('boot.menuFail')));
   }
   function revealMenu(){
     introDone=true;if(splash)splash.hidden=true;
@@ -67,7 +68,7 @@ export function installStartMenu({
       await app.menuActions.start();
       page.getElementById('playfield').focus({preventScroll:true});
       launching=false;
-    }catch{failure('Das Spiel konnte nicht gestartet werden. Bitte erneut laden.');}
+    }catch{failure(t('boot.startFail'));}
   }
   retry.addEventListener('click',()=>page.defaultView.location.reload());
   overlay.addEventListener('keydown',event=>{
@@ -99,7 +100,7 @@ export function installStartMenu({
       enterWorld();
     })(),
     new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Loading timeout')),timeoutMs);}),
-  ]).catch(()=>failure('Das Spiel konnte nicht geladen werden. Bitte erneut versuchen.'))
+  ]).catch(()=>failure(t('boot.loadFail')))
     .finally(()=>clearTimeout(timer));
   controller.ready=Promise.all([intro,boot]);
   return controller;

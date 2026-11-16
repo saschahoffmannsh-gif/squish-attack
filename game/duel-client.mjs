@@ -1,4 +1,5 @@
-import {apiFetch} from './api.mjs?v=launch-22';
+import { t } from './i18n.mjs?v=launch-23';
+import {apiFetch} from './api.mjs?v=launch-23';
 // All commands share one channel; polling can never overtake a player's move.
 export function createDuelClient({canSync,onView,onPrepare,onBegin,onConnection,onStatus=()=>{},onCode=()=>{},onClose=()=>{}}) {
   const overlay=document.getElementById('duel-screen'),panel=document.getElementById('duel-panel');
@@ -26,9 +27,9 @@ export function createDuelClient({canSync,onView,onPrepare,onBegin,onConnection,
   }
   function friendly(error){
     const m=error?.message||String(error||'');
-    if(error?.name==='AbortError'||/aborted|timeout/i.test(m))return 'Keine Antwort vom Server. Bitte nochmal auf Host tippen.';
-    if(/Failed to fetch|Load failed|NetworkError|Network request failed|fetch/i.test(m))return 'Verbindung zum Server fehlgeschlagen. Bitte die Seite neu laden.';
-    if(/Unexpected token|JSON|<!DOCTYPE|<html/i.test(m))return 'Serverantwort ungültig. Bitte die Seite neu laden.';
+    if(error?.name==='AbortError'||/aborted|timeout/i.test(m))return t('duel.noReply');
+    if(/Failed to fetch|Load failed|NetworkError|Network request failed|fetch/i.test(m))return t('duel.netFail');
+    if(/Unexpected token|JSON|<!DOCTYPE|<html/i.test(m))return t('duel.badReply');
     return m||'Verbindung fehlgeschlagen';
   }
   async function request(action,extra={}) {
@@ -37,7 +38,7 @@ export function createDuelClient({canSync,onView,onPrepare,onBegin,onConnection,
       body:JSON.stringify({action,room:session.room,...extra}),cache:'no-store',signal:abortAfter(8000)});
     const raw=await response.text();
     let data={};
-    try{data=raw?JSON.parse(raw):{};}catch{throw new Error('Serverantwort ungültig. Bitte die Seite neu laden.');}
+    try{data=raw?JSON.parse(raw):{};}catch{throw new Error(t('duel.badReply'));}
     if(!response.ok){const error=new Error(data.error||'Verbindung fehlgeschlagen');error.status=response.status;throw error;}
     failures=0;
     session.room=data.room;remember();offset=data.serverNow-Date.now();lastGood=Date.now();connected=true;onConnection(true);
@@ -50,8 +51,8 @@ export function createDuelClient({canSync,onView,onPrepare,onBegin,onConnection,
     }
     view=data;code.textContent=data.room;onCode(data.room,data);
     hostTab.disabled=!!data.opponent;joinTab.disabled=!!data.opponent;
-    if(data.status==='waiting')say('Warte auf den zweiten Spieler … Code 10 Minuten gültig.');
-    else if(data.status==='ready')say('Verbunden! Beide Spielfelder werden vorbereitet …');
+    if(data.status==='waiting')say(t('duel.waiting'));
+    else if(data.status==='ready')say(t('duel.ready'));
     if(data.opponent&&data.status!=='finished') {
       if(!prepared){await onPrepare(data.game);prepared=true;}
       if(!data.ready){data=await request('ready');view=data;}
@@ -78,7 +79,7 @@ export function createDuelClient({canSync,onView,onPrepare,onBegin,onConnection,
   }
   async function create() {
     if(flight)return;
-    flight=true;document.getElementById('duel-host-retry').hidden=true;code.textContent='····';say('Spielcode wird erstellt …');
+    flight=true;document.getElementById('duel-host-retry').hidden=true;code.textContent='····';say(t('duel.creating'));
     session={token:makeToken(),room:null,action:'create'};remember();
     try{await accept(await request('create'));}catch(e){failed(e);}finally{flight=false;}
   }
@@ -108,7 +109,7 @@ export function createDuelClient({canSync,onView,onPrepare,onBegin,onConnection,
   input.addEventListener('input',()=>{input.value=input.value.replace(/\D/g,'').slice(0,CODE_LEN);});
   form.addEventListener('submit',async event=>{
     event.preventDefault();if(flight||!CODE_RE.test(input.value))return;
-    flight=true;session={token:makeToken(),room:input.value,action:'join'};remember();say('Verbindung wird hergestellt …');
+    flight=true;session={token:makeToken(),room:input.value,action:'join'};remember();say(t('duel.connecting'));
     const button=form.querySelector('button');button.disabled=true;
     try{await accept(await request('join'));}catch(e){failed(e);}finally{flight=false;button.disabled=false;}
   });
@@ -147,7 +148,7 @@ export function createDuelClient({canSync,onView,onPrepare,onBegin,onConnection,
   async function joinMode(){await idle();if(begun)return;await changeMode('join');}
   async function joinRoom(room) {
     await idle();if(begun||!CODE_RE.test(room))return false;
-    flight=true;mode='join';session={token:makeToken(),room,action:'join'};remember();say('Verbindung wird hergestellt …');
+    flight=true;mode='join';session={token:makeToken(),room,action:'join'};remember();say(t('duel.connecting'));
     try{await accept(await request('join'));return true;}catch(e){failed(e);return false;}finally{flight=false;}
   }
   async function cancel() {

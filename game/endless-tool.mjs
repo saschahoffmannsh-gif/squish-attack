@@ -2,11 +2,12 @@
 // Gefüllt nur durch das Endlos-Werbeangebot (reihum Rakete/Zauberstab), nutzbar nur in Endlos-Runden.
 // Lokal zuerst (localStorage), Cloud-Abgleich über /progress (Feld einv/einvAt, progress-merge.mjs).
 // Im Browser ohne Werbe-Adapter bleibt der Vorrat leer und die Knöpfe unsichtbar.
-import { TOOL_ICONS } from './tool-icons.mjs?v=launch-22';
+import { TOOL_ICONS } from './tool-icons.mjs?v=launch-23';
+import { t, onLangChange } from './i18n.mjs?v=launch-23';
+import { toolName } from './campaign.mjs?v=launch-23';
 
 export const ENDLESS_TOOLS = Object.freeze(['rocket', 'wand']);
-const NAMES = { rocket: 'Rakete', wand: 'Zauberstab' };
-export const endlessToolName = t => NAMES[t] || t;
+export const endlessToolName = type => toolName(type);
 const KEY = 'squish-endless-tools-v1';
 const MAX = 99;
 const clamp = n => (Number.isInteger(n) && n > 0 ? Math.min(n, MAX) : 0);
@@ -47,27 +48,27 @@ export function createEndlessToolBar({ page = document, onClick } = {}) {
   const style = page.createElement('style'); style.textContent = CSS; page.head.append(style);
   const bar = page.createElement('div'); bar.className = 'endless-tools'; bar.id = 'endless-tools'; bar.hidden = true;
   const buttons = {};
-  for (const t of ENDLESS_TOOLS) {
+  for (const type of ENDLESS_TOOLS) {
     const b = page.createElement('button');
-    b.type = 'button'; b.className = 'endless-tool'; b.dataset.tool = t; b.hidden = true;
-    b.innerHTML = (TOOL_ICONS[t] || '') + '<b></b>';
-    b.addEventListener('click', ev => { ev.stopPropagation(); onClick?.(t); });
+    b.type = 'button'; b.className = 'endless-tool'; b.dataset.tool = type; b.hidden = true;
+    b.innerHTML = (TOOL_ICONS[type] || '') + '<b></b>';
+    b.addEventListener('click', ev => { ev.stopPropagation(); onClick?.(type); });
     b.addEventListener('pointerdown', ev => ev.stopPropagation());
-    bar.append(b); buttons[t] = b;
+    bar.append(b); buttons[type] = b;
   }
   page.body.append(bar);
   return {
     el: bar,
-    button: t => buttons[t],
+    button: type => buttons[type],
     render({ inv, visible = false, armed = null } = {}) {
       bar.hidden = !(visible && endlessTotal(inv) > 0);
-      for (const t of ENDLESS_TOOLS) {
-        const b = buttons[t], n = inv?.[t] | 0;
+      for (const type of ENDLESS_TOOLS) {
+        const b = buttons[type], n = inv?.[type] | 0;
         b.hidden = n <= 0;
-        b.classList.toggle('is-armed', armed === t);
+        b.classList.toggle('is-armed', armed === type);
         b.querySelector('b').textContent = String(n);
-        b.setAttribute('aria-label', armed === t ? `${endlessToolName(t)} abbrechen` : `${endlessToolName(t)} einsetzen (${n} übrig)`);
-        b.setAttribute('aria-pressed', armed === t ? 'true' : 'false');
+        b.setAttribute('aria-label', armed === type ? t('endless.cancelAria', { tool: endlessToolName(type) }) : t('endless.useAria', { tool: endlessToolName(type), n }));
+        b.setAttribute('aria-pressed', armed === type ? 'true' : 'false');
       }
     },
   };

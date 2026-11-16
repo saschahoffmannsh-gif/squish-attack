@@ -602,3 +602,10 @@ Alle 100 Level in `levels/levels-001-100.json` neu gebaut (Plan `tools/campaign/
 - Kurzer deutscher Tipp (`level.tip`) unter dem Brett; ein Geisterfinger (CSS-Transform, bei reduzierter Bewegung still) zeigt den Wisch, bis der Spieler zieht, und kommt nach einem Fehlversuch zurück.
 - **Endlos** und **2 Spieler** sind auf dem Startbildschirm mit goldenem Schloss gesperrt (Tipp: „Schalte frei: Abenteuer Level 1–5“). Nach dem Gewinn von Level 5 werden sie mit einer kurzen Knall-Animation frei.
 - **Einmaliger Reset** (`resetAdventureForTutorialsOnce`, Merker `squish-campaign-tutorial-reset = launch-22`, Epoche 22): Abenteuer-Fortschritt, Sterne, Freischaltungen, Abenteuer-Vorrat und Geschenke werden auf jedem Gerät einmal geleert. Unberührt: Endlos-Spielstand (`shift3-play-v1`), Endlos-Rekord, Endlos-Vorrat, Einstellungen. Der Sync-Merker wird mitgelöscht, damit der leere Stand mit Epoche 22 als Nächstes in die Cloud geht. Backend-Zeilen werden nicht gelöscht; eine höhere Epoche ersetzt den gespeicherten Abenteuer-Stand.
+
+## Sprache (launch-23)
+
+- Startbildschirm: kleine DE|EN-Pille in der Topbar (Fredoka, navy/gold), zusätzlich volle Namen in den Einstellungen.
+- Beim ersten Start entscheidet `navigator.language` / `navigator.languages` (`de*` → Deutsch, sonst Englisch). Die Wahl liegt in `localStorage['squish-lang-v1']` und bleibt beim Tutorial-Reset (Epoche 22) erhalten.
+- Texte liegen in `game/locales.mjs` (de/en), Zugriff über `game/i18n.mjs` (`t()`, Platzhalter, Mehrzahl). English: „straight“ für Straße, „+3 Moves (Ad)“ für die Werbung.
+- App-Shell: Sprache ebenfalls aus der Geräte-Locale, gleiche Schlüssel plus Shell-eigene Texte.

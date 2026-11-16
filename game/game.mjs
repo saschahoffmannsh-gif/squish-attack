@@ -1,37 +1,38 @@
-import {apiFetch,hasSaveToken} from './api.mjs?v=launch-22';
-import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-22';
+import {apiFetch,hasSaveToken} from './api.mjs?v=launch-23';
+import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-23';
 import { nextSpawn, spawnProfile } from './balance.mjs';
-import {canContinueRun} from './run-availability.mjs?v=launch-22';
-import { createMergeEffects } from './merge-effects.mjs?v=launch-22';
-import { createGameGraphics } from './graphics-adapter.mjs?v=launch-22';
-import { installDeviceMotion } from './device-motion.mjs';
-import { createGameSound } from './sound.mjs?v=launch-22';
+import {canContinueRun} from './run-availability.mjs?v=launch-23';
+import { createMergeEffects } from './merge-effects.mjs?v=launch-23';
+import { createGameGraphics } from './graphics-adapter.mjs?v=launch-23';
+import { installDeviceMotion } from './device-motion.mjs?v=launch-23';
+import { createGameSound } from './sound.mjs?v=launch-23';
 import { installSettings } from './settings.mjs?v=woodland-menu-1';
-import { createDuelClient } from './duel-client.mjs?v=launch-22';
+import { createDuelClient } from './duel-client.mjs?v=launch-23';
 import {installFullscreen} from './fullscreen.mjs?v=timed-duel-1';
-import {createHomeMenu} from './home-menu.mjs?v=launch-22';
-import {createConfetti} from './confetti.mjs?v=launch-22';
-import {createHaptics} from './haptics.mjs?v=launch-22';
-import * as native from './native.mjs?v=launch-22';
+import {createHomeMenu} from './home-menu.mjs?v=launch-23';
+import {createConfetti} from './confetti.mjs?v=launch-23';
+import {createHaptics} from './haptics.mjs?v=launch-23';
+import * as native from './native.mjs?v=launch-23';
 import {planMergeRipple} from './merge-ripple.mjs?v=swarm-fx-3';
-import * as Camp from './campaign.mjs?v=launch-22';
-import {createCampaignUI,TOOL_ARTICLE,TOOL_NOM} from './campaign-ui.mjs?v=launch-22';
-import {createToolFx} from './tool-fx.mjs?v=launch-22';
-import {createGhostFinger} from './ghost-finger.mjs?v=launch-22';
-import {hintState,findHint} from './hint-solver.mjs?v=launch-22';
+import * as Camp from './campaign.mjs?v=launch-23';
+import {createCampaignUI} from './campaign-ui.mjs?v=launch-23';
+import {createToolFx} from './tool-fx.mjs?v=launch-23';
+import {createGhostFinger} from './ghost-finger.mjs?v=launch-23';
+import {hintState,findHint} from './hint-solver.mjs?v=launch-23';
 import {comicColors} from './comic-style.mjs?v=launch-22';
-import * as Shop from './shop.mjs?v=launch-22';
-import {createShopUI} from './shop-ui.mjs?v=launch-22';
-import {createGiftFx} from './gift-fx.mjs?v=launch-22';
-import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-22';
-import {createAdUI} from './ad-ui.mjs?v=launch-22';
-import {hasNativeAds,showInterstitial} from './native-ads.mjs?v=launch-22';
-import {createAdPacing} from './ad-pacing.mjs?v=launch-22';
-import {ENDLESS_TOOLS,endlessToolName,loadEndlessInv,saveEndlessInv,changeEndlessInv,createEndlessToolBar} from './endless-tool.mjs?v=launch-22';
-import {createStatsUI} from './stats-ui.mjs?v=launch-22';
-import * as ToolLog from './tool-log.mjs?v=launch-22';
-import {createProgressSync} from './progress-sync.mjs?v=launch-22';
-import {epochOf} from './progress-merge.mjs?v=launch-22';
+import * as Shop from './shop.mjs?v=launch-23';
+import {createShopUI} from './shop-ui.mjs?v=launch-23';
+import {createGiftFx} from './gift-fx.mjs?v=launch-23';
+import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-23';
+import {createAdUI} from './ad-ui.mjs?v=launch-23';
+import {hasNativeAds,showInterstitial} from './native-ads.mjs?v=launch-23';
+import {createAdPacing} from './ad-pacing.mjs?v=launch-23';
+import {ENDLESS_TOOLS,endlessToolName,loadEndlessInv,saveEndlessInv,changeEndlessInv,createEndlessToolBar} from './endless-tool.mjs?v=launch-23';
+import {createStatsUI} from './stats-ui.mjs?v=launch-23';
+import * as ToolLog from './tool-log.mjs?v=launch-23';
+import {createProgressSync} from './progress-sync.mjs?v=launch-23';
+import {epochOf} from './progress-merge.mjs?v=launch-23';
+import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-23';
 const playfield = document.getElementById('playfield');
 const gameElement = document.querySelector('.game');
 const visual = createGameGraphics(document.getElementById('graphics'));
@@ -129,8 +130,8 @@ const worldMenu=createHomeMenu({sound,reduceMotion,hooks:{
     summary:()=>campaignSummary(),
     openShop:()=>openShop(null),
     openGift:()=>void openGift(),
-    openLab:()=>{void loadLab().then(()=>worldMenu.play({campaign:1,lab:true})).catch(()=>showNote('Test-Level konnten nicht geladen werden.',3000));},
-    openSelect:()=>{if(levels)campaignUI.openSelect({levels,progress:campaignProgress});else void loadLevels().then(()=>campaignUI.openSelect({levels,progress:campaignProgress})).catch(()=>showNote('Level konnten nicht geladen werden.',3000));},
+    openLab:()=>{void loadLab().then(()=>worldMenu.play({campaign:1,lab:true})).catch(()=>showNote(t('boot.labFail'),3000));},
+    openSelect:()=>{if(levels)campaignUI.openSelect({levels,progress:campaignProgress});else void loadLevels().then(()=>campaignUI.openSelect({levels,progress:campaignProgress})).catch(()=>showNote(t('boot.levelsFail'),3000));},
   },
   soundButton:document.getElementById('sound-toggle'),
   motionButton:document.getElementById('phone-motion'),
@@ -145,9 +146,9 @@ const newTile = value => ({ id: nextId++, value });
 // in localStorage unangetastet: während der Kampagne wird nichts davon gespeichert,
 // beim Verlassen wird er wieder geladen.
 const MODE_KEY='squish-mode-v1';
-const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-22',import.meta.url);
+const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-23',import.meta.url);
 // launch-16: Test-Level für die neuen Squishes (Eis, Ketten, Bombe) – eigener kleiner Satz, kein Fortschritt/Protokoll.
-const LAB_URL=new URL('../levels/levels-lab.json?v=launch-22',import.meta.url);
+const LAB_URL=new URL('../levels/levels-lab.json?v=launch-23',import.meta.url);
 let labMode=false,labLevels=null,labLoading=null;
 function loadLab(){
   return labLoading||=fetch(LAB_URL,{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('lab '+r.status);return r.json();})
@@ -158,9 +159,15 @@ const levelList=()=>labMode?labLevels:levels;
 function levelNote(){
   if(!camp)return '';
   const goals=camp.level.goals.map(Camp.goalText).join(' + ');
-  if(labMode)return `Test ${camp.n} · ${camp.level.title}: ${camp.level.meta?.note??''} Ziel: ${goals}`;
+  if(labMode){
+    const title=hasKey('lab.title.'+camp.n)?t('lab.title.'+camp.n):(camp.level.title||'');
+    const note=hasKey('lab.note.'+camp.n)?t('lab.note.'+camp.n):(camp.level.meta?.note??'');
+    return t('campaign.note.lab',{n:camp.n,title,note,goals});
+  }
   const tl=camp.level.tool;
-  return `Level ${camp.n}: ${goals}`+(tl?` · Sehr schwer – ${tl==='extraMoves'?'mit +3 Zügen wird es leichter':TOOL_NOM[tl][0].toUpperCase()+TOOL_NOM[tl].slice(1)+' hilft'} (mit Hilfsmittel höchstens 2 ★)`:'');
+  if(tl==='extraMoves')return t('campaign.note.toolExtra',{n:camp.n,goals});
+  if(tl)return t('campaign.note.tool',{n:camp.n,goals,tool:Camp.toolName(tl)});
+  return t('campaign.note.plain',{n:camp.n,goals});
 }
 function storedMode(){try{return localStorage.getItem(MODE_KEY)||'';}catch{return '';}}
 let campaignMode=false,camp=null,levels=null,levelsLoading=null,stashedBestTile=null,needsEntry=false,armedTool=null,hintBusy=false,wandPicker=null;
@@ -199,9 +206,9 @@ function campaignSummary(){
   let caption='';
   const open=Array.from({length:count},(_,i)=>i+1).find(n=>!campaignProgress.levels[String(n)]);
   const lock=open?Camp.lockReason(campaignProgress,open):null;
-  if(lock?.reason==='stars')caption=`Kapitel ${lock.chapter} öffnet ab ${lock.need} ★`;
-  else if(!open&&levels)caption='Alle Level geschafft!';
-  else caption=`Kapitel ${Camp.chapterOf(next)} · Level ${next}`;
+  if(lock?.reason==='stars')caption=t('campaign.chapterNeed',{chapter:lock.chapter,need:lock.need});
+  else if(!open&&levels)caption=t('campaign.allDone');
+  else caption=t('campaign.chapterCaption',{chapter:Camp.chapterOf(next),n:next});
   return {next,ready:!!levels,caption,total,count,inventory:Camp.TOOL_STOCK?inventory:null,pendingGifts:Camp.TOOL_STOCK&&Camp.TOOL_GIFTS?inventory.pending.length:0,shop:shopEnabled(),allDone:!open&&!!levels,modesUnlocked:Camp.modesUnlocked(campaignProgress)};
 }
 const campaignUI=createCampaignUI({
@@ -255,15 +262,15 @@ function maybeEndlessOffer(){
   adPacing.endlessOffered();
   const type=adPacing.peekEndlessReward(ENDLESS_TOOLS);
   adFollow={then:null,where:'endless'};
-  adUI.open(type,{placement:'endless',title:'Werkzeug für Endlos',
-    desc:type==='rocket'?'Sprengt einen Stein weg – jederzeit in Endlos':'Gibt einem Stein eine neue Zahl – jederzeit in Endlos',
-    foot:'Freiwillig. Landet in deinem Endlos-Vorrat, nicht im Abenteuer.'});
+  adUI.open(type,{placement:'endless',title:t('endless.offerTitle'),
+    desc:t(type==='rocket'?'endless.offerRocket':'endless.offerWand'),
+    foot:t('endless.offerFoot')});
 }
 // ---------- Endlos-Werkzeuge (App): Rakete und Zauberstab direkt in der Endlos-Runde ----------
 const endlessBar=createEndlessToolBar({onClick:tool=>{
   if(!endlessToolUsable()||!(endlessInv[tool]>0))return;
   endlessArmed=endlessArmed===tool?null:tool;wandPicker?.close();wandPicker=null;renderEndlessTools();
-  if(endlessArmed)showNote(tool==='rocket'?'Tippe auf einen Stein: die Rakete sprengt ihn weg':'Tippe auf einen Stein: er bekommt eine neue Zahl',2600);else note.hidden=true;
+  if(endlessArmed)showNote(t(tool==='rocket'?'endless.noteRocket':'endless.noteWand'),2600);else note.hidden=true;
 }});
 function endlessToolUsable(){return started&&!booting&&!campaignMode&&!duelMode&&!paused&&!busy&&!worldMenu.active&&!adUI.isOpen;}
 function renderEndlessTools(){
@@ -348,7 +355,7 @@ function grantByAd(type){
   renderCampaign();void worldMenu.refresh?.();
   const b=campaignMode&&!campaignUI.resultOpen?campaignUI.toolButton(type):null;
   if(b&&!reduceMotion.matches){b.classList.remove('is-got');void b.offsetWidth;b.classList.add('is-got');}
-  if(f?.then)f.then();else showNote(`+1 ${Camp.toolName(type)} – tippe zum Einsetzen`,2200);
+  if(f?.then)f.then();else showNote(t('note.toolReady',{tool:Camp.toolName(type)}),2200);
 }
 const statsUI=createStatsUI({getLog:()=>toolLog,build:BUILD_LABEL,sound,onReset:()=>{
   toolLog=ToolLog.emptyLog();logAttempt=null;
@@ -435,9 +442,9 @@ async function playLevel(n){
   const list=levelList();
   if(list&&n>list.length)return;
   const lock=labMode?null:Camp.lockReason(campaignProgress,n);
-  if(lock){showNote(lock.reason==='stars'?`Kapitel ${lock.chapter} braucht ${lock.need} ★`:'Level noch gesperrt',3000);return;}
+  if(lock){showNote(lock.reason==='stars'?t('note.needStars',{chapter:lock.chapter,need:lock.need}):t('campaign.locked'),3000);return;}
   campaignUI.hideResult();confetti.stop();veil.hidden=true;paused=false;gameElement.classList.remove('is-paused');
-  pauseButton.textContent='Ⅱ';pauseButton.setAttribute('aria-pressed','false');pauseButton.setAttribute('aria-label','Spiel pausieren');
+  pauseButton.textContent='Ⅱ';pauseButton.setAttribute('aria-pressed','false');pauseButton.setAttribute('aria-label',t('hud.pauseAria'));
   graphics.pause(false);sound.resume();
   started=false;
   await prepareLevel(n);
@@ -457,7 +464,7 @@ async function moveCampaign(direction,line){
   if(value==null)return;
   const tile={id:nextId,value};
   const inserted=insertTile(board,direction,line,tile);
-  if(!inserted.accepted){showNote('Diese Reihe ist voll');haptics.pulse('tap');return;}
+  if(!inserted.accepted){showNote(t('note.rowFull'));haptics.pulse('tap');return;}
   const result=Camp.applyLevelMove(r,direction,line);
   if(!result.ok)return;
   scheduleBombTick();
@@ -514,16 +521,16 @@ function useExtraMoves(){
   const r=camp.run;
   if(r.status==='won')return;
   const spent=takeTool('extraMoves');
-  if(!spent){showNote('Kein „+3 Züge“ vorhanden',2200);return;}
+  if(!spent){showNote(t('note.noExtra'),2200);return;}
   const wasLost=r.status==='lost';
   const added=Camp.addExtraMoves(r,3);
-  if(!added){showNote(r.status==='lost'?'Hier hilft „+3 Züge“ nicht – das Brett ist voll.':'Keine weiteren Steine für dieses Level',2600);return;}
+  if(!added){showNote(r.status==='lost'?t('note.extraNoHelp'):t('note.noMoreTiles'),2600);return;}
   if(wasLost&&logAttempt){ToolLog.reopenAttempt(toolLog,logAttempt.id);ToolLog.saveLog(toolLog);}   // Weiterspielen: Ausgang folgt später
   spent();
   queue=Camp.queueOf(r);renderQueue();
   if(campaignUI.resultOpen){campaignUI.hideResult();paused=false;}
   renderCampaign();haptics.pulse('merge');sound.play('record');
-  showNote(`+${added} Züge – jetzt höchstens 2 ★`,2200);
+  showNote(t('note.extraUsed',{n:added}),2200);
   showTutorialFinger();
 }
 // ---------- Hilfsmittel (launch-12): Rakete, Zauberstab, Hinweis ----------
@@ -541,16 +548,16 @@ function showTutorialFinger(afterEntry=false){
   else place();
 }
 
-const TOOL_NOTES={rocket:'Tippe auf einen Stein – die Rakete sprengt ihn weg (höchstens 2 ★)',wand:'Tippe auf einen Stein und wähle seine neue Zahl (höchstens 2 ★)'};
+const TOOL_NOTES=()=>({rocket:t('tool.note.rocket'),wand:t('tool.note.wand')});
 function disarmTools(){armedTool=null;hintBusy=false;wandPicker?.close();wandPicker=null;}
 function toggleTool(type){
   if(!campaignMode||!camp)return;
   const on=type!=null&&armedTool!==type;
   if(on&&(camp.run.status!=='playing'||busy||hintBusy))return;
-  if(on&&!(availableTools()[type]>0)){showNote(`Kein${type==='rocket'?'e Rakete':' Zauberstab'} vorhanden`,2200);return;}
+  if(on&&!(availableTools()[type]>0)){showNote(t(type==='rocket'?'note.noRocket':'note.noWand'),2200);return;}
   wandPicker?.close();wandPicker=null;
   armedTool=on?type:null;renderCampaign();
-  if(on)showNote(TOOL_NOTES[type],0);else note.hidden=true;
+  if(on)showNote(TOOL_NOTES()[type],0);else note.hidden=true;
 }
 function cellOf(tileId){let cell=null;board.forEach((row,r)=>row.forEach((t,c)=>{if(t&&t.id===tileId)cell=[r,c];}));return cell;}
 // Bildschirmposition (Client-Pixel) einer Brettzelle.
@@ -562,7 +569,7 @@ function toolOrigin(type){const r=campaignUI.toolButton(type)?.getBoundingClient
 async function rocketAt(tileId){
   const cell=cellOf(tileId);
   if(!cell||!camp||busy)return false;
-  if(camp.run.board[cell[0]][cell[1]]?.bound){showNote('Ketten halten der Rakete stand',2200);return false;}
+  if(camp.run.board[cell[0]][cell[1]]?.bound){showNote(t('note.chainVsRocket'),2200);return false;}
   const spent=takeTool('rocket');
   if(!spent||!Camp.useRocket(camp.run,cell[0],cell[1]))return false;
   spent();armedTool=null;note.hidden=true;
@@ -589,7 +596,7 @@ function wandAt(tileId){
   const cell=cellOf(tileId);
   if(!cell||!camp||busy)return;
   const r=camp.run,choices=Camp.wandChoices(r,cell[0],cell[1]);
-  if(!choices.length){showNote(r.board[cell[0]][cell[1]]?.bound?'Angekettete Squishes lassen sich nicht verzaubern':'Für diesen Stein gibt es keine passende Zahl',2400);return;}
+  if(!choices.length){showNote(r.board[cell[0]][cell[1]]?.bound?t('note.chainVsWand'):t('note.noWandChoice'),2400);return;}
   const tile=board[cell[0]][cell[1]],at=cellPoint(cell[0],cell[1]),turn=generation;
   wandPicker?.close();note.hidden=true;
   wandPicker=toolFx.picker({anchor:at,choices,current:tile.value,colors:v=>comicColors(v).hex,
@@ -602,7 +609,7 @@ async function applyWand(tileId,value){
   const r=camp.run,spent=takeTool('wand');
   if(!spent)return;
   const res=Camp.useWand(r,cell[0],cell[1],value);
-  if(!res.ok){showNote('Diese Zahl geht hier nicht',2200);return;}
+  if(!res.ok){showNote(t('note.badWandNumber'),2200);return;}
   spent();armedTool=null;
   const turn=generation;busy=true;
   try{
@@ -625,7 +632,7 @@ let hintWorker=null,hintSeq=0;
 function searchHint(state){
   const budget={want:2,maxStates:160000,maxMs:2500};
   try{
-    hintWorker||=new Worker(new URL('./hint-worker.mjs?v=launch-22',import.meta.url),{type:'module'});
+    hintWorker||=new Worker(new URL('./hint-worker.mjs?v=launch-23',import.meta.url),{type:'module'});
   }catch{hintWorker=null;}
   if(!hintWorker)return Promise.resolve(findHint(state,{...budget,maxMs:900}));
   const id=++hintSeq;
@@ -649,9 +656,9 @@ async function useHint(){
   if(!campaignMode||!camp||busy||hintBusy||paused)return;
   const r=camp.run;
   if(r.status!=='playing')return;
-  if(!(availableTools().hint>0)){showNote('Kein Hinweis vorhanden',2200);return;}
+  if(!(availableTools().hint>0)){showNote(t('note.noHint'),2200);return;}
   if(armedTool)toggleTool(null);
-  const turn=generation;hintBusy=true;renderCampaign();showNote('Der Hinweis sucht einen Weg …',0);
+  const turn=generation;hintBusy=true;renderCampaign();showNote(t('note.hintSearch'),0);
   let result;
   try{result=await searchHint(hintState(r,{movesLeft:Camp.movesLeft(r),vec:Camp.progressVector(r)}));}
   catch{result={found:false,reason:'error'};}
@@ -659,7 +666,7 @@ async function useHint(){
   if(turn!==generation||!camp||camp.run!==r){hintBusy=false;return;}
   if(!result?.found){
     hintBusy=false;renderCampaign();haptics.pulse('tap');
-    showNote(result?.reason==='none'?'Kein Weg mehr zum Ziel – probier Neustart':'Kein Weg gefunden – probier Neustart',3400);
+    showNote(result?.reason==='none'?t('note.hintNone'):t('note.hintFail'),3400);
     return;
   }
   const spent=takeTool('hint');
@@ -686,7 +693,7 @@ async function backToMenu(){
   else{saveState({now:true});hasSavedGame=board.flat().some(Boolean);}
   generation++;pendingMove=null;releaseGesture();disarmTools();busy=false;adPacing.endlessPause();endlessArmed=null;
   paused=false;veil.hidden=true;gameElement.classList.remove('is-paused');
-  pauseButton.textContent='Ⅱ';pauseButton.setAttribute('aria-pressed','false');pauseButton.setAttribute('aria-label','Spiel pausieren');
+  pauseButton.textContent='Ⅱ';pauseButton.setAttribute('aria-pressed','false');pauseButton.setAttribute('aria-label',t('hud.pauseAria'));
   started=false;mergeEffects.clear();visual.clear();needsEntry=true;note.hidden=true;
   for(let index=0;index<3;index++)visual.hideHud('queue-'+index,true);
   gameElement.classList.add('is-start');gameElement.inert=true;gameElement.setAttribute('aria-hidden','true');
@@ -701,7 +708,7 @@ async function backToMenu(){
 // Endlos-Steine kommen zufällig (keine Bestenliste mehr, also keine Server-Seeds/Replays).
 const random=()=>Math.random;
 const wait = ms => reduceMotion.matches ? Promise.resolve() : visual.wait(ms / 1000);
-const format = value => value.toLocaleString('de-DE');
+const format = value => fmtNum(value);
 
 function freshState() {
   generation++;pendingMove=null;
@@ -808,7 +815,7 @@ async function flushPending({ keepalive = false } = {}) {
     }
   } catch {
     // The local copy stays available; reconnecting retries the newest state.
-    showNote('Offline gespeichert – wird später synchronisiert', 3500);
+    showNote(t('note.offlineSync'), 3500);
   } finally {
     saving = false;
   }
@@ -855,7 +862,7 @@ async function start() {
       pendingSave = snapshot();
       try { localStorage.setItem(storageKey, JSON.stringify(pendingSave)); } catch {}
     }
-    showNote('Offline: Spielstand auf diesem Gerät gesichert', 3500);
+    showNote(t('note.offlineLocal'), 3500);
   } finally {
     booting = false;
     note.hidden = true;
@@ -984,7 +991,7 @@ async function explodeBombs(list){
     if(!reduceMotion.matches)for(const e of list)for(const [dr,dc] of [[0,2],[0,-2],[2,0],[-2,0]]){const n=board[e.at[0]+dr]?.[e.at[1]+dc];if(n)visual.scheduleWobble?.(n.id,.5,.05);}
     board=camp.run.board.map(row=>row.map(t=>t?{...t}:null));
     renderBoard();renderCampaign();
-    showNote(list.length>1?`${list.length} Bomben explodiert!`:'Bombe explodiert!',1800);
+    showNote(list.length>1?t('bomb.other',{n:list.length}):t('bomb.one'),1800);
     await wait(reduceMotion.matches?150:420);
   }finally{bombBlast=false;if(turn===generation)busy=false;}
   if(turn!==generation)return;
@@ -1000,7 +1007,7 @@ function renderQueue() {
   for(let index=0;index<3;index++)visual.hideHud('queue-'+index,index>=queue.length);
   queue.forEach((value,index)=> {
     const slot=queueElement.children[index];visual.setHud('queue-'+index,value,slot);
-    slot.setAttribute('aria-label',`${index===0?'Nächster':'Danach'} Stein: ${value}`);
+    slot.setAttribute('aria-label',t(index===0?'hud.queueNext':'hud.queueAfter',{n:value}));
   });
 }
 function renderBest() {
@@ -1008,7 +1015,7 @@ function renderBest() {
   let slot=bestElement.firstElementChild;
   if(!slot){slot=document.createElement('div');slot.className='best-tile';bestElement.append(slot);}
   visual.setHud('best',bestTile,slot);
-  bestElement.setAttribute('aria-label',`Höchster Squishy: ${format(bestTile)}`);
+  bestElement.setAttribute('aria-label',t('hud.bestTileAria',{n:format(bestTile)}));
 }
 
 function showNote(message, duration = 2200) {
@@ -1030,13 +1037,13 @@ function showDialog(over) {
   veil.hidden = false;
   pauseButton.textContent = '▶';
   pauseButton.setAttribute('aria-pressed', 'true');
-  pauseButton.setAttribute('aria-label', 'Spiel fortsetzen');
-  dialogTitle.textContent = over ? 'Kein Platz mehr' : 'Pause';
-  dialogMessage.textContent = over ? `Höchster Stein in diesem Spiel: ${format(peak)}.` : 'Dein Spielfeld wartet auf dich.';
-  restartButton.textContent=campaignMode?'Level neu starten':'Neues Spiel';
+  pauseButton.setAttribute('aria-label', t('hud.resumeAria'));
+  dialogTitle.textContent = over ? t('dialog.full') : t('dialog.pause');
+  dialogMessage.textContent = over ? t('dialog.fullMsg',{n:format(peak)}) : t('dialog.wait');
+  restartButton.textContent=campaignMode?t('dialog.retryLevel'):t('dialog.newGame');
   toMenuButton.hidden=duelMode;
   if(campaignMode&&over)return;
-  if(duelMode){dialogTitle.textContent='Duell läuft weiter';dialogMessage.textContent='Die fünf Minuten laufen auch bei geöffnetem Menü weiter.';restartButton.textContent='Duell verlassen';}
+  if(duelMode){dialogTitle.textContent=t('dialog.duelTitle');dialogMessage.textContent=t('dialog.duelMsg');restartButton.textContent=t('dialog.duelLeave');}
   resumeButton.hidden = over;
   (over ? restartButton : resumeButton).focus();
 }
@@ -1050,7 +1057,7 @@ function resume() {
   veil.hidden = true;
   pauseButton.textContent = 'Ⅱ';
   pauseButton.setAttribute('aria-pressed', 'false');
-  pauseButton.setAttribute('aria-label', 'Spiel pausieren');
+  pauseButton.setAttribute('aria-label', t('hud.pauseAria'));
   graphics.pause(false);
   pauseButton.focus();
 }
@@ -1143,7 +1150,7 @@ async function resolveMerges(turn,{streak=false}={}) {
     if(turn!==generation)return;
   }
   if(streak&&!chains)updateCombo(false);
-  if(chains)showNote(hadUpgrade?'Super-Merge! +2 Stufen':totalMerges>1?`${totalMerges}er-Kombo!`:hadStreet?'Straßen-Merge!':'Merge!',1500);
+  if(chains)showNote(hadUpgrade?t('combo.super'):totalMerges>1?t('combo.n',{n:totalMerges}):hadStreet?t('combo.street'):t('combo.merge'),1500);
 }
 
 function boardKey(stateBoard) {
@@ -1184,7 +1191,7 @@ function updateDuelHud() {
   const countdown=Math.max(0,Math.ceil((data.startsAt-duel.serverNow)/1000));
   const seconds=Math.min(300,Math.max(0,Math.ceil((data.endsAt-duel.serverNow)/1000)));
   const mine=data.game?.score??0,theirs=data.opponent?.score??0,total=mine+theirs,ratio=total===0?.5:mine/total;
-  const status=duelFinished?'Duell beendet':!duelConnected?'Verbindung …':countdown?`Start in ${countdown} …`:seconds===0?'Auswertung …':data.game.blocked?'Brett voll':data.opponent?.online?'● Verbunden':'Gegner offline';
+  const status=duelFinished?t('duel.statusEnded'):!duelConnected?t('duel.statusLink'):countdown?t('duel.statusStartIn',{n:countdown}):seconds===0?t('duel.statusTally'):data.game.blocked?t('duel.statusFull'):data.opponent?.online?t('duel.statusOn'):t('duel.statusOffline');
   const timerText=`${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`;
   const key=`${timerText}|${status}|${mine}|${theirs}|${seconds<=30}|${ratio.toFixed(4)}`;
   if(key===lastHudKey)return;
@@ -1202,7 +1209,7 @@ function updateDuelHud() {
   if(track){
     track.style.setProperty('--tug',String(ratio));
     track.setAttribute('aria-valuenow',String(Math.round(ratio*100)));
-    track.setAttribute('aria-valuetext',total===0||mine===theirs?'Gleichauf':`Du ${myText}, Gegner ${oppText}`);
+    track.setAttribute('aria-valuetext',total===0||mine===theirs?t('duel.tied'):`${t('duel.you')} ${myText}, ${t('duel.opp')} ${oppText}`);
     track.classList.toggle('is-lead',mine>theirs);
     track.classList.toggle('is-trail',mine<theirs);
     track.classList.toggle('is-tied',mine===theirs);
@@ -1215,9 +1222,9 @@ function finishDuel(data) {
   gameElement.classList.add('is-paused');graphics.pause(false);veil.hidden=false;
   const won=data.winner===data.you,tie=data.winner===null;
   haptics.event(tie?'gameover':won?'win':'lose');
-  dialogTitle.textContent=tie?'Unentschieden!':won?'Du gewinnst!':'Duell verloren';
-  dialogMessage.textContent=(data.reason==='left'?'Ein Spieler hat das Duell verlassen.':data.reason==='time'?'Die fünf Minuten sind um.': 'Das Duell ist beendet.')+` Du: ${format(data.game.score)} · Gegner: ${format(data.opponent?.score??0)} Punkte.`;
-  resumeButton.hidden=true;restartButton.textContent='Zum Menü';restartButton.focus();updateDuelHud();
+  dialogTitle.textContent=tie?t('duel.draw'):won?t('duel.win'):t('duel.lose');
+  dialogMessage.textContent=(data.reason==='left'?t('duel.reasonLeft'):data.reason==='time'?t('duel.reasonTime'):t('duel.reasonDone'))+t('duel.resultScores',{you:format(data.game.score),foe:format(data.opponent?.score??0)});
+  resumeButton.hidden=true;restartButton.textContent=t('dialog.toMenu');restartButton.focus();updateDuelHud();
 }
 async function receiveDuel(data) {
   if(!duelMode||!data)return;
@@ -1232,11 +1239,11 @@ async function receiveDuel(data) {
   try{reconcileDuelState(data.game);}finally{busy=false;}
 }
 async function moveDuel(direction,line) {
-  if(!duel.canMove){showNote(duel.view&&duel.serverNow>=duel.view.endsAt?'Zeit abgelaufen – Ergebnis wird abgeglichen …':duelConnected?'Einen Moment …':'Verbindung wird wiederhergestellt …',1200);return;}
+  if(!duel.canMove){showNote(duel.view&&duel.serverNow>=duel.view.endsAt?t('note.timeUp'):duelConnected?t('note.duelMoment'):t('note.duelReconnect'),1200);return;}
   const tile={id:nextId,value:queue[0]};
   const inserted=insertTile(board,direction,line,tile);
   if(!inserted.accepted){
-    showNote(isGameOver(board)?'Brett voll – dein Punktestand bleibt bestehen.':'Diese Reihe ist voll');
+    showNote(isGameOver(board)?t('note.boardFullStay'):t('note.rowFull'));
     haptics.pulse('tap');
     return;
   }
@@ -1256,10 +1263,10 @@ async function moveDuel(direction,line) {
     await resolveMerges(turn,{streak:true});
     if(turn!==generation)return;
     data=await net;
-    if(!data){showNote('Verbindung unterbrochen – Zug wird abgeglichen',3000);return;}
+    if(!data){showNote(t('note.duelDropped'),3000);return;}
     if(!data.result?.accepted){
-      if(data.result?.reason==='full')showNote(data.game.blocked?'Brett voll – dein Punktestand bleibt bestehen.':'Diese Reihe ist voll');
-      else if(data.result?.reason==='changed')showNote('Brett aktualisiert');
+      if(data.result?.reason==='full')showNote(data.game.blocked?t('note.boardFullStay'):t('note.rowFull'));
+      else if(data.result?.reason==='changed')showNote(t('note.boardUpdated'));
       if(data.game)reconcileDuelState(data.game);
       return;
     }
@@ -1288,7 +1295,7 @@ async function move(direction, line, {fromHint=false}={}) {
   const tile = { id: nextId, value: queue[0] };
   const inserted = insertTile(board, direction, line, tile);
   if (!inserted.accepted) {
-    showNote('Diese Reihe ist voll');
+    showNote(t('note.rowFull'));
     haptics.pulse('tap');
     return;
   }
@@ -1325,7 +1332,7 @@ async function move(direction, line, {fromHint=false}={}) {
   const queued=pendingMove;pendingMove=null;
   const currentProfile = spawnProfile(moves, peak);
   if (currentProfile.floor > previousProfile.floor || currentProfile.ceiling > previousProfile.ceiling) {
-    showNote('Neue Steinwerte freigeschaltet', 2200);
+    showNote(t('note.newValues'), 2200);
   }
   if (isGameOver(board)) {showDialog(true);return;}
   if(queued)void move(queued.direction,queued.line).catch(()=>{});
@@ -1466,4 +1473,4 @@ export const ready=start();
 // Erster Abgleich nach dem Laden, ohne den Start zu bremsen (nur wenn nötig, siehe progress-sync.mjs).
 void ready.then(()=>setTimeout(()=>{if(!duelMode)void progressSync.flush();},2500)).catch(()=>{});
 void ready.then(()=>loadLevels()).catch(()=>{});
-void ready.catch(()=> {booting=true;showNote('Die 3D-Grafik konnte nicht geladen werden. Bitte lade die Seite neu.',60000);});
+void ready.catch(()=> {booting=true;showNote(t('boot.graphicsFail'),60000);});

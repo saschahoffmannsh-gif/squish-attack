@@ -1,8 +1,9 @@
 // Geschenk öffnen (launch-12): Paket springt auf, der Inhalt steigt in einer Comic-Seifenblase
 // hoch, Antippen lässt sie platzen (Plopp, Vibration) und die Hilfsmittel fliegen in die Leiste.
 // prefers-reduced-motion: nur Ein-/Ausblenden, kein Schweben/Flug. Ton aus wird von sound.mjs beachtet.
-import { TOOL_ICONS, GIFT_LID_SVG, GIFT_BOX_SVG } from './tool-icons.mjs?v=launch-22';
-import { toolName } from './campaign.mjs?v=launch-22';
+import { TOOL_ICONS, GIFT_LID_SVG, GIFT_BOX_SVG } from './tool-icons.mjs?v=launch-23';
+import { toolName } from './campaign.mjs?v=launch-23';
+import { t } from './i18n.mjs?v=launch-23';
 
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -17,12 +18,12 @@ export function createGiftFx({ reduceMotion, sound, haptics } = {}) {
    * targetFor(type) → Element, zu dem die Symbole fliegen (z. B. Werkzeug-Knopf), optional.
    * Promise löst nach dem Platzen + Flug auf.
    */
-  function open({ items, onPop, targetFor, label = 'Geschenk' } = {}) {
+  function open({ items, onPop, targetFor, label = t('gift.label') } = {}) {
     if (active) return active.promise;
     stats.opens++;
     const rm = reduced();
     const layer = el('div', 'gift-fx' + (rm ? ' is-reduced' : '')); layer.id = 'gift-fx';
-    layer.setAttribute('role', 'dialog'); layer.setAttribute('aria-modal', 'true'); layer.setAttribute('aria-label', `${label} öffnen`);
+    layer.setAttribute('role', 'dialog'); layer.setAttribute('aria-modal', 'true'); layer.setAttribute('aria-label', t('gift.openAria', { label }));
     const stage = el('div', 'gfx-stage');
     const box = el('div', 'gfx-box');
     const lid = el('div', 'gfx-lid'); lid.innerHTML = GIFT_LID_SVG;
@@ -30,11 +31,11 @@ export function createGiftFx({ reduceMotion, sound, haptics } = {}) {
     box.append(lid, base);
     const bubble = el('button', 'gfx-bubble'); bubble.type = 'button';
     const text = items.map(i => `${i.count > 1 ? i.count + '× ' : '+1 '}${toolName(i.type)}`).join(', ');
-    bubble.setAttribute('aria-label', `Blase mit ${text} – antippen zum Einsammeln`);
+    bubble.setAttribute('aria-label', t('gift.bubbleAria', { text }));
     const icons = el('span', 'gfx-items');
     for (const i of items) { const s = el('i', 'gfx-item'); s.dataset.type = i.type; s.innerHTML = TOOL_ICONS[i.type] || ''; icons.append(s); }
     bubble.append(icons, el('b', 'gfx-label', text));
-    const hint = el('p', 'gfx-hint', 'Tippe die Blase!');
+    const hint = el('p', 'gfx-hint', t('gift.hint'));
     stage.append(box, bubble, hint);
     layer.append(stage);
     document.body.append(layer);
@@ -72,7 +73,7 @@ export function createGiftFx({ reduceMotion, sound, haptics } = {}) {
           d.style.setProperty('--dx', `${Math.cos(a) * dist}px`); d.style.setProperty('--dy', `${Math.sin(a) * dist}px`);
           layer.append(d);
         }
-        const plopp = el('span', 'gfx-plopp', 'PLOPP!'); plopp.style.left = `${from.x}px`; plopp.style.top = `${from.y}px`; layer.append(plopp);
+        const plopp = el('span', 'gfx-plopp', t('gift.plopp')); plopp.style.left = `${from.x}px`; plopp.style.top = `${from.y}px`; layer.append(plopp);
         await wait(140);
         // Symbole fliegen zum Ziel
         const flights = items.map((it, k) => {

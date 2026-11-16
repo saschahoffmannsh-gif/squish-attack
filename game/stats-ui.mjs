@@ -1,7 +1,8 @@
 // Werkzeug-Statistik (launch-13, Testphase): Übersicht aus dem lokalen Protokoll, Export, Zurücksetzen.
-import { TOOL_ICONS } from './tool-icons.mjs?v=launch-22';
-import { toolName } from './campaign.mjs?v=launch-22';
-import { summarize, exportLog } from './tool-log.mjs?v=launch-22';
+import { TOOL_ICONS } from './tool-icons.mjs?v=launch-23';
+import { toolName } from './campaign.mjs?v=launch-23';
+import { summarize, exportLog } from './tool-log.mjs?v=launch-23';
+import { t } from './i18n.mjs?v=launch-23';
 
 const TYPES = ['extraMoves', 'hint', 'rocket', 'wand'];
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
@@ -20,7 +21,7 @@ export function createStatsUI({ getLog, onReset, build = '', sound } = {}) {
       td.textContent = u || a || g ? `${u}` : '–';
       if (a) td.append(el('sup', 'ts-ad', `${a}▶`));
       if (g) td.append(el('sup', 'ts-gift', `${g}🎁`));
-      td.setAttribute('aria-label', `${toolName(t)}: ${u} eingesetzt, ${a} per Werbung, ${g} geschenkt`);
+      td.setAttribute('aria-label', t('stats.cellAria', { tool: toolName(t), use:u, ads:a, gifts:g }));
       row.append(td);
     }
   }
@@ -29,24 +30,24 @@ export function createStatsUI({ getLog, onReset, build = '', sound } = {}) {
     veil = el('div', 'ad-veil ts-veil'); veil.id = 'tool-stats';
     const panel = el('div', 'ad-panel ts-panel');
     panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); panel.setAttribute('aria-labelledby', 'ts-title'); panel.tabIndex = -1;
-    const close = el('button', 'ad-close'); close.type = 'button'; close.setAttribute('aria-label', 'Statistik schließen'); close.innerHTML = CLOSE_SVG;
+    const close = el('button', 'ad-close'); close.type = 'button'; close.setAttribute('aria-label', t('stats.closeAria')); close.innerHTML = CLOSE_SVG;
     close.addEventListener('click', () => api.close());
-    const title = el('h2', 'ad-title', 'Werkzeug-Statistik'); title.id = 'ts-title';
+    const title = el('h2', 'ad-title', t('stats.title')); title.id = 'ts-title';
     const t = sm.total;
     const tiles = el('div', 'ts-totals');
-    for (const [v, l] of [[t.attempts, 'Versuche'], [t.wins, 'Siege'], [sum(t.use), 'Einsätze'], [sum(t.ads), 'Werbung'], [sum(t.gifts), 'Geschenke']]) {
+    for (const [v, l] of [[t.attempts, t('stats.attempts')], [t.wins, t('stats.wins')], [sum(t.use), t('stats.uses')], [sum(t.ads), t('stats.ads')], [sum(t.gifts), t('stats.gifts')]]) {
       const d = el('div', 'ts-tile'); d.append(el('b', '', String(v)), el('small', '', l)); tiles.append(d);
     }
     const perType = el('div', 'ts-types');
     for (const ty of TYPES) {
       const d = el('div', 'ts-type'); d.append(ico(ty), el('b', '', String(t.use[ty])), el('small', '', `${t.ads[ty]}▶`), el('small', 'ts-gift', `${t.gifts[ty]}🎁`));
-      d.setAttribute('aria-label', `${toolName(ty)}: ${t.use[ty]} eingesetzt, ${t.ads[ty]} per Werbung, ${t.gifts[ty]} geschenkt`); perType.append(d);
+      d.setAttribute('aria-label', t('stats.cellAria', { tool: toolName(ty), use:t.use[ty], ads:t.ads[ty], gifts:t.gifts[ty] })); perType.append(d);
     }
     const wrap = el('div', 'ts-table-wrap');
     if (sm.levels.length) {
       const table = el('table', 'ts-table');
       const head = el('tr');
-      head.append(el('th', '', 'Lvl'), el('th', '', 'Vers.'), el('th', '', 'Sieg'));
+      head.append(el('th', '', t('stats.lvl')), el('th', '', t('stats.triesShort')), el('th', '', t('stats.winShort')));
       for (const ty of TYPES) { const th = el('th'); th.append(ico(ty)); head.append(th); }
       const thead = el('thead'); thead.append(head);
       const tbody = el('tbody');
@@ -56,16 +57,16 @@ export function createStatsUI({ getLog, onReset, build = '', sound } = {}) {
         cells(tr, s); tbody.append(tr);
       }
       table.append(thead, tbody); wrap.append(table);
-    } else wrap.append(el('p', 'ts-empty', 'Noch keine Level gespielt. Spiel ein paar Level – hier siehst du dann, wo du welche Hilfe gebraucht hast.'));
-    const legend = el('p', 'ts-legend', 'Zahl = eingesetzt · ▶ = per Werbung · 🎁 = Geschenk');
+    } else wrap.append(el('p', 'ts-empty', t('stats.empty')));
+    const legend = el('p', 'ts-legend', t('stats.legend'));
     const acts = el('div', 'ts-actions');
-    const exp = el('button', 'ad-watch ts-export', 'Exportieren'); exp.type = 'button'; exp.id = 'ts-export';
+    const exp = el('button', 'ad-watch ts-export', t('stats.export')); exp.type = 'button'; exp.id = 'ts-export';
     exp.addEventListener('click', () => void doExport());
-    const reset = el('button', 'ad-later ts-reset', 'Zurücksetzen'); reset.type = 'button'; reset.id = 'ts-reset';
+    const reset = el('button', 'ad-later ts-reset', t('stats.reset')); reset.type = 'button'; reset.id = 'ts-reset';
     reset.addEventListener('click', () => doReset(reset));
     acts.append(exp, reset);
     const toast = el('p', 'shop-toast ts-toast'); toast.setAttribute('role', 'status'); toast.setAttribute('aria-live', 'polite');
-    panel.append(close, title, tiles, perType, wrap, legend, acts, toast, el('p', 'ad-foot', 'Nur auf diesem Gerät gespeichert. Testphase.'));
+    panel.append(close, title, tiles, perType, wrap, legend, acts, toast, el('p', 'ad-foot', t('stats.foot')));
     veil.append(panel);
     veil.addEventListener('pointerdown', ev => { if (ev.target === veil) { ev.preventDefault(); api.close(); } });
     return veil;
@@ -77,7 +78,7 @@ export function createStatsUI({ getLog, onReset, build = '', sound } = {}) {
   }
   async function doExport() {
     const text = exportLog(getLog(), { build });
-    const name = `squish-werkzeug-log-${new Date().toISOString().slice(0, 10)}.json`;
+    const name = `${t('stats.filePrefix')}-${new Date().toISOString().slice(0, 10)}.json`;
     stats.exports++; stats.lastExport = text;
     let copied = false;
     try { await navigator.clipboard?.writeText(text); copied = !!navigator.clipboard; } catch {}
@@ -85,12 +86,12 @@ export function createStatsUI({ getLog, onReset, build = '', sound } = {}) {
     let mode = copied ? 'copy' : 'none';
     try {
       const file = typeof File === 'function' ? new File([text], name, { type: 'application/json' }) : null;
-      if (file && navigator.canShare?.({ files: [file] })) { await navigator.share({ files: [file], title: 'Squish Werkzeug-Log' }); mode = copied ? 'copy+share' : 'share'; }
+      if (file && navigator.canShare?.({ files: [file] })) { await navigator.share({ files: [file], title: t('stats.shareTitle') }); mode = copied ? 'copy+share' : 'share'; }
       else download(text, name), mode = copied ? 'copy+download' : 'download';
     } catch (e) { if (e?.name !== 'AbortError' && !copied) { download(text, name); mode = 'download'; } }
     stats.lastExportMode = mode;
     sound?.play?.('tap');
-    showToast(copied ? 'Log kopiert – zum Senden einfach einfügen' : 'Log als Datei gespeichert');
+    showToast(copied ? t('stats.copied') : t('stats.saved'));
   }
   function download(text, name) {
     const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
@@ -100,14 +101,14 @@ export function createStatsUI({ getLog, onReset, build = '', sound } = {}) {
   }
   function doReset(btn) {
     if (!armedReset) {   // erster Tipp: nachfragen
-      armedReset = true; btn.textContent = 'Wirklich löschen?'; btn.classList.add('is-armed');
-      showToast('Nochmal tippen löscht das ganze Protokoll');
+      armedReset = true; btn.textContent = t('stats.confirm'); btn.classList.add('is-armed');
+      showToast(t('stats.resetHint'));
       return;
     }
     armedReset = false; stats.resets++;
     onReset?.();
     api.refresh();
-    showToast('Protokoll gelöscht');
+    showToast(t('stats.resetDone'));
   }
   function key(ev) {
     if (!veil) return;

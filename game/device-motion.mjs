@@ -1,3 +1,4 @@
+import { t } from './i18n.mjs?v=launch-23';
 const vector = (value, axes) => value && axes.some(axis => Number.isFinite(value[axis]))
   ? axes.map(axis => Number.isFinite(value[axis]) ? value[axis] : 0) : null;
 
@@ -48,12 +49,12 @@ export function installDeviceMotion({button, status, onImpulse, clearImpulses, c
     button.setAttribute('aria-pressed', String(enabled));
     button.setAttribute('aria-checked', String(enabled || wanted));
     const indicator = button.querySelector('[data-toggle-state]');
-    if (indicator) indicator.textContent = pending ? '…' : enabled || wanted ? 'An' : 'Aus';
-    else button.textContent = pending ? 'Freigabe wird angefragt …' : enabled ? 'Handy-Wackeln ausschalten' : 'Handy-Wackeln aktivieren';
-    status.textContent = message || (!supported ? 'Bewegungssensoren sind hier nicht verfügbar.'
-      : enabled ? reducedMotion.matches ? 'Pausiert: reduzierte Bewegung ist eingeschaltet.' : 'Aktiv – bewege dein Handy leicht.'
-      : wanted ? 'Wird beim Spielstart erneut aktiviert. Du kannst die Freigabe auch hier antippen.'
-      : 'Einschalten, damit die Squishes auf leichte Handybewegungen reagieren.');
+    if (indicator) indicator.textContent = pending ? '…' : enabled || wanted ? t('on') : t('off');
+    else button.textContent = pending ? t('motion.pending') : enabled ? t('motion.onBtn') : t('motion.offBtn');
+    status.textContent = message || (!supported ? t('motion.unsupported')
+      : enabled ? reducedMotion.matches ? t('motion.reduced') : t('motion.active')
+      : wanted ? t('motion.remembered')
+      : t('motion.offHint'));
   };
   function reset() { filter.reset(); clearImpulses(); }
   function motion(event) {
@@ -78,7 +79,7 @@ export function installDeviceMotion({button, status, onImpulse, clearImpulses, c
       render();
       if (await permission !== 'granted') {
         remember(false);
-        failure = 'Keine Freigabe erhalten. Zum erneuten Versuch tippe auf Aktivieren.';
+        failure = t('motion.denied');
       } else if (!disposed) {
         enabled = true; reset();
         remember(true);
@@ -86,7 +87,7 @@ export function installDeviceMotion({button, status, onImpulse, clearImpulses, c
       }
     } catch {
       remember(false);
-      failure = 'Bewegungssensoren konnten nicht aktiviert werden. Versuche es erneut.';
+      failure = t('motion.failed');
     } finally {
       pending = false;
       button.disabled = !supported;

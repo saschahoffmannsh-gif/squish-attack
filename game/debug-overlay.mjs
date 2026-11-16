@@ -1,6 +1,6 @@
 // Lightweight DOM overlay for iPhone freezes. Independent of the WebGL
 // loop: a setInterval heartbeat keeps ticking even if requestAnimationFrame stops.
-import {flags,flagSummary,BUILD} from './flags.mjs?v=launch-22';
+import {flags,flagSummary,BUILD} from './flags.mjs?v=launch-23';
 
 const log=[];
 function push(line){
