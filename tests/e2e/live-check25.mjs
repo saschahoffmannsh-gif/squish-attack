@@ -117,6 +117,8 @@ const ENDLESS_SAVE = { version: 1, board: [[1,2,null,3,null],[null,null,null,nul
   // Tutorials L1–5
   await h.press('adventure'); await h.waitBtn('play-level');
   await h.press('play-level'); await h.idle();
+  const advSpecials = await page.evaluate(() => window.SquishGame.campaign.specials);
+  ok('Abenteuer L1: keine Sonder-Squishes', (advSpecials || []).length === 0 && !(await page.evaluate(() => window.SquishGame.campaign.lab)), JSON.stringify(advSpecials));
   await h.waitFinger().catch(() => {});
   const tip1 = await page.$eval('#campaign-tip', e => ({ hidden: e.hidden, text: e.textContent }));
   ok('L1: Tutorial-Tipp sichtbar', !tip1.hidden && /Drei gleiche/.test(tip1.text), JSON.stringify(tip1));
@@ -418,12 +420,6 @@ function overflowHits() {
 {
   const { page, errors } = await newPage(false, null, 'de'); const h = H(page);
   await h.waitBtn('endless');
-  // Abenteuer L1 hat keine Sonder-Squishes
-  await h.press('adventure'); await h.waitBtn('play-level'); await h.press('play-level'); await h.idle(); await sleep(600);
-  const adv = await h.state();
-  ok('Abenteuer L1: keine Sonder-Squishes', (adv.campaign.specials || []).length === 0 && !adv.campaign.lab, JSON.stringify(adv.campaign.specials));
-  await page.click('#campaign-menu'); await sleep(800); await h.goHome();
-
   await h.waitBtn('rules'); await h.press('rules'); await sleep(400);
   const labBtn = await page.evaluate(() => {
     const b = [...document.querySelectorAll('#home-screen button')].find(b => b.dataset.nav === 'lab');
