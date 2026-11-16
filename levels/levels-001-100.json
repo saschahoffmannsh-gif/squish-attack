@@ -4,9 +4,9 @@
   "tool": "tools/campaign/build100.mjs",
   "plan": "tools/campaign/plan100.mjs",
   "reserve": 5,
-  "v1": "Level 6–10 unverändert aus Generator v1 (Saat 20261114); Level 1–5 seit launch-22 Tutorials",
+  "v1": "Level 6–10 unverändert aus Generator v1 (Saat 20261114); Level 1–5 seit launch-24 Tutorials (auch von oben/unten)",
   "launch": "launch-18",
-  "tutorials": "Level 1–5: launch-22 Tutorials (3er-, 4er-, T-, 5er-Fusion, Straße). Level 6–100 unverändert."
+  "tutorials": "Level 1–5: launch-24 Tutorials (3er waagerecht, 4er von oben, T von unten, 5er waagerecht, Straße von oben). Level 6–100 unverändert."
  },
  "count": 100,
  "levels": [
@@ -81,7 +81,7 @@
     "slack": 4,
     "optimalSolutions": 1,
     "generator": "tutorial",
-    "launch": 22,
+    "launch": 24,
     "difficulty": 1
    }
   },
@@ -94,7 +94,14 @@
     [
      null,
      null,
+     1,
      null,
+     null
+    ],
+    [
+     null,
+     null,
+     1,
      null,
      null
     ],
@@ -106,16 +113,9 @@
      null
     ],
     [
+     null,
+     null,
      1,
-     1,
-     null,
-     1,
-     null
-    ],
-    [
-     null,
-     null,
-     null,
      null,
      null
     ],
@@ -151,13 +151,13 @@
     "three": 2,
     "two": 4
    },
-   "solution": "h",
+   "solution": "r",
    "meta": {
     "minMoves": 1,
     "slack": 4,
     "optimalSolutions": 1,
     "generator": "tutorial",
-    "launch": 22,
+    "launch": 24,
     "difficulty": 1
    }
   },
@@ -169,36 +169,36 @@
    "board": [
     [
      null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     1,
+     null,
      1,
+     null
+    ],
+    [
+     null,
+     null,
      1,
-     null,
-     null
-    ],
-    [
-     null,
-     1,
-     null,
-     null,
-     null
-    ],
-    [
-     null,
-     null,
-     null,
-     null,
-     null
-    ],
-    [
-     null,
-     null,
-     null,
-     null,
-     null
-    ],
-    [
-     null,
-     null,
-     null,
      null,
      null
     ]
@@ -227,13 +227,13 @@
     "three": 2,
     "two": 4
    },
-   "solution": "f",
+   "solution": "m",
    "meta": {
     "minMoves": 1,
     "slack": 4,
-    "optimalSolutions": 2,
+    "optimalSolutions": 1,
     "generator": "tutorial",
-    "launch": 22,
+    "launch": 24,
     "difficulty": 2
    }
   },
@@ -308,7 +308,7 @@
     "slack": 4,
     "optimalSolutions": 2,
     "generator": "tutorial",
-    "launch": 22,
+    "launch": 24,
     "difficulty": 2
    }
   },
@@ -321,23 +321,23 @@
     [
      null,
      null,
-     null,
-     null,
-     null
-    ],
-    [
-     null,
-     null,
-     null,
+     2,
      null,
      null
     ],
     [
-     null,
      null,
      null,
      1,
-     2
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
     ],
     [
      null,
@@ -377,13 +377,13 @@
     "three": 2,
     "two": 4
    },
-   "solution": "c",
+   "solution": "r",
    "meta": {
     "minMoves": 1,
     "slack": 4,
     "optimalSolutions": 1,
     "generator": "tutorial",
-    "launch": 22,
+    "launch": 24,
     "difficulty": 3
    }
   },
