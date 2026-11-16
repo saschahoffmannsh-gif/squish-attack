@@ -125,18 +125,18 @@
         </style>
     <link rel="stylesheet" href="graphics.css" />
     <link rel="stylesheet" href="fixed-screen.css?v=glass-menu-1" />
-    <link rel="stylesheet" href="duel.css?v=launch-24" />
+    <link rel="stylesheet" href="duel.css?v=launch-25" />
     <link rel="stylesheet" href="reward-effects.css?v=vfx-1" />
     <link rel="stylesheet" href="menu.css?v=glass-title-1" />
     <link rel="stylesheet" href="title-menu.css?v=3" />
-    <link rel="stylesheet" href="clean-screen.css?v=launch-24" />
+    <link rel="stylesheet" href="clean-screen.css?v=launch-25" />
     <link rel="stylesheet" href="combo.css?v=combo-1" />
-    <link rel="stylesheet" href="campaign.css?v=launch-24" />
-    <link rel="stylesheet" href="autumn-ui.css?v=launch-24" />
-    <link rel="stylesheet" href="comic-ui.css?v=launch-24" />
-    <link rel="stylesheet" href="tools.css?v=launch-24" />
-    <link rel="stylesheet" href="store.css?v=launch-24" />
-    <link rel="stylesheet" href="ads.css?v=launch-24" />
+    <link rel="stylesheet" href="campaign.css?v=launch-25" />
+    <link rel="stylesheet" href="autumn-ui.css?v=launch-25" />
+    <link rel="stylesheet" href="comic-ui.css?v=launch-25" />
+    <link rel="stylesheet" href="tools.css?v=launch-25" />
+    <link rel="stylesheet" href="store.css?v=launch-25" />
+    <link rel="stylesheet" href="ads.css?v=launch-25" />
   </head>
   <body>
     <div class="aw-bg" id="aw-bg" aria-hidden="true"></div>
@@ -276,9 +276,9 @@
           <p data-i18n="rules.p3">Bei drei oder vier Steinen steigt der Wert um 1. Bei fünf oder mehr Steinen steigt er um 2: Aus fünf Dreiern wird zum Beispiel eine 5. Neue passende Linien lösen weitere Merges aus.</p>
           <p data-i18n="rules.p4">Straßen bestehen aus mindestens drei direkt benachbarten, aufeinanderfolgenden Werten in einer Reihe oder Spalte, auf- oder absteigend. Sie verschmelzen automatisch am Platz des höchsten Steins: 1–2–3 wird zu 3, 12–13–14 zu 14. Ab vier Steinen steigt der höchste Wert um 1: 1–2–3–4 wird zu 5, 1–2–3–4–5 zu 6. Gleiche Werte verschmelzen zuerst. Bei sich kreuzenden Straßen zählt zuerst die längere, bei gleicher Länge die waagerechte.</p>
           <p data-i18n="rules.p5">Pro Merge erhältst du den neuen Steinwert × die Anzahl der verschmolzenen Steine × 10 Punkte. Unten siehst du die nächsten drei Steine. Die möglichen neuen Steinwerte entwickeln sich mit deinem Fortschritt.</p>
-          <p data-i18n="rules.p6">Besondere Squishes im Abenteuer: Ein Eis-Squish ist weiß und trägt ein Eis-Symbol oben. Der gefrorene Squish rutscht ganz normal mit, verschmilzt aber nicht. Passiert direkt neben ihm (waagerecht oder senkrecht) ein Merge oder eine Straße, geht das Eis weg – derselbe Squish mit derselben Zahl bleibt liegen und ist ab dem nächsten Zug ein normaler Stein.</p>
-          <p data-i18n="rules.p7">Ein angeketteter Squish (Schloss-Squish) ist grau und trägt ein Schloss-Symbol oben. Er bewegt sich nicht und lässt sich nicht verschieben. Er ist eine Wand: Eingeschobene Steine rücken nur bis davor, und er verschmilzt nicht. Auch Rakete und Zauberstab wirken nicht auf ihn. Passiert direkt neben ihm ein Merge oder eine Straße, geht das Schloss weg – der Squish bleibt an seinem Platz und ist ab dem nächsten Zug frei: Er rutscht mit und verschmilzt ganz normal. Der Unterschied: Eis rutscht mit, das Schloss hält fest.</p>
-          <p data-i18n="rules.p8">Ein Bomben-Squish ist schwarz und trägt ein Bomben-Symbol oben. Er zählt ab deinem ersten Zug 20 Sekunden herunter (kleines Abzeichen). Verschmilzt du ihn vorher, ist er entschärft. Sonst explodiert er und nimmt alle Steine rund um sich mit (Schloss-Squishes halten). Die Uhr steht still, solange das Spiel pausiert ist oder ein Fenster offen ist.</p>
+          <p data-i18n="rules.p6">Besondere Squishes (zum Ausprobieren unter Regeln → Neue Squishes testen): Ein Eis-Squish ist hellblau und trägt ein Eis-Symbol oben, ohne Zahl. Er ist ein Joker: er rutscht ganz normal mit und verschmilzt mit jedem Wert. Das Ergebnis nimmt den Wert der anderen Steine. Das Eis bleibt, bis der Stein selbst in einer Fusion oder Straße mitverschmilzt – ein Merge nur daneben taut ihn nicht auf.</p>
+          <p data-i18n="rules.p7">Ein angeketteter Squish (Schloss-Squish) ist grau und trägt Ketten und ein Schloss oben, ohne Zahl. Er bewegt sich nicht und lässt sich nicht verschieben. Er ist eine Wand: Eingeschobene Steine rücken nur bis davor, und er verschmilzt nicht, solange er angekettet ist. Auch Rakete und Zauberstab wirken nicht auf ihn. Passiert direkt neben ihm (waagerecht oder senkrecht) ein Merge oder eine Straße, zerplatzen die Ketten – der Squish bleibt an seinem Platz und ist ab dem nächsten Zug ein Joker: ohne Zahl, er rutscht mit und verschmilzt mit jedem Wert.</p>
+          <p data-i18n="rules.p8">Ein Bomben-Squish ist schwarz und trägt ein Bomben-Symbol oben, ohne Zahl. Er ist sofort ein Joker und verschmilzt mit jedem Wert – dann ist er entschärft. Sonst zählt er ab deinem ersten Zug 20 Sekunden herunter (kleines Abzeichen). Läuft die Zeit ab, explodiert er und nimmt alle Steine rund um sich mit (Schloss-Squishes halten). Die Uhr steht still, solange das Spiel pausiert ist oder ein Fenster offen ist.</p>
           <p data-i18n="rules.p9">Der Rekordstein oben zeigt deinen höchsten Stein aller Zeiten. Spielstand und Rekord werden automatisch gespeichert. Wenn das Brett ganz voll ist und weder Merge noch Straße möglich sind, endet das Spiel. Jedes neue Spiel beginnt mit sieben zufällig verteilten Steinen und behält deinen Rekord.</p>
         </details>
       </div>
@@ -374,10 +374,10 @@
         <button class="duel-back" id="duel-close" type="button" data-i18n="duel.back">Zurück zum Menü</button>
       </div>
     </section>
-    <script src="config.js?v=launch-24"></script>
+    <script src="config.js?v=launch-25"></script>
     <script>
     (function(){
-      var BUILD='launch-24';
+      var BUILD='launch-25';
       var key='squish-build-reload';
       fetch('build.txt?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.text();}).then(function(v){
         v=(v||'').trim();
@@ -388,7 +388,7 @@
       }).catch(function(){});
     })();
     </script>
-    <script type="module" src="debug-overlay.mjs?v=launch-24"></script>
-    <script type="module" src="loading-screen.mjs?v=launch-24"></script>
+    <script type="module" src="debug-overlay.mjs?v=launch-25"></script>
+    <script type="module" src="loading-screen.mjs?v=launch-25"></script>
   </body>
 </html>

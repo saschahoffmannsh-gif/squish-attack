@@ -3,8 +3,8 @@
 // Zugtiefe mit Transpositionstabelle; Zustand = Brett + gedeckelter
 // Zielfortschritt, Steinfolge-Position = Tiefe). Liefert nur die ersten
 // Züge (Standard 2). Reine Logik ohne DOM – läuft im Worker oder direkt.
-import { SIZE, boardCode, boardFromCode } from './game-logic.mjs?v=launch-24';
-import { ALL_MOVES, encodeMove, advanceGoals, goalTarget, stepBoard } from './campaign.mjs?v=launch-24';
+import { SIZE, boardCode, boardFromCode } from './game-logic.mjs?v=launch-25';
+import { ALL_MOVES, encodeMove, advanceGoals, goalTarget, stepBoard } from './campaign.mjs?v=launch-25';
 
 const MOVE_CHARS = ALL_MOVES.map(m => encodeMove(m.direction, m.line));
 export const targetOf = goalTarget;

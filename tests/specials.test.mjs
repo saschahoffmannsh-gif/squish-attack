@@ -1,8 +1,9 @@
-// launch-16/17: besondere Squishes – Eis, Bombe, Kette (Spiellogik, Kampagne, Solver, Hinweis).
-// launch-17: Eis und Kette werden durch eine Fusion daneben befreit; der Squish bleibt (gleiche id, gleicher Wert).
+// launch-16/17 / squish-art: besondere Squishes – Eis, Bombe, Kette, Joker.
+// Eis und Bombe sind Joker (verschmelzen mit jedem Wert). Die Kette verschmilzt nicht;
+// daneben eine Fusion befreit sie, danach ist sie selbst ein Joker (erst im nächsten Zug).
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { insertTile, settle, mergePass, findStreets, tickBombs, boardCode, boardFromCode, BOMB_MS } from '../game/game-logic.mjs';
+import { insertTile, settle, mergePass, findStreets, tickBombs, boardCode, boardFromCode, BOMB_MS, inferStreet, JOKER_BASE } from '../game/game-logic.mjs';
 import * as Camp from '../game/campaign.mjs';
 import { solveLevel } from '../tools/campaign/solver.mjs';
 import { findHint, hintState } from '../game/hint-solver.mjs';
@@ -11,33 +12,71 @@ import { readFileSync } from 'node:fs';
 let id = 1;
 const T = (value, extra = {}) => ({ id: id++, value, ...extra });
 const B = rows => rows.map(r => r.map(x => (x == null ? null : typeof x === 'number' ? T(x) : x)));
-const vals = b => b.map(r => r.map(t => (t ? (t.bound ? '#' + (t.value || '') : (t.ice ? '*' : '') + t.value + (t.bomb != null ? 'b' : '')) : '.')).join(' ')).join(' / ');
+const vals = b => b.map(r => r.map(t => (t ? (t.bound ? '#' + (t.value || '') : t.joker ? '?' + (t.value || '') : (t.ice ? '*' : '') + t.value + (t.bomb != null ? 'b' : '')) : '.')).join(' ')).join(' / ');
 const empty = n => Array.from({ length: n }, () => Array(5).fill(null));
 
-test('Eis: gefrorener Stein verschmilzt nicht (weder Fusion noch Straße)', () => {
-  const b = B([[2, 2, T(2, { ice: true }), null, null], [1, 2, T(3, { ice: true }), null, null], ...Array.from({ length: 3 }, () => Array(5).fill(null))]);
-  assert.equal(mergePass(b).groups.length, 0);
-  assert.equal(findStreets(b).length, 0);
-  assert.equal(settle(b).passes.length, 0);
-});
-
-test('Eis: taut durch eine Fusion direkt daneben auf – derselbe Squish bleibt liegen (verschwindet nie im selben Zug)', () => {
-  // Reihe 0: 3 3 3 → Fusion; darunter (1,1) gefrorene 4, daneben 4 4 → aufgetaut stünde 4 4 4 in Reihe 1.
-  const ice = T(4, { ice: true });
-  const b = B([[3, 3, 3, null, null], [null, ice, 4, 4, null], ...empty(3)]);
+test('Joker: Eis verschmilzt mit einem anderen Wert (nimmt den Wert der anderen)', () => {
+  const ice = T(9, { ice: true });
+  const b = B([[2, 2, ice, null, null], ...empty(4)]);
   const p = mergePass(b);
   assert.equal(p.groups.length, 1);
-  assert.deepEqual(p.thawed, [[1, 1]]);
-  assert.deepEqual(p.board[1][1], { id: ice.id, value: 4 }, 'gleiche id, gleicher Wert, kein Eis mehr');
+  assert.equal(p.groups[0].value, 2);
+  assert.equal(p.groups[0].nextValue, 3);
+  assert.equal(p.board[0][1].value, 3);
+  assert.equal(p.board[0][1].ice, undefined);
+  assert.equal(p.board[0][2], null);
+});
+
+test('Joker: Bombe verschmilzt mit einem anderen Wert und ist entschärft', () => {
+  const bomb = T(1, { bomb: 8000 });
+  const b = B([[5, 5, bomb, null, null], ...empty(4)]);
   const s = settle(b);
-  assert.equal(s.passes.length, 1, 'der befreite Squish verschmilzt nicht im selben Zug');
-  assert.equal(s.board[1][1]?.id, ice.id);
-  assert.equal(s.board[1][1]?.value, 4);
-  assert.equal(s.board[1][2]?.value, 4);
-  // Im nächsten Zug (neues settle) gilt er als normaler Squish: 4 4 4 verschmilzt.
-  const s2 = settle(s.board);
-  assert.equal(s2.passes.length, 1);
-  assert.equal(s2.board[1][2]?.value, 5);
+  assert.equal(s.board[0][1].value, 6);
+  assert.equal(s.board[0][1].bomb, undefined);
+  assert.equal(tickBombs(s.board, 99999).exploded.length, 0);
+});
+
+test('Joker: drei Joker verschmelzen als Wert 1 zu einer 2', () => {
+  const b = B([[T(4, { ice: true }), T(8, { ice: true }), T(2, { bomb: 5000 }), null, null], ...empty(4)]);
+  const p = mergePass(b);
+  assert.equal(p.groups.length, 1);
+  assert.equal(p.groups[0].value, JOKER_BASE);
+  assert.equal(p.groups[0].nextValue, 2);
+  assert.equal(p.board[0][1].value, 2);
+  assert.equal(p.board[0][1].ice, undefined);
+  assert.equal(p.board[0][1].bomb, undefined);
+});
+
+test('Joker: Eis ergänzt eine Straße (1, Eis, 3)', () => {
+  const ice = T(9, { ice: true });
+  const b = B([[1, ice, 3, null, null], ...empty(4)]);
+  const streets = findStreets(b);
+  assert.equal(streets.length, 1);
+  assert.deepEqual(streets[0].resolved, [1, 2, 3]);
+  const s = settle(b);
+  assert.equal(s.passes.length, 1);
+  // Straße 1-2-3: höchster Wert 3, Länge 3 → bleibt 3.
+  assert.equal(s.board[0][2].value, 3);
+  assert.equal(s.board[0][2].ice, undefined);
+});
+
+test('Joker: [3, Joker, 4, 4, 4] – der Joker geht an die 4er, nicht an die einzelne 3', () => {
+  const ice = T(9, { ice: true });
+  const b = B([[3, ice, 4, 4, 4], ...empty(4)]);
+  const p = mergePass(b);
+  assert.equal(p.groups.length, 1);
+  assert.equal(p.groups[0].value, 4);
+  assert.equal(p.groups[0].cells.length, 4);
+  assert.equal(p.board[0][0].value, 3, 'die 3 bleibt liegen');
+});
+
+test('inferStreet: eindeutige Füllung, doppeldeutig aufsteigend bevorzugt', () => {
+  assert.deepEqual(inferStreet([1, null, 3]), [1, 2, 3]);
+  assert.deepEqual(inferStreet([null, null, 3]), [1, 2, 3]);
+  assert.deepEqual(inferStreet([3, null, null]), [3, 4, 5]);
+  assert.deepEqual(inferStreet([null, 3, null]), [2, 3, 4]);
+  assert.equal(inferStreet([2, null, 5]), null);
+  assert.equal(inferStreet([null, null, null]), null);
 });
 
 test('Eis: diagonal taut nicht; Eis zieht beim Einschieben normal mit', () => {
@@ -79,7 +118,7 @@ test('Kette: Fusion direkt daneben sprengt die Ketten – Squish bleibt an seine
   const p = mergePass(b);
   assert.deepEqual(p.unchained, [[1, 1]]);
   assert.deepEqual(p.thawed, []);
-  assert.deepEqual(p.board[1][1], { id: chain.id, value: 5 }, 'gleiche id und Zahl, keine Ketten mehr');
+  assert.deepEqual(p.board[1][1], { id: chain.id, value: 5, joker: true }, 'gleiche id, jetzt Joker');
   // Danach bewegt er sich normal mit.
   const ins = insertTile(p.board, 'right', 1, T(2));
   assert.equal(ins.board[1][2]?.id, chain.id, 'befreiter Squish rückt beim Einschieben mit');
@@ -90,6 +129,7 @@ test('Kette: Fusion direkt daneben sprengt die Ketten – Squish bleibt an seine
   const st = B([[1, 2, 3, null, null], [T(4, { bound: true }), null, null, null, null], ...empty(3)]);
   const sp = settle(st);
   assert.equal(sp.board[1][0].bound, undefined);
+  assert.equal(sp.board[1][0].joker, true);
   assert.equal(sp.board[1][0].value, 4);
 });
 
@@ -100,10 +140,13 @@ test('Kette: befreiter Squish verschmilzt erst im nächsten Zug', () => {
   const s = settle(b);
   assert.equal(s.passes.length, 1);
   assert.equal(s.board[1][1].id, chain.id);
+  assert.equal(s.board[1][1].joker, true, 'im selben Zug noch nicht verschmolzen');
+  assert.equal(s.board[1][1].bound, undefined);
   const ins = insertTile(s.board, 'down', 4, T(1));
   const s2 = settle(ins.board);
   assert.equal(s2.passes.length, 1);
   assert.equal(s2.board[1][2].value, 7);
+  assert.equal(s2.board[1][2].joker, undefined, 'Joker ist im Merge verbraucht');
 });
 
 test('Bombe: Countdown, Explosion räumt die 8 Nachbarn (nicht die Kette), keine Kettenexplosion', () => {
@@ -133,6 +176,12 @@ test('Brett-Schlüssel (Solver/Hinweis) kodieren Eis, Kette, Bombe verlustfrei (
   const back = boardFromCode(k);
   assert.deepEqual([back[0][1].ice, back[0][1].value, back[0][2].bound, back[0][2].value, back[0][3].bomb, back[0][3].value, back[0][4].value], [true, 4, true, 9, 20000, 7, 30]);
   assert.notEqual(boardCode(B([[T(3, { bound: true }), ...Array(4).fill(null)], ...empty(4)])), boardCode(B([[T(4, { bound: true }), ...Array(4).fill(null)], ...empty(4)])), 'Zahl unter der Kette zählt mit');
+  const j = B([[T(6, { joker: true }), ...Array(4).fill(null)], ...empty(4)]);
+  const jk = boardCode(j);
+  const jb = boardFromCode(jk);
+  assert.equal(jb[0][0].joker, true);
+  assert.equal(jb[0][0].value, 6);
+  assert.notEqual(jk, boardCode(B([[T(6), ...Array(4).fill(null)], ...empty(4)])));
 });
 
 const lab = JSON.parse(readFileSync(new URL('../levels/levels-lab.json', import.meta.url))).levels;
@@ -185,7 +234,7 @@ test('Test-Level (levels-lab.json): gültig, Solver löst jedes ohne Werkzeug, g
   assert.deepEqual([...kinds].sort(), ['bomb', 'bound', 'ice']);
 });
 
-test('Hinweis kennt die besonderen Squishes (Eis wird nicht als verschmelzbar gesehen)', () => {
+test('Hinweis kennt die besonderen Squishes', () => {
   for (const lv of lab) {
     const run = Camp.createLevelRun(lv);
     const h = findHint(hintState(run, { movesLeft: lv.moves, vec: Camp.progressVector(run) }), { maxMs: 4000 });
