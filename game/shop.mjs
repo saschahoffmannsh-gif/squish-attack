@@ -20,14 +20,20 @@ export const SHOP_CONFIG = Object.freeze({
   ]),
 });
 
+const nativePrices = new Map();   // App: Preise aus StoreKit (setNativePrices)
+
 /** Alle Produkte: {id, type|null, title, items, price}. ids sind später die Store-Produkt-ids. */
 export function shopProducts(config = SHOP_CONFIG) {
   const out = [];
   for (const type of TOOL_TYPES) for (const [count, price] of config.packs)
     out.push({ id: `${type}-${count}`, type, title: `${count}× ${toolName(type)}`, items: { [type]: count }, price });
   for (const b of config.bundles) out.push({ id: b.id, type: null, title: b.title, items: { ...b.items }, price: b.price });
+  // App: echte Preise aus dem App Store (StoreKit), sobald die Hülle sie gemeldet hat.
+  for (const p of out) { const n = nativePrices.get(p.id); if (n?.priceLabel) p.priceLabel = n.priceLabel; }
   return out;
 }
+/** App-Hülle: Preise aus StoreKit melden (Map shopId → {priceLabel}). Im Browser ungenutzt. */
+export function setNativePrices(map) { nativePrices.clear(); for (const [k, v] of map || []) nativePrices.set(k, v); }
 export const productById = (id, config = SHOP_CONFIG) => shopProducts(config).find(p => p.id === id) || null;
 
 const fmtEUR = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
@@ -41,7 +47,7 @@ let nativeStore = null;
  */
 export function registerNativeStore(adapter) { nativeStore = adapter || null; }
 // Für die App-Hülle ohne Modul-Import erreichbar (window.SquishNative.registerNativeStore(...)).
-if (typeof globalThis !== 'undefined') globalThis.SquishNative = Object.assign(globalThis.SquishNative || {}, { registerNativeStore });
+if (typeof globalThis !== 'undefined') globalThis.SquishNative = Object.assign(globalThis.SquishNative || {}, { registerNativeStore, setNativePrices });
 
 /** Aktiver Store: nativ (falls angemeldet), sonst Testkauf (falls erlaubt), sonst keiner. */
 export function activeStore(config = SHOP_CONFIG) {

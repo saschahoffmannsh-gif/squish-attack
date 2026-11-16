@@ -1,1 +1,60 @@
-import "../loading-screen.mjs?v=__BUILD__";
+// Start der App-Hülle (nur im App-Build, eingesetzt von app/scripts/build-web.mjs statt loading-screen.mjs).
+// 1. Spieler-Token aus dem iOS-Schlüsselbund zurückholen (vor dem Spiel, max. ~1,5 s)
+// 2. das unveränderte Spiel starten (loading-screen.mjs)
+// 3. Werbung (AdMob: UMP → ATT) und StoreKit-Käufe an die vorhandenen Spiel-Schnittstellen hängen
+// Alles lokal im App-Paket, kein Code aus dem Netz. Im Browser (ohne Capacitor) startet nur das Spiel.
+import { APP_CONFIG } from './app-config.mjs?v=__BUILD__';
+import { restoreToken, persistToken } from './token-keychain.mjs?v=__BUILD__';
+import { setupConsent, createAdMobAdapter } from './admob-adapter.mjs?v=__BUILD__';
+import { createStoreKitAdapter } from './store-adapter.mjs?v=__BUILD__';
+
+const BUILD = '__BUILD__';
+const cap = globalThis.Capacitor;
+const isNative = !!cap?.isNativePlatform?.();
+const plugin = name => (isNative && cap.isPluginAvailable?.(name)) ? (cap.Plugins?.[name] || cap.registerPlugin(name)) : null;
+const log = (what, e) => console.warn('[app]', what, e?.message || e || '');
+const status = { build: BUILD, native: isNative, token: null, ads: null, store: null, errors: [] };
+globalThis.SquishApp = status;
+
+async function boot() {
+  const secure = plugin('SecureStoragePlugin');
+  const key = APP_CONFIG.keychainKey;
+  try { status.token = (await restoreToken({ secure, key })).source; } catch (e) { log('keychain', e); }
+
+  await import(`../loading-screen.mjs?v=${BUILD}`);
+  if (!isNative) return;
+
+  // Ein neuer Token entsteht erst, wenn das Spiel ihn braucht → später nachtragen, und bei jeder App-Pause.
+  let last = null;
+  const persist = async () => { last = await persistToken({ secure, key, last }); };
+  setTimeout(persist, 3000); setTimeout(persist, 30000);
+  plugin('App')?.addListener?.('pause', () => void persist());
+
+  const [ads, shop] = await Promise.all([
+    import(`../native-ads.mjs?v=${BUILD}`),
+    import(`../shop.mjs?v=${BUILD}`),
+  ]);
+
+  const AdMob = plugin('AdMob');
+  if (AdMob) {
+    const ready = setupConsent(AdMob, { askTracking: APP_CONFIG.admob.askTracking, testing: APP_CONFIG.admob.testing, log })
+      .then(s => { status.ads = s; return s; });
+    ads.registerNativeAds(createAdMobAdapter({ AdMob, ids: APP_CONFIG.admob, testing: APP_CONFIG.admob.testing, ready, log }));
+    // Einstellungen → „Werbe-Einwilligung ändern“ kann das aufrufen (Pflicht, wenn UMP es verlangt).
+    status.showPrivacyOptions = () => AdMob.showPrivacyOptionsForm().catch(e => log('privacy options', e));
+  }
+
+  const NativePurchases = plugin('NativePurchases');
+  if (NativePurchases) {
+    const store = createStoreKitAdapter({ NativePurchases, prefix: APP_CONFIG.store.productPrefix, log });
+    shop.registerNativeStore(store);
+    status.store = 'storekit';
+    // Preise aus dem App Store holen (auch wenn der Shop noch ausgeblendet ist: SHOP_CONFIG.enabled=false)
+    store.products(shop.shopProducts({ ...shop.SHOP_CONFIG })).then(m => shop.setNativePrices(m)).catch(e => log('prices', e));
+    // Test in Xcode mit Squish.storekit, ohne den Shop einzuschalten (Safari → Entwickler → Web-Inspektor):
+    //   await SquishApp.testPurchase('rocket-1')   → StoreKit-Kaufdialog, Ergebnis {ok, items, transactionId}
+    status.testPurchase = id => shop.purchase(id, { config: { ...shop.SHOP_CONFIG, enabled: true } });
+  }
+}
+
+boot().catch(e => { status.errors.push(String(e?.message || e)); log('boot', e); });
