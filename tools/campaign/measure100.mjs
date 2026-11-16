@@ -33,7 +33,8 @@ for (const lv of levels) {
     const st = h.found ? stateAfter(asLv, h.moves, L) : null;
     if (st && !st.win) { const H = metricsFrom(asLv, st.board, st.vec, st.depth, L, seed ^ 0x41); felt = Dat(H, L, Math.max(1, min - 2), G, W); casTool = H.cas(L); }
   } else if (lv.tool) {
-    const act = lv.solution.match(/^(R\d\d|W\d\d=\d+)/)?.[1];
+    // Lösung ohne Werkzeug steht in lv.solution; der Werkzeug-Weg in meta.toolSolution (z. B. W01=4 as).
+    const act = String(lv.meta?.toolSolution || lv.solution).match(/^(R\d\d|W\d\d=\d+)/)?.[1];
     const st = act ? stateAfter(asLv, act, L) : null;
     if (st) { const H = metricsFrom(asLv, st.board, st.vec, 0, L, seed ^ 0x70); felt = Dat(H, L, lv.meta.toolMin, G, W); casTool = H.cas(L); }
   }

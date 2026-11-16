@@ -6,7 +6,7 @@
 //  - Nie blockierend, Fehler werden still geschluckt, offline wird nichts versucht.
 //  - Identität = derselbe anonyme Geräte-Token wie Spielstand und Rangliste (kein Login).
 //    Später (App): Token im Schlüsselbund / Konto über Sign in with Apple, siehe docs/app-shell.md.
-import { normalizeWire, mergeWire, wireKey, PROGRESS_WIRE_VERSION } from './progress-merge.mjs?v=launch-26';
+import { normalizeWire, mergeWire, wireKey, PROGRESS_WIRE_VERSION } from './progress-merge.mjs?v=launch-27';
 
 export const SYNC_STATE_KEY = 'squish-progress-sync-v1';
 export const SYNC_DEBOUNCE_MS = 4000;

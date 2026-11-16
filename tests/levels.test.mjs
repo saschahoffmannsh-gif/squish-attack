@@ -59,7 +59,9 @@ test(`${file}: keine Felsen; Sterne: 3★ = Optimum + 1 / Mitte (launch-16 auch 
     assert.ok(lv.board.flat().every(v => v === null || Number.isInteger(v)) && lv.sequence.every(Number.isInteger), `Level ${lv.id}`);
     assert.deepEqual(lv.stars, starThresholds(lv.meta.minMoves, lv.moves), `Level ${lv.id}`);
     if (tool(lv)) { assert.ok(lv.meta.minMoves <= lv.moves, `Level ${lv.id}: ohne Werkzeug im Limit`); continue; }   // Spitze: eng, Stufen fallen zusammen
-    assert.equal(lv.stars.three, lv.meta.minMoves + 1);
+    // launch-27: bei 0 Luft (Limit = Optimum) ist 3★ = Optimum, nicht Optimum + 1
+    if (lv.moves === lv.meta.minMoves) assert.equal(lv.stars.three, lv.moves, `Level ${lv.id}`);
+    else assert.equal(lv.stars.three, lv.meta.minMoves + 1, `Level ${lv.id}`);
     // launch-18: enge Meilensteine (Optimum nahe am Limit) dürfen 2★ = Limit haben
     if (lv.moves - lv.meta.minMoves >= 4) assert.ok(lv.stars.three < lv.stars.two && lv.stars.two < lv.moves, `Level ${lv.id}: drei Stufen`);
     else assert.ok(lv.stars.three <= lv.stars.two && lv.stars.two <= lv.moves, `Level ${lv.id}: Stufen`);
@@ -226,7 +228,7 @@ test('launch-15: Sterne-Schranken bleiben mit 2★-Deckel gut erreichbar', () =>
   }
 });
 
-test('launch-15: gemessene Kurve – 1–10 leicht, steigend, Meilensteine oben, Erholung nach Peaks', { skip: !existsSync(new URL('../tools/campaign/measure-001-100.json', import.meta.url)), todo: 'launch-18: Spielermodell-Kurve der langen Level noch nicht nachgezogen (Kap. 6/9-Delle, Meilenstein 80, Erholung 26/56, Werkzeug-Nutzen im Modell) – Feinschliff im nächsten Level-Durchgang' }, () => {
+test('launch-15: gemessene Kurve – 1–10 leicht, steigend, Meilensteine oben, Erholung nach Peaks', { skip: !existsSync(new URL('../tools/campaign/measure-001-100.json', import.meta.url)) }, () => {
   const M = JSON.parse(readFileSync(new URL('../tools/campaign/measure-001-100.json', import.meta.url), 'utf8')).levels;
   assert.equal(M.length, 100);
   const felt = id => M[id - 1].felt, avg = a => a.reduce((s, x) => s + x, 0) / a.length;
@@ -234,9 +236,14 @@ test('launch-15: gemessene Kurve – 1–10 leicht, steigend, Meilensteine oben,
   assert.ok(M.slice(0, 10).every(r => r.cas >= 0.5), 'Kapitel 1: Gelegenheitsspieler gewinnt jedes Level in mind. 50 %');
   for (let k = 2; k <= 10; k++) assert.ok(avg(ch(k)) >= avg(ch(k - 1)) - 3, `Kapitel ${k} nicht leichter als ${k - 1}`);
   assert.ok(avg(ch(10)) > avg(ch(2)) + 15, 'Kurve steigt deutlich');
-  for (let k = 2; k <= 10; k++) assert.ok(felt(k * 10) >= avg(ch(k)), `Meilenstein ${k * 10} über dem Kapitelschnitt`);
+  // Werkzeug-Meilensteine (z. B. L50) vergleichen D ohne Werkzeug: felt rechnet den Schlüssel-Einsatz ein.
+  for (let k = 2; k <= 10; k++) {
+    const row = M[k * 10 - 1];
+    const ms = row.tool ? row.D : row.felt;
+    assert.ok(ms >= avg(ch(k)), `Meilenstein ${k * 10} über dem Kapitelschnitt`);
+  }
   for (let k = 2; k <= 10; k++) assert.ok(felt(k * 10 - 4) < felt(k * 10 - 6), `Erholung ${k * 10 - 4}: leichter als der Aufbau davor`);
-  // launch-18: das Werkzeug hilft spürbar (Gelegenheitsspieler gewinnt damit öfter als ohne)
+  // launch-18/27: das Werkzeug hilft spürbar (Gelegenheitsspieler gewinnt damit öfter als ohne)
   for (const r of M.filter(r => r.tool && r.tool !== 'hint')) assert.ok(r.casTool >= r.cas && r.casTool >= 0.04, `Level ${r.id}: mit Werkzeug leichter (${r.cas} → ${r.casTool})`);
 });
 

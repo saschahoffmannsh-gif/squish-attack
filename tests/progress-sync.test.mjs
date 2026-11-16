@@ -7,8 +7,8 @@ import { emptyProgress, emptyInventory, recordResult, saveInventory, loadInvento
 const mem = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k), m }; };
 const W = (over = {}) => normalizeWire({ v: 1, epoch: 18, levels: {}, inv: null, invAt: 0, ...over });
 
-test('epochOf: launch-18 → 18, launch-22 → 22, launch-24 → 24', () => {
-  assert.equal(epochOf('launch-18'), 18); assert.equal(epochOf('launch-22'), 22); assert.equal(epochOf('launch-24'), 24);
+test('epochOf: launch-18 → 18, launch-22 → 22, launch-24 → 24, launch-27 → 27', () => {
+  assert.equal(epochOf('launch-18'), 18); assert.equal(epochOf('launch-22'), 22); assert.equal(epochOf('launch-24'), 24); assert.equal(epochOf('launch-27'), 27);
   assert.equal(epochOf(7), 7); assert.equal(epochOf(null), 0);
 });
 
