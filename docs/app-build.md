@@ -63,10 +63,11 @@ Spiel. Werbung läuft mit **Google-Test-Anzeigen** (Banner „Test Ad“). Echte
 - **Haptik:** Bei Zügen und Merges vibriert es spürbar (Einstellungen → Vibration ist in der App an).
 - **Abenteuer:** Leeres Hilfsmittel → „Ansehen“ → Test-Video bis zum Ende → +1 Hilfsmittel.
   Schließt du das Video vorher, gibt es nichts.
-- **Zwischenwerbung:** nach jedem 10. gewonnenen Level, immer erst **vor** dem nächsten Level.
-- **Endlos:** nach je 10 Minuten Spielzeit kommt nach einem Zug das Angebot „Bonus-Rakete“. „Nein
-  danke“ schließt es. Ansehen ergibt eine Rakete (Knopf unten links), mit der du einen Stein
-  wegsprengst. Achtung: Danach läuft eine **gewertete** Runde ungewertet weiter (siehe offene Fragen).
+- **Zwischenwerbung:** nach jedem 10. gewonnenen Level (Wiederholungen zählen mit), immer erst
+  **vor** dem nächsten Level.
+- **Endlos:** nach je 10 Minuten Spielzeit kommt nach einem Zug das Angebot „Werkzeug fürs Abenteuer“.
+  „Nein danke“ schließt es. Ansehen legt **ein Werkzeug in deinen Abenteuer-Vorrat**, reihum
+  Extra-Züge → Rakete → Tipp → Zauberstab. Die Endlos-Runde selbst bleibt unverändert und gewertet.
   Nach Game Over gibt es kein Weiterspielen.
 - **Spielstand über Neuinstallation:** ein paar Level spielen, App löschen, neu installieren
   (▶ in Xcode). Die Sterne kommen über den Schlüsselbund und die Cloud-Sicherung zurück.
@@ -147,8 +148,7 @@ app/
   test/                   Unit-Tests mit Mocks (npm test) + Browser-e2e mit gemocktem Capacitor
   ios/App/                Xcode-Projekt (Swift Package Manager, keine CocoaPods nötig)
 game/native.mjs           Brücke im Spiel: Haptik, Bildschirm wach, Speichern bei App-Pause (im Browser ohne Wirkung)
-game/ad-pacing.mjs        Werbe-Takt: jedes 10. Level, Endlos alle 10 Minuten
-game/endless-tool.mjs     Bonus-Rakete für Endlos
+game/ad-pacing.mjs        Werbe-Takt: jedes 10. gewonnene Level, Endlos-Angebot alle 10 Minuten, Belohnung reihum
 ```
 
 Plugins: `@capacitor-community/admob` (Google Mobile Ads + UMP + ATT), `@capgo/native-purchases`

@@ -73,9 +73,9 @@ try {
     await page.goto(web, { waitUntil: 'load' });
     const H = helpers(page);
     await startEndless(page, H);
-    const s = await page.evaluate(() => ({ native: window.SquishNative?.isNative, ads: window.SquishGame.appAds.native, btn: !document.getElementById('endless-tool') || document.getElementById('endless-tool').hidden, app: !!window.SquishApp }));
+    const s = await page.evaluate(() => ({ native: window.SquishNative?.isNative, ads: window.SquishGame.appAds.native, btn: !document.getElementById('endless-tool'), app: !!window.SquishApp }));
     check('Web: kein nativer Modus, keine App-Brücke', s.native === false && !s.ads && !s.app, JSON.stringify(s));
-    check('Web: Endlos-Raketen-Knopf unsichtbar', s.btn);
+    check('Web: kein zusätzlicher Knopf im Endlos-Modus', s.btn);
     for (let i = 0; i < 4; i++) { await page.evaluate(i => window.SquishGame.move(['left', 'up', 'right', 'down'][i], i), i); await sleep(200); await H.idle(); }
     // Auch bei "fälligem" Angebot: im Web ohne Adapter kein Angebot
     await page.evaluate(() => { const p = window.SquishGame.appAds.pacing; p.endlessMove = () => true; });
@@ -112,23 +112,20 @@ try {
     check('App: kein Angebot vor 10 Minuten', !(await page.evaluate(() => window.SquishGame.appAds.adOpen)));
     await page.evaluate(() => { const p = window.SquishGame.appAds.pacing; const o = p.endlessMove; p.endlessMove = () => (o(), true); });
     await page.evaluate(() => window.SquishGame.move('down', 3)); await sleep(300); await H.idle(); await sleep(400);
-    const offer = await page.evaluate(() => ({ open: window.SquishGame.appAds.adOpen, type: window.SquishGame.appAds.adType, busy: window.SquishGame.state.busy, title: document.getElementById('ad-title')?.textContent, badge: document.querySelector('.ad-badge')?.textContent }));
-    check('App: Endlos-Angebot nach einem Zug, wenn alles ruhig ist', offer.open && offer.type === 'rocket' && !offer.busy && offer.title === 'Bonus-Rakete' && offer.badge === 'Werbeclip', JSON.stringify(offer));
+    const before = await page.evaluate(() => { const s = window.SquishGame.state; return { board: JSON.stringify(s.board), score: s.score, moves: s.moves, inv: { ...window.SquishGame.campaign.inventory } }; });
+    const offer = await page.evaluate(() => ({ open: window.SquishGame.appAds.adOpen, type: window.SquishGame.appAds.adType, busy: window.SquishGame.state.busy, title: document.getElementById('ad-title')?.textContent, desc: document.querySelector('.ad-reward-text small')?.textContent, foot: document.querySelector('.ad-foot')?.textContent, badge: document.querySelector('.ad-badge')?.textContent }));
+    check('App: Endlos-Angebot nach einem ruhigen Zug, Belohnung = Werkzeug fürs Abenteuer', offer.open && offer.type === 'extraMoves' && !offer.busy && offer.title === 'Werkzeug fürs Abenteuer' && /Abenteuer-Vorrat/.test(offer.desc) && /Endlos-Runde läuft unverändert/.test(offer.foot) && offer.badge === 'Werbeclip', JSON.stringify(offer));
     await page.click('#ad-watch'); await sleep(800);
-    const got = await page.evaluate(() => ({ stock: window.SquishGame.appAds.endlessStock, btn: !document.getElementById('endless-tool').hidden, calls: window.__calls.map(c => c[0]) }));
-    check('App: Clip angesehen → +1 Rakete im Endlos-Vorrat, Knopf sichtbar', got.stock === 1 && got.btn && got.calls.includes('show-reward'), JSON.stringify({ stock: got.stock, btn: got.btn }));
-    const before = await page.evaluate(() => window.SquishGame.state.board?.flat?.().filter(Boolean).length ?? null);
-    await page.click('#endless-tool'); await sleep(200);
-    const armed = await page.evaluate(() => window.SquishGame.appAds.endlessArmed);
-    const id = await page.evaluate(() => { const b = window.SquishGame.state.board; for (const row of b) for (const t of row) if (t) return t.id; return null; });
-    await page.evaluate(id => window.SquishGame.appAds.rocketAt(id), id); await sleep(300); await H.idle();
-    const after = await page.evaluate(() => ({ n: window.SquishGame.state.board?.flat?.().filter(Boolean).length ?? null, stock: window.SquishGame.appAds.endlessStock }));
-    check('App: Rakete einsetzen entfernt einen Stein, Vorrat 0', armed && after.stock === 0 && (before == null || after.n === before - 1), JSON.stringify({ armed, before, after }));
-    // Weggedrückt: kein Werkzeug
+    const after = await page.evaluate(() => { const s = window.SquishGame.state; const log = JSON.parse(localStorage.getItem('squish-tool-log-v1') || '{"events":[]}'); return { board: JSON.stringify(s.board), score: s.score, moves: s.moves, inv: { ...window.SquishGame.campaign.inventory }, ev: log.events.at(-1), calls: window.__calls.map(c => c[0]), btn: !!document.getElementById('endless-tool') }; });
+    check('App: Clip angesehen → +1 Extra-Züge im Abenteuer-Vorrat, Quelle "ad"', after.inv.extraMoves === (before.inv.extraMoves | 0) + 1 && after.ev?.source === 'ad' && after.ev?.tool === 'extraMoves' && after.calls.includes('show-reward'), JSON.stringify({ b: before.inv.extraMoves, a: after.inv.extraMoves, ev: after.ev }));
+    check('App: Endlos-Brett, Punkte und Züge unverändert, kein Raketen-Knopf', after.board === before.board && after.score === before.score && after.moves === before.moves && !after.btn);
+    // Nächstes Angebot: das nächste Werkzeug (reihum); weggedrückt gibt nichts
     await page.evaluate(() => { const p = window.SquishGame.appAds.pacing; p.endlessMove = () => true; });
     await page.evaluate(() => window.SquishGame.move('up', 0)); await sleep(300); await H.idle(); await sleep(300);
+    const t2 = await page.evaluate(() => window.SquishGame.appAds.adType);
     if (await page.evaluate(() => window.SquishGame.appAds.adOpen)) { await page.click('.ad-later'); await sleep(300); }
-    check('App: Angebot wegdrücken gibt nichts', (await page.evaluate(() => window.SquishGame.appAds.endlessStock)) === 0);
+    const inv2 = await page.evaluate(() => ({ ...window.SquishGame.campaign.inventory }));
+    check('App: nächstes Angebot = Rakete; wegdrücken gibt nichts', t2 === 'rocket' && inv2.rocket === after.inv.rocket && inv2.extraMoves === after.inv.extraMoves, JSON.stringify({ t2 }));
     await page.evaluate(() => { const p = window.SquishGame.appAds.pacing; delete p.endlessMove; });
 
     // Zwischenwerbung: nach 10 Siegen beim nächsten Levelstart

@@ -69,8 +69,8 @@ Mobile Ads SDK und die UMP-Einwilligung.
 | Stelle | Art | Regel |
 |---|---|---|
 | Abenteuer: leeres Hilfsmittel → „Ansehen“ | **Rewarded** | freiwillig; Belohnung = 1 Hilfsmittel; nur wenn der Clip zu Ende geschaut wurde |
-| Abenteuer: nach jedem 10. Level | **Interstitial** | Pflichtwerbung, aber nie mitten im Level |
-| Endlos: alle 10 Minuten ein Angebot, direkt nach einem Zug (wenn die Animationen fertig sind) | **Rewarded** (Angebot, kann weggedrückt werden) | Belohnung = ein Werkzeug, direkt im Endlos-Modus nutzbar; **kein** Weiterspielen nach Game Over |
+| Abenteuer: nach jedem 10. gewonnenen Level (Wiederholungen zählen) | **Interstitial** | Pflichtwerbung, erst vor dem nächsten Level, nie mitten im Level |
+| Endlos: alle 10 Minuten ein Angebot, direkt nach einem Zug (wenn die Animationen fertig sind) | **Rewarded** (Angebot, kann weggedrückt werden) | Belohnung = **ein Werkzeug für den Abenteuer-Vorrat** (reihum Extra-Züge, Rakete, Tipp, Zauberstab; Protokoll-Quelle `ad`); das Endlos-Brett wird nicht verändert, die Runde bleibt gewertet; **kein** Weiterspielen nach Game Over |
 | Geschenke nach Level 3/6/10/20 | – | bleiben gratis |
 
 Werbefrei-Kauf: gestrichen. Energie-Systeme: keine.
@@ -98,7 +98,7 @@ window.SquishNative.registerNativeAds({
 
 **Im Spiel noch offen** (kommt mit der App-Hülle, braucht Sascha nicht):
 - Interstitial nach jedem 10. Level aufrufen (`showInterstitial`). Ohne Adapter passiert nichts.
-- Endlos: 10-Minuten-Timer, Angebot nach einem Zug, Werkzeug im Endlos-Modus.
+- Endlos: 10-Minuten-Timer, Angebot nach einem Zug, Werkzeug für den Abenteuer-Vorrat (umgesetzt in `app-shell`).
 
 ### 3.2 In-App-Käufe (StoreKit), später
 

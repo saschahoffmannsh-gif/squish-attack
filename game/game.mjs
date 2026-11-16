@@ -28,7 +28,6 @@ import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-19';
 import {createAdUI} from './ad-ui.mjs?v=launch-19';
 import {hasNativeAds,showInterstitial} from './native-ads.mjs?v=launch-19';
 import {createAdPacing} from './ad-pacing.mjs?v=launch-19';
-import {ENDLESS_TOOL,loadEndlessStock,saveEndlessStock,createEndlessToolButton} from './endless-tool.mjs?v=launch-19';
 import {createStatsUI} from './stats-ui.mjs?v=launch-19';
 import * as ToolLog from './tool-log.mjs?v=launch-19';
 import {createProgressSync} from './progress-sync.mjs?v=launch-19';
@@ -239,58 +238,21 @@ const adUI=createAdUI({sound,haptics,onWatch:type=>grantByAd(type),onClose:()=>{
   onAdStart:()=>{adShowing=true;sound.pause();},onAdEnd:()=>{adShowing=false;if(!paused)sound.resume();}});
 // ---------- App-Werbung (App-Hülle; im Browser ohne Adapter: nichts davon) ----------
 const adPacing=createAdPacing();
-let adShowing=false,endlessStock=loadEndlessStock(),endlessArmed=false;
+let adShowing=false;
 async function playInterstitial(placement){
   adShowing=true;sound.pause();
   try{await showInterstitial({placement});}finally{adShowing=false;sound.resume();}
 }
-const endlessButton=createEndlessToolButton({onClick:()=>{
-  if(!endlessToolUsable())return;
-  endlessArmed=!endlessArmed;renderEndlessTool();
-  if(endlessArmed)showNote('Tippe auf einen Stein: die Rakete sprengt ihn weg',2600);else note.hidden=true;
-}});
-function endlessToolUsable(){return started&&!booting&&!campaignMode&&!duelMode&&!paused&&!busy&&!worldMenu.active&&!adUI.isOpen;}
-function renderEndlessTool(){
-  const visible=started&&!booting&&!campaignMode&&!duelMode&&!paused&&!worldMenu.active;
-  if(!visible||endlessStock<=0)endlessArmed=false;
-  endlessButton.render({count:endlessStock,visible,armed:endlessArmed});
-}
-/** Endlos: nach einem fertigen Zug (Animationen durch, kein Game Over, kein Zug in der Warteschlange). */
+/** Endlos: nach einem fertigen Zug (Animationen durch, kein Game Over, kein Zug in der Warteschlange).
+ *  Belohnung = 1 Werkzeug für den Abenteuer-Vorrat (reihum). Die Endlos-Runde selbst bleibt unverändert und gewertet. */
 function maybeEndlessOffer(){
   const due=adPacing.endlessMove();
   if(!due||!hasNativeAds()||!adsEnabled()||adUI.isOpen||paused||busy||campaignMode||duelMode)return;
   adPacing.endlessOffered();
+  const type=adPacing.peekEndlessReward(Camp.TOOL_TYPES);
   adFollow={then:null,where:'endless'};
-  adUI.open(ENDLESS_TOOL,{placement:'endless',title:'Bonus-Rakete',desc:'Sprengt einen Stein im Endlos-Modus weg',
-    foot:run?'Freiwillig. Nach dem Einsatz läuft die Runde ungewertet weiter.':'Freiwillig. Du kannst einfach weiterspielen.'});
-}
-// Menü/Overlays wechseln an vielen Stellen; der Knopf prüft sich deshalb nur bei vorhandenem Vorrat kurz selbst.
-setInterval(()=>{if(endlessStock>0||endlessArmed)renderEndlessTool();},400);
-async function endlessRocketAt(tileId){
-  const cell=cellOf(tileId);
-  if(!cell||!endlessArmed||endlessStock<=0||busy)return false;
-  endlessArmed=false;endlessStock--;saveEndlessStock(endlessStock);note.hidden=true;
-  // Der Server spielt gewertete Runden Zug für Zug nach; eine Rakete kann er nicht nachspielen.
-  // Deshalb: bisherigen Stand noch einreichen, danach läuft die Runde ungewertet weiter.
-  const wasRanked=!!run;
-  if(run){await submitScore().catch(()=>{});run=null;rng=null;}
-  const turn=generation;busy=true;renderEndlessTool();
-  try{
-    const target=cellPoint(cell[0],cell[1]);
-    const r=endlessButton.el.getBoundingClientRect();
-    sound.play('launch');
-    await toolFx.rocket({x:r.left+r.width/2,y:r.top+r.height/2},target,target.size);
-    if(turn!==generation)return true;
-    visual.popTile?.(tileId);
-    toolFx.boom(target,target.size);sound.play('boom');haptics.pulse('big');
-    if(!reduceMotion.matches)for(const [dr,dc] of [[0,1],[0,-1],[1,0],[-1,0]]){
-      const n=board[cell[0]+dr]?.[cell[1]+dc];if(n)visual.scheduleWobble?.(n.id,.42,.06);
-    }
-    board=board.map(row=>row.slice());board[cell[0]][cell[1]]=null;
-    renderBoard();saveState();
-  }finally{if(turn===generation){busy=false;renderEndlessTool();}}
-  if(wasRanked)showNote('Rakete eingesetzt · die Runde läuft ungewertet weiter',2600);
-  return true;
+  adUI.open(type,{placement:'endless',title:'Werkzeug fürs Abenteuer',
+    desc:`Landet in deinem Abenteuer-Vorrat`,foot:'Freiwillig. Deine Endlos-Runde läuft unverändert weiter.'});
 }
 let adFollow=null,lastAd=null;
 function openAd(type,{then=null,where='tool'}={}){
@@ -300,9 +262,11 @@ function openAd(type,{then=null,where='tool'}={}){
 }
 function grantByAd(type){
   const f=adFollow;adFollow=null;
-  if(f?.where==='endless'){   // Endlos-Angebot: eigener Vorrat, nur im Endlos-Modus nutzbar
-    endlessStock=Math.min(99,endlessStock+1);saveEndlessStock(endlessStock);lastAd={type,where:'endless'};
-    renderEndlessTool();showNote('+1 Rakete · unten links antippen zum Einsetzen',2600);return;
+  if(f?.where==='endless'){   // Endlos-Angebot: 1 Werkzeug in den Abenteuer-Vorrat, Endlos-Brett bleibt unberührt
+    adPacing.takeEndlessReward(Camp.TOOL_TYPES);
+    inventory=Camp.addToStock(inventory,{[type]:1});Camp.saveInventory(inventory);cloudSync();
+    logTool('ad',type,{where:'endless'});lastAd={type,where:'endless'};
+    void worldMenu.refresh?.();showNote(`+1 ${Camp.toolName(type)} für dein Abenteuer`,2600);return;
   }
   inventory=Camp.addToStock(inventory,{[type]:1});Camp.saveInventory(inventory);cloudSync();
   logTool('ad',type,logCtx(f?.where||'tool'));lastAd={type,where:f?.where||'tool'};
@@ -623,7 +587,7 @@ async function backToMenu(){
   campaignUI.hideResult();confetti.stop();
   if(campaignMode)leaveCampaign();
   else{void submitScore();saveState({now:true});hasSavedGame=board.flat().some(Boolean);}
-  generation++;pendingMove=null;releaseGesture();disarmTools();busy=false;adPacing.endlessPause();endlessArmed=false;
+  generation++;pendingMove=null;releaseGesture();disarmTools();busy=false;adPacing.endlessPause();
   paused=false;veil.hidden=true;gameElement.classList.remove('is-paused');
   pauseButton.textContent='Ⅱ';pauseButton.setAttribute('aria-pressed','false');pauseButton.setAttribute('aria-label','Spiel pausieren');
   started=false;mergeEffects.clear();visual.clear();needsEntry=true;note.hidden=true;
@@ -890,7 +854,7 @@ async function enterGame() {
   if(score!==entryScore){peak=Math.max(peak,...board.flat().filter(Boolean).map(tile=>tile.value));saveState();}
   } finally {
   if (turn === generation) {
-  busy = false;renderEndlessTool();
+  busy = false;
   gameElement.classList.remove('is-entering');
   if (!campaignMode && isGameOver(board)) showDialog(true);
   }
@@ -929,7 +893,6 @@ function renderBoard(incoming) {
   const animate=!!incoming&&!reduceMotion.matches;
   visual.sync(graphicsTiles(animate?incoming:null),{animate,duration:.12,incoming:animate?incoming:null});
   if(campaignMode||bombBadges.size)renderBombBadges();
-  if(endlessStock>0)renderEndlessTool();
 }
 // ---------- launch-16: Bomben-Countdown ----------
 // Echtzeit, 20 s ab dem ersten Zug. Die Uhr steht bei Pause, verdeckter Seite, offenem Dialog/Menü/Shop/
@@ -1019,7 +982,7 @@ function showNote(message, duration = 2200) {
 
 function showDialog(over) {
   if(duelMode&&over)return;
-  paused = true;native.keepAwake(false);adPacing.endlessPause();endlessArmed=false;renderEndlessTool();
+  paused = true;native.keepAwake(false);adPacing.endlessPause();
   if (over) haptics.event('gameover');
   sound.pause();
   phoneMotion.reset();
@@ -1042,7 +1005,7 @@ function showDialog(over) {
 
 function resume() {
   if(duelFinished)return;
-  paused = false;native.keepAwake(true);renderEndlessTool();
+  paused = false;native.keepAwake(true);
   sound.resume();sound.unlock();
   phoneMotion.reset();
   gameElement.classList.remove('is-paused');
@@ -1340,10 +1303,6 @@ function releaseGesture() {
 }
 playfield.addEventListener('pointerdown',event=> {
   if(hintBusy&&campaignMode)return;
-  if(endlessArmed&&!campaignMode&&started&&!busy&&!paused&&event.isPrimary){
-    const id=visual.pick(event);
-    if(id!=null){event.preventDefault();void endlessRocketAt(id);return;}
-  }
   if(armedTool&&campaignMode&&started&&!busy&&!paused&&event.isPrimary){
     const id=visual.pick(event);
     if(id!=null){event.preventDefault();if(armedTool==='rocket')void rocketAt(id);else wandAt(id);return;}
@@ -1405,7 +1364,7 @@ window.addEventListener('pagehide', event => {
 window.addEventListener('online', () => void flushPending());
 // Read-only inspection for integration checks; game state still belongs here.
 window.SquishGame={graphics,move,restart,get state(){return {board,queue,score,best,bestTile,moves,peak,busy,paused,booting,started,hasSavedGame,duelMode,duelRevision,ranked:run?{id:run.id,logLength:run.log.length,submitted:run.sub}:null};},get effects(){return mergeEffects.stats;},get sound(){return sound.stats;},get menu(){return worldMenu.stats;},get fusion(){return visual.fusion?.stats||null;},
-  get appAds(){return {pacing:adPacing,native:hasNativeAds(),endlessStock,endlessArmed,adOpen:adUI.isOpen,adType:adUI.type,showing:adShowing,rocketAt:endlessRocketAt};},
+  get appAds(){return {pacing:adPacing,native:hasNativeAds(),adOpen:adUI.isOpen,adType:adUI.type,showing:adShowing,lastAd};},
   get campaign(){return {mode:campaignMode,lab:labMode,bombMs:camp?Camp.nextBombMs(camp.run):null,bombClock:!!camp?.run.bombClock,exploded:camp?.run.exploded??0,specials:camp?camp.run.board.flatMap((row,r)=>row.map((t,c)=>t&&Camp.specialOf(t)?{kind:Camp.specialOf(t),r,c,value:t.value,id:t.id}:null)).filter(Boolean):[],bombBadges:[...bombBadges.values()].map(e=>e.textContent),level:camp?.n??null,status:camp?.run.status??null,moves:camp?.run.moves??0,movesLeft:camp?Camp.movesLeft(camp.run):null,
     toolsUsed:camp?.run.toolsUsed.slice()??[],progress:campaignProgress,inventory,sync:progressSync.stats,shopOpen:shopUI.isOpen,shopStats:shopUI.stats,gift:{active:giftFx.active,phase:giftFx.phase,...giftFx.stats},lastPurchase,adOpen:adUI.isOpen,adType:adUI.type,adStats:adUI.stats,lastAd,statsOpen:statsUI.isOpen,statsStats:{opens:statsUI.stats.opens,exports:statsUI.stats.exports,resets:statsUI.stats.resets,lastExportMode:statsUI.stats.lastExportMode},toolLog:{attempts:toolLog.attempts.length,events:toolLog.events.length,current:logAttempt?{...logAttempt}:null,summary:ToolLog.summarize(toolLog)},freeTools:camp?.free?{...camp.free}:null,available:camp?availableTools():null,levelsLoaded:!!levels,resultOpen:campaignUI.resultOpen,armedTool,hintBusy,lastHint,toolFx:toolFx.stats,celebrating,timeline:campaignUI.timeline.slice()};},
   // Screen point of a board cell (for input tests).

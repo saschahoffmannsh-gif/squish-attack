@@ -2,7 +2,8 @@
 // - Abenteuer: nach jedem 10. gewonnenen Level ist eine Zwischenwerbung fällig. Sie wird erst
 //   beim Start des nächsten Levels gezeigt (nie mitten in einem Level, nie über dem Sterne-Dialog).
 // - Endlos: nach je 10 Minuten aktiver Spielzeit gibt es ein freiwilliges Angebot
-//   (Belohnungsclip → 1 Werkzeug für Endlos), direkt nach einem Zug, wenn alles ruhig ist.
+//   (Belohnungsclip → 1 Werkzeug für den Abenteuer-Vorrat, reihum Extra-Züge/Rakete/Tipp/Zauberstab),
+//   direkt nach einem Zug, wenn alles ruhig ist. Die Endlos-Runde selbst bleibt unverändert und gewertet.
 //   Lange Pausen zwischen zwei Zügen zählen nur bis MAX_GAP_MS (Pause/Menü/Hintergrund zählt nicht).
 export const AD_PACING = Object.freeze({
   interstitialEvery: 10,          // jedes 10. gewonnene Abenteuer-Level
@@ -12,8 +13,8 @@ export const AD_PACING = Object.freeze({
 const KEY = 'squish-ad-pacing-v1';
 
 export function createAdPacing({ storage = globalThis.localStorage, config = AD_PACING, now = () => Date.now() } = {}) {
-  let state = { wins: 0, due: false };
-  try { const s = JSON.parse(storage?.getItem(KEY) || 'null'); if (s && Number.isInteger(s.wins)) state = { wins: Math.max(0, s.wins), due: !!s.due }; } catch {}
+  let state = { wins: 0, due: false, reward: 0 };
+  try { const s = JSON.parse(storage?.getItem(KEY) || 'null'); if (s && Number.isInteger(s.wins)) state = { wins: Math.max(0, s.wins), due: !!s.due, reward: Number.isInteger(s.reward) && s.reward >= 0 ? s.reward : 0 }; } catch {}
   const save = () => { try { storage?.setItem(KEY, JSON.stringify(state)); } catch {} };
   let endlessMs = 0, lastMove = null;
   return {
@@ -39,5 +40,9 @@ export function createAdPacing({ storage = globalThis.localStorage, config = AD_
     /** Angebot wurde gezeigt (angesehen oder weggedrückt): Uhr neu starten. */
     endlessOffered() { endlessMs = 0; lastMove = now(); },
     get endlessMs() { return endlessMs; },
+    /** Belohnung des Endlos-Angebots: reihum durch die Werkzeuge (fair, vorhersehbar, über Neustarts gemerkt). */
+    peekEndlessReward(types) { return types[state.reward % types.length]; },
+    /** Nach angesehenem Clip: die gezeigte Belohnung verbuchen, nächstes Mal kommt das nächste Werkzeug. */
+    takeEndlessReward(types) { const t = types[state.reward % types.length]; state.reward = (state.reward + 1) % types.length; save(); return t; },
   };
 }
