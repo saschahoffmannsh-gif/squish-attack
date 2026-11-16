@@ -423,6 +423,7 @@ function overflowHits() {
       'squish-campaign-progress-reset': 'launch-14',
       'squish-campaign-stars-reset': 'launch-18',
       'squish-campaign-tutorial-reset': 'launch-24',
+      'squish-campaign-curve-stars-reset': 'launch-27',
       'squish-modes-unlock-seen': '1',
       'squish-lang-v1': locale,
     }, locale);
