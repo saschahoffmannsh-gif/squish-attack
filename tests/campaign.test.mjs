@@ -494,8 +494,15 @@ const T15 = v => (v == null ? null : { value: v });
 const row15 = r => [r, [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E]];
 
 test('launch-15: neue Zieltypen empty/long/purge – gültig, Text, Kurztext', () => {
-  for (const t of ['empty', 'long', 'purge']) assert.ok(GOAL_TYPES.includes(t));
+  for (const t of ['empty', 'long', 'purge', 'fuse']) assert.ok(GOAL_TYPES.includes(t));
   assert.ok(!GOAL_TYPES.includes('group'));
+  validateLevel(base({ goals: [{ type: 'fuse', size: 3 }] }));
+  validateLevel(base({ goals: [{ type: 'fuse', size: 4, shape: 't' }] }));
+  assert.throws(() => validateLevel(base({ goals: [{ type: 'fuse', size: 2 }] })));
+  assert.throws(() => validateLevel(base({ goals: [{ type: 'fuse', size: 4, shape: 'L' }] })));
+  assert.match(goalText({ type: 'fuse', size: 3 }), /3 gleiche/);
+  assert.match(goalText({ type: 'fuse', size: 4, shape: 't' }), /T-Form/);
+  assert.ok(goalShort({ type: 'fuse', size: 4, shape: 't' }).length <= 18);
   validateLevel(base({ goals: [{ type: 'empty', max: 4 }] }));
   validateLevel(base({ goals: [{ type: 'long', count: 1 }] }));
   validateLevel(base({ goals: [{ type: 'purge', value: 2, tiles: 6 }] }));
@@ -590,4 +597,85 @@ test('launch-18: Sterne ab Level 11 einmalig zurücksetzen, 1–10 und launch-14
   const b = resetChangedStarsOnce(a.progress, st);
   assert.equal(b.reset, false);
   assert.equal(Object.keys(b.progress.levels).length, 10);
+});
+
+// ---------------- launch-22: Tutorials, Reset, Freischaltung ----------------
+import {
+  modesUnlocked, MODES_UNLOCK_LEVEL, resetAdventureForTutorialsOnce, TUTORIAL_RESET, TUTORIAL_RESET_KEY,
+  tutorialHintMove, fuseMatch, isStraightGroup, encodeMove as enc22, PROGRESS_KEY as PK22,
+  MODES_UNLOCK_SEEN_KEY, TOOLS_KEY as TK22,
+} from '../game/campaign.mjs';
+import { SYNC_STATE_KEY } from '../game/progress-sync.mjs';
+
+test('launch-22: fuse-Ziel zählt nur die passende Fusion (Größe / T-Form)', () => {
+  const run = createLevelRun(base({
+    board: [[E, 1, 1, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E]],
+    sequence: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], moves: 5,
+    goals: [{ type: 'fuse', size: 3 }], stars: { three: 2, two: 4 },
+  }));
+  assert.equal(applyLevelMove(run, 'right', 0).ok, true);
+  assert.equal(run.status, 'won');
+  assert.equal(goalProgress({ type: 'fuse', size: 3 }, run).done, true);
+  assert.equal(goalProgress({ type: 'fuse', size: 4, shape: 'line' }, run).done, false);
+  assert.equal(isStraightGroup([[0, 1], [0, 2], [0, 3]]), true);
+  assert.equal(isStraightGroup([[0, 1], [0, 2], [0, 3], [1, 2]]), false);
+  assert.equal(fuseMatch({ size: 4, line: false }, { size: 4, shape: 't' }), true);
+  assert.equal(fuseMatch({ size: 4, line: true }, { size: 4, shape: 't' }), false);
+});
+
+test('launch-22: Endlos und 2 Spieler erst nach Level 5 frei', () => {
+  assert.equal(MODES_UNLOCK_LEVEL, 5);
+  assert.equal(modesUnlocked(emptyProgress()), false);
+  assert.equal(modesUnlocked({ version: 1, levels: { 1: { stars: 3 }, 4: { stars: 3 } }, updatedAt: 1 }), false);
+  const p = recordResult(emptyProgress(), 5, { stars: 1, moves: 1, now: 1 });
+  assert.equal(modesUnlocked(p), true);
+  assert.equal(modesUnlocked(recordResult(emptyProgress(), 6, { stars: 2, moves: 8, now: 1 })), false);
+});
+
+test('launch-22: Geisterfinger zeigt einen sofort gewinnenden Zug', () => {
+  const run = createLevelRun(base({
+    board: [[E, 1, 1, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E]],
+    sequence: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], moves: 5,
+    goals: [{ type: 'fuse', size: 3 }], stars: { three: 2, two: 4 }, solution: 'f',
+  }));
+  const m = tutorialHintMove(run);
+  assert.ok(m);
+  assert.equal(enc22(m.direction, m.line), 'f');
+  applyLevelMove(run, 'left', 0);   // falscher Zug, keine Fusion
+  assert.equal(run.status, 'playing');
+  const again = tutorialHintMove(run);
+  assert.ok(again);
+  const r2 = applyLevelMove(run, again.direction, again.line);
+  assert.equal(r2.ok, true);
+  assert.equal(run.status, 'won');
+});
+
+test('launch-22: Abenteuer einmalig komplett zurücksetzen, Endlos-Schlüssel bleiben, Cloud-Merker weg', () => {
+  const st = memStore();
+  const won = n => ({ version: 1, updatedAt: 5, levels: Object.fromEntries(Array.from({ length: n }, (_, i) => [String(i + 1), { stars: 1 + (i % 3), moves: 7, at: 1 }])) });
+  st.setItem(PK22, JSON.stringify(won(20)));
+  st.setItem('shift3-play-v1', '{"score":900,"best":1200,"board":1}');
+  st.setItem('squish-sound-v1', 'x');
+  st.setItem(SYNC_STATE_KEY, '{"key":"old"}');
+  st.setItem(MODES_UNLOCK_SEEN_KEY, '1');
+  const inv = { ...emptyInventory(), wand: 2, hint: 3, gifts: ['level-3', 'level-6'], pending: [{ id: 'level-10', type: 'extraMoves' }], at: 99 };
+  saveInventory(inv, st);
+  const r = resetAdventureForTutorialsOnce(loadP14(st), loadInventory(st), st);
+  assert.equal(r.reset, true);
+  assert.deepEqual(r.progress.levels, {});
+  assert.deepEqual(loadP14(st).levels, {});
+  const li = loadInventory(st);
+  assert.equal(li.wand, 0); assert.equal(li.hint, 0);
+  assert.deepEqual(li.gifts, []); assert.deepEqual(li.pending, []);
+  assert.equal(st.getItem(TUTORIAL_RESET_KEY), TUTORIAL_RESET);
+  assert.equal(st.getItem(SYNC_STATE_KEY), null);
+  assert.equal(st.getItem(MODES_UNLOCK_SEEN_KEY), null);
+  assert.equal(st.getItem('shift3-play-v1'), '{"score":900,"best":1200,"board":1}');
+  assert.equal(st.getItem('squish-sound-v1'), 'x');
+  assert.equal(modesUnlocked(r.progress), false);
+  // kein zweites Mal
+  st.setItem(PK22, JSON.stringify(won(5)));
+  const again = resetAdventureForTutorialsOnce(loadP14(st), li, st);
+  assert.equal(again.reset, false);
+  assert.equal(Object.keys(loadP14(st).levels).length, 5);
 });

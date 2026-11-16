@@ -6,7 +6,7 @@
 //  - Nie blockierend, Fehler werden still geschluckt, offline wird nichts versucht.
 //  - Identität = derselbe anonyme Geräte-Token wie Spielstand und Rangliste (kein Login).
 //    Später (App): Token im Schlüsselbund / Konto über Sign in with Apple, siehe docs/app-shell.md.
-import { normalizeWire, mergeWire, wireKey, PROGRESS_WIRE_VERSION } from './progress-merge.mjs?v=launch-21';
+import { normalizeWire, mergeWire, wireKey, PROGRESS_WIRE_VERSION } from './progress-merge.mjs?v=launch-22';
 
 export const SYNC_STATE_KEY = 'squish-progress-sync-v1';
 export const SYNC_DEBOUNCE_MS = 4000;
@@ -26,27 +26,28 @@ export function toWire(progress, inventory, epoch, endless = null) {
 
 /**
  * Zusammengeführten Server-Stand in den lokalen übernehmen. Gibt {progress, inventory, changed}
- * zurück. Level anderer Epochen (vor dem letzten Sterne-Reset) werden ignoriert.
+ * zurück. Level und Vorrat anderer Epochen (vor dem letzten Fortschritts-Reset) werden ignoriert.
  */
 export function applyWire(local, inventory, wire, epoch, now = Date.now(), endless = null) {
   const w = normalizeWire(wire, now);
   if (!w) return { progress: local, inventory, endless, changed: false };
   let changed = false;
-  const levels = { ...local.levels };
+  let progress = local;
+  let inv = inventory;
   if (w.epoch === epoch) {
+    const levels = { ...local.levels };
     for (const [k, r] of Object.entries(w.levels)) {
       const o = levels[k];
       if (!o || r.s > o.stars || (r.s === o.stars && r.m < o.moves)) { levels[k] = { stars: r.s, moves: r.m, at: o?.at || now }; changed = true; }
     }
-  }
-  const progress = changed ? { ...local, levels, updatedAt: Math.max(local.updatedAt || 0, now) } : local;
-  let inv = inventory;
-  const mine = toWire({ levels: {} }, inventory, epoch);
-  const merged = mergeWire(mine, { ...w, levels: {} });
-  if (merged?.inv && wireKey({ ...merged, epoch: 0 }) !== wireKey({ ...mine, epoch: 0 })) {
-    inv = { ...inventory, ...merged.inv, gifts: [...merged.inv.gifts], pending: merged.inv.pending.map(g => ({ ...g })) };
-    if (merged.invAt > 0) inv.at = merged.invAt; else delete inv.at;
-    changed = true;
+    progress = changed ? { ...local, levels, updatedAt: Math.max(local.updatedAt || 0, now) } : local;
+    const mine = toWire({ levels: {} }, inventory, epoch);
+    const merged = mergeWire(mine, { ...w, levels: {} });
+    if (merged?.inv && wireKey({ ...merged, epoch: 0 }) !== wireKey({ ...mine, epoch: 0 })) {
+      inv = { ...inventory, ...merged.inv, gifts: [...merged.inv.gifts], pending: merged.inv.pending.map(g => ({ ...g })) };
+      if (merged.invAt > 0) inv.at = merged.invAt; else delete inv.at;
+      changed = true;
+    }
   }
   // Endlos-Vorrat (App): neuerer Stand gewinnt
   let einv = endless;

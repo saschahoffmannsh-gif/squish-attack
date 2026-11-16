@@ -1,36 +1,37 @@
-import {apiFetch,hasSaveToken} from './api.mjs?v=launch-21';
-import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-21';
+import {apiFetch,hasSaveToken} from './api.mjs?v=launch-22';
+import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-22';
 import { nextSpawn, spawnProfile } from './balance.mjs';
-import {canContinueRun} from './run-availability.mjs?v=launch-21';
-import { createMergeEffects } from './merge-effects.mjs?v=launch-21';
-import { createGameGraphics } from './graphics-adapter.mjs?v=launch-21';
+import {canContinueRun} from './run-availability.mjs?v=launch-22';
+import { createMergeEffects } from './merge-effects.mjs?v=launch-22';
+import { createGameGraphics } from './graphics-adapter.mjs?v=launch-22';
 import { installDeviceMotion } from './device-motion.mjs';
-import { createGameSound } from './sound.mjs?v=launch-21';
+import { createGameSound } from './sound.mjs?v=launch-22';
 import { installSettings } from './settings.mjs?v=woodland-menu-1';
-import { createDuelClient } from './duel-client.mjs?v=launch-21';
+import { createDuelClient } from './duel-client.mjs?v=launch-22';
 import {installFullscreen} from './fullscreen.mjs?v=timed-duel-1';
-import {createHomeMenu} from './home-menu.mjs?v=launch-21';
-import {createConfetti} from './confetti.mjs?v=launch-21';
-import {createHaptics} from './haptics.mjs?v=launch-21';
-import * as native from './native.mjs?v=launch-21';
+import {createHomeMenu} from './home-menu.mjs?v=launch-22';
+import {createConfetti} from './confetti.mjs?v=launch-22';
+import {createHaptics} from './haptics.mjs?v=launch-22';
+import * as native from './native.mjs?v=launch-22';
 import {planMergeRipple} from './merge-ripple.mjs?v=swarm-fx-3';
-import * as Camp from './campaign.mjs?v=launch-21';
-import {createCampaignUI,TOOL_ARTICLE,TOOL_NOM} from './campaign-ui.mjs?v=launch-21';
-import {createToolFx} from './tool-fx.mjs?v=launch-21';
-import {hintState,findHint} from './hint-solver.mjs?v=launch-21';
-import {comicColors} from './comic-style.mjs?v=launch-21';
-import * as Shop from './shop.mjs?v=launch-21';
-import {createShopUI} from './shop-ui.mjs?v=launch-21';
-import {createGiftFx} from './gift-fx.mjs?v=launch-21';
-import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-21';
-import {createAdUI} from './ad-ui.mjs?v=launch-21';
-import {hasNativeAds,showInterstitial} from './native-ads.mjs?v=launch-21';
-import {createAdPacing} from './ad-pacing.mjs?v=launch-21';
-import {ENDLESS_TOOLS,endlessToolName,loadEndlessInv,saveEndlessInv,changeEndlessInv,createEndlessToolBar} from './endless-tool.mjs?v=launch-21';
-import {createStatsUI} from './stats-ui.mjs?v=launch-21';
-import * as ToolLog from './tool-log.mjs?v=launch-21';
-import {createProgressSync} from './progress-sync.mjs?v=launch-21';
-import {epochOf} from './progress-merge.mjs?v=launch-21';
+import * as Camp from './campaign.mjs?v=launch-22';
+import {createCampaignUI,TOOL_ARTICLE,TOOL_NOM} from './campaign-ui.mjs?v=launch-22';
+import {createToolFx} from './tool-fx.mjs?v=launch-22';
+import {createGhostFinger} from './ghost-finger.mjs?v=launch-22';
+import {hintState,findHint} from './hint-solver.mjs?v=launch-22';
+import {comicColors} from './comic-style.mjs?v=launch-22';
+import * as Shop from './shop.mjs?v=launch-22';
+import {createShopUI} from './shop-ui.mjs?v=launch-22';
+import {createGiftFx} from './gift-fx.mjs?v=launch-22';
+import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-22';
+import {createAdUI} from './ad-ui.mjs?v=launch-22';
+import {hasNativeAds,showInterstitial} from './native-ads.mjs?v=launch-22';
+import {createAdPacing} from './ad-pacing.mjs?v=launch-22';
+import {ENDLESS_TOOLS,endlessToolName,loadEndlessInv,saveEndlessInv,changeEndlessInv,createEndlessToolBar} from './endless-tool.mjs?v=launch-22';
+import {createStatsUI} from './stats-ui.mjs?v=launch-22';
+import * as ToolLog from './tool-log.mjs?v=launch-22';
+import {createProgressSync} from './progress-sync.mjs?v=launch-22';
+import {epochOf} from './progress-merge.mjs?v=launch-22';
 const playfield = document.getElementById('playfield');
 const gameElement = document.querySelector('.game');
 const visual = createGameGraphics(document.getElementById('graphics'));
@@ -118,6 +119,12 @@ const worldMenu=createHomeMenu({sound,reduceMotion,hooks:{
   duel,
   setMode:mode=>{try{localStorage.setItem(MODE_KEY,mode);}catch{}},
   icons:{gift:GIFT_SVG,shop:SHOP_SVG},
+  consumeUnlockCelebration:()=>{
+    if(!Camp.modesUnlocked(campaignProgress))return false;
+    try{if(localStorage.getItem(Camp.MODES_UNLOCK_SEEN_KEY)==='1')return false;localStorage.setItem(Camp.MODES_UNLOCK_SEEN_KEY,'1');}
+    catch{return true;}
+    return true;
+  },
   campaign:{
     summary:()=>campaignSummary(),
     openShop:()=>openShop(null),
@@ -138,9 +145,9 @@ const newTile = value => ({ id: nextId++, value });
 // in localStorage unangetastet: während der Kampagne wird nichts davon gespeichert,
 // beim Verlassen wird er wieder geladen.
 const MODE_KEY='squish-mode-v1';
-const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-21',import.meta.url);
+const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-22',import.meta.url);
 // launch-16: Test-Level für die neuen Squishes (Eis, Ketten, Bombe) – eigener kleiner Satz, kein Fortschritt/Protokoll.
-const LAB_URL=new URL('../levels/levels-lab.json?v=launch-21',import.meta.url);
+const LAB_URL=new URL('../levels/levels-lab.json?v=launch-22',import.meta.url);
 let labMode=false,labLevels=null,labLoading=null;
 function loadLab(){
   return labLoading||=fetch(LAB_URL,{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('lab '+r.status);return r.json();})
@@ -164,18 +171,21 @@ if(Camp.TOOL_STOCK_RESET)inventory=Camp.resetStockOnce(inventory).inventory;
 if(Camp.CAMPAIGN_RESET){const r=Camp.resetCampaignOnce(campaignProgress,inventory);campaignProgress=r.progress;inventory=r.inventory;}
 // launch-18: Sterne der umgebauten Level 11–100 einmalig zurücksetzen; 1–10 bleiben.
 if(Camp.STARS_RESET){const s=Camp.resetChangedStarsOnce(campaignProgress);campaignProgress=s.progress;}
+// launch-22: Abenteuer (Sterne, Vorrat, Geschenke, Freischaltungen) einmalig leeren für die Tutorials.
+// Endlos-Spielstand, Rekord und Endlos-Vorrat bleiben. Epoche 22, damit die Cloud den alten Stand nicht zurückbringt.
+if(Camp.TUTORIAL_RESET){const t=Camp.resetAdventureForTutorialsOnce(campaignProgress,inventory);campaignProgress=t.progress;inventory=t.inventory;}
 // launch-19: Abenteuer-Fortschritt + Vorrat zusätzlich in der Cloud sichern (anonym, gleicher Geräte-Token).
 // Offline zuerst: lokal bleibt die Wahrheit, der Abgleich läuft still im Hintergrund (progress-sync.mjs).
 // App: eigener Endlos-Werkzeug-Vorrat (endless-tool.mjs), mit in der Cloud gesichert (Feld einv).
 let endlessInv=loadEndlessInv(),endlessArmed=null;
-const progressSync=createProgressSync({fetch:apiFetch,epoch:epochOf(Camp.STARS_RESET),hasToken:hasSaveToken,
+const progressSync=createProgressSync({fetch:apiFetch,epoch:epochOf(Camp.PROGRESS_EPOCH),hasToken:hasSaveToken,
   getLocal:()=>({progress:campaignProgress,inventory,endless:endlessInv.at?endlessInv:null}),
   setLocal:(p,inv,einv)=>{campaignProgress=p;Camp.saveProgress(p);if(inv!==inventory){inventory=inv;Camp.saveInventory(inv,undefined,false);}
     if(einv&&einv!==endlessInv){endlessInv={rocket:einv.rocket|0,wand:einv.wand|0,at:einv.at||0};saveEndlessInv(endlessInv);try{renderEndlessTools();}catch{}}
     try{renderCampaign();void worldMenu.refresh?.();}catch{}}});
 const cloudSync=()=>{if(!labMode)progressSync.schedule();};
 progressSync.attach(window);
-const BUILD_LABEL='launch-21';
+const BUILD_LABEL='launch-22';
 let toolLog=ToolLog.loadLog(),logAttempt=null;
 // Versuche, die beim letzten Mal offen blieben (Seite geschlossen), gelten als abgebrochen.
 if(toolLog.attempts.some(a=>!a.outcome)){for(const a of toolLog.attempts)if(!a.outcome)ToolLog.endAttempt(toolLog,a.id,{outcome:'quit',moves:a.moves});ToolLog.saveLog(toolLog);}
@@ -192,7 +202,7 @@ function campaignSummary(){
   if(lock?.reason==='stars')caption=`Kapitel ${lock.chapter} öffnet ab ${lock.need} ★`;
   else if(!open&&levels)caption='Alle Level geschafft!';
   else caption=`Kapitel ${Camp.chapterOf(next)} · Level ${next}`;
-  return {next,ready:!!levels,caption,total,count,inventory:Camp.TOOL_STOCK?inventory:null,pendingGifts:Camp.TOOL_STOCK&&Camp.TOOL_GIFTS?inventory.pending.length:0,shop:shopEnabled(),allDone:!open&&!!levels};
+  return {next,ready:!!levels,caption,total,count,inventory:Camp.TOOL_STOCK?inventory:null,pendingGifts:Camp.TOOL_STOCK&&Camp.TOOL_GIFTS?inventory.pending.length:0,shop:shopEnabled(),allDone:!open&&!!levels,modesUnlocked:Camp.modesUnlocked(campaignProgress)};
 }
 const campaignUI=createCampaignUI({
   onPlay:n=>{void worldMenu.play({campaign:n});},
@@ -411,6 +421,7 @@ async function prepareLevel(n){
 }
 function leaveCampaign(){
   if(!campaignMode)return;
+  ghostFinger.hide();
   endLogAttempt('quit',{moves:camp?.run?.moves??0});logAttempt=null;adUI.close({silent:true});
   disarmTools();campaignMode=false;camp=null;labMode=false;renderBombBadges();
   gameElement.classList.remove('is-campaign');campaignUI.hide();visual.hideHud('best',false);
@@ -431,12 +442,16 @@ async function playLevel(n){
   started=false;
   await prepareLevel(n);
   await enterGame();
-  showNote(levelNote(),labMode?5200:camp.level.tool?4200:2600);
+  if(labMode)showNote(levelNote(),5200);
+  else if(camp.level.tool)showNote(levelNote(),4200);
+  else if(!camp.level.tip)showNote(levelNote(),2600);
   scheduleBombTick();
+  showTutorialFinger(true);
 }
 async function moveCampaign(direction,line){
   const r=camp.run;
   if(r.status!=='playing')return;
+  ghostFinger.hide();
   if(armedTool)toggleTool(null);
   const value=Camp.queueOf(r)[0];
   if(value==null)return;
@@ -466,10 +481,12 @@ async function moveCampaign(direction,line){
   }finally{if(turn===generation)busy=false;}
   if(turn!==generation)return;
   if(r.status!=='playing'){await finishLevel();return;}
+  showTutorialFinger();
   const queued=pendingMove;pendingMove=null;
   if(queued)void move(queued.direction,queued.line).catch(()=>{});
 }
 async function finishLevel(){
+  ghostFinger.hide();
   const r=camp.run,won=r.status==='won',n=camp.n,turn=generation;
   let stars=0,gifts=[];
   endLogAttempt(won?'won':'lost',{moves:r.moves,stars:won?Camp.starsOfRun(r):0,lostReason:r.lostReason});
@@ -488,7 +505,8 @@ async function finishLevel(){
   paused=true;releaseGesture();phoneMotion.reset();
   const count=levelList().length,nextLock=n<count&&!labMode?Camp.lockReason(campaignProgress,n+1):null;
   campaignUI.showResult({n,won,stars,moves:r.moves,limit:Camp.moveLimit(r),lostReason:r.lostReason,toolLevel:r.level.tool||null,
-    canNext:won&&n<count&&!nextLock,nextLock,gifts:Camp.TOOL_STOCK&&Camp.TOOL_GIFTS?inventory.pending.slice():gifts,extraAvailable:availableTools().extraMoves,extraAd:adsEnabled(),toolsUsed:r.toolsUsed.length});
+    canNext:won&&n<count&&!nextLock,nextLock,gifts:Camp.TOOL_STOCK&&Camp.TOOL_GIFTS?inventory.pending.slice():gifts,extraAvailable:availableTools().extraMoves,extraAd:adsEnabled(),toolsUsed:r.toolsUsed.length,
+    unlockModes:won&&!labMode&&n===Camp.MODES_UNLOCK_LEVEL&&Camp.modesUnlocked(campaignProgress)});
   renderCampaign();
 }
 function useExtraMoves(){
@@ -506,9 +524,23 @@ function useExtraMoves(){
   if(campaignUI.resultOpen){campaignUI.hideResult();paused=false;}
   renderCampaign();haptics.pulse('merge');sound.play('record');
   showNote(`+${added} Züge – jetzt höchstens 2 ★`,2200);
+  showTutorialFinger();
 }
 // ---------- Hilfsmittel (launch-12): Rakete, Zauberstab, Hinweis ----------
 const toolFx=createToolFx({reduceMotion,shakeTarget:()=>document.getElementById('playfield')});
+const ghostFinger=createGhostFinger({reduceMotion});
+function showTutorialFinger(afterEntry=false){
+  if(!campaignMode||!camp||camp.level.kind!=='tutorial'||camp.run.status!=='playing'||campaignUI.resultOpen||paused){ghostFinger.hide();return;}
+  const place=()=>{
+    if(!campaignMode||!camp||camp.run.status!=='playing')return;
+    const m=Camp.tutorialHintMove(camp.run);
+    if(!m){ghostFinger.hide();return;}
+    ghostFinger.show(hintLane(m.direction,m.line),{reduced:reduceMotion.matches});
+  };
+  if(afterEntry)requestAnimationFrame(()=>requestAnimationFrame(place));
+  else place();
+}
+
 const TOOL_NOTES={rocket:'Tippe auf einen Stein – die Rakete sprengt ihn weg (höchstens 2 ★)',wand:'Tippe auf einen Stein und wähle seine neue Zahl (höchstens 2 ★)'};
 function disarmTools(){armedTool=null;hintBusy=false;wandPicker?.close();wandPicker=null;}
 function toggleTool(type){
@@ -593,7 +625,7 @@ let hintWorker=null,hintSeq=0;
 function searchHint(state){
   const budget={want:2,maxStates:160000,maxMs:2500};
   try{
-    hintWorker||=new Worker(new URL('./hint-worker.mjs?v=launch-21',import.meta.url),{type:'module'});
+    hintWorker||=new Worker(new URL('./hint-worker.mjs?v=launch-22',import.meta.url),{type:'module'});
   }catch{hintWorker=null;}
   if(!hintWorker)return Promise.resolve(findHint(state,{...budget,maxMs:900}));
   const id=++hintSeq;
@@ -661,7 +693,9 @@ async function backToMenu(){
   graphics.pause(false);sound.resume();
   const overlay=document.getElementById('loading-screen');
   overlay.hidden=false;overlay.inert=false;overlay.dataset.phase='menu';
-  await worldMenu.open({screen:storedMode()==='campaign'?'campaign':'endless'});
+  const unlocked=Camp.modesUnlocked(campaignProgress);
+  const pref=storedMode();
+  await worldMenu.open({screen:pref==='campaign'?'campaign':pref==='endless'&&unlocked?'endless':'home'});
 }
 
 // Endlos-Steine kommen zufällig (keine Bestenliste mehr, also keine Server-Seeds/Replays).
@@ -1314,6 +1348,7 @@ playfield.addEventListener('pointerdown',event=> {
   }
   const merging=busy&&!duelMode&&visual.fusion?.active;
   if(!started||booting||(busy&&!merging)||paused||!event.isPrimary)return;
+  ghostFinger.hide();
   sound.unlock();
   const cell=visual.gestureCell(event),tileId=merging?null:visual.pick(event);
   pointerStart={id:event.pointerId,x:event.clientX,y:event.clientY,cell,tileId,
@@ -1330,9 +1365,10 @@ playfield.addEventListener('pointerup',event=> {
   if(!pointerStart||event.pointerId!==pointerStart.id)return;
   const {x,y,cell}=pointerStart;releaseGesture();
   const dx=event.clientX-x,dy=event.clientY-y;
-  if(Math.max(Math.abs(dx),Math.abs(dy))<Math.max(24,playfield.clientWidth*.065))return;
+  if(Math.max(Math.abs(dx),Math.abs(dy))<Math.max(24,playfield.clientWidth*.065)){showTutorialFinger();return;}
   if(Math.abs(dx)>Math.abs(dy)*1.15)void move(dx>0?'right':'left',cell.row).catch(()=>{});
   else if(Math.abs(dy)>Math.abs(dx)*1.15)void move(dy>0?'down':'up',cell.col).catch(()=>{});
+  else showTutorialFinger();
 });
 playfield.addEventListener('pointercancel',releaseGesture);
 playfield.addEventListener('lostpointercapture',releaseGesture);
@@ -1399,7 +1435,13 @@ export const menuActions={
   world:worldMenu,
   async start(){
     await enterGame();
-    if(campaignMode&&camp){showNote(levelNote(),labMode?5200:2600);scheduleBombTick();}
+    if(campaignMode&&camp){
+      if(labMode)showNote(levelNote(),5200);
+      else if(camp.level.tool)showNote(levelNote(),4200);
+      else if(!camp.level.tip)showNote(levelNote(),2600);
+      scheduleBombTick();
+      showTutorialFinger(true);
+    }
   },
   async select(newGame=false) {
     if (booting || started || busy) return;

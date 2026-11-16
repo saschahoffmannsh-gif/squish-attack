@@ -68,6 +68,7 @@ test(`${file}: keine Felsen; Sterne: 3★ = Optimum + 1 / Mitte (launch-16 auch 
 
 test(`${file}: Level sind aus ihrer Saat reproduzierbar`, () => {
   for (const lv of levels) {
+    if (lv.meta?.generator === 'tutorial') continue;   // launch-22: handgesetzte Tutorials
     const c = lv.meta.generator === 'build100' || lv.meta.generator === 'build18' ? makeLevel(lv.id, lv.meta.k) : makeCandidate(lv.meta.seed);
     assert.ok(c, `Level ${lv.id}`);
     assert.deepEqual(c.board, lv.board, `Level ${lv.id}`);
@@ -108,11 +109,47 @@ test(`${file}: Solver bestätigt Lösbarkeit ohne Werkzeug und Minimalzüge (all
 const L100 = JSON.parse(readFileSync(new URL('levels-001-100.json', dir), 'utf8')).levels;
 const V1 = JSON.parse(readFileSync(new URL('levels-001-025.json', dir), 'utf8')).levels;
 
-test('launch-18: Level 1–10 unverändert (leichter Einstieg)', () => {
-  for (const id of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) {
+test('launch-22: Level 6–10 unverändert (leichter Einstieg nach den Tutorials)', () => {
+  for (const id of [6, 7, 8, 9, 10]) {
     const a = L100[id - 1], b = V1[id - 1];
     assert.deepEqual([a.board, a.goals, a.moves, a.stars, a.solution, a.sequence], [b.board, b.goals, b.moves, b.stars, b.solution, b.sequence], `Level ${id}`);
   }
+});
+
+test('launch-22: Level 1–5 sind Tutorials – genau 3/4/T/5-Fusion und Straße, 1 Zug, ohne Kette', () => {
+  const expect = [
+    { size: 3, shape: undefined, sol: 'h' },
+    { size: 4, shape: 'line', sol: 'h' },
+    { size: 4, shape: 't', sol: 'f' },
+    { size: 5, shape: undefined, sol: 'h' },
+  ];
+  for (let i = 0; i < 4; i++) {
+    const lv = L100[i], g = lv.goals[0], e = expect[i];
+    assert.equal(lv.kind, 'tutorial');
+    assert.equal(lv.meta.generator, 'tutorial');
+    assert.equal(lv.meta.minMoves, 1);
+    assert.equal(lv.goals.length, 1);
+    assert.equal(g.type, 'fuse');
+    assert.equal(g.size, e.size);
+    assert.equal(g.shape, e.shape);
+    assert.equal(lv.solution, e.sol);
+    assert.ok(lv.tip && lv.tip.length > 10);
+    const r = replaySolution(lv, lv.solution);
+    assert.ok(r.ok && r.stars === 3, `Level ${lv.id}`);
+    assert.equal(r.run.bestCombo, 1, `Level ${lv.id}: keine Kette`);
+    assert.equal(r.run.fuseMarks[0].size, e.size);
+    assert.equal(r.run.fuseMarks[0].line, e.shape !== 't');
+  }
+  const lv = L100[4];
+  assert.equal(lv.kind, 'tutorial');
+  assert.equal(lv.goals[0].type, 'street');
+  assert.equal(lv.goals[0].count, 1);
+  assert.equal(lv.solution, 'c');
+  const r = replaySolution(lv, lv.solution);
+  assert.ok(r.ok && r.stars === 3);
+  assert.equal(r.run.streets, 1);
+  assert.equal(r.run.bestCombo, 1);
+  assert.ok(L100.slice(0, 5).every(l => !l.tool && !l.specials));
 });
 
 test('launch-15: Werkzeug-Spitzen genau laut Plan, Bosse 50 und 100 sind Werkzeug-Spitzen, 1–14 ohne', () => {

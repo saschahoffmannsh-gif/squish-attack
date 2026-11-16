@@ -246,3 +246,42 @@ html.aw .veil .dialog .menu-button:active:not(:disabled) {transform:translateY(3
   .aw-rules {max-height:40svh;}
 }
 @media (prefers-reduced-motion:reduce) {.aw .campaign-moves.is-low {animation:none;}}
+
+/* launch-22: gesperrte Startknöpfe (goldenes Schloss, Wackeln) und Freischalt-Knall. */
+.aw-btn {position:relative;}
+.aw-btn.is-locked {filter:saturate(.5) brightness(.74);}
+.aw-btn.is-locked .aw-label {opacity:.9;}
+.aw-btn .aw-lock {position:absolute;right:8px;top:50%;transform:translateY(-50%);z-index:2;
+  width:34px;height:34px;display:grid;place-items:center;border-radius:50%;
+  background:linear-gradient(180deg,#ffe27a,#e8a318);border:2.5px solid #1a1440;color:#1a1440;
+  box-shadow:0 2px 0 #1a1440,0 4px 10px #0007;}
+.aw-btn .aw-lock svg {width:18px;height:18px;filter:none;}
+.aw-btn.aw-wobble {animation:aw-wobble .42s ease;}
+@keyframes aw-wobble {
+  15%{transform:translateX(-7px) rotate(-2.4deg);}
+  40%{transform:translateX(7px) rotate(2.4deg);}
+  62%{transform:translateX(-4px) rotate(-1deg);}
+  82%{transform:translateX(4px) rotate(1deg);}
+}
+.aw-btn .aw-lock.is-burst {animation:aw-lock-burst .7s ease-in forwards;}
+@keyframes aw-lock-burst {
+  0%{transform:translateY(-50%) scale(1) rotate(0);opacity:1;}
+  35%{transform:translateY(-58%) scale(1.4) rotate(-14deg);opacity:1;}
+  100%{transform:translateY(-90%) scale(.15) rotate(28deg);opacity:0;}
+}
+.aw-btn.is-unlocking {animation:aw-unlock-pop .7s ease;}
+@keyframes aw-unlock-pop {
+  0%{filter:brightness(1);}
+  35%{filter:brightness(1.25) saturate(1.15);}
+  100%{filter:brightness(1);}
+}
+.aw-btn .aw-spark {position:absolute;width:8px;height:8px;border-radius:50%;background:#ffd25a;box-shadow:0 0 8px #ffd25a;
+  pointer-events:none;animation:aw-spark .65s ease-out forwards;}
+@keyframes aw-spark {
+  0%{transform:translate(0,0) scale(1);opacity:1;}
+  100%{transform:translate(var(--sx,0),var(--sy,0)) scale(.2);opacity:0;}
+}
+@media (prefers-reduced-motion:reduce){
+  .aw-btn.aw-wobble,.aw-btn.is-unlocking,.aw-btn .aw-lock.is-burst,.aw-btn .aw-spark {animation:none;}
+  .aw-btn .aw-lock.is-burst {display:none;}
+}

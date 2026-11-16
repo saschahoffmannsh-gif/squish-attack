@@ -1,16 +1,16 @@
-# Level 1–100 (launch-18)
+# Level 1–100 (launch-22)
 
-Erzeugt mit `tools/campaign/report100.mjs` aus `levels/levels-001-100.json` und der Messung `tools/campaign/measure-001-100.json`.
+Level 1–5 sind seit launch-22 Tutorials (handgesetzt). Level 6–100 unverändert seit launch-18. Erzeugt mit `tools/campaign/report100.mjs` aus `levels/levels-001-100.json` und der Messung `tools/campaign/measure-001-100.json`.
 Alle Level sind ohne Werkzeug lösbar (gespeicherte Lösung, `Min` = Optimum). D = Schwierigkeit ohne Werkzeug (Spielermodell; 100 = Modellspieler schaffen es im Limit fast nie), gefühlt = mit dem Schlüssel-Werkzeug, Soll = Zielkurve.
 Gel. = Gewinnrate Gelegenheitsspieler ohne Werkzeug, mit Wkz = mit dem Schlüssel-Werkzeug.
 
 | L | Rolle | Ziele | Züge | Min | Werkzeug | D | gefühlt | Soll | Gel. | mit Wkz |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 1 | normal | 3er bauen | 5 | 1 | – | 2 | 2 | 3 | 100 % | – |
-| 2 | normal | 3er bauen | 7 | 2 | – | 6 | 6 | 6 | 100 % | – |
-| 3 | normal | 4er bauen | 6 | 2 | – | 11 | 11 | 10 | 84 % | – |
-| 4 | normal | 3er bauen | 8 | 3 | – | 13 | 13 | 13 | 81 % | – |
-| 5 | normal | 3× 2er+ | 8 | 3 | – | 10 | 10 | 12 | 94 % | – |
+| 1 | Tutorial | 3er-Fusion | 5 | 1 | – | 1 | 1 | 3 | 100 % | – |
+| 2 | Tutorial | 4er-Fusion | 5 | 1 | – | 1 | 1 | 6 | 100 % | – |
+| 3 | Tutorial | 4er als T | 5 | 1 | – | 2 | 2 | 10 | 100 % | – |
+| 4 | Tutorial | 5er-Fusion | 5 | 1 | – | 2 | 2 | 13 | 100 % | – |
+| 5 | Tutorial | 1 Straße | 5 | 1 | – | 3 | 3 | 12 | 100 % | – |
 | 6 | normal | 2× 3er+ | 6 | 3 | – | 13 | 13 | 15 | 88 % | – |
 | 7 | normal | 5er bauen | 7 | 3 | – | 17 | 17 | 20 | 71 % | – |
 | 8 | normal | 3× 2er+ | 6 | 3 | – | 18 | 18 | 22 | 59 % | – |

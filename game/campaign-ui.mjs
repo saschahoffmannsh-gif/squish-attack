@@ -1,7 +1,7 @@
 // Kampagne: DOM-Teile (Ziel-Anzeige, Züge, Hilfsmittel, Ergebnis-Dialog, Levelauswahl).
 // Reine Darstellung; Spiellogik und Speichern liegen in game.mjs / campaign.mjs.
-import {TOOL_ICONS,GIFT_SVG} from './tool-icons.mjs?v=launch-21';
-import {goalProgress,goalText,goalShort,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName} from './campaign.mjs?v=launch-21';
+import {TOOL_ICONS,GIFT_SVG} from './tool-icons.mjs?v=launch-22';
+import {goalProgress,goalText,goalShort,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName} from './campaign.mjs?v=launch-22';
 
 const $=id=>document.getElementById(id);
 export const TOOL_ARTICLE={extraMoves:'+3 Züge',hint:'den Hinweis',rocket:'die Rakete',wand:'den Zauberstab'};
@@ -16,7 +16,7 @@ export function lockText(lock){
 }
 
 export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,onGift,onCloseSelect,onStar,reduceMotion}={}){
-  const hud=$('campaign-hud'),levelEl=$('campaign-level'),goalsEl=$('campaign-goals'),movesEl=$('campaign-moves');
+  const hud=$('campaign-hud'),levelEl=$('campaign-level'),goalsEl=$('campaign-goals'),movesEl=$('campaign-moves'),tipEl=$('campaign-tip');
   const tools=$('campaign-tools'),extraBtn=$('tool-extra'),hintBtn=$('tool-hint'),rocketBtn=$('tool-rocket'),wandBtn=$('tool-wand');
   for(const b of [hintBtn,rocketBtn,wandBtn]){const ico=b.querySelector('[data-icon]');if(ico&&!ico.firstChild)ico.innerHTML=TOOL_ICONS[ico.dataset.icon];}
   const result=$('campaign-result'),rKicker=$('campaign-result-kicker'),rTitle=$('campaign-result-title'),rStars=$('campaign-result-stars');
@@ -44,6 +44,10 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
       const v=document.createElement('b');v.textContent=p.done?'✓':goal.type==='tile'?`${Math.min(p.target,Math.max(p.current,...run.board.flat().filter(Boolean).map(t=>t.value)))}/${p.target}`:goal.type==='empty'?`${p.current}→${p.target}`:`${fmt(p.current)}/${fmt(p.target)}`;
       li.append(t,v);return li;
     }));
+    if(tipEl){
+      const tip=run.level.tip||'';
+      tipEl.hidden=!tip;tipEl.textContent=tip;
+    }
     const left=Math.max(0,movesLeft(run));
     if(movesEl.textContent!==String(left))movesEl.textContent=String(left);
     movesEl.closest('.campaign-moves').classList.toggle('is-low',left<=2);
@@ -68,14 +72,14 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
     for(const [btn,type] of [[rocketBtn,'rocket'],[wandBtn,'wand']]){btn.classList.toggle('is-armed',armed===type);btn.setAttribute('aria-pressed',String(armed===type));}
     hintBtn.classList.toggle('is-busy',busy==='hint');hintBtn.classList.toggle('is-armed',busy==='hint');
   }
-  function hide(){hud.hidden=true;tools.hidden=true;hideResult();}
+  function hide(){hud.hidden=true;tools.hidden=true;if(tipEl)tipEl.hidden=true;hideResult();}
   extraBtn.addEventListener('click',()=>onTool?.('extraMoves'));
   hintBtn.addEventListener('click',()=>onTool?.('hint'));
   rocketBtn.addEventListener('click',()=>onTool?.('rocket'));
   wandBtn.addEventListener('click',()=>onTool?.('wand'));
 
   // ---------- Ergebnis ----------
-  function showResult({n,won,stars,moves,limit,lostReason,canNext,nextLock,gifts=[],extraAvailable=0,extraAd=false,toolsUsed=0,toolLevel=null}){
+  function showResult({n,won,stars,moves,limit,lostReason,canNext,nextLock,gifts=[],extraAvailable=0,extraAd=false,toolsUsed=0,toolLevel=null,unlockModes=false}){
     const extraOffer=extraAvailable>0||extraAd;
     result.dataset.outcome=won?'won':'lost';
     rKicker.textContent=`LEVEL ${n}`;
@@ -88,6 +92,7 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
       ?(toolsUsed?'Mit Hilfsmittel gibt es höchstens 2 ★.':stars<3?'Mit weniger Zügen gibt es mehr Sterne.':'Bestmöglich gelöst!')
       :(lostReason==='board-full'?'Das Brett ist voll.':'Das Ziel ist noch nicht erreicht.')+(extraOffer&&lostReason==='moves'?' Mit +3 Zügen kannst du weiterspielen (dann höchstens 2 ★).':' Versuch es noch einmal!')
         +(toolLevel&&toolLevel!=='extraMoves'?` Tipp: sehr schweres Level – ${TOOL_NOM[toolLevel]} hilft.`:'');
+    if(won&&unlockModes)rMessage.textContent+=' Endlos und 2 Spieler sind jetzt frei!';
     if(won&&!canNext&&nextLock)rMessage.textContent+=' '+lockText(nextLock);
     else if(won&&!canNext)rMessage.textContent+=' Alle Level geschafft!';
     setGifts(gifts);

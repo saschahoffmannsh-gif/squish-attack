@@ -77,6 +77,24 @@ test('Merge: neuerer Endlos-Vorrat gewinnt; alter Client ohne einv löscht nicht
   assert.equal('einv' in mergeWire(legacy, legacy), false);
 });
 
+test('Merge: Epoche 22 ersetzt Abenteuer-Vorrat, Endlos-Vorrat bleibt', () => {
+  const inv = (o = {}) => ({ extraMoves: 0, rocket: 0, hint: 0, wand: 0, gifts: [], pending: [], ...o });
+  const old = normalizeWire(base({
+    epoch: 18, levels: { 20: { s: 3, m: 9 } },
+    inv: inv({ hint: 4, gifts: ['level-3'] }), invAt: 500,
+    einv: { rocket: 2, wand: 1 }, einvAt: 3000,
+  }));
+  const now = normalizeWire(base({ epoch: 22, levels: {}, inv: inv(), invAt: 0 }));
+  const m = mergeWire(old, now), n = mergeWire(now, old);
+  assert.equal(m.epoch, 22);
+  assert.deepEqual(m.levels, {});
+  assert.equal(m.inv.hint, 0);
+  assert.deepEqual(m.inv.gifts, []);
+  assert.deepEqual(m.einv, { rocket: 2, wand: 1 });
+  assert.equal(m.einvAt, 3000);
+  assert.equal(wireKey(m), wireKey(n), 'kommutativ');
+});
+
 test('Sync: toWire/applyWire tragen den Endlos-Vorrat, neuerer Server-Stand wird übernommen', () => {
   const progress = emptyProgress(), inv = emptyInventory();
   const local = { rocket: 1, wand: 0, at: 1000 };

@@ -7,8 +7,8 @@ import { emptyProgress, emptyInventory, recordResult, saveInventory, loadInvento
 const mem = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k), m }; };
 const W = (over = {}) => normalizeWire({ v: 1, epoch: 18, levels: {}, inv: null, invAt: 0, ...over });
 
-test('epochOf: launch-18 → 18', () => {
-  assert.equal(epochOf('launch-18'), 18); assert.equal(epochOf(7), 7); assert.equal(epochOf(null), 0);
+test('epochOf: launch-18 → 18, launch-22 → 22', () => {
+  assert.equal(epochOf('launch-18'), 18); assert.equal(epochOf('launch-22'), 22); assert.equal(epochOf(7), 7); assert.equal(epochOf(null), 0);
 });
 
 test('merge: max Sterne pro Level, bei Gleichstand weniger Züge, Vereinigung der Level', () => {
@@ -24,6 +24,19 @@ test('merge: höhere Epoche ersetzt die Level (Sterne-Reset kommt nicht zurück)
   const now = W({ epoch: 18, levels: { 1: { s: 1, m: 9 } } });
   assert.deepEqual(mergeWire(old, now).levels, { 1: { s: 1, m: 9 } });
   assert.deepEqual(mergeWire(now, old).levels, { 1: { s: 1, m: 9 } });
+});
+
+test('merge: höhere Epoche ersetzt auch den Abenteuer-Vorrat (Tutorial-Reset kommt nicht zurück)', () => {
+  const inv = (o) => ({ extraMoves: 0, rocket: 0, hint: 0, wand: 0, gifts: [], pending: [], ...o });
+  const old = W({ epoch: 18, levels: { 20: { s: 3, m: 9 } }, inv: inv({ hint: 4, gifts: ['level-3', 'level-6'], pending: [{ id: 'level-10', type: 'extraMoves' }] }), invAt: 500 });
+  const now = W({ epoch: 22, levels: {}, inv: inv(), invAt: 0 });
+  const m = mergeWire(old, now), n = mergeWire(now, old);
+  assert.deepEqual(m.levels, {});
+  assert.equal(m.epoch, 22);
+  assert.equal(m.inv.hint, 0);
+  assert.deepEqual(m.inv.gifts, []);
+  assert.deepEqual(m.inv.pending, []);
+  assert.equal(wireKey(m), wireKey(n), 'kommutativ');
 });
 
 test('merge: neuerer Vorrat gewinnt, Geschenk-ids vereinigt, offene Geschenke gehen nicht verloren', () => {
@@ -56,6 +69,13 @@ test('toWire/applyWire: Cloud-Stand füllt ein leeres Gerät, Lokales wird nie s
   // fremde Epoche: Level werden ignoriert
   const r2 = applyWire(emptyProgress(), emptyInventory(), W({ epoch: 17, levels: { 5: { s: 3, m: 1 } } }), 18, 1000);
   assert.deepEqual(r2.progress.levels, {});
+  // launch-22: alter Vorrat einer niedrigeren Epoche wird nicht übernommen
+  const fresh = emptyInventory();
+  const stale = W({ epoch: 18, levels: { 8: { s: 3, m: 4 } }, inv: { extraMoves: 2, rocket: 1, hint: 3, wand: 1, gifts: ['level-3'], pending: [] }, invAt: 99 });
+  const r3 = applyWire(emptyProgress(), fresh, stale, 22, 1000);
+  assert.deepEqual(r3.progress.levels, {});
+  assert.equal(r3.inventory, fresh);
+  assert.equal(r3.changed, false);
   // nichts Neues → unverändert
   const w = toWire(r.progress, r.inventory, 18);
   assert.equal(applyWire(r.progress, r.inventory, w, 18, 1000).changed, false);

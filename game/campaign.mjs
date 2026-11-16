@@ -2,11 +2,13 @@
 // Ein Level = feste Startaufstellung + feste Steinfolge + Ziele + Zuglimit.
 // Dieses Modul ist reine Logik (kein DOM). Es wird von der UI, dem Solver,
 // dem Generator und den Tests gemeinsam benutzt, damit alle exakt gleich zählen.
-import { SIZE, insertTile, settle, isGameOver, tickBombs, BOMB_MS, BOMB_UNIT_MS } from './game-logic.mjs?v=launch-21';
+import { SIZE, insertTile, settle, isGameOver, tickBombs, BOMB_MS, BOMB_UNIT_MS } from './game-logic.mjs?v=launch-22';
 
 export const DIRECTIONS = ['left', 'right', 'up', 'down'];
 export const QUEUE_PREVIEW = 3;
-export const GOAL_TYPES = ['tile', 'make', 'score', 'clear', 'street', 'combo', 'empty', 'long', 'purge'];
+export const GOAL_TYPES = ['tile', 'make', 'score', 'clear', 'street', 'combo', 'empty', 'long', 'purge', 'fuse'];
+export const FUSE_SIZES = [3, 4, 5];
+export const FUSE_SHAPES = ['line', 't'];
 /** launch-15: neue Missionen – empty: höchstens `max` Steine auf dem Brett; long: `count` Straßen aus ≥ 4 Steinen;
  *  purge: `tiles` Steine mit dem Wert `value` auflösen. Werkzeug-Level: level.tool = 'extraMoves'|'hint'|'rocket'|'wand'. */
 export const TOOL_KEYS = ['extraMoves', 'hint', 'rocket', 'wand'];
@@ -37,8 +39,12 @@ export function validateLevel(level) {
   if (!Array.isArray(level.goals) || !level.goals.length) fail('goals fehlt');
   for (const g of level.goals) {
     if (!GOAL_TYPES.includes(g.type)) fail(`unbekanntes Ziel ${g.type}`);
-    const need = { tile: ['value'], make: ['value', 'count'], score: ['points'], clear: ['tiles'], street: ['count'], combo: ['chain'], empty: ['max'], long: ['count'], purge: ['value', 'tiles'] }[g.type];
+    const need = { tile: ['value'], make: ['value', 'count'], score: ['points'], clear: ['tiles'], street: ['count'], combo: ['chain'], empty: ['max'], long: ['count'], purge: ['value', 'tiles'], fuse: ['size'] }[g.type];
     for (const k of need) if (!Number.isInteger(g[k]) || g[k] < 1) fail(`Ziel ${g.type}: ${k} fehlt`);
+    if (g.type === 'fuse') {
+      if (!FUSE_SIZES.includes(g.size)) fail('Ziel fuse: size muss 3, 4 oder 5 sein');
+      if (g.shape != null && !FUSE_SHAPES.includes(g.shape)) fail('Ziel fuse: shape ungültig');
+    }
   }
   if (level.tool != null && !TOOL_KEYS.includes(level.tool)) fail('tool ungültig');
   if (level.specials != null) {   // launch-16: besondere Squishes auf dem Startbrett
@@ -105,6 +111,7 @@ export function createLevelRun(level) {
     score: 0, cleared: 0, merges: 0, streets: 0, bestCombo: 0, longStreets: 0,
     purged: {},               // Wert -> Anzahl aufgelöster Steine dieses Werts
     created: {},              // Wert -> Anzahl durch Fusion erzeugter Steine
+    fuseMarks: [],            // launch-22: {size, line} je Fusion (kein Straßen-Eintrag)
     extraMoves: 0,            // durch Hilfsmittel gewonnene Züge
     toolsUsed: [],            // eingesetzte Hilfsmittel (Typen)
     status: 'playing',        // 'playing' | 'won' | 'lost'
@@ -145,7 +152,7 @@ export function tally(run, settled) {
   run.purged ??= {}; run.longStreets ??= 0;
   for (const pass of settled.passes) for (const g of pass) {
     run.cleared += g.cells.length - 1;
-    if (g.street) { run.streets += 1; if (g.cells.length >= LONG_STREET) run.longStreets += 1; } else run.merges += 1;
+    if (g.street) { run.streets += 1; if (g.cells.length >= LONG_STREET) run.longStreets += 1; } else { run.merges += 1; const m = fuseMarkOf(g); if (m) (run.fuseMarks ??= []).push(m); }
     run.created[g.nextValue] = (run.created[g.nextValue] ?? 0) + 1;
     for (const [v, n] of vanished(g)) run.purged[v] = (run.purged[v] ?? 0) + n;
   }
@@ -166,10 +173,25 @@ export function vanished(g) {
   });
   return [...out];
 }
+/** Gerade Fusion (eine Reihe oder Spalte)? Sonst T-Form (Ast an einer Innenzelle). */
+export function isStraightGroup(cells) {
+  return cells.every(([r]) => r === cells[0][0]) || cells.every(([, c]) => c === cells[0][1]);
+}
+/** Passt eine Fusion zum fuse-Ziel (Größe, optional line/T)? Straßen zählen nicht. */
+export function fuseMatch(mark, goal) {
+  if (!mark || mark.size !== goal.size) return false;
+  if (goal.shape === 't') return !mark.line;
+  if (goal.shape === 'line') return !!mark.line;
+  return true;
+}
+export function fuseMarkOf(g) {
+  if (!g || g.street) return null;
+  return { size: g.cells.length, line: isStraightGroup(g.cells) };
+}
 // Angekettete Steine zählen nicht (solange angekettet); befreit zählen sie normal.
 export const tilesOn = board => { let n = 0; for (const row of board) for (const t of row) if (t && !t.bound) n++; return n; };
 /** Zielwert in Einheiten des Fortschritts-Vektors (Solver/Hinweis). */
-export const goalTarget = g => ({ tile: g.value, make: g.count, score: g.points, clear: g.tiles, street: g.count, combo: g.chain, empty: 1, long: g.count, purge: g.tiles })[g.type];
+export const goalTarget = g => ({ tile: g.value, make: g.count, score: g.points, clear: g.tiles, street: g.count, combo: g.chain, empty: 1, long: g.count, purge: g.tiles, fuse: 1 })[g.type];
 /**
  * Fortschritts-Vektor nach einem settle()-Ergebnis weiterrechnen (gedeckelt). Gleiche Zählung wie
  * tally()/goalProgress(); genutzt von Solver, Generator und Hinweis. „empty“ hängt nur vom Brett ab (0/1).
@@ -189,6 +211,7 @@ export function advanceGoals(goals, vec, settled) {
       case 'combo': v = Math.min(Math.max(v, settled.passes.length), g.chain); break;
       case 'long': for (const pass of settled.passes) for (const x of pass) if (x.street && x.cells.length >= LONG_STREET) v++; v = Math.min(v, g.count); break;
       case 'purge': for (const pass of settled.passes) for (const x of pass) for (const [val, n] of vanished(x)) if (val === g.value) v += n; v = Math.min(v, g.tiles); break;
+      case 'fuse': for (const pass of settled.passes) for (const x of pass) { const m = fuseMarkOf(x); if (m && fuseMatch(m, g)) v = 1; } break;
       case 'empty': v = tilesOn(settled.board) <= g.max ? 1 : 0; break;
     }
     out[i] = v;
@@ -217,6 +240,11 @@ export function goalProgress(goal, run) {
     case 'combo': target = goal.chain; current = run.bestCombo; break;
     case 'long': target = goal.count; current = run.longStreets ?? 0; break;
     case 'purge': target = goal.tiles; current = run.purged?.[goal.value] ?? 0; break;
+    case 'fuse': {
+      target = 1;
+      current = (run.fuseMarks || []).some(m => fuseMatch(m, goal)) ? 1 : 0;
+      break;
+    }
     case 'empty': {   // Stand: Steine auf dem Brett, Ziel: höchstens max
       const n = tilesOn(run.board);
       return { current: n, target: goal.max, done: n <= goal.max };
@@ -336,6 +364,7 @@ export function goalShort(goal) {
     case 'empty': return `≤ ${goal.max} Steine`;
     case 'long': return goal.count === 1 ? `Straße aus ${LONG_STREET}` : `${goal.count}× Straße aus ${LONG_STREET}`;
     case 'purge': return `${goal.tiles}× die ${goal.value}`;
+    case 'fuse': return goal.shape === 't' ? `${goal.size}er als T` : `${goal.size}er-Fusion`;
   }
   return '';
 }
@@ -351,6 +380,10 @@ export function goalText(goal) {
     case 'empty': return `Höchstens ${goal.max} Steine übrig`;
     case 'long': return goal.count === 1 ? `Bilde eine Straße aus ${LONG_STREET} Steinen` : `Bilde ${goal.count} Straßen aus ${LONG_STREET} Steinen`;
     case 'purge': return `Löse ${goal.tiles}× die ${goal.value} auf`;
+    case 'fuse':
+      if (goal.shape === 't') return `Verschmelze ${goal.size} gleiche in T-Form`;
+      if (goal.size === 5) return 'Verschmelze 5 gleiche Squishes';
+      return `Verschmelze ${goal.size} gleiche Squishes`;
   }
   return '';
 }
@@ -418,6 +451,32 @@ export function lockReason(progress, n) {
 }
 /** Level n ist frei: Vorgänger geschafft und ggf. Sterne-Schranke erreicht. Einmal frei = bleibt frei (Bestwerte sinken nie). */
 export const isUnlocked = (progress, n) => lockReason(progress, n) === null;
+/** launch-22: Endlos und 2 Spieler sind frei, sobald Level 5 geschafft ist (mind. 1★). */
+export const MODES_UNLOCK_LEVEL = 5;
+export const modesUnlocked = progress => (progress?.levels?.[String(MODES_UNLOCK_LEVEL)]?.stars | 0) >= 1;
+
+/**
+ * Zug, den der Geisterfinger im Tutorial zeigen soll: zuerst ein Zug, der sofort gewinnt
+ * (bevorzugt die gespeicherte Lösung), sonst null (dann bleibt der Finger weg).
+ */
+export function tutorialHintMove(run) {
+  if (run.status !== 'playing' || run.index >= moveLimit(run)) return null;
+  const value = run.level.sequence[run.index];
+  if (value == null) return null;
+  const tile = { id: 0, value };
+  const vec = progressVector(run);
+  const wins = [];
+  for (const { direction, line } of ALL_MOVES) {
+    const settled = stepBoard(run.board, direction, line, tile);
+    if (!settled) continue;
+    if (advanceGoals(run.level.goals, vec, settled).win) wins.push({ direction, line });
+  }
+  if (!wins.length) return null;
+  const preferred = run.level.solution?.[run.moves] ?? run.level.solution?.[0];
+  const want = preferred ? decodeMove(preferred) : null;
+  return (want && wins.find(w => w.direction === want.direction && w.line === want.line)) || wins[0];
+}
+
 /** Erstes freies, noch nicht geschafftes Level (für „Weiterspielen“); sonst das letzte freie. */
 export function nextLevel(progress, count) {
   let lastFree = 1;
@@ -651,6 +710,31 @@ export function resetChangedStarsOnce(progress, storage = globalThis.localStorag
   saveProgress(p, storage);
   try { storage?.setItem(STARS_RESET_KEY, tag); } catch {}
   return { progress: p, reset: true };
+}
+/**
+ * launch-22: Abenteuer einmalig komplett zurücksetzen (Sterne, Freischaltungen, Vorrat, Geschenke,
+ * Tutorial-Merker). Endlos-Spielstand, Endlos-Rekord und Endlos-Vorrat bleiben unberührt.
+ * Epoche PROGRESS_EPOCH, damit die Cloud den alten Stand nicht zurückbringt.
+ * Ein Merker verhindert Wiederholungen. Rückgabe {progress, inventory, reset}.
+ */
+export const PROGRESS_EPOCH = 'launch-22';
+export const TUTORIAL_RESET = 'launch-22';
+export const TUTORIAL_RESET_KEY = 'squish-campaign-tutorial-reset';
+export const MODES_UNLOCK_SEEN_KEY = 'squish-modes-unlock-seen';
+export function resetAdventureForTutorialsOnce(progress, inv, storage = globalThis.localStorage, {
+  tag = TUTORIAL_RESET, syncKey = 'squish-progress-sync-v1', unlockSeenKey = MODES_UNLOCK_SEEN_KEY,
+} = {}) {
+  let done = null;
+  try { done = storage?.getItem(TUTORIAL_RESET_KEY); } catch {}
+  if (!tag || done === tag) return { progress, inventory: inv, reset: false };
+  const p = emptyProgress();
+  const out = emptyInventory();
+  saveProgress(p, storage);
+  saveInventory(out, storage, false);
+  try { storage?.setItem(TUTORIAL_RESET_KEY, tag); } catch {}
+  try { storage?.removeItem(syncKey); } catch {}
+  try { storage?.removeItem(unlockSeenKey); } catch {}
+  return { progress: p, inventory: out, reset: true };
 }
 /** Offenes Geschenk einsammeln → {inventory, gift} oder null. Ohne id: das älteste. */
 export function collectGift(inv, id) {

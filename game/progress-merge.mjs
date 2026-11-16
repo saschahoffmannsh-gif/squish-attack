@@ -4,7 +4,7 @@
 //
 // Wire-Format v1:
 //   { v: 1, epoch: 18, levels: { "12": { s: 3, m: 17 } }, inv: {...} | null, invAt: 1700000000000 }
-//   epoch  = Nummer des letzten Sterne-Resets (launch-18 → 18). Höhere Epoche ersetzt die Level.
+//   epoch  = Nummer des letzten Fortschritts-Resets (launch-22 → 22). Höhere Epoche ersetzt Level und Abenteuer-Vorrat.
 //   levels = pro Level die besten Sterne (1–3) und die wenigsten Züge dafür.
 //   inv    = Werkzeug-Vorrat {extraMoves, rocket, hint, wand, gifts:[ids], pending:[{id,type}]}.
 //   invAt  = Zeitpunkt der letzten Vorrats-Änderung (ms). Neuerer Vorrat gewinnt,
@@ -108,15 +108,23 @@ export function mergeInv(a, aAt, b, bAt) {
   return { inv: { ...win, gifts, pending }, invAt: winAt };
 }
 
-/** Zwei normalisierte Wire-Stände zusammenführen (kommutativ bis auf exakt gleiche invAt). */
+/** Zwei normalisierte Wire-Stände zusammenführen (kommutativ bis auf exakt gleiche invAt).
+ *  Gleiche Epoche: Level und Vorrat wie bisher mergen. Höhere Epoche ersetzt Level UND
+ *  Abenteuer-Vorrat (Geschenke inklusive), damit ein Tutorial-Reset nicht aus der Cloud zurückkommt. */
 export function mergeWire(a, b) {
   if (!a) return b; if (!b) return a;
-  let levels;
-  if (a.epoch === b.epoch) levels = mergeLevels(a.levels, b.levels);
-  else levels = { ...(a.epoch > b.epoch ? a.levels : b.levels) };
-  const { inv, invAt } = mergeInv(a.inv, a.invAt, b.inv, b.invAt);
+  let levels, inv, invAt;
+  if (a.epoch === b.epoch) {
+    levels = mergeLevels(a.levels, b.levels);
+    ({ inv, invAt } = mergeInv(a.inv, a.invAt, b.inv, b.invAt));
+  } else {
+    const win = a.epoch > b.epoch ? a : b;
+    levels = { ...win.levels };
+    inv = win.inv;
+    invAt = win.invAt;
+  }
   const out = { v: PROGRESS_WIRE_VERSION, epoch: Math.max(a.epoch, b.epoch), levels, inv, invAt };
-  // Endlos-Vorrat: neuerer gewinnt; fehlt er auf einer Seite, bleibt der andere.
+  // Endlos-Vorrat: neuerer gewinnt; fehlt er auf einer Seite, bleibt der andere. Unabhängig von der Epoche.
   if (a.einv || b.einv) {
     const useB = b.einv && (!a.einv || (b.einvAt || 0) > (a.einvAt || 0));
     const w = useB ? b : a;

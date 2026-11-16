@@ -5,7 +5,7 @@
 // ohne Zahlungsanbieter, ohne Backend, ohne Geld.
 // Später (App): ein natives Store-Modul (StoreKit / Play Billing über Capacitor) registriert sich
 // mit registerNativeStore({...}) und liefert dieselbe Schnittstelle (products/purchase).
-import { TOOL_TYPES, toolName } from './campaign.mjs?v=launch-21';
+import { TOOL_TYPES, toolName } from './campaign.mjs?v=launch-22';
 
 /** Eine Stelle für alle Angebote und Platzhalter-Preise (EUR). */
 export const SHOP_CONFIG = Object.freeze({
