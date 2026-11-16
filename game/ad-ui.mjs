@@ -1,8 +1,8 @@
 // Dummy-Werbung (launch-13, Testphase): leeres Hilfsmittel → „Werbeclip (Dummy)“ → „Ansehen“ gibt sofort 1 Stück.
 // Keine echte Werbung, kein Warten, kein Netz. Comic-Stil wie der Shop.
-import { TOOL_ICONS } from './tool-icons.mjs?v=launch-22';
-import { toolName } from './campaign.mjs?v=launch-22';
-import { showRewarded } from './native-ads.mjs?v=launch-22';
+import { TOOL_ICONS } from './tool-icons.mjs?v=launch-23';
+import { toolName } from './campaign.mjs?v=launch-23';
+import { showRewarded } from './native-ads.mjs?v=launch-23';
 import { t } from './i18n.mjs?v=launch-23';
 
 const DESC = type => t('tool.desc.'+type);

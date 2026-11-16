@@ -1,5 +1,5 @@
 import {createScoreLedger} from './score-ledger.mjs?v=reward-fx-1';
-import {createFlipbookLayer,hexColor} from './vfx-flipbooks.mjs?v=launch-22';
+import {createFlipbookLayer,hexColor} from './vfx-flipbooks.mjs?v=launch-23';
 import {createComboMeter,comboTint} from './combo-meter.mjs?v=combo-1';
 import { t, fmtNum } from './i18n.mjs?v=launch-23';
 const palette=['#00b5ff','#f31954','#00dc45','#ff850c','#9239ff','#ffc829','#f44ebd','#20d8ce'];
