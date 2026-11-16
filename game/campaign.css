@@ -1,8 +1,8 @@
 /* Kampagne: Ziel-Karte, Züge, Hilfsmittel, Ergebnis und Levelauswahl. Gleiche Creme-Optik wie die Punkte-Anzeige. */
-.campaign-hud[hidden],.campaign-tools[hidden],.campaign-result[hidden],.campaign-screen[hidden] {display:none;}
+.campaign-hud[hidden],.campaign-tools[hidden],.campaign-tool-cap[hidden],.campaign-result[hidden],.campaign-screen[hidden] {display:none;}
 .is-campaign .scores,.is-campaign .score-label {visibility:hidden;}
 .campaign-hud {position:absolute;inset:0;z-index:3;pointer-events:none;}
-.is-start .campaign-hud,.is-start .campaign-tools {visibility:hidden;}
+.is-start .campaign-hud,.is-start .campaign-tools,.is-start .campaign-tool-cap {visibility:hidden;}
 .campaign-goal,.campaign-moves {position:absolute;box-sizing:border-box;background:#f5f2ec;border:1px solid #c5beb3;border-radius:11px;color:#302b25;font-family:ui-rounded,"SF Pro Rounded","Avenir Next",system-ui,sans-serif;}
 .campaign-goal {left:3%;top:30.5cqw;width:41%;min-height:17cqw;padding:1.4cqw 2.2cqw 1.6cqw;}
 .campaign-level {display:block;font-size:clamp(8px,2.3cqw,11px);font-weight:800;letter-spacing:.12em;color:#65594c;}
@@ -16,6 +16,12 @@
 .campaign-moves output {display:block;font-size:clamp(20px,7.4cqw,36px);line-height:1.05;font-weight:900;font-variant-numeric:tabular-nums;}
 .campaign-moves.is-low {background:#ffe4d6;border-color:#e59a73;}
 .campaign-moves.is-low output {color:#b6401a;}
+.campaign-tool-cap {position:absolute;left:3%;right:3%;top:151cqw;z-index:4;margin:0;padding:.5cqw 2cqw;box-sizing:border-box;
+  border-radius:10px;background:#0a1130f0;border:2px solid #ffd25a;color:#ffe8a3;text-align:center;
+  font:700 clamp(10px,2.7cqw,13px)/1.2 Fredoka,ui-rounded,system-ui,sans-serif;letter-spacing:.01em;
+  text-shadow:0 1px 0 #0a1130;box-shadow:0 2px 0 #6a3304,0 4px 10px #0006;pointer-events:none;}
+.campaign-tool-cap[hidden] {display:none;}
+.campaign-tool-cap[data-cap="0"] {border-color:#ff8a6a;color:#ffd0c4;}
 .campaign-tools {position:absolute;left:0;right:0;top:157cqw;height:18cqw;z-index:4;pointer-events:none;}
 .campaign-tool {position:absolute;top:0;width:16%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3cqw;
   pointer-events:auto;border:1px solid #c5beb3;border-radius:14px;background:#f5f2ec;color:#302b25;font:900 clamp(15px,5cqw,24px)/1 ui-rounded,"SF Pro Rounded",system-ui,sans-serif;
@@ -25,6 +31,10 @@
 .campaign-tool:disabled {opacity:.45;cursor:default;}
 .campaign-tool:not(:disabled):active {transform:translateY(2px);}
 .campaign-tool.is-armed {background:#ffd257;border-color:#b98a12;box-shadow:0 0 0 3px #ffd25780;}
+/* launch-26: sichtbarer Hinweis, dass der Einsatz einen Werbeclip braucht (Werbefrei: Attribut fehlt). */
+.campaign-tool[data-ad="1"]::after {content:"AD";position:absolute;left:3%;top:3%;padding:0 .4cqw;border-radius:3px;
+  background:#ffd257;color:#092035;font-size:clamp(6px,1.7cqw,8px);font-weight:900;letter-spacing:.03em;line-height:1.25;}
+.campaign-result #campaign-result-extra[data-refill="ad"] {position:relative;}
 #tool-extra {left:3%;}
 
 .campaign-result {position:fixed;inset:0;z-index:40;}

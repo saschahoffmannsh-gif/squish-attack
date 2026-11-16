@@ -12,6 +12,15 @@ test('epochOf: launch-18 → 18, launch-22 → 22, launch-24 → 24', () => {
   assert.equal(epochOf(7), 7); assert.equal(epochOf(null), 0);
 });
 
+test('toWire/applyWire: 0★-Sieg (launch-26) bleibt erhalten und schaltet weiter', () => {
+  const p = recordResult(emptyProgress(), 1, { stars: 0, moves: 7, now: 1 });
+  const w = toWire(p, emptyInventory(), 24);
+  assert.equal(w.levels['1'].s, 0);
+  const r = applyWire(emptyProgress(), emptyInventory(), w, 24, 1000);
+  assert.equal(r.progress.levels['1'].stars, 0);
+  assert.equal(r.changed, true);
+});
+
 test('merge: Epoche 24 ersetzt Level und Abenteuer-Vorrat von Epoche 22', () => {
   const old = W({ epoch: 22, levels: { 8: { s: 3, m: 4 } }, inv: { extraMoves: 2, rocket: 1, hint: 3, wand: 1, gifts: ['level-3'], pending: [] }, invAt: 99 });
   const neu = W({ epoch: 24, levels: {}, inv: { extraMoves: 0, rocket: 0, hint: 0, wand: 0, gifts: [], pending: [] }, invAt: 0 });

@@ -155,7 +155,6 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
     intro.textContent=t('rules.lead');
     box.append(...src.map(p=>{const c=page.createElement('p');c.textContent=p.textContent;return c;}),intro);
     return [ribbon(t('rules.ribbon'),'aw-r-purple'),box,
-      button({label:t('menu.lab'),icon:'play',color:'aw-blue',size:'aw-small',nav:'lab',action:()=>{tap('move');hooks.gesture?.();hooks.campaign?.openLab?.();}}),
       button({label:t('menu.back'),icon:'back',color:'aw-slate',size:'aw-small',nav:'back',action:()=>{tap();void go('home');}})];
   }
   function campaignItems(){

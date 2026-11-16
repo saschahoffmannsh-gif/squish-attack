@@ -88,8 +88,12 @@ und die Zielarten werden langsamer eingeführt).
   2★ = höchstens 3★-Schwelle + halber Rest bis zum Limit (aufgerundet),
   1★ = gewonnen innerhalb des Limits (`starThresholds(min, limit)`).
   Beispiel Optimum 4, Limit 7: 3★ ≤ 5, 2★ ≤ 6, 1★ ≤ 7.
-- **Hilfsmittel deckeln auf 2★** (egal welches). Wer erst mit „+3 Züge“ über
-  das Limit hinaus gewinnt, bekommt 1★ (`starsFor(..., {toolsUsed})`).
+- **Hilfsmittel deckeln stufenweise** (`toolStarCap` / `starsFor(..., {toolsUsed})`, launch-26):
+  0 Hilfsmittel = Sterne nach Zugzahl (max. 3★), 1 Hilfsmittel = max. 2★,
+  2 Hilfsmittel = max. 1★, 3 oder mehr = 0★. Das Level zählt trotzdem als
+  geschafft und schaltet das nächste frei. Wer erst mit „+3 Züge“ über das
+  Limit hinaus gewinnt, bekommt höchstens 1★ (und 0★, wenn schon 3+ Hilfsmittel
+  im Einsatz waren).
 - Damit alle drei Stufen existieren, ist der Spielraum (Limit − Optimum)
   immer ≥ 3: erstes Fünftel 4–5, bis 45 % der Kampagne 3–4, danach 3.
   Die Schwierigkeit kommt am Ende aus schwereren Rätseln (mehr Planung,
@@ -111,13 +115,15 @@ und die Zielarten werden langsamer eingeführt).
 
 ### Freischalten (umgesetzt in `campaign.mjs`)
 
-- Der Reihe nach: Level n ist frei, wenn n−1 geschafft ist (mind. 1★).
+- Der Reihe nach: Level n ist frei, wenn n−1 geschafft ist (auch ein 0★-Sieg
+  zählt als geschafft und schaltet weiter, launch-26).
 - **Sterne-Schranke am Kapitelanfang:** Für Kapitel k ≥ 2 braucht man
   insgesamt **18 × (k − 1) Sterne**: Kapitel 2 ab 18★, Kapitel 3 ab 36★, …,
   Kapitel 10 ab 162★. Das sind 60 % der bis dahin möglichen Sterne, also Ø 1,8★
-  pro Level. Begründung: Mit Hilfsmitteln (max. 2★) ist die Schranke immer
-  erreichbar, wer nur knapp gewinnt (1★), muss ein paar Level verbessern;
-  da 3★ schon bei Optimum + 1 gibt, sind 2★ im Schnitt gut machbar.
+  pro Level. launch-26 hat die Schwelle geprüft und bei 18 belassen: ohne
+  Hilfsmittel ist sie bequem erreichbar (schon ein Schnitt von 2★ ergibt 20).
+  Wer viele Hilfsmittel einsetzt (2 → max. 1★, 3+ → 0★), kann knapp werden –
+  das ist Absicht.
 - `lockReason(progress, n)` liefert `{reason:'previous'}` oder
   `{reason:'stars', need, have, chapter}` für die UI; `nextLevel()` für „Weiterspielen“.
 - Einmal frei bleibt frei (Bestwerte sinken nie). Werte stehen als Konstanten
@@ -617,3 +623,16 @@ Alle 100 Level in `levels/levels-001-100.json` neu gebaut (Plan `tools/campaign/
 - Beim ersten Start entscheidet `navigator.language` / `navigator.languages` (`de*` → Deutsch, sonst Englisch). Die Wahl liegt in `localStorage['squish-lang-v1']` und bleibt beim Tutorial-Reset (Epoche 22 und 24) erhalten.
 - Texte liegen in `game/locales.mjs` (de/en), Zugriff über `game/i18n.mjs` (`t()`, Platzhalter, Mehrzahl). English: „straight“ für Straße, „+3 Moves (Ad)“ für die Werbung.
 - App-Shell: Sprache ebenfalls aus der Geräte-Locale, gleiche Schlüssel plus Shell-eigene Texte.
+
+## Hilfsmittel, Sterne und Werbung (launch-26)
+
+Aktueller Stand im Spiel (Schalter in `campaign.mjs`):
+
+- **Werkzeug-Satz unverändert:** +3 Züge, Hinweis, Rakete, Zauber. Keine neuen Hilfsmittel.
+- **Abenteuer:** In jedem Level (und bei jedem neuen Versuch) steht jedes Hilfsmittel genau **1×** bereit (`FREE_TOOLS_PER_LEVEL = 1`), für alle Spieler. Es gibt keinen Abenteuer-Vorrat (`TOOL_STOCK = false`), keine Plus-Knöpfe / Werkzeug-Käufe an den Abenteuer-Slots und **keine Geschenke** nach Level 3/6/10/20 (`TOOL_GIFTS = false`). Die Geschenke werden auch nicht in den Endlos-Vorrat umgewandelt. Ein evtl. noch gespeicherter Abenteuer-Vorrat (`squish-campaign-tools-v1`) bleibt liegen, wird aber nicht mehr angeboten oder verändert. Kein neuer Fortschritts-Reset (Epoche bleibt `launch-24`).
+- **Werbung vor dem Einsatz:** Wer kein Werbefrei hat, muss vor jedem Einsatz einen Belohnungsclip zu Ende ansehen (Web: vorhandene Dummy-Werbung). Der Clip füllt keinen Vorrat, er gibt nur die Erlaubnis, die 1×-Ladung auszugeben. Abbruch = kein Einsatz, Ladung bleibt. Rakete/Zauber: Clip erst bei der Zielwahl, nicht beim Scharfschalten.
+- **Werbefrei:** einmaliger IAP **2,99 €**, Produkt-id `squish.adfree`, nur in der nativen App (StoreKit). Hook `game/ad-free.mjs` (`isAdFree()`, `registerAdFree` über `window.SquishNative`). Im Web immer `false`, kein Kauf. Werbefrei entfernt die Clips vor dem Einsatz, die Zwischenwerbung und das Endlos-Angebot – **nicht** das 1×-Limit und nicht die Sterne-Deckelung. In den Einstellungen erscheint der Knopf „Werbefrei 2,99 €“ nur, wenn die App den Kauf-Adapter angemeldet hat (Werkzeug-Shop bleibt aus).
+- **Sterne:** siehe Abschnitt 4 (`toolStarCap`). Die Deckelung wird in der Werkzeugleiste und im Ergebnisdialog angezeigt (i18n de+en).
+- **Testseite:** Der Regeln-Eintrag „Neue Squishes testen“ / „Try the new Squishes“ ist aus der UI entfernt. Lab-Engine, `levels-lab.json` und Tests dürfen bleiben, sind aber nicht mehr über das Menü erreichbar.
+- **Werbung (Takt in `game/ad-pacing.mjs`):** Zwischenwerbung im Abenteuer nach jedem **5.** gewonnenen Level (Web ruft `levelWon` auf, zeigt aber keine echte Werbung und verbraucht den Slot nicht mit `takeInterstitial`). Endlos: Angebot alle **10 Minuten** aktiver Spielzeit wie bisher. Beides entfällt bei Werbefrei. Echte Clips gibt es nur in der App-Hülle.
+
