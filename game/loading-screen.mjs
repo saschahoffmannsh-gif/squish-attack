@@ -1,5 +1,5 @@
-import {bindDocument, installLangPicker} from './i18n.mjs?v=launch-23';
+import {bindDocument, installLangPicker} from './i18n.mjs?v=launch-24';
 bindDocument();
 installLangPicker();
-import {installStartMenu} from './start-menu.mjs?v=launch-23';
+import {installStartMenu} from './start-menu.mjs?v=launch-24';
 installStartMenu();

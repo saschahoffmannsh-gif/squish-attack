@@ -603,9 +603,17 @@ Alle 100 Level in `levels/levels-001-100.json` neu gebaut (Plan `tools/campaign/
 - **Endlos** und **2 Spieler** sind auf dem Startbildschirm mit goldenem Schloss gesperrt (Tipp: „Schalte frei: Abenteuer Level 1–5“). Nach dem Gewinn von Level 5 werden sie mit einer kurzen Knall-Animation frei.
 - **Einmaliger Reset** (`resetAdventureForTutorialsOnce`, Merker `squish-campaign-tutorial-reset = launch-22`, Epoche 22): Abenteuer-Fortschritt, Sterne, Freischaltungen, Abenteuer-Vorrat und Geschenke werden auf jedem Gerät einmal geleert. Unberührt: Endlos-Spielstand (`shift3-play-v1`), Endlos-Rekord, Endlos-Vorrat, Einstellungen. Der Sync-Merker wird mitgelöscht, damit der leere Stand mit Epoche 22 als Nächstes in die Cloud geht. Backend-Zeilen werden nicht gelöscht; eine höhere Epoche ersetzt den gespeicherten Abenteuer-Stand.
 
+
+## Tutorials, Geisterfinger und Reset (launch-24)
+
+- **Tutorials L1–5:** dieselben Lektionen (3er, 4er-Linie, T, 5er, Straße), aber L2 und L5 werden von oben eingeschoben, L3 von unten. L1 und L4 bleiben waagerecht. Weiterhin ein Zug, trivial lösbar.
+- **Geisterfinger:** stilisierte Navy/Gold-Silhouette (SVG, weicher Glow, halbtransparent). Der Wisch geht über die ganze Reihe oder Spalte; die Ziel-Linie wird dezent hervorgehoben. Druck, Spur und Abheben sind CSS-Transforms. Bei reduzierter Bewegung: stiller Finger plus Pfeil entlang der Linie. Versteckt keine Animation (3D bleibt bei 0 fps).
+- **Einmaliger Reset** auf Merker/Epoche `launch-24`: gleicher Umfang wie launch-22 (Abenteuer-Fortschritt, Sterne, Freischaltungen, Vorrat, Geschenke, Tutorial-Merker). Geräte, die schon `launch-22` gesetzt haben, setzen erneut zurück. Unberührt: Endlos-Spielstand (`shift3-play-v1`), Endlos-Rekord, Endlos-Vorrat, Einstellungen, Sprache (`squish-lang-v1`). Der Sync-Merker wird gelöscht; der leere Stand geht mit Epoche 24 in die Cloud. Eine höhere Epoche ersetzt den gespeicherten Abenteuer-Stand, der Endlos-Vorrat (einv) bleibt epochenunabhängig. Backend-Zeilen werden nicht gelöscht.
+- **Knöpfe:** keine Ellipsis. Schrift schrumpft, bis der Text (auch „Level 100 spielen“) auf 375 und 390 in beiden Sprachen vollständig sichtbar ist.
+
 ## Sprache (launch-23)
 
 - Startbildschirm: kleine DE|EN-Pille in der Topbar (Fredoka, navy/gold), zusätzlich volle Namen in den Einstellungen.
-- Beim ersten Start entscheidet `navigator.language` / `navigator.languages` (`de*` → Deutsch, sonst Englisch). Die Wahl liegt in `localStorage['squish-lang-v1']` und bleibt beim Tutorial-Reset (Epoche 22) erhalten.
+- Beim ersten Start entscheidet `navigator.language` / `navigator.languages` (`de*` → Deutsch, sonst Englisch). Die Wahl liegt in `localStorage['squish-lang-v1']` und bleibt beim Tutorial-Reset (Epoche 22 und 24) erhalten.
 - Texte liegen in `game/locales.mjs` (de/en), Zugriff über `game/i18n.mjs` (`t()`, Platzhalter, Mehrzahl). English: „straight“ für Straße, „+3 Moves (Ad)“ für die Werbung.
 - App-Shell: Sprache ebenfalls aus der Geräte-Locale, gleiche Schlüssel plus Shell-eigene Texte.
