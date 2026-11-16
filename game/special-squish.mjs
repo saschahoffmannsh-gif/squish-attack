@@ -2,19 +2,20 @@
 //  (Silhouette, Tiefe, Kontur, Schatten, Wobble). Darauf liegt ein
 //  kachelbares Material (Eis / Stein / schwarz), das über alle Seiten
 //  läuft, plus ein Symbol-Decal nur auf der Oberseite. Das Schloss
-//  ist in Ketten gelegt: modellierte 3D-Glieder über die Oberseite
-//  und die Seiten; beim Befreien zerplatzen die Ketten.
+//  trägt die Konzept-Ketten als Decal über die ganze Oberseite; an den
+//  sichtbaren Kanten laufen kurze Kettenglieder hinunter. Beim Befreien
+//  zerplatzen die Glieder.
 import {THREE,PARAMETERS} from '../squish/squish-graphics.js?v=play-sharp-1';
 import {applyComic,LIGHT} from './comic-style.mjs?v=squish-art-6';
 
-const ART='squish-art-9';
+const ART='squish-art-10';
 const url=name=>new URL(`./assets/specials/${name}.webp?v=${ART}`,import.meta.url).href;
 
 // style: 0 Eis, 1 Schloss/Joker, 2 Bombe
 // Eis und Bombe: gleiche Werte wie v5 (squish-art-7c). Nur das Schloss ändert sich.
 const KINDS={
   ice:{albedo:'ice-albedo',decal:'ice-decal',band:null,spot:1,tile:1.12,decalScale:.68,crust:1.05,shift:.04,style:0},
-  bound:{albedo:'stone-albedo',decal:null,band:null,spot:.18,tile:1.0,decalScale:.68,crust:0,shift:.04,style:1,stoneDark:.88,chains:true},
+  bound:{albedo:'stone-albedo',decal:'lock-decal',band:null,spot:.18,tile:1.0,decalScale:1.0,crust:0,shift:0,style:1,stoneDark:.88,chains:true,decalCover:true},
   bomb:{albedo:'black-albedo',decal:'bomb-decal',band:null,spot:.95,tile:1.0,decalScale:.84,crust:0,shift:.04,style:2},
   joker:{albedo:'stone-albedo',decal:null,band:null,spot:.18,tile:1.0,decalScale:.68,crust:0,shift:.04,style:1,stoneDark:.88,chains:false},
 };
@@ -48,7 +49,7 @@ void main(){vP=position;vN=normalize(mat3(modelMatrix)*normal);gl_Position=proje
 
 const bodyFrag=`uniform sampler2D uAlbedo,uDecal,uBand;
 uniform vec3 uL;
-uniform float uSpot,uTile,uDecalScale,uDecalShift,uCrust,uHasBand,uBandZ,uBandW,uWidth,uRadius,uHeight,uStyle,uHasDecal,uStoneDark,uChains;
+uniform float uSpot,uTile,uDecalScale,uDecalShift,uCrust,uHasBand,uBandZ,uBandW,uWidth,uRadius,uHeight,uStyle,uHasDecal,uStoneDark,uDecalCover;
 varying vec3 vN;varying vec3 vP;
 float aastep(float e,float x){float w=max(fwidth(x),1e-4)*.75;return smoothstep(e-w,e+w,x);}
 float sdRoundBox(vec2 p,vec2 b,float r){vec2 q=abs(p)-b+r;return min(max(q.x,q.y),0.)+length(max(q,0.))-r;}
@@ -99,25 +100,18 @@ void main(){
 
   if(uStoneDark>0.)mat*=uStoneDark;
 
-  // Kontakt-Schatten unter den Ketten (Kreuz auf der Oberseite, weiter die Seiten hinunter).
-  if(uChains>0.){
-    float stripX=1.-smoothstep(.035,.13,abs(vP.x));
-    float stripZ=1.-smoothstep(.035,.13,abs(vP.z));
-    float ao=max(stripX,stripZ)*smoothstep(.08,.30,vP.y);
-    mat*=1.-ao*.68;
-  }
-
-  // Symbol nur auf der Oberseite, zentriert in XZ.
+  // Symbol auf der Oberseite. Schloss-Ketten: Decal bis in die Schulter,
+  // damit die Enden die Ecken erreichen (uDecalCover).
   vec2 tUv=vP.xz/uWidth+.5;
   tUv.y-=uDecalShift;
   vec2 dUv=(tUv-.5)/max(uDecalScale,.05)+.5;
   float inDec=step(0.,dUv.x)*step(0.,dUv.y)*step(dUv.x,1.)*step(dUv.y,1.);
   vec4 dec=texture2D(uDecal,dUv);
-  // Leichte Prägung am Decal-Rand (Eis-Schneeflocke klarer, allgemein knackiger).
   float ax=dFdx(dec.a),ay=dFdy(dec.a);
   float emb=clamp(ax*.8-ay*1.3,-1.,1.);
   vec3 decRgb=dec.rgb*(1.+emb*.28);
-  mat=mix(mat,decRgb,dec.a*inDec*top*uHasDecal);
+  float decTop=uDecalCover>0.5?smoothstep(.20,.52,N.y):top;
+  mat=mix(mat,decRgb,dec.a*inDec*decTop*uHasDecal);
 
   // Gleiche Cel-Modellierung wie normale Squishes, Seiten etwas dunkler.
   float nd=dot(N,normalize(uL))*.5+.5;
@@ -182,7 +176,7 @@ function specialBodyMaterial(kind){
       uStyle:{value:cfg.style||0},
       uHasDecal:{value:cfg.decal?1:0},
       uStoneDark:{value:cfg.stoneDark||0},
-      uChains:{value:cfg.chains?1:0},
+      uDecalCover:{value:cfg.decalCover?1:0},
     },
     vertexShader:bodyVert,fragmentShader:bodyFrag,toneMapped:true,
   });
@@ -202,253 +196,147 @@ function disposeDecor(mesh){
   mesh.material?.dispose?.();
 }
 
-// --- Ketten -----------------------------------------------------------
-// Eng um den Gel-Körper: über die Oberseite, um die Rundungen, die
-// sichtbaren Front- und Seitenflächen hinunter, und dort zu Ende, wo
-// die Kette hinter dem Stein verschwindet. Nie über die Silhouette
-// hinaus (außer der dünnen Rohrwand).
+// --- Ketten (Konzept-Decal + Seitenstücke) -----------------------------
 const GEL=PARAMETERS.gel;
-const LINK_R=.084,LINK_TUBE=.034,LINK_STEP=LINK_R*1.34;
-const MID_Y=(GEL.height+GEL.dome)*.45;
 const TOP_Y=GEL.height+GEL.dome;
-const CORNER_R=Math.min(.30,GEL.radius||.34);
-let sharedLinkGeo=null,sharedLinkMat=null;
-const _q=new THREE.Quaternion(),_from=new THREE.Vector3(0,0,1),_axis=new THREE.Vector3();
+const HALF=GEL.width*.5;
+let wrapTex=null,pieceMat=null;
 
-function linkGeometry(){
-  if(!sharedLinkGeo)sharedLinkGeo=new THREE.TorusGeometry(LINK_R,LINK_TUBE,14,24);
-  return sharedLinkGeo;
+function wrapTexture(){
+  if(wrapTex)return wrapTex;
+  wrapTex=tex('lock-wrap',{repeat:false});
+  return wrapTex;
 }
-function linkMaterial(){
-  if(sharedLinkMat)return sharedLinkMat;
-  sharedLinkMat=new THREE.ShaderMaterial({
-    uniforms:{uL:{value:LIGHT.clone()},uOpacity:{value:1}},
-    toneMapped:true,transparent:false,
-    vertexShader:`varying vec3 vN;varying vec3 vV;
+
+function decalPieceMaterial(map,opacity=1){
+  const m=new THREE.ShaderMaterial({
+    uniforms:{
+      uMap:{value:map},
+      uL:{value:LIGHT.clone()},
+      uOpacity:{value:opacity},
+    },
+    transparent:true,depthWrite:false,toneMapped:true,side:THREE.DoubleSide,
+    vertexShader:`varying vec3 vN;varying vec2 vUv;
 void main(){
-  vec4 w=modelMatrix*vec4(position,1.);
+  vUv=uv;
   vN=normalize(mat3(modelMatrix)*normal);
-  vV=cameraPosition-w.xyz;
   gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);
 }`,
-    fragmentShader:`uniform vec3 uL;uniform float uOpacity;
-varying vec3 vN;varying vec3 vV;
+    fragmentShader:`uniform sampler2D uMap;uniform vec3 uL;uniform float uOpacity;
+varying vec3 vN;varying vec2 vUv;
 void main(){
-  vec3 N=normalize(vN),V=normalize(vV),L=normalize(uL);
-  float nd=dot(N,L);
-  float wrap=nd*.5+.5;
-  float lit=mix(.16,.92,smoothstep(.10,.72,wrap));
-  float rim=pow(1.-max(0.,dot(N,V)),2.6);
-  vec3 H=normalize(L+V);
-  float spec=pow(max(0.,dot(N,H)),52.);
-  float spec2=pow(max(0.,dot(N,H)),16.)*.10;
-  vec3 steel=vec3(.10,.11,.13)*lit;
-  steel=mix(steel,vec3(.06,.06,.07),pow(max(0.,-N.y),1.1)*.6);
-  steel=mix(steel,vec3(.09,.09,.10),(1.-smoothstep(.10,.62,wrap))*.55);
-  steel+=vec3(.95,.96,.98)*spec*1.25;
-  steel+=vec3(.50,.52,.56)*spec2;
-  steel+=vec3(.38,.40,.44)*rim*.09;
-  gl_FragColor=vec4(steel,uOpacity);
+  vec4 d=texture2D(uMap,vUv);
+  if(d.a<0.04)discard;
+  vec3 N=normalize(vN);
+  float nd=dot(N,normalize(uL))*.5+.5;
+  float lit=mix(.72,1.,smoothstep(.18,.75,nd));
+  float topLit=mix(.85,1.,smoothstep(-.1,.9,N.y));
+  gl_FragColor=vec4(d.rgb*lit*topLit,d.a*uOpacity);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
-  gl_FragColor.a=uOpacity;
+  gl_FragColor.a=d.a*uOpacity;
 }`,
   });
-  return sharedLinkMat;
+  return m;
 }
 
-function projectToSurface(rest,p,axis){
-  if(!rest||!rest.length)return p;
-  const band=.14;
-  let best=1e9,bx=p.x,by=p.y,bz=p.z;
+function projectCorner(rest,x,y,z){
+  if(!rest||!rest.length)return {x,y,z};
+  let best=1e9,bx=x,by=y,bz=z;
   for(let i=0;i<rest.length;i+=3){
-    const x=rest[i],y=rest[i+1],z=rest[i+2];
-    const lat=axis==='x'?z:x;
-    if(Math.abs(lat)>band)continue;
-    const d=(x-p.x)*(x-p.x)+(y-p.y)*(y-p.y)+(z-p.z)*(z-p.z);
-    if(d<best){best=d;bx=x;by=y;bz=z;}
+    const dx=rest[i]-x,dy=rest[i+1]-y,dz=rest[i+2]-z,d=dx*dx+dy*dy+dz*dz;
+    if(d<best){best=d;bx=rest[i];by=rest[i+1];bz=rest[i+2];}
   }
   return {x:bx,y:by,z:bz};
 }
 
-// Echte Gelfläche: Meridian-Vertices, äußerer Radius je Winkel.
-function meridian(rest,axis,band=.10){
-  const nBin=96,a0=-Math.PI,span=2*Math.PI;
-  const bins=new Array(nBin).fill(null);
-  if(!rest||!rest.length)return [];
-  for(let i=0;i<rest.length;i+=3){
-    const x=rest[i],y=rest[i+1],z=rest[i+2];
-    const lat=axis==='x'?z:x;
-    if(Math.abs(lat)>band)continue;
-    const along=axis==='x'?x:z;
-    const ang=Math.atan2(along,y-MID_Y);
-    const r=Math.hypot(along,y-MID_Y);
-    let b=Math.floor((ang-a0)/span*nBin);
-    if(b<0)b=0;if(b>=nBin)b=nBin-1;
-    if(!bins[b]||r>bins[b].r)bins[b]={x,y,z,ang,r};
+// Kurze Kettenglieder an den vier Ecken, über die Kante geklappt.
+// Atlas: TL TR / BL BR  (Bild oben = -Z, links = -X).
+const WRAP_CORNERS=[
+  // Vordere Ecken: die sauberen hinteren Endglieder (TL/TR), vertikal gespiegelt,
+  // damit die Kette nach vorne/unten weiterläuft. Hintere Ecken entfallen.
+  {sx:-1,sz:1,uv:[0,.5,.5,0]},    // vorne links aus TL, V-Flip
+  {sx: 1,sz:1,uv:[.5,.5,1,0]},    // vorne rechts aus TR, V-Flip
+];
+
+function makeWrapQuad(c,rest,mat){
+  const geo=new THREE.PlaneGeometry(.28,.26);
+  const uv=geo.attributes.uv;
+  const [u0,v0,u1,v1]=c.uv;
+  for(let i=0;i<uv.count;i++){
+    const u=uv.getX(i),v=uv.getY(i);
+    uv.setXY(i,u0+u*(u1-u0),v0+v*(v1-v0));
   }
-  return bins.filter(Boolean);
-}
-
-// Pfad liegt auf der echten Oberfläche. Winkel so begrenzt, dass
-// selbst mit Gliederradius nichts über den oberen/unteren Rand
-// oder links/rechts hinaussteht (nur die dünne Rohrwand).
-function wrapPath(axis,rest){
-  const mer=meridian(rest,axis,.11);
-  let aMin,aMax;
-  if(axis==='z'){
-    // hinten nur bis an die hintere Schulter, vorne ein Stück die Front hinunter
-    aMin=-.62;aMax=1.10;
-  }else{
-    aMin=-1.08;aMax=1.08;
-  }
-  const pts=mer.filter(p=>p.ang>=aMin&&p.ang<=aMax);
-  if(pts.length>=6)return pts;
-  // Fallback: analytische Schulter, falls Rest fehlt
-  const ext=GEL.width*.5-LINK_R*.5,r=CORNER_R,ySh=TOP_Y-r,cx=ext-r;
-  const out=[];
-  const emit=(along,y)=>{
-    out.push(projectToSurface(rest,axis==='x'?{x:along,y,z:0}:{x:0,y,z:along},axis));
-  };
-  const y0=axis==='z'?ySh+r*.55:ySh-r*.5;
-  const y1=axis==='z'?ySh-r*.7:ySh-r*.5;
-  const sides=(sign,yEnd,up)=>{
-    const loc=[];
-    const phi0=yEnd>=ySh?Math.acos(Math.max(-1,Math.min(1,(yEnd-ySh)/r))):Math.PI/2;
-    if(yEnd<ySh){
-      for(let i=0;i<=6;i++)loc.push([sign*ext,yEnd+(ySh-yEnd)*i/6]);
-    }
-    for(let i=0;i<=8;i++){
-      const phi=phi0*(1-i/8);
-      loc.push([sign*(cx+r*Math.sin(phi)),ySh+r*Math.cos(phi)]);
-    }
-    if(!up)loc.reverse();
-    return loc;
-  };
-  for(const [a,y] of sides(-1,y0,true))emit(a,y);
-  for(let i=1;i<12;i++)emit(-cx+2*cx*i/12,Math.min(TOP_Y,1.29));
-  for(const [a,y] of sides(1,y1,false))emit(a,y);
-  return out;
-}
-
-function resample(pts,step){
-  const out=[],seg=[];
-  let len=0;
-  for(let i=1;i<pts.length;i++){
-    const a=pts[i-1],b=pts[i];
-    const d=Math.hypot(b.x-a.x,b.y-a.y,b.z-a.z);
-    seg.push(d);len+=d;
-  }
-  if(len<.01)return pts.slice();
-  const n=Math.max(3,Math.round(len/step));
-  for(let k=0;k<=n;k++){
-    let d=len*(k/n),i=0;
-    while(i<seg.length&&d>seg[i]){d-=seg[i];i++;}
-    const a=pts[Math.min(i,pts.length-1)],b=pts[Math.min(i+1,pts.length-1)];
-    const t=seg[Math.min(i,seg.length-1)]>1e-6?d/seg[Math.min(i,seg.length-1)]:0;
-    out.push({x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t,z:a.z+(b.z-a.z)*t});
-  }
-  return out;
-}
-
-function pathTangent(pts,i){
-  const a=pts[Math.max(0,i-1)],b=pts[Math.min(pts.length-1,i+1)];
-  const x=b.x-a.x,y=b.y-a.y,z=b.z-a.z,l=Math.hypot(x,y,z)||1;
-  return {x:x/l,y:y/l,z:z/l};
-}
-
-function outwardNormal(p){
-  let nx=p.x,ny=p.y-MID_Y,nz=p.z,nl=Math.hypot(nx,ny,nz)||1;
-  return {x:nx/nl,y:ny/nl,z:nz/nl};
-}
-
-// Auf der Oberseite nur leicht in den Stein gedrückt (volle Oval-Glieder);
-// an den Seiten etwas tiefer, damit nichts über die Silhouette steht.
-function sinkFor(N){
-  return Math.abs(N.y)>.7 ? -(LINK_TUBE*.22) : -(LINK_R*.18+LINK_TUBE*.25);
-}
-
-function placeLink(p,T,N,phase,i,geo,mat){
+  uv.needsUpdate=true;
   const mesh=new THREE.Mesh(geo,mat);
-  mesh.castShadow=true;mesh.receiveShadow=false;mesh.frustumCulled=true;
-  const sink=sinkFor(N);
-  mesh.position.set(p.x+N.x*sink,p.y+N.y*sink,p.z+N.z*sink);
-  const standing=((i+phase)&1)===0;
-  if(standing){
-    _axis.set(T.y*N.z-T.z*N.y,T.z*N.x-T.x*N.z,T.x*N.y-T.y*N.x);
-    if(_axis.lengthSq()<1e-8)_axis.set(0,0,1);else _axis.normalize();
-  }else{
-    _axis.set(N.x,N.y,N.z);
-  }
-  _q.setFromUnitVectors(_from,_axis);
-  mesh.quaternion.copy(_q);
-  // Nur echte Seitenflächen stauchen, nicht schon die Schulter der Oberseite.
-  const onSide=Math.abs(N.y)<.42;
-  if(onSide){
-    const side=Math.abs(N.x)>Math.abs(N.z);
-    if(side)mesh.scale.set(.78,1,.94);
-    else mesh.scale.set(1,.82,1);
-  }
+  mesh.frustumCulled=true;
+  mesh.renderOrder=2;
+  // Nur die sichtbare Frontschulter, knapp unter dem Decal-Ende, nach innen versetzt.
+  const p=projectCorner(rest,c.sx*.70,1.16,c.sz*.80);
+  const N=new THREE.Vector3(c.sx*.25,.55,c.sz*.70).normalize();
+  mesh.position.set(p.x+N.x*.015,p.y+N.y*.015,p.z+N.z*.015);
+  const up=new THREE.Vector3(0,1,0);
+  const q=new THREE.Quaternion().setFromRotationMatrix(
+    new THREE.Matrix4().lookAt(new THREE.Vector3(),N,up)
+  );
+  mesh.quaternion.copy(q);
+  mesh.rotateY(Math.PI);
   mesh.userData.restPos=mesh.position.clone();
+  mesh.userData.disposeGeos=[geo];
   return mesh;
-}
-
-function padlockMaterial(){
-  // Etwas dunkler als die Glieder, gleicher Stahl-Look.
-  const m=linkMaterial().clone();
-  m.uniforms={uL:{value:LIGHT.clone()},uOpacity:{value:1}};
-  m.fragmentShader=m.fragmentShader.replace('vec3(.10,.11,.13)','vec3(.08,.08,.10)');
-  return m;
-}
-
-function buildPadlock(rest){
-  const g=new THREE.Group();g.name='Special_padlock';
-  const mat=padlockMaterial();
-  const bodyGeo=new THREE.BoxGeometry(.176,.145,.096);
-  const body=new THREE.Mesh(bodyGeo,mat);
-  body.castShadow=true;
-  const shackleGeo=new THREE.TorusGeometry(.062,.018,10,22,Math.PI);
-  const shackle=new THREE.Mesh(shackleGeo,mat);
-  shackle.rotation.z=Math.PI;
-  shackle.position.set(0,.070,0);
-  shackle.castShadow=true;
-  const holeGeo=new THREE.CylinderGeometry(.012,.016,.008,10);
-  const holeMat=mat.clone();
-  holeMat.uniforms={uL:{value:LIGHT.clone()},uOpacity:{value:1}};
-  holeMat.fragmentShader=holeMat.fragmentShader.replace('vec3(.10,.11,.13)','vec3(.03,.03,.035)');
-  const hole=new THREE.Mesh(holeGeo,holeMat);
-  hole.rotation.x=Math.PI/2;
-  hole.position.set(0,-.016,.050);
-  g.add(body,shackle,hole);
-  g.userData.disposeGeos=[bodyGeo,shackleGeo,holeGeo];
-  g.userData.disposeMats=[mat,holeMat];
-  const top=projectToSurface(rest,{x:0,y:1.28,z:.02},'z');
-  // Sitzt auf den Ketten am Kreuz, leicht zur Kamera geneigt.
-  g.position.set(top.x, top.y+LINK_R*.85+LINK_TUBE+.055, top.z+.05);
-  g.rotation.x=-.26;
-  return g;
 }
 
 function buildChainGroup(rest){
   const group=new THREE.Group();group.name='Special_chains';
-  const geo=linkGeometry(),mat=linkMaterial();
-  const paths=[
-    {pts:resample(wrapPath('x',rest),LINK_STEP),phase:0},
-    {pts:resample(wrapPath('z',rest),LINK_STEP),phase:1},
+  const mat=decalPieceMaterial(wrapTexture(),1);
+  group.userData.disposeMats=[mat];
+  // Hintere Ecken sind von der 34°-Kamera kaum sichtbar und ragten über die Silhouette.
+  for(const c of WRAP_CORNERS){
+    if(c.sz<=0)continue;
+    group.add(makeWrapQuad(c,rest,mat));
+  }
+  return group;
+}
+
+function addBurstPieces(group){
+  // Decal in Schloss + 4 Arme à 3 Stücke zerlegen, auf der Oberseite erzeugen.
+  const map=tex('lock-decal',{repeat:false});
+  const mat=decalPieceMaterial(map,1);
+  group.userData.disposeMats=(group.userData.disposeMats||[]).concat([mat]);
+  const y=1.30;
+  const pieces=[{u:.37,v:.42,w:.26,h:.30,kind:'lock'}];
+  const arms=[
+    {u0:.46,v0:.46,u1:.04,v1:.04},
+    {u0:.54,v0:.46,u1:.96,v1:.04},
+    {u0:.46,v0:.54,u1:.04,v1:.96},
+    {u0:.54,v0:.54,u1:.96,v1:.96},
   ];
-  for(const path of paths){
-    const pts=path.pts;
-    for(let i=0;i<pts.length;i++){
-      const p=pts[i],T=pathTangent(pts,i),N=outwardNormal(p);
-      if(p.y<MID_Y*.7)continue;
-      // Kreuz bleibt dem Schloss, damit die Bügel nicht in den Gliedern untergehen.
-      if(Math.hypot(p.x,p.z)<.15)continue;
-      const mesh=placeLink(p,T,N,path.phase,i,geo,mat);
-      group.add(mesh);
+  for(const a of arms){
+    for(let k=0;k<3;k++){
+      const t0=k/3,t1=(k+1)/3;
+      const uA=a.u0+(a.u1-a.u0)*t0,vA=a.v0+(a.v1-a.v0)*t0;
+      const uB=a.u0+(a.u1-a.u0)*t1,vB=a.v0+(a.v1-a.v0)*t1;
+      const u=Math.min(uA,uB)-.04,v=Math.min(vA,vB)-.04;
+      const w=Math.abs(uB-uA)+.08,h=Math.abs(vB-vA)+.08;
+      pieces.push({u,v,w,h,kind:'link'});
     }
   }
-  group.add(buildPadlock(rest));
-  return group;
+  for(const p of pieces){
+    const geo=new THREE.PlaneGeometry(Math.max(.12,p.w*GEL.width),Math.max(.12,p.h*GEL.width));
+    const uv=geo.attributes.uv;
+    for(let i=0;i<uv.count;i++){
+      uv.setXY(i,p.u+uv.getX(i)*p.w,p.v+uv.getY(i)*p.h);
+    }
+    uv.needsUpdate=true;
+    const mesh=new THREE.Mesh(geo,mat);
+    mesh.rotation.x=-Math.PI/2;
+    const cx=p.u+p.w*.5,cz=p.v+p.h*.5;
+    mesh.position.set((cx-.5)*GEL.width,y,(cz-.5)*GEL.width);
+    mesh.userData.restPos=mesh.position.clone();
+    mesh.userData.disposeGeos=[geo];
+    mesh.renderOrder=3;
+    group.add(mesh);
+  }
 }
 
 function disposeChains(s){
@@ -476,12 +364,22 @@ function ensureChains(s){
 
 function burstChains(s){
   const g=s.specialChains;if(!g)return;
+  addBurstPieces(g);
   const links=g.children.slice();
-  const fade=linkMaterial().clone();
-  fade.transparent=true;fade.depthWrite=false;
-  fade.uniforms={uL:{value:LIGHT.clone()},uOpacity:{value:1}};
+  let fadeMat=null;
   const paint=obj=>{
-    if(obj.isMesh&&obj.material)obj.material=fade;
+    if(obj.isMesh&&obj.material){
+      if(!fadeMat){
+        fadeMat=obj.material.clone();
+        fadeMat.transparent=true;fadeMat.depthWrite=false;
+        fadeMat.uniforms={
+          uMap:{value:obj.material.uniforms.uMap.value},
+          uL:{value:LIGHT.clone()},
+          uOpacity:{value:1},
+        };
+      }
+      obj.material=fadeMat;
+    }
     for(const ch of obj.children||[])paint(ch);
   };
   for(const link of links){
@@ -506,11 +404,11 @@ function burstChains(s){
         link.position.set(p0.x+v.x*t,p0.y+v.y*t-.5*grav*t*t,p0.z+v.z*t);
         link.rotation.x+=sp.x*(1/60);link.rotation.y+=sp.y*(1/60);link.rotation.z+=sp.z*(1/60);
       }
-      fade.uniforms.uOpacity.value=1-smoothstep(.28,1,u);
-      if(u>=1){disposeChains(s);fade.dispose();if(s.userData?.freeJob===job)s.userData.freeJob=null;return true;}
+      if(fadeMat)fadeMat.uniforms.uOpacity.value=1-smoothstep(.28,1,u);
+      if(u>=1){disposeChains(s);fadeMat?.dispose();if(s.userData?.freeJob===job)s.userData.freeJob=null;return true;}
       return false;
     },
-    cancel(){disposeChains(s);fade.dispose();},
+    cancel(){disposeChains(s);fadeMat?.dispose();},
   };
   (s.userData||={}).freeJob=job;
   s.userData.chainBurst=true;
