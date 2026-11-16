@@ -26,6 +26,9 @@ import {createShopUI} from './shop-ui.mjs?v=launch-19';
 import {createGiftFx} from './gift-fx.mjs?v=launch-19';
 import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-19';
 import {createAdUI} from './ad-ui.mjs?v=launch-19';
+import {hasNativeAds,showInterstitial} from './native-ads.mjs?v=launch-19';
+import {createAdPacing} from './ad-pacing.mjs?v=launch-19';
+import {ENDLESS_TOOL,loadEndlessStock,saveEndlessStock,createEndlessToolButton} from './endless-tool.mjs?v=launch-19';
 import {createStatsUI} from './stats-ui.mjs?v=launch-19';
 import * as ToolLog from './tool-log.mjs?v=launch-19';
 import {createProgressSync} from './progress-sync.mjs?v=launch-19';
@@ -232,7 +235,63 @@ function beginAttempt(){
   logAttempt=ToolLog.startAttempt(toolLog,camp.n,{limit:camp.run.level.moves});ToolLog.saveLog(toolLog);
 }
 function endLogAttempt(outcome,extra={}){if(!logAttempt)return;ToolLog.endAttempt(toolLog,logAttempt.id,{outcome,...extra});ToolLog.saveLog(toolLog);}
-const adUI=createAdUI({sound,haptics,onWatch:type=>grantByAd(type),onClose:()=>{adFollow=null;renderCampaign();}});
+const adUI=createAdUI({sound,haptics,onWatch:type=>grantByAd(type),onClose:()=>{adFollow=null;renderCampaign();},
+  onAdStart:()=>{adShowing=true;sound.pause();},onAdEnd:()=>{adShowing=false;if(!paused)sound.resume();}});
+// ---------- App-Werbung (App-Hülle; im Browser ohne Adapter: nichts davon) ----------
+const adPacing=createAdPacing();
+let adShowing=false,endlessStock=loadEndlessStock(),endlessArmed=false;
+async function playInterstitial(placement){
+  adShowing=true;sound.pause();
+  try{await showInterstitial({placement});}finally{adShowing=false;sound.resume();}
+}
+const endlessButton=createEndlessToolButton({onClick:()=>{
+  if(!endlessToolUsable())return;
+  endlessArmed=!endlessArmed;renderEndlessTool();
+  if(endlessArmed)showNote('Tippe auf einen Stein: die Rakete sprengt ihn weg',2600);else note.hidden=true;
+}});
+function endlessToolUsable(){return started&&!booting&&!campaignMode&&!duelMode&&!paused&&!busy&&!worldMenu.active&&!adUI.isOpen;}
+function renderEndlessTool(){
+  const visible=started&&!booting&&!campaignMode&&!duelMode&&!paused&&!worldMenu.active;
+  if(!visible||endlessStock<=0)endlessArmed=false;
+  endlessButton.render({count:endlessStock,visible,armed:endlessArmed});
+}
+/** Endlos: nach einem fertigen Zug (Animationen durch, kein Game Over, kein Zug in der Warteschlange). */
+function maybeEndlessOffer(){
+  const due=adPacing.endlessMove();
+  if(!due||!hasNativeAds()||!adsEnabled()||adUI.isOpen||paused||busy||campaignMode||duelMode)return;
+  adPacing.endlessOffered();
+  adFollow={then:null,where:'endless'};
+  adUI.open(ENDLESS_TOOL,{placement:'endless',title:'Bonus-Rakete',desc:'Sprengt einen Stein im Endlos-Modus weg',
+    foot:run?'Freiwillig. Nach dem Einsatz läuft die Runde ungewertet weiter.':'Freiwillig. Du kannst einfach weiterspielen.'});
+}
+// Menü/Overlays wechseln an vielen Stellen; der Knopf prüft sich deshalb nur bei vorhandenem Vorrat kurz selbst.
+setInterval(()=>{if(endlessStock>0||endlessArmed)renderEndlessTool();},400);
+async function endlessRocketAt(tileId){
+  const cell=cellOf(tileId);
+  if(!cell||!endlessArmed||endlessStock<=0||busy)return false;
+  endlessArmed=false;endlessStock--;saveEndlessStock(endlessStock);note.hidden=true;
+  // Der Server spielt gewertete Runden Zug für Zug nach; eine Rakete kann er nicht nachspielen.
+  // Deshalb: bisherigen Stand noch einreichen, danach läuft die Runde ungewertet weiter.
+  const wasRanked=!!run;
+  if(run){await submitScore().catch(()=>{});run=null;rng=null;}
+  const turn=generation;busy=true;renderEndlessTool();
+  try{
+    const target=cellPoint(cell[0],cell[1]);
+    const r=endlessButton.el.getBoundingClientRect();
+    sound.play('launch');
+    await toolFx.rocket({x:r.left+r.width/2,y:r.top+r.height/2},target,target.size);
+    if(turn!==generation)return true;
+    visual.popTile?.(tileId);
+    toolFx.boom(target,target.size);sound.play('boom');haptics.pulse('big');
+    if(!reduceMotion.matches)for(const [dr,dc] of [[0,1],[0,-1],[1,0],[-1,0]]){
+      const n=board[cell[0]+dr]?.[cell[1]+dc];if(n)visual.scheduleWobble?.(n.id,.42,.06);
+    }
+    board=board.map(row=>row.slice());board[cell[0]][cell[1]]=null;
+    renderBoard();saveState();
+  }finally{if(turn===generation){busy=false;renderEndlessTool();}}
+  if(wasRanked)showNote('Rakete eingesetzt · die Runde läuft ungewertet weiter',2600);
+  return true;
+}
 let adFollow=null,lastAd=null;
 function openAd(type,{then=null,where='tool'}={}){
   if(!adsEnabled()||adUI.isOpen)return;
@@ -241,6 +300,10 @@ function openAd(type,{then=null,where='tool'}={}){
 }
 function grantByAd(type){
   const f=adFollow;adFollow=null;
+  if(f?.where==='endless'){   // Endlos-Angebot: eigener Vorrat, nur im Endlos-Modus nutzbar
+    endlessStock=Math.min(99,endlessStock+1);saveEndlessStock(endlessStock);lastAd={type,where:'endless'};
+    renderEndlessTool();showNote('+1 Rakete · unten links antippen zum Einsetzen',2600);return;
+  }
   inventory=Camp.addToStock(inventory,{[type]:1});Camp.saveInventory(inventory);cloudSync();
   logTool('ad',type,logCtx(f?.where||'tool'));lastAd={type,where:f?.where||'tool'};
   renderCampaign();void worldMenu.refresh?.();
@@ -298,6 +361,8 @@ function renderCampaign(){
   campaignUI.renderTools(availableTools(),{refill:refillMode(),canExtra:room>0&&camp.run.status!=='won'&&!hintBusy,armed:armedTool,busy:hintBusy?'hint':null,locked:hintBusy||camp.run.status!=='playing'});
 }
 async function prepareLevel(n){
+  // App: nach jedem 10. gewonnenen Level eine Zwischenwerbung, immer VOR dem nächsten Level.
+  if(!labMode&&hasNativeAds()&&adPacing.takeInterstitial())await playInterstitial('level');
   if(labMode)await loadLab();else await loadLevels();
   const level=levelList()[n-1];
   if(!level)throw new Error('Level fehlt: '+n);
@@ -381,7 +446,7 @@ async function finishLevel(){
   endLogAttempt(won?'won':'lost',{moves:r.moves,stars:won?Camp.starsOfRun(r):0,lostReason:r.lostReason});
   if(won){
     stars=Camp.starsOfRun(r);
-    if(!labMode){campaignProgress=Camp.recordResult(campaignProgress,camp.level.id,{stars,moves:r.moves});Camp.saveProgress(campaignProgress);cloudSync();}
+    if(!labMode){campaignProgress=Camp.recordResult(campaignProgress,camp.level.id,{stars,moves:r.moves});Camp.saveProgress(campaignProgress);cloudSync();adPacing.levelWon();}
     if(!labMode&&Camp.TOOL_STOCK&&Camp.TOOL_GIFTS){const g=Camp.queueGifts(inventory,campaignProgress);inventory=g.inventory;Camp.saveInventory(inventory);cloudSync();}
     sound.play('record');haptics.pulse('big');
     if(!reduceMotion.matches)visual.celebrateHud?.('queue-0',.3);
@@ -558,7 +623,7 @@ async function backToMenu(){
   campaignUI.hideResult();confetti.stop();
   if(campaignMode)leaveCampaign();
   else{void submitScore();saveState({now:true});hasSavedGame=board.flat().some(Boolean);}
-  generation++;pendingMove=null;releaseGesture();disarmTools();busy=false;
+  generation++;pendingMove=null;releaseGesture();disarmTools();busy=false;adPacing.endlessPause();endlessArmed=false;
   paused=false;veil.hidden=true;gameElement.classList.remove('is-paused');
   pauseButton.textContent='Ⅱ';pauseButton.setAttribute('aria-pressed','false');pauseButton.setAttribute('aria-label','Spiel pausieren');
   started=false;mergeEffects.clear();visual.clear();needsEntry=true;note.hidden=true;
@@ -825,7 +890,7 @@ async function enterGame() {
   if(score!==entryScore){peak=Math.max(peak,...board.flat().filter(Boolean).map(tile=>tile.value));saveState();}
   } finally {
   if (turn === generation) {
-  busy = false;
+  busy = false;renderEndlessTool();
   gameElement.classList.remove('is-entering');
   if (!campaignMode && isGameOver(board)) showDialog(true);
   }
@@ -864,6 +929,7 @@ function renderBoard(incoming) {
   const animate=!!incoming&&!reduceMotion.matches;
   visual.sync(graphicsTiles(animate?incoming:null),{animate,duration:.12,incoming:animate?incoming:null});
   if(campaignMode||bombBadges.size)renderBombBadges();
+  if(endlessStock>0)renderEndlessTool();
 }
 // ---------- launch-16: Bomben-Countdown ----------
 // Echtzeit, 20 s ab dem ersten Zug. Die Uhr steht bei Pause, verdeckter Seite, offenem Dialog/Menü/Shop/
@@ -953,7 +1019,7 @@ function showNote(message, duration = 2200) {
 
 function showDialog(over) {
   if(duelMode&&over)return;
-  paused = true;native.keepAwake(false);
+  paused = true;native.keepAwake(false);adPacing.endlessPause();endlessArmed=false;renderEndlessTool();
   if (over) haptics.event('gameover');
   sound.pause();
   phoneMotion.reset();
@@ -976,7 +1042,7 @@ function showDialog(over) {
 
 function resume() {
   if(duelFinished)return;
-  paused = false;native.keepAwake(true);
+  paused = false;native.keepAwake(true);renderEndlessTool();
   sound.resume();sound.unlock();
   phoneMotion.reset();
   gameElement.classList.remove('is-paused');
@@ -1265,6 +1331,7 @@ async function move(direction, line, {fromHint=false}={}) {
   if (isGameOver(board)) {void submitScore();showDialog(true);return;}
   if (run && score > run.sub && Date.now() - lastSubmit > SUBMIT_EVERY_MS) void submitScore();
   if(queued)void move(queued.direction,queued.line).catch(()=>{});
+  else maybeEndlessOffer();
 }
 
 function releaseGesture() {
@@ -1273,6 +1340,10 @@ function releaseGesture() {
 }
 playfield.addEventListener('pointerdown',event=> {
   if(hintBusy&&campaignMode)return;
+  if(endlessArmed&&!campaignMode&&started&&!busy&&!paused&&event.isPrimary){
+    const id=visual.pick(event);
+    if(id!=null){event.preventDefault();void endlessRocketAt(id);return;}
+  }
   if(armedTool&&campaignMode&&started&&!busy&&!paused&&event.isPrimary){
     const id=visual.pick(event);
     if(id!=null){event.preventDefault();if(armedTool==='rocket')void rocketAt(id);else wandAt(id);return;}
@@ -1316,7 +1387,7 @@ function persistNow() {
   saveState(); void flushPending({ keepalive: true }); void submitScore({ keepalive: true });
 }
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden) persistNow();
+  if (document.hidden) {persistNow();adPacing.endlessPause();}
   else if (pendingSave) scheduleFlush(2000);
 });
 // App shell: iOS can suspend right after 'pause', so save there as well (no-op in the browser).

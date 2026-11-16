@@ -2,29 +2,33 @@
 // Keine echte Werbung, kein Warten, kein Netz. Comic-Stil wie der Shop.
 import { TOOL_ICONS } from './tool-icons.mjs?v=launch-19';
 import { toolName } from './campaign.mjs?v=launch-19';
-import { showRewarded } from './native-ads.mjs?v=launch-19';
+import { showRewarded, hasNativeAds } from './native-ads.mjs?v=launch-19';
 
 const DESC = { extraMoves: 'Drei Züge mehr im Level', hint: 'Spielt 2 Züge zum Ziel', rocket: 'Sprengt einen Stein weg', wand: 'Stein bekommt deine Zahl' };
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 const CLOSE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>';
 const PLAY_SVG = '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="20" fill="#ff5a4e" stroke="#0b0a16" stroke-width="3"/><path d="M19 15v18l15-9z" fill="#fff" stroke="#0b0a16" stroke-width="2.4" stroke-linejoin="round"/></svg>';
 
-export function createAdUI({ onWatch, onClose, sound, haptics } = {}) {
-  let veil = null, lastFocus = null, current = null;
+export function createAdUI({ onWatch, onClose, onAdStart, onAdEnd, sound, haptics } = {}) {
+  let veil = null, lastFocus = null, current = null, currentOpts = {};
   const stats = { opens: 0, watched: 0, lastType: null };
-  function render(type) {
+  // opts (App, Endlos-Angebot): {title, desc, foot, placement}
+  function render(type, opts = {}) {
     veil = el('div', 'ad-veil'); veil.id = 'ad-dialog';
     const panel = el('div', 'ad-panel');
     panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); panel.setAttribute('aria-labelledby', 'ad-title'); panel.tabIndex = -1;
     const close = el('button', 'ad-close'); close.type = 'button'; close.setAttribute('aria-label', 'Schließen'); close.innerHTML = CLOSE_SVG;
     close.addEventListener('click', () => api.close());
-    const title = el('h2', 'ad-title', 'Werbung ansehen'); title.id = 'ad-title';
+    const title = el('h2', 'ad-title', opts.title || 'Werbung ansehen'); title.id = 'ad-title';
     const screen = el('div', 'ad-screen');
     const play = el('span', 'ad-play'); play.innerHTML = PLAY_SVG;
-    screen.append(el('span', 'ad-badge', 'Werbeclip (Dummy)'), play, el('small', 'ad-hint', 'Testphase: Antippen reicht, kein Video'));
+    // App mit echtem Werbe-Adapter: kurzer Clip; im Browser bleibt die Dummy-Werbung.
+    const real = hasNativeAds();
+    screen.append(el('span', 'ad-badge', real ? 'Werbeclip' : 'Werbeclip (Dummy)'), play,
+      el('small', 'ad-hint', real ? 'Kurzes Video, danach gibt es die Belohnung' : 'Testphase: Antippen reicht, kein Video'));
     const reward = el('div', 'ad-reward');
     const ico = el('span', 'ad-reward-ico'); ico.innerHTML = TOOL_ICONS[type] || '';
-    const txt = el('div', 'ad-reward-text'); txt.append(el('b', '', `+1 ${toolName(type)}`), el('small', '', DESC[type] || ''));
+    const txt = el('div', 'ad-reward-text'); txt.append(el('b', '', `+1 ${toolName(type)}`), el('small', '', opts.desc || DESC[type] || ''));
     reward.append(ico, txt);
     const watch = el('button', 'ad-watch'); watch.type = 'button'; watch.id = 'ad-watch';
     watch.append(el('span', '', 'Ansehen'));
@@ -32,18 +36,20 @@ export function createAdUI({ onWatch, onClose, sound, haptics } = {}) {
     watch.addEventListener('click', () => void doWatch());
     const later = el('button', 'ad-later', 'Nein danke'); later.type = 'button';
     later.addEventListener('click', () => api.close());
-    panel.append(close, title, screen, reward, watch, later, el('p', 'ad-foot', 'Mit Hilfsmittel gibt es höchstens 2 ★.'));
+    panel.append(close, title, screen, reward, watch, later, el('p', 'ad-foot', opts.foot ?? 'Mit Hilfsmittel gibt es höchstens 2 ★.'));
     veil.append(panel);
     veil.addEventListener('pointerdown', ev => { if (ev.target === veil) { ev.preventDefault(); api.close(); } });
     return veil;
   }
   async function doWatch() {
     if (!veil || !current) return;
-    const type = current;
-    api.close({ silent: true });
+    const type = current, placement = currentOpts.placement || 'tool';
+    api.close({ silent: true, keepOpts: true });
     // App: echter Clip über den nativen Adapter; Werkzeug nur, wenn er zu Ende geschaut wurde.
-    const res = await showRewarded({ placement: 'tool', tool: type });
-    if (!res.ok) return;
+    onAdStart?.();
+    let res;
+    try { res = await showRewarded({ placement, tool: type }); } finally { onAdEnd?.(); }
+    if (!res.ok) { onClose?.(); return; }
     stats.watched++;
     sound?.play?.('gift'); haptics?.pulse?.('merge');
     await onWatch?.(type);
@@ -62,19 +68,19 @@ export function createAdUI({ onWatch, onClose, sound, haptics } = {}) {
     get isOpen() { return !!veil; },
     get type() { return current; },
     stats,
-    open(type) {
+    open(type, opts = {}) {
       if (veil) api.close({ silent: true });
-      lastFocus = document.activeElement; current = type;
+      lastFocus = document.activeElement; current = type; currentOpts = opts || {};
       stats.opens++; stats.lastType = type;
-      document.body.append(render(type));
+      document.body.append(render(type, currentOpts));
       document.addEventListener('keydown', key, true);
       requestAnimationFrame(() => veil?.querySelector('.ad-watch')?.focus({ preventScroll: true }));
       return true;
     },
-    close({ silent = false } = {}) {
+    close({ silent = false, keepOpts = false } = {}) {
       if (!veil) return;
       document.removeEventListener('keydown', key, true);
-      veil.remove(); veil = null; current = null;
+      veil.remove(); veil = null; current = null; if (!keepOpts) currentOpts = {};
       lastFocus?.focus?.({ preventScroll: true });
       if (!silent) onClose?.();
     },
