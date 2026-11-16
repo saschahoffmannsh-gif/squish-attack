@@ -601,7 +601,7 @@ test('launch-18: Sterne ab Level 11 einmalig zurücksetzen, 1–10 und launch-14
   assert.equal(Object.keys(b.progress.levels).length, 10);
 });
 
-// ---------------- launch-22: Tutorials, Reset, Freischaltung ----------------
+// ---------------- launch-22/24: Tutorials, Reset, Freischaltung ----------------
 import {
   modesUnlocked, MODES_UNLOCK_LEVEL, resetAdventureForTutorialsOnce, TUTORIAL_RESET, TUTORIAL_RESET_KEY,
   tutorialHintMove, fuseMatch, isStraightGroup, encodeMove as enc22, PROGRESS_KEY as PK22,
@@ -680,4 +680,33 @@ test('launch-22: Abenteuer einmalig komplett zurücksetzen, Endlos-Schlüssel bl
   const again = resetAdventureForTutorialsOnce(loadP14(st), li, st);
   assert.equal(again.reset, false);
   assert.equal(Object.keys(loadP14(st).levels).length, 5);
+});
+
+test('launch-24: Merker launch-22 löst noch einmal den Reset aus; Sprache, Einstellungen und Endlos bleiben', () => {
+  const st = memStore();
+  const won = n => ({ version: 1, updatedAt: 5, levels: Object.fromEntries(Array.from({ length: n }, (_, i) => [String(i + 1), { stars: 1 + (i % 3), moves: 7, at: 1 }])) });
+  st.setItem(PK22, JSON.stringify(won(20)));
+  st.setItem(TUTORIAL_RESET_KEY, 'launch-22');
+  st.setItem('squish-lang-v1', 'en');
+  st.setItem('shift3-play-v1', '{"score":900,"best":1200,"board":1}');
+  st.setItem('squish-sound-v1', 'x');
+  st.setItem('squish-haptics-v1', '0');
+  st.setItem('squish-phone-motion-v1', '1');
+  const inv = { ...emptyInventory(), wand: 2, hint: 1, gifts: ['level-3'], pending: [{ id: 'level-10', type: 'extraMoves' }], at: 99 };
+  saveInventory(inv, st);
+  const r = resetAdventureForTutorialsOnce(loadP14(st), loadInventory(st), st);
+  assert.equal(r.reset, true);
+  assert.deepEqual(r.progress.levels, {});
+  assert.equal(loadInventory(st).wand, 0);
+  assert.deepEqual(loadInventory(st).gifts, []);
+  assert.equal(st.getItem(TUTORIAL_RESET_KEY), TUTORIAL_RESET);
+  assert.equal(TUTORIAL_RESET, 'launch-24');
+  assert.equal(st.getItem('squish-lang-v1'), 'en');
+  assert.equal(st.getItem('shift3-play-v1'), '{"score":900,"best":1200,"board":1}');
+  assert.equal(st.getItem('squish-sound-v1'), 'x');
+  assert.equal(st.getItem('squish-haptics-v1'), '0');
+  assert.equal(st.getItem('squish-phone-motion-v1'), '1');
+  assert.equal(modesUnlocked(r.progress), false);
+  const again = resetAdventureForTutorialsOnce(loadP14(st), loadInventory(st), st);
+  assert.equal(again.reset, false);
 });

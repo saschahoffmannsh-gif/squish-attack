@@ -7,8 +7,20 @@ import { emptyProgress, emptyInventory, recordResult, saveInventory, loadInvento
 const mem = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k), m }; };
 const W = (over = {}) => normalizeWire({ v: 1, epoch: 18, levels: {}, inv: null, invAt: 0, ...over });
 
-test('epochOf: launch-18 → 18, launch-22 → 22', () => {
-  assert.equal(epochOf('launch-18'), 18); assert.equal(epochOf('launch-22'), 22); assert.equal(epochOf(7), 7); assert.equal(epochOf(null), 0);
+test('epochOf: launch-18 → 18, launch-22 → 22, launch-24 → 24', () => {
+  assert.equal(epochOf('launch-18'), 18); assert.equal(epochOf('launch-22'), 22); assert.equal(epochOf('launch-24'), 24);
+  assert.equal(epochOf(7), 7); assert.equal(epochOf(null), 0);
+});
+
+test('merge: Epoche 24 ersetzt Level und Abenteuer-Vorrat von Epoche 22', () => {
+  const old = W({ epoch: 22, levels: { 8: { s: 3, m: 4 } }, inv: { extraMoves: 2, rocket: 1, hint: 3, wand: 1, gifts: ['level-3'], pending: [] }, invAt: 99 });
+  const neu = W({ epoch: 24, levels: {}, inv: { extraMoves: 0, rocket: 0, hint: 0, wand: 0, gifts: [], pending: [] }, invAt: 0 });
+  const ab = mergeWire(old, neu), ba = mergeWire(neu, old);
+  assert.equal(ab.epoch, 24);
+  assert.deepEqual(ab.levels, {});
+  assert.equal(ab.inv.rocket, 0);
+  assert.deepEqual(ab.inv.gifts, []);
+  assert.equal(wireKey(ab), wireKey(ba), 'kommutativ');
 });
 
 test('merge: max Sterne pro Level, bei Gleichstand weniger Züge, Vereinigung der Level', () => {
@@ -79,6 +91,15 @@ test('toWire/applyWire: Cloud-Stand füllt ein leeres Gerät, Lokales wird nie s
   // nichts Neues → unverändert
   const w = toWire(r.progress, r.inventory, 18);
   assert.equal(applyWire(r.progress, r.inventory, w, 18, 1000).changed, false);
+});
+
+test('applyWire: Epoche 24 übernimmt keinen Abenteuer-Stand aus Epoche 22', () => {
+  const stale = W({ epoch: 22, levels: { 8: { s: 3, m: 4 } }, inv: { extraMoves: 2, rocket: 1, hint: 3, wand: 1, gifts: ['level-3'], pending: [] }, invAt: 99 });
+  const fresh = emptyInventory();
+  const r = applyWire(emptyProgress(), fresh, stale, 24, 1000);
+  assert.deepEqual(r.progress.levels, {});
+  assert.equal(r.inventory, fresh);
+  assert.equal(r.changed, false);
 });
 
 test('Vorrat: echte Änderungen setzen at, einmalige Resets nicht (frisches Gerät überschreibt Cloud nicht)', () => {
