@@ -6,7 +6,7 @@
 //  - Nie blockierend, Fehler werden still geschluckt, offline wird nichts versucht.
 //  - Identität = derselbe anonyme Geräte-Token wie Spielstand und Rangliste (kein Login).
 //    Später (App): Token im Schlüsselbund / Konto über Sign in with Apple, siehe docs/app-shell.md.
-import { normalizeWire, mergeWire, wireKey, PROGRESS_WIRE_VERSION } from './progress-merge.mjs?v=launch-25';
+import { normalizeWire, mergeWire, wireKey, PROGRESS_WIRE_VERSION } from './progress-merge.mjs?v=launch-26';
 
 export const SYNC_STATE_KEY = 'squish-progress-sync-v1';
 export const SYNC_DEBOUNCE_MS = 4000;
@@ -16,7 +16,7 @@ export const SYNC_REFRESH_MS = 24 * 60 * 60 * 1000;
 export function toWire(progress, inventory, epoch, endless = null) {
   const levels = {};
   for (const [k, r] of Object.entries(progress?.levels || {})) {
-    if (r && r.stars >= 1) levels[k] = { s: r.stars | 0, m: Math.max(1, r.moves | 0) };
+    if (r && Number.isInteger(r.stars) && r.stars >= 0) levels[k] = { s: r.stars | 0, m: Math.max(1, r.moves | 0) };
   }
   const inv = inventory ? { extraMoves: inventory.extraMoves, rocket: inventory.rocket, hint: inventory.hint, wand: inventory.wand,
     gifts: inventory.gifts || [], pending: inventory.pending || [] } : null;

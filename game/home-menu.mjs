@@ -1,10 +1,10 @@
 // Startbildschirm und Modus-Menüs im Herbst-Design (reines DOM, kein 3D).
 // Ersetzt das frühere 3D-Glastisch-Menü (world-menu.mjs) mit derselben
 // Schnittstelle, die game.mjs und start-menu.mjs erwarten.
-import {ICONS,TILE_ICONS,leafSvg} from './aw-icons.mjs?v=launch-25';
-import {BUILD} from './flags.mjs?v=launch-25';
-import {t, fmtNum, onLangChange} from './i18n.mjs?v=launch-25';
-import {fitLabelsSoon} from './fit-labels.mjs?v=launch-25';
+import {ICONS,TILE_ICONS,leafSvg} from './aw-icons.mjs?v=launch-26';
+import {BUILD} from './flags.mjs?v=launch-26';
+import {t, fmtNum, onLangChange} from './i18n.mjs?v=launch-26';
+import {fitLabelsSoon} from './fit-labels.mjs?v=launch-26';
 
 const LEAF_COLORS=['#f07a1c','#e8541a','#c9301c','#f2a01e','#d94a17','#b8321a','#ffb030'];
 const fmt=n=>fmtNum(n);
@@ -155,7 +155,6 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
     intro.textContent=t('rules.lead');
     box.append(...src.map(p=>{const c=page.createElement('p');c.textContent=p.textContent;return c;}),intro);
     return [ribbon(t('rules.ribbon'),'aw-r-purple'),box,
-      button({label:t('menu.lab'),icon:'play',color:'aw-blue',size:'aw-small',nav:'lab',action:()=>{tap('move');hooks.gesture?.();hooks.campaign?.openLab?.();}}),
       button({label:t('menu.back'),icon:'back',color:'aw-slate',size:'aw-small',nav:'back',action:()=>{tap();void go('home');}})];
   }
   function campaignItems(){

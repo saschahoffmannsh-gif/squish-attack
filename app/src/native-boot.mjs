@@ -6,14 +6,14 @@
 import { APP_CONFIG } from './app-config.mjs?v=__BUILD__';
 import { restoreToken, persistToken } from './token-keychain.mjs?v=__BUILD__';
 import { setupConsent, createAdMobAdapter } from './admob-adapter.mjs?v=__BUILD__';
-import { createStoreKitAdapter } from './store-adapter.mjs?v=__BUILD__';
+import { createStoreKitAdapter, createAdFreeAdapter } from './store-adapter.mjs?v=__BUILD__';
 
 const BUILD = '__BUILD__';
 const cap = globalThis.Capacitor;
 const isNative = !!cap?.isNativePlatform?.();
 const plugin = name => (isNative && cap.isPluginAvailable?.(name)) ? (cap.Plugins?.[name] || cap.registerPlugin(name)) : null;
 const log = (what, e) => console.warn('[app]', what, e?.message || e || '');
-const status = { build: BUILD, native: isNative, token: null, ads: null, store: null, errors: [] };
+const status = { build: BUILD, native: isNative, token: null, ads: null, store: null, adFree: null, errors: [] };
 globalThis.SquishApp = status;
 
 async function boot() {
@@ -30,9 +30,10 @@ async function boot() {
   setTimeout(persist, 3000); setTimeout(persist, 30000);
   plugin('App')?.addListener?.('pause', () => void persist());
 
-  const [ads, shop] = await Promise.all([
+  const [ads, shop, adFreeMod] = await Promise.all([
     import(`../native-ads.mjs?v=${BUILD}`),
     import(`../shop.mjs?v=${BUILD}`),
+    import(`../ad-free.mjs?v=${BUILD}`),
   ]);
 
   const AdMob = plugin('AdMob');
@@ -55,6 +56,25 @@ async function boot() {
     // Test in Xcode mit Squish.storekit, ohne den Shop einzuschalten (Safari → Entwickler → Web-Inspektor):
     //   await SquishApp.testPurchase('rocket-1')   → StoreKit-Kaufdialog, Ergebnis {ok, items, transactionId}
     status.testPurchase = id => shop.purchase(id, { config: { ...shop.SHOP_CONFIG, enabled: true } });
+
+    const adFree = createAdFreeAdapter({
+      NativePurchases,
+      productId: APP_CONFIG.store.adFreeProductId,
+      log,
+    });
+    adFreeMod.registerAdFree(adFree);
+    status.adFree = () => adFree.isAdFree();
+    // Testhilfen (StoreKit-Konfiguration Squish.storekit):
+    //   await SquishApp.testAdFreePurchase()  → Kaufdialog für squish.adfree
+    //   await SquishApp.testAdFreeRestore()   → restorePurchases + Entitlement
+    status.testAdFreePurchase = () => adFreeMod.purchaseAdFree();
+    status.testAdFreeRestore = () => adFreeMod.restoreAdFree();
+    adFree.refresh()
+      .then(() => adFreeMod.emitAdFreeChange())
+      .catch(e => log('adfree refresh', e));
+    adFree.loadPrice()
+      .then(() => adFreeMod.emitAdFreeChange())
+      .catch(e => log('adfree price', e));
   }
 }
 

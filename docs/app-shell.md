@@ -68,12 +68,13 @@ Mobile Ads SDK und die UMP-Einwilligung.
 
 | Stelle | Art | Regel |
 |---|---|---|
-| Abenteuer: leeres Hilfsmittel → „Ansehen“ | **Rewarded** | freiwillig; Belohnung = 1 Hilfsmittel; nur wenn der Clip zu Ende geschaut wurde |
-| Abenteuer: nach jedem 10. gewonnenen Level (Wiederholungen zählen) | **Interstitial** | Pflichtwerbung, erst vor dem nächsten Level, nie mitten im Level |
-| Endlos: alle 10 Minuten ein Angebot, direkt nach einem Zug (wenn die Animationen fertig sind) | **Rewarded** (Angebot, kann weggedrückt werden) | Belohnung = **ein Werkzeug für den eigenen Endlos-Vorrat** (reihum Rakete, Zauberstab; Protokoll-Quelle `ad-endless`), direkt in Endlos-Runden einsetzbar; der Abenteuer-Vorrat bleibt unberührt; **kein** Weiterspielen nach Game Over |
-| Geschenke nach Level 3/6/10/20 | – | bleiben gratis |
+| Abenteuer: Hilfsmittel einsetzen (ohne Werbefrei) | **Rewarded** | je Einsatz ein Clip; nur wenn er zu Ende geschaut wurde, wird die 1×-Ladung verbraucht. Kein Vorrat, kein Ansammeln. Werbefrei (`squish.adfree`, 2,99 €, StoreKit, Nicht-Verbrauch): gleicher 1×-Takt, ohne Clip |
+| Abenteuer: nach jedem **5.** gewonnenen Level (launch-26, vorher 10) | **Interstitial** | Pflichtwerbung, erst vor dem nächsten Level, nie mitten im Level; entfällt bei Werbefrei |
+| Endlos: alle 10 Minuten ein Angebot, direkt nach einem Zug (wenn die Animationen fertig sind) | **Rewarded** (Angebot, kann weggedrückt werden) | Belohnung = **ein Werkzeug für den eigenen Endlos-Vorrat** (reihum Rakete, Zauberstab; Protokoll-Quelle `ad-endless`); der Abenteuer-Vorrat bleibt unberührt; **kein** Weiterspielen nach Game Over; entfällt bei Werbefrei |
+| Geschenke nach Level 3/6/10/20 | – | launch-26: entfallen vollständig, auch nicht in den Endlos-Vorrat |
+| Werbefrei (einmalig 2,99 €, `squish.adfree`) | IAP, nur App | Hook `registerAdFree({ isAdFree, purchase, restore })`. Entfernt Clips, Zwischenwerbung und das Endlos-Angebot, nicht das 1×-Limit. Werkzeug-Shop bleibt aus; in den Einstellungen: Kauf und „Käufe wiederherstellen“ |
 
-Werbefrei-Kauf: gestrichen. Energie-Systeme: keine.
+Werkzeug-Pakete im Shop bleiben ausgeblendet. Energie-Systeme: keine.
 
 ```js
 // native-boot.js (Skizze)
@@ -96,9 +97,12 @@ window.SquishNative.registerNativeAds({
 });
 ```
 
-**Im Spiel noch offen** (kommt mit der App-Hülle, braucht Sascha nicht):
-- Interstitial nach jedem 10. Level aufrufen (`showInterstitial`). Ohne Adapter passiert nichts.
-- Endlos: 10-Minuten-Timer, Angebot nach einem Zug, Werkzeug für den Endlos-Vorrat (Rakete/Zauberstab), lokal + Cloud (umgesetzt in `app-shell`).
+**Im Spiel (launch-26):** Takt liegt in `game/ad-pacing.mjs` (`interstitialEvery: 5`,
+`endlessOfferMs: 10 Minuten`). Die App-Hülle zeigt Interstitials über `hasNativeAds()`
+und `takeInterstitial()`; die Web-Version zählt Siege mit `levelWon()`, zeigt aber
+keine Werbung. Endlos-Angebot und Endlos-Vorrat (einv, lokal + Cloud) bleiben nur in der App
+und sind unverändert. Ohne Adapter passiert im Browser nichts Sichtbares. Werbefrei
+unterdrückt Clips und beide Werbeformen.
 
 ### 3.2 In-App-Käufe (StoreKit), später
 

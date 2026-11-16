@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { restoreToken, persistToken } from '../src/token-keychain.mjs';
 import { setupConsent, createAdMobAdapter, EVENTS } from '../src/admob-adapter.mjs';
-import { createStoreKitAdapter } from '../src/store-adapter.mjs';
+import { createStoreKitAdapter, createAdFreeAdapter } from '../src/store-adapter.mjs';
 import { APP_CONFIG, storeProductId, shopIdFromProductId } from '../src/app-config.mjs';
 
 const T1 = 'a'.repeat(64), T2 = 'b'.repeat(64), KEY = 'squish-save-token-v1';
@@ -141,4 +141,60 @@ test('Ende-zu-Ende mit game/shop.mjs: nativer Store wird genutzt, Shop bleibt au
   const r = await shop.purchase('rocket-3', { config: { ...shop.SHOP_CONFIG, enabled: true } });
   assert.deepEqual([r.ok, r.test, r.transactionId, r.items], [true, false, 't1', { rocket: 3 }]);
   shop.registerNativeStore(null);
+});
+
+test('Werbefrei-Produkt-ID ist fest squish.adfree, ohne Shop-Präfix', () => {
+  assert.equal(APP_CONFIG.store.adFreeProductId, 'squish.adfree');
+  assert.equal(storeProductId('adfree'), 'de.hoffmann.squishattack.adfree');
+  assert.notEqual(APP_CONFIG.store.adFreeProductId, storeProductId('adfree'));
+});
+test('Werbefrei: Nicht-Verbrauch-Kauf, Restore, lokales Entitlement', async () => {
+  const storage = mem();
+  const calls = [];
+  let purchases = [];
+  const NP = {
+    async purchaseProduct(o) { calls.push(['purchase', o]); return { transactionId: 'af1' }; },
+    async restorePurchases() { calls.push(['restore']); },
+    async getPurchases() { calls.push(['get']); return { purchases }; },
+    async getProducts({ productIdentifiers }) {
+      return { products: productIdentifiers.map(id => ({ identifier: id, priceString: '2,99 €', title: 'Werbefrei', price: 2.99 })) };
+    },
+  };
+  const a = createAdFreeAdapter({ NativePurchases: NP, productId: 'squish.adfree', storage, log() {} });
+  assert.equal(a.isAdFree(), false);
+  assert.equal(await a.loadPrice(), '2,99 €');
+  const buy = await a.purchase();
+  assert.equal(buy.ok, true);
+  assert.equal(buy.transactionId, 'af1');
+  assert.equal(calls[calls.length - 1][1].productIdentifier, 'squish.adfree');
+  assert.equal(calls[calls.length - 1][1].isConsumable, false);
+  assert.equal(a.isAdFree(), true);
+  assert.equal(storage.getItem('squish-adfree-v1'), '1');
+
+  const again = createAdFreeAdapter({ NativePurchases: NP, productId: 'squish.adfree', storage, log() {} });
+  assert.equal(again.isAdFree(), true, 'Entitlement überlebt einen Neustart lokal');
+
+  const freshStore = mem();
+  purchases = [{ productIdentifier: 'squish.adfree' }];
+  const rest = createAdFreeAdapter({ NativePurchases: NP, productId: 'squish.adfree', storage: freshStore, log() {} });
+  const r = await rest.restore();
+  assert.equal(r.ok, true);
+  assert.equal(r.owned, true);
+  assert.equal(rest.isAdFree(), true);
+  assert.deepEqual(calls.filter(c => c[0] === 'restore').length > 0, true);
+  assert.equal(freshStore.getItem('squish-adfree-v1'), '1');
+
+  purchases = [];
+  const missStore = mem();
+  const miss = createAdFreeAdapter({ NativePurchases: NP, productId: 'squish.adfree', storage: missStore, log() {} });
+  const none = await miss.restore();
+  assert.equal(none.ok, true);
+  assert.equal(none.owned, false);
+  assert.equal(miss.isAdFree(), false);
+
+  const cancel = createAdFreeAdapter({
+    NativePurchases: { purchaseProduct: async () => { throw new Error('User cancelled the purchase'); } },
+    storage: mem(), log() {},
+  });
+  assert.equal((await cancel.purchase()).reason, 'cancelled');
 });

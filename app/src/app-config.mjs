@@ -21,6 +21,9 @@ export const APP_CONFIG = Object.freeze({
     // z. B. de.hoffmann.squishattack.rocket_3. Genau so in App Store Connect anlegen
     // (Typ: Verbrauchsartikel / Consumable). Die Testdatei ios/App/App/Squish.storekit nutzt dieselben IDs.
     productPrefix: 'de.hoffmann.squishattack.',
+    // Werbefrei (launch-26): einmalig 2,99 €, Nicht-Verbrauch / Non-Consumable.
+    // Feste Produkt-ID, ohne das Shop-Präfix. Genau so in App Store Connect und in Squish.storekit.
+    adFreeProductId: 'squish.adfree',
   }),
   // Schlüsselbund-Eintrag für den anonymen Spieler-Token (überlebt eine Neuinstallation).
   keychainKey: 'squish-save-token-v1',

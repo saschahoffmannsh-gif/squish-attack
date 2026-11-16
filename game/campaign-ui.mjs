@@ -1,9 +1,9 @@
 // Kampagne: DOM-Teile (Ziel-Anzeige, Züge, Hilfsmittel, Ergebnis-Dialog, Levelauswahl).
 // Reine Darstellung; Spiellogik und Speichern liegen in game.mjs / campaign.mjs.
-import {TOOL_ICONS,GIFT_SVG} from './tool-icons.mjs?v=launch-25';
-import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-25';
-import {fitLabelsSoon} from './fit-labels.mjs?v=launch-25';
-import {goalProgress,goalText,goalShort,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName} from './campaign.mjs?v=launch-25';
+import {TOOL_ICONS,GIFT_SVG} from './tool-icons.mjs?v=launch-26';
+import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-26';
+import {fitLabelsSoon} from './fit-labels.mjs?v=launch-26';
+import {goalProgress,goalText,goalShort,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName,toolStarCap} from './campaign.mjs?v=launch-26';
 
 const $=id=>document.getElementById(id);
 export const TOOL_ARTICLE=new Proxy({},{get:(_,k)=>t('tool.'+k)});
@@ -18,7 +18,7 @@ export function lockText(lock){
 }
 
 export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,onGift,onCloseSelect,onStar,reduceMotion}={}){
-  const hud=$('campaign-hud'),levelEl=$('campaign-level'),goalsEl=$('campaign-goals'),movesEl=$('campaign-moves'),tipEl=$('campaign-tip');
+  const hud=$('campaign-hud'),levelEl=$('campaign-level'),goalsEl=$('campaign-goals'),movesEl=$('campaign-moves'),tipEl=$('campaign-tip'),capEl=$('campaign-tool-cap');
   const tools=$('campaign-tools'),extraBtn=$('tool-extra'),hintBtn=$('tool-hint'),rocketBtn=$('tool-rocket'),wandBtn=$('tool-wand');
   for(const b of [hintBtn,rocketBtn,wandBtn]){const ico=b.querySelector('[data-icon]');if(ico&&!ico.firstChild)ico.innerHTML=TOOL_ICONS[ico.dataset.icon];}
   const result=$('campaign-result'),rKicker=$('campaign-result-kicker'),rTitle=$('campaign-result-title'),rStars=$('campaign-result-stars');
@@ -58,15 +58,27 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
   // armed: 'rocket' | 'wand' | null; busy: 'hint' während der Suche/Vorführung.
   // shop: bei 0 zeigt die Kachel ein grünes Plus und öffnet beim Antippen den Shop.
   // refill: 'ad' (launch-13: Dummy-Werbung) | 'shop' | null – bestimmt, was das grüne Plus bei 0 öffnet.
+  function renderToolCap(toolsUsed=0){
+    if(!capEl)return;
+    const n=toolsUsed|0;
+    if(n<=0){capEl.hidden=true;capEl.textContent='';return;}
+    const max=toolStarCap(n);
+    capEl.hidden=false;
+    capEl.textContent=max>0?t('campaign.toolCap',{n,max}):t('campaign.toolCapZero');
+    capEl.dataset.cap=String(max);
+  }
   function renderTools(inv,opts={}){
-    const {canExtra=true,armed=null,busy=null,locked=false,shop=false,refill=shop?'shop':null}=opts;
-    lastTools={inv,opts:{canExtra,armed,busy,locked,shop,refill}};tools.hidden=false;
+    const {canExtra=true,armed=null,busy=null,locked=false,shop=false,refill=shop?'shop':null,needsAd=false,toolsUsed=0}=opts;
+    lastTools={inv,opts:{canExtra,armed,busy,locked,shop,refill,needsAd,toolsUsed}};tools.hidden=false;
+    renderToolCap(toolsUsed);
     const set=(btn,n,enabled,label)=>{
       const empty=!(n>0),toShop=empty&&!!refill;
       const c=btn.querySelector('[data-count]');c.textContent=toShop?'+':String(n|0);c.classList.toggle('is-zero',empty&&!refill);
       btn.classList.toggle('is-empty',toShop);btn.dataset.shop=toShop?'1':'';btn.dataset.refill=toShop?refill:'';
+      btn.dataset.ad=(!empty&&needsAd)?'1':'';
       btn.disabled=toShop?!!locked:!enabled;
-      btn.setAttribute('aria-label',toShop?t(refill==='ad'?'tool.emptyAd':'tool.emptyShop',{label}):t('tool.countAria',{label,n:n|0}));
+      const aria=toShop?t(refill==='ad'?'tool.emptyAd':'tool.emptyShop',{label}):needsAd&&!empty?t('tool.countAriaAd',{label,n:n|0}):t('tool.countAria',{label,n:n|0});
+      btn.setAttribute('aria-label',aria);
     };
     set(extraBtn,inv.extraMoves,inv.extraMoves>0&&canExtra&&!locked,t('tool.help.extra'));
     set(hintBtn,inv.hint,(inv.hint>0&&!locked)||busy==='hint',t('tool.help.hint'));
@@ -75,7 +87,7 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
     for(const [btn,type] of [[rocketBtn,'rocket'],[wandBtn,'wand']]){btn.classList.toggle('is-armed',armed===type);btn.setAttribute('aria-pressed',String(armed===type));}
     hintBtn.classList.toggle('is-busy',busy==='hint');hintBtn.classList.toggle('is-armed',busy==='hint');
   }
-  function hide(){hud.hidden=true;tools.hidden=true;if(tipEl)tipEl.hidden=true;hideResult();}
+  function hide(){hud.hidden=true;tools.hidden=true;if(tipEl)tipEl.hidden=true;if(capEl)capEl.hidden=true;hideResult();}
   extraBtn.addEventListener('click',()=>onTool?.('extraMoves'));
   hintBtn.addEventListener('click',()=>onTool?.('hint'));
   rocketBtn.addEventListener('click',()=>onTool?.('rocket'));
@@ -83,7 +95,7 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
 
   // ---------- Ergebnis ----------
   function showResult({n,won,stars,moves,limit,lostReason,canNext,nextLock,gifts=[],extraAvailable=0,extraAd=false,toolsUsed=0,toolLevel=null,unlockModes=false}){
-    const extraOffer=extraAvailable>0||extraAd;
+    const extraOffer=extraAvailable>0;
     result.dataset.outcome=won?'won':'lost';
     lastResult={n,won,stars,moves,limit,lostReason,canNext,nextLock,gifts,extraAvailable,extraAd,toolsUsed,toolLevel,unlockModes};
     rKicker.textContent=t('campaign.levelLabel',{n});
@@ -93,7 +105,7 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
     rMoves.textContent=won?String(moves):`${moves}/${limit}`;
     rStarCount.textContent=won?`${stars} / 3`:'–';
     rMessage.textContent=won
-      ?(toolsUsed?t('result.toolCap'):stars<3?t('result.betterStars'):t('result.bestSolved'))
+      ?(toolsUsed?t('result.toolCap',{n:toolsUsed,max:toolStarCap(toolsUsed)}):stars<3?t('result.betterStars'):t('result.bestSolved'))
       :(lostReason==='board-full'?t('result.boardFull'):t('result.goalOpen'))+(extraOffer&&lostReason==='moves'?t('result.extraOffer'):t('result.tryAgain'))
         +(toolLevel&&toolLevel!=='extraMoves'?t('result.hardTip',{tool:toolName(toolLevel)}):'');
     if(won&&unlockModes)rMessage.textContent+=t('lock.resultBonus');
@@ -104,7 +116,7 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
     setLabel(bNext,canNext?t('result.next'):nextLock?t('result.locked'):t('result.done'));
     bNext.title=nextLock?lockText(nextLock):'';
     bExtra.hidden=won||!extraOffer||lostReason!=='moves';
-    const viaAd=!(extraAvailable>0);bExtra.dataset.refill=viaAd?'ad':'';
+    const viaAd=!!extraAd;bExtra.dataset.refill=viaAd?'ad':'';
     setLabel(bExtra,viaAd?t('result.extraAd'):t('result.extraCount',{n:extraAvailable}));
     bExtra.setAttribute('aria-label',viaAd?t('result.extraAdAria'):t('result.extraUseAria',{n:extraAvailable}));
     // Verloren ohne +3: "Nochmal" wird der große Hauptknopf.

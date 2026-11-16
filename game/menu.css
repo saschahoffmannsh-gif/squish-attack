@@ -200,3 +200,5 @@
   .settings-screen:not([hidden]) .settings-panel,
   .duel-screen:not([hidden]) .duel-panel,[data-phase="loading"] .menu-status::before {animation:none;}
 }
+
+.setting-adfree [data-adfree-price] {font:800 14px/1 Fredoka,system-ui,sans-serif;color:#0b0a16;white-space:nowrap;}

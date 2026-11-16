@@ -1,38 +1,39 @@
-import {apiFetch,hasSaveToken} from './api.mjs?v=launch-25';
-import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-25';
+import {apiFetch,hasSaveToken} from './api.mjs?v=launch-26';
+import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-26';
 import { nextSpawn, spawnProfile } from './balance.mjs';
-import {canContinueRun} from './run-availability.mjs?v=launch-25';
-import { createMergeEffects } from './merge-effects.mjs?v=launch-25';
-import { createGameGraphics } from './graphics-adapter.mjs?v=launch-25';
-import { installDeviceMotion } from './device-motion.mjs?v=launch-25';
-import { createGameSound } from './sound.mjs?v=launch-25';
+import {canContinueRun} from './run-availability.mjs?v=launch-26';
+import { createMergeEffects } from './merge-effects.mjs?v=launch-26';
+import { createGameGraphics } from './graphics-adapter.mjs?v=launch-26';
+import { installDeviceMotion } from './device-motion.mjs?v=launch-26';
+import { createGameSound } from './sound.mjs?v=launch-26';
 import { installSettings } from './settings.mjs?v=woodland-menu-1';
-import { createDuelClient } from './duel-client.mjs?v=launch-25';
+import { createDuelClient } from './duel-client.mjs?v=launch-26';
 import {installFullscreen} from './fullscreen.mjs?v=timed-duel-1';
-import {createHomeMenu} from './home-menu.mjs?v=launch-25';
-import {createConfetti} from './confetti.mjs?v=launch-25';
-import {createHaptics} from './haptics.mjs?v=launch-25';
-import * as native from './native.mjs?v=launch-25';
+import {createHomeMenu} from './home-menu.mjs?v=launch-26';
+import {createConfetti} from './confetti.mjs?v=launch-26';
+import {createHaptics} from './haptics.mjs?v=launch-26';
+import * as native from './native.mjs?v=launch-26';
 import {planMergeRipple} from './merge-ripple.mjs?v=swarm-fx-3';
-import * as Camp from './campaign.mjs?v=launch-25';
-import {createCampaignUI} from './campaign-ui.mjs?v=launch-25';
-import {createToolFx} from './tool-fx.mjs?v=launch-25';
-import {createGhostFinger} from './ghost-finger.mjs?v=launch-25';
-import {hintState,findHint} from './hint-solver.mjs?v=launch-25';
-import {comicColors} from './comic-style.mjs?v=launch-25';
-import * as Shop from './shop.mjs?v=launch-25';
-import {createShopUI} from './shop-ui.mjs?v=launch-25';
-import {createGiftFx} from './gift-fx.mjs?v=launch-25';
-import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-25';
-import {createAdUI} from './ad-ui.mjs?v=launch-25';
-import {hasNativeAds,showInterstitial} from './native-ads.mjs?v=launch-25';
-import {createAdPacing} from './ad-pacing.mjs?v=launch-25';
-import {ENDLESS_TOOLS,endlessToolName,loadEndlessInv,saveEndlessInv,changeEndlessInv,createEndlessToolBar} from './endless-tool.mjs?v=launch-25';
-import {createStatsUI} from './stats-ui.mjs?v=launch-25';
-import * as ToolLog from './tool-log.mjs?v=launch-25';
-import {createProgressSync} from './progress-sync.mjs?v=launch-25';
-import {epochOf} from './progress-merge.mjs?v=launch-25';
-import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-25';
+import * as Camp from './campaign.mjs?v=launch-26';
+import {createCampaignUI} from './campaign-ui.mjs?v=launch-26';
+import {createToolFx} from './tool-fx.mjs?v=launch-26';
+import {createGhostFinger} from './ghost-finger.mjs?v=launch-26';
+import {hintState,findHint} from './hint-solver.mjs?v=launch-26';
+import {comicColors} from './comic-style.mjs?v=launch-26';
+import * as Shop from './shop.mjs?v=launch-26';
+import {createShopUI} from './shop-ui.mjs?v=launch-26';
+import {createGiftFx} from './gift-fx.mjs?v=launch-26';
+import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-26';
+import {createAdUI} from './ad-ui.mjs?v=launch-26';
+import {hasNativeAds,showInterstitial} from './native-ads.mjs?v=launch-26';
+import {createAdPacing} from './ad-pacing.mjs?v=launch-26';
+import {ENDLESS_TOOLS,endlessToolName,loadEndlessInv,saveEndlessInv,changeEndlessInv,createEndlessToolBar} from './endless-tool.mjs?v=launch-26';
+import {createStatsUI} from './stats-ui.mjs?v=launch-26';
+import * as ToolLog from './tool-log.mjs?v=launch-26';
+import {createProgressSync} from './progress-sync.mjs?v=launch-26';
+import {epochOf} from './progress-merge.mjs?v=launch-26';
+import {isAdFree,canOfferAdFree,canRestoreAdFree,purchaseAdFree,restoreAdFree,adFreePriceLabel,onAdFreeChange} from './ad-free.mjs?v=launch-26';
+import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-26';
 const playfield = document.getElementById('playfield');
 const gameElement = document.querySelector('.game');
 const visual = createGameGraphics(document.getElementById('graphics'));
@@ -146,9 +147,9 @@ const newTile = value => ({ id: nextId++, value });
 // in localStorage unangetastet: während der Kampagne wird nichts davon gespeichert,
 // beim Verlassen wird er wieder geladen.
 const MODE_KEY='squish-mode-v1';
-const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-25',import.meta.url);
+const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-26',import.meta.url);
 // launch-16: Test-Level für die neuen Squishes (Eis, Ketten, Bombe) – eigener kleiner Satz, kein Fortschritt/Protokoll.
-const LAB_URL=new URL('../levels/levels-lab.json?v=launch-25',import.meta.url);
+const LAB_URL=new URL('../levels/levels-lab.json?v=launch-26',import.meta.url);
 let labMode=false,labLevels=null,labLoading=null;
 function loadLab(){
   return labLoading||=fetch(LAB_URL,{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('lab '+r.status);return r.json();})
@@ -193,7 +194,7 @@ const progressSync=createProgressSync({fetch:apiFetch,epoch:epochOf(Camp.PROGRES
     try{renderCampaign();void worldMenu.refresh?.();}catch{}}});
 const cloudSync=()=>{if(!labMode)progressSync.schedule();};
 progressSync.attach(window);
-const BUILD_LABEL='launch-22';
+const BUILD_LABEL='launch-26';
 let toolLog=ToolLog.loadLog(),logAttempt=null;
 // Versuche, die beim letzten Mal offen blieben (Seite geschlossen), gelten als abgebrochen.
 if(toolLog.attempts.some(a=>!a.outcome)){for(const a of toolLog.attempts)if(!a.outcome)ToolLog.endAttempt(toolLog,a.id,{outcome:'quit',moves:a.moves});ToolLog.saveLog(toolLog);}
@@ -216,15 +217,21 @@ const campaignUI=createCampaignUI({
   onPlay:n=>{void worldMenu.play({campaign:n});},
   onNext:()=>{if(camp)void playLevel(camp.n+1);},
   onRetry:()=>{if(camp)void playLevel(camp.n);},
-  onExtra:()=>{if(campaignMode&&camp&&!(availableTools().extraMoves>0)&&adsEnabled()){openAd('extraMoves',{where:'result',then:()=>useExtraMoves()});return;}useExtraMoves();},
+  onExtra:()=>{void withToolAd('extraMoves',()=>useExtraMoves(),'result');},
   onMenu:()=>void backToMenu(),
-  onTool:type=>{if(campaignMode&&camp&&!(availableTools()[type]>0)){if(adsEnabled()){openAd(type);return;}if(shopEnabled()){openShop(type);return;}}type==='extraMoves'?useExtraMoves():type==='hint'?void useHint():toggleTool(type);},
+  onTool:type=>{if(type==='extraMoves')void withToolAd('extraMoves',()=>useExtraMoves());else if(type==='hint')void withToolAd('hint',()=>void useHint());else toggleTool(type);},
   onGift:()=>void openGift(),
   onStar:i=>{sound.play('star',i+1);haptics.pulse(i===2?'big':'merge');},
   reduceMotion,
 });
 onLangChange(()=>{if(labMode&&camp&&campaignMode)campaignUI.renderHud(camp.run,camp.n,labHudLabel());});
 const availableTools=()=>Camp.toolsAvailable(inventory,camp?.free);
+function toolCapNote(run=camp?.run){
+  const n=run?.toolsUsed.length|0;if(!n)return '';
+  const max=Camp.toolStarCap(n);
+  return max>0?t('note.toolCap',{n,max}):t('note.toolCapZero');
+}
+function announceToolCap(){const msg=toolCapNote();if(msg)showNote(msg,2800);}
 /** Ladung reservieren (zuerst gratis, dann Inventar). Gibt eine commit-Funktion zurück oder null. */
 function takeTool(type){
   const s=camp&&Camp.spendCharge(inventory,camp.free,type);
@@ -232,9 +239,13 @@ function takeTool(type){
   const c=camp,ctx=logCtx(campaignUI.resultOpen?'result':'level');   // Stand VOR dem Einsatz protokollieren
   return ()=>{c.free=s.free;if(!s.fromFree){inventory=s.inventory;Camp.saveInventory(inventory);cloudSync();}logTool('use',type,ctx);};
 }
-// ---------- Werbung (Dummy) + Werkzeug-Protokoll (launch-13, Testphase) ----------
+// ---------- Werbung (Dummy) + Werkzeug-Protokoll ----------
+// launch-26: Vorrats-Werbung (AD_TOOLS) bleibt aus. Der Einsatz eines Abenteuer-
+// Hilfsmittels verlangt einen Belohnungsclip, außer der Spieler hat Werbefrei.
+// Werbefrei ändert nicht das 1×-Limit je Versuch.
 const adsEnabled=()=>Camp.AD_TOOLS;
 const refillMode=()=>adsEnabled()?'ad':shopEnabled()?'shop':null;
+const toolAdRequired=()=>campaignMode&&!!camp&&!labMode&&!isAdFree();
 function logCtx(where){
   const r=camp?.run;if(!r)return {where};
   return {level:camp.n,move:r.moves,movesLeft:Camp.movesLeft(r),where,
@@ -247,20 +258,32 @@ function beginAttempt(){
   logAttempt=ToolLog.startAttempt(toolLog,camp.n,{limit:camp.run.level.moves});ToolLog.saveLog(toolLog);
 }
 function endLogAttempt(outcome,extra={}){if(!logAttempt)return;ToolLog.endAttempt(toolLog,logAttempt.id,{outcome,...extra});ToolLog.saveLog(toolLog);}
-const adUI=createAdUI({sound,haptics,onWatch:type=>grantByAd(type),onClose:()=>{adFollow=null;renderCampaign();},
+const adUI=createAdUI({sound,haptics,onWatch:type=>{
+  const f=adFollow;adFollow=null;
+  lastAd={type,where:f?.where||'tool'};
+  if(f?.where==='endless'){
+    adPacing.takeEndlessReward(ENDLESS_TOOLS);
+    endlessInv=changeEndlessInv(endlessInv,type,1);saveEndlessInv(endlessInv);cloudSync();
+    logTool('ad-endless',type,{where:'endless'});
+    renderEndlessTools();showNote(`+1 ${endlessToolName(type)} · unten links antippen zum Einsetzen`,2600);
+    return;
+  }
+  logTool('ad',type,logCtx(f?.where||'tool'));
+  if(f?.then)f.then();else renderCampaign();
+},onClose:()=>{const f=adFollow;adFollow=null;f?.cancel?.();renderCampaign();},
   onAdStart:()=>{adShowing=true;sound.pause();},onAdEnd:()=>{adShowing=false;if(!paused)sound.resume();}});
 // ---------- App-Werbung (App-Hülle; im Browser ohne Adapter: nichts davon) ----------
-const adPacing=createAdPacing();
-let adShowing=false;
+const adPacing=createAdPacing({isAdFree});
+let adShowing=false,adFollow=null,lastAd=null;
 async function playInterstitial(placement){
   adShowing=true;sound.pause();
   try{await showInterstitial({placement});}finally{adShowing=false;sound.resume();}
 }
 /** Endlos: nach einem fertigen Zug (Animationen durch, kein Game Over, kein Zug in der Warteschlange).
- *  Belohnung = 1 Endlos-Werkzeug (reihum Rakete/Zauberstab) im eigenen Endlos-Vorrat. */
+ *  Belohnung = 1 Endlos-Werkzeug (reihum Rakete/Zauberstab) im eigenen Endlos-Vorrat. Entfällt bei Werbefrei. */
 function maybeEndlessOffer(){
   const due=adPacing.endlessMove();
-  if(!due||!hasNativeAds()||!adsEnabled()||adUI.isOpen||paused||busy||campaignMode||duelMode)return;
+  if(!due||!hasNativeAds()||isAdFree()||adUI.isOpen||paused||busy||campaignMode||duelMode)return;
   adPacing.endlessOffered();
   const type=adPacing.peekEndlessReward(ENDLESS_TOOLS);
   adFollow={then:null,where:'endless'};
@@ -338,27 +361,76 @@ async function applyEndlessWand(tileId,value){
   if(turn===generation&&isGameOver(board))showDialog(true);
   return true;
 }
-let adFollow=null,lastAd=null;
-function openAd(type,{then=null,where='tool'}={}){
-  if(!adsEnabled()||adUI.isOpen)return;
-  if(armedTool)toggleTool(null);
-  adFollow={then,where};adUI.open(type);
+/** Belohnungsclip vor dem Einsatz. Werbefrei oder kein Abenteuer → sofort true. Abbruch → false. */
+function requestToolAd(type,where='tool'){
+  if(!toolAdRequired())return Promise.resolve(true);
+  if(adUI.isOpen)return Promise.resolve(false);
+  return new Promise(resolve=>{
+    let done=false;
+    const finish=ok=>{if(done)return;done=true;adFollow=null;resolve(!!ok);};
+    adFollow={type,where,then:()=>finish(true),cancel:()=>finish(false)};
+    adUI.open(type);
+  });
 }
-function grantByAd(type){
-  const f=adFollow;adFollow=null;
-  if(f?.where==='endless'){   // Endlos-Angebot: 1 Werkzeug in den Endlos-Vorrat (Abenteuer-Vorrat bleibt unberührt)
-    adPacing.takeEndlessReward(ENDLESS_TOOLS);
-    endlessInv=changeEndlessInv(endlessInv,type,1);saveEndlessInv(endlessInv);cloudSync();
-    logTool('ad-endless',type,{where:'endless'});lastAd={type,where:'endless'};
-    renderEndlessTools();showNote(`+1 ${endlessToolName(type)} · unten links antippen zum Einsetzen`,2600);return;
+async function withToolAd(type,then,where='tool'){
+  if(!campaignMode||!camp)return;
+  if(!(availableTools()[type]>0)){
+    const key=type==='extraMoves'?'note.noExtra':type==='hint'?'note.noHint':type==='rocket'?'note.noRocket':'note.noWand';
+    showNote(t(key),2200);return;
   }
-  inventory=Camp.addToStock(inventory,{[type]:1});Camp.saveInventory(inventory);cloudSync();
-  logTool('ad',type,logCtx(f?.where||'tool'));lastAd={type,where:f?.where||'tool'};
-  renderCampaign();void worldMenu.refresh?.();
-  const b=campaignMode&&!campaignUI.resultOpen?campaignUI.toolButton(type):null;
-  if(b&&!reduceMotion.matches){b.classList.remove('is-got');void b.offsetWidth;b.classList.add('is-got');}
-  if(f?.then)f.then();else showNote(t('note.toolReady',{tool:Camp.toolName(type)}),2200);
+  if(!await requestToolAd(type,where))return;
+  then?.();
 }
+function refreshAdFreeSettings(){
+  const buy=document.getElementById('adfree-buy');
+  const desc=document.getElementById('adfree-desc');
+  const owned=document.getElementById('adfree-owned');
+  const restore=document.getElementById('adfree-restore');
+  if(!buy)return;
+  const offer=canOfferAdFree(),have=isAdFree(),canRestore=canRestoreAdFree();
+  buy.hidden=!offer;
+  if(desc)desc.hidden=!offer;
+  if(owned)owned.hidden=!have;
+  if(restore){
+    restore.hidden=!canRestore;
+    restore.setAttribute('aria-label',t('settings.adFreeRestoreAria'));
+  }
+  const price=buy.querySelector('[data-adfree-price]');
+  if(price)price.textContent=adFreePriceLabel();
+  buy.setAttribute('aria-label',t('settings.adFreeAria',{price:adFreePriceLabel()}));
+}
+function installAdFreeSettings(){
+  const buy=document.getElementById('adfree-buy');
+  if(!buy||buy.dataset.ready)return;
+  buy.dataset.ready='1';
+  buy.addEventListener('click',async()=>{
+    if(!canOfferAdFree())return;
+    buy.disabled=true;
+    const r=await purchaseAdFree();
+    buy.disabled=false;
+    refreshAdFreeSettings();
+    if(r.ok)showNote(t('settings.adFreeThanks'),2800);
+    else if(r.reason==='cancelled')showNote(t('shop.cancelled'),2200);
+    else showNote(t('shop.unavail'),2200);
+  });
+  document.getElementById('adfree-restore')?.addEventListener('click',async ev=>{
+    const b=ev.currentTarget;
+    if(!canRestoreAdFree())return;
+    b.disabled=true;
+    const r=await restoreAdFree();
+    b.disabled=false;
+    refreshAdFreeSettings();
+    if(r.ok&&r.owned)showNote(t('settings.adFreeRestoreDone'),2800);
+    else if(r.ok)showNote(t('settings.adFreeRestoreNone'),2800);
+    else if(r.reason==='cancelled')showNote(t('shop.cancelled'),2200);
+    else showNote(t('shop.unavail'),2200);
+  });
+  document.querySelectorAll('[data-open-settings]').forEach(b=>b.addEventListener('click',refreshAdFreeSettings));
+  onLangChange(refreshAdFreeSettings);
+  onAdFreeChange(refreshAdFreeSettings);
+  refreshAdFreeSettings();
+}
+installAdFreeSettings();
 const statsUI=createStatsUI({getLog:()=>toolLog,build:BUILD_LABEL,sound,onReset:()=>{
   toolLog=ToolLog.emptyLog();logAttempt=null;
   if(campaignMode&&camp&&camp.run.status==='playing')logAttempt=ToolLog.startAttempt(toolLog,camp.n,{limit:camp.run.level.moves});
@@ -406,7 +478,7 @@ function renderCampaign(){
   if(!campaignMode||!camp)return;
   campaignUI.renderHud(camp.run,camp.n,labHudLabel());
   const room=camp.run.level.sequence.length-Camp.moveLimit(camp.run);
-  campaignUI.renderTools(availableTools(),{refill:refillMode(),canExtra:room>0&&camp.run.status!=='won'&&!hintBusy,armed:armedTool,busy:hintBusy?'hint':null,locked:hintBusy||camp.run.status!=='playing'});
+  campaignUI.renderTools(availableTools(),{refill:refillMode(),needsAd:toolAdRequired(),canExtra:room>0&&camp.run.status!=='won'&&!hintBusy,armed:armedTool,busy:hintBusy?'hint':null,locked:hintBusy||camp.run.status!=='playing',toolsUsed:camp.run.toolsUsed.length});
 }
 async function prepareLevel(n){
   // App: nach jedem 10. gewonnenen Level eine Zwischenwerbung, immer VOR dem nächsten Level.
@@ -430,6 +502,7 @@ async function prepareLevel(n){
 }
 function leaveCampaign(){
   if(!campaignMode)return;
+  adPacing.endlessPause();
   ghostFinger.hide();
   endLogAttempt('quit',{moves:camp?.run?.moves??0});logAttempt=null;adUI.close({silent:true});
   disarmTools();campaignMode=false;camp=null;labMode=false;renderBombBadges();
@@ -514,7 +587,7 @@ async function finishLevel(){
   paused=true;releaseGesture();phoneMotion.reset();
   const count=levelList().length,nextLock=n<count&&!labMode?Camp.lockReason(campaignProgress,n+1):null;
   campaignUI.showResult({n,won,stars,moves:r.moves,limit:Camp.moveLimit(r),lostReason:r.lostReason,toolLevel:r.level.tool||null,
-    canNext:won&&n<count&&!nextLock,nextLock,gifts:Camp.TOOL_STOCK&&Camp.TOOL_GIFTS?inventory.pending.slice():gifts,extraAvailable:availableTools().extraMoves,extraAd:adsEnabled(),toolsUsed:r.toolsUsed.length,
+    canNext:won&&n<count&&!nextLock,nextLock,gifts:Camp.TOOL_STOCK&&Camp.TOOL_GIFTS?inventory.pending.slice():gifts,extraAvailable:availableTools().extraMoves,extraAd:toolAdRequired(),toolsUsed:r.toolsUsed.length,
     unlockModes:won&&!labMode&&n===Camp.MODES_UNLOCK_LEVEL&&Camp.modesUnlocked(campaignProgress)});
   renderCampaign();
 }
@@ -532,7 +605,7 @@ function useExtraMoves(){
   queue=Camp.queueOf(r);renderQueue();
   if(campaignUI.resultOpen){campaignUI.hideResult();paused=false;}
   renderCampaign();haptics.pulse('merge');sound.play('record');
-  showNote(t('note.extraUsed',{n:added}),2200);
+  showNote(t('note.extraUsed',{n:added})+' '+toolCapNote(),2800);
   showTutorialFinger();
 }
 // ---------- Hilfsmittel (launch-12): Rakete, Zauberstab, Hinweis ----------
@@ -572,6 +645,7 @@ async function rocketAt(tileId){
   const cell=cellOf(tileId);
   if(!cell||!camp||busy)return false;
   if(camp.run.board[cell[0]][cell[1]]?.bound){showNote(t('note.chainVsRocket'),2200);return false;}
+  if(!await requestToolAd('rocket'))return false;
   const spent=takeTool('rocket');
   if(!spent||!Camp.useRocket(camp.run,cell[0],cell[1]))return false;
   spent();armedTool=null;note.hidden=true;
@@ -589,7 +663,7 @@ async function rocketAt(tileId){
     }
     board=board.map(row=>row.slice());board[cell[0]][cell[1]]=null;
     renderBoard();
-  }finally{if(turn===generation){busy=false;renderCampaign();}}
+  }finally{if(turn===generation){busy=false;renderCampaign();announceToolCap();}}
   // launch-15: „höchstens N Steine übrig“ kann direkt durch die Rakete erfüllt werden
   if(turn===generation&&camp?.run?.status==='won')await finishLevel();
   return true;
@@ -608,7 +682,9 @@ function wandAt(tileId){
 async function applyWand(tileId,value){
   const cell=cellOf(tileId);
   if(!cell||!camp||busy)return;
-  const r=camp.run,spent=takeTool('wand');
+  const r=camp.run;
+  if(!await requestToolAd('wand'))return;
+  const spent=takeTool('wand');
   if(!spent)return;
   const res=Camp.useWand(r,cell[0],cell[1],value);
   if(!res.ok){showNote(t('note.badWandNumber'),2200);return;}
@@ -618,7 +694,7 @@ async function applyWand(tileId,value){
     const at=cellPoint(cell[0],cell[1]);
     board=board.map(row=>row.slice());board[cell[0]][cell[1]]={...board[cell[0]][cell[1]],value};
     renderBoard();renderCampaign();
-    toolFx.sparkle(at,at.size);sound.play('magic');haptics.pulse('merge');
+    toolFx.sparkle(at,at.size);sound.play('magic');haptics.pulse('merge');announceToolCap();
     if(!reduceMotion.matches){graphics.wobble(tileId,.55);await wait(320);}
     if(turn!==generation)return;
     await resolveMerges(turn,{streak:true});
@@ -634,7 +710,7 @@ let hintWorker=null,hintSeq=0;
 function searchHint(state){
   const budget={want:2,maxStates:160000,maxMs:2500};
   try{
-    hintWorker||=new Worker(new URL('./hint-worker.mjs?v=launch-25',import.meta.url),{type:'module'});
+    hintWorker||=new Worker(new URL('./hint-worker.mjs?v=launch-26',import.meta.url),{type:'module'});
   }catch{hintWorker=null;}
   if(!hintWorker)return Promise.resolve(findHint(state,{...budget,maxMs:900}));
   const id=++hintSeq;
@@ -674,7 +750,7 @@ async function useHint(){
   const spent=takeTool('hint');
   if(!spent){hintBusy=false;renderCampaign();return;}
   spent();Camp.markToolUsed(r,'hint');
-  note.hidden=true;renderCampaign();
+  note.hidden=true;renderCampaign();announceToolCap();
   try{
     for(const ch of result.moves){
       if(turn!==generation||r.status!=='playing')break;
@@ -1416,7 +1492,7 @@ window.addEventListener('online', () => void flushPending());
 window.SquishGame={graphics,move,restart,get state(){return {board,queue,score,best,bestTile,moves,peak,busy,paused,booting,started,hasSavedGame,duelMode,duelRevision};},get effects(){return mergeEffects.stats;},get sound(){return sound.stats;},get menu(){return worldMenu.stats;},get fusion(){return visual.fusion?.stats||null;},
   get appAds(){return {pacing:adPacing,native:hasNativeAds(),adOpen:adUI.isOpen,adType:adUI.type,showing:adShowing,lastAd,endless:{...endlessInv},armed:endlessArmed,rocketAt:endlessRocketAt,wand:applyEndlessWand,wandChoices:endlessWandChoices};},
   get campaign(){return {mode:campaignMode,lab:labMode,bombMs:camp?Camp.nextBombMs(camp.run):null,bombClock:!!camp?.run.bombClock,exploded:camp?.run.exploded??0,specials:camp?camp.run.board.flatMap((row,r)=>row.map((t,c)=>t&&Camp.specialOf(t)?{kind:Camp.specialOf(t),r,c,value:t.value,id:t.id}:null)).filter(Boolean):[],bombBadges:[...bombBadges.values()].map(e=>e.textContent),level:camp?.n??null,status:camp?.run.status??null,moves:camp?.run.moves??0,movesLeft:camp?Camp.movesLeft(camp.run):null,
-    toolsUsed:camp?.run.toolsUsed.slice()??[],progress:campaignProgress,inventory,sync:progressSync.stats,shopOpen:shopUI.isOpen,shopStats:shopUI.stats,gift:{active:giftFx.active,phase:giftFx.phase,...giftFx.stats},lastPurchase,adOpen:adUI.isOpen,adType:adUI.type,adStats:adUI.stats,lastAd,statsOpen:statsUI.isOpen,statsStats:{opens:statsUI.stats.opens,exports:statsUI.stats.exports,resets:statsUI.stats.resets,lastExportMode:statsUI.stats.lastExportMode},toolLog:{attempts:toolLog.attempts.length,events:toolLog.events.length,current:logAttempt?{...logAttempt}:null,summary:ToolLog.summarize(toolLog)},freeTools:camp?.free?{...camp.free}:null,available:camp?availableTools():null,levelsLoaded:!!levels,resultOpen:campaignUI.resultOpen,armedTool,hintBusy,lastHint,toolFx:toolFx.stats,celebrating,timeline:campaignUI.timeline.slice()};},
+    toolsUsed:camp?.run.toolsUsed.slice()??[],progress:campaignProgress,inventory,sync:progressSync.stats,shopOpen:shopUI.isOpen,shopStats:shopUI.stats,gift:{active:giftFx.active,phase:giftFx.phase,...giftFx.stats},lastPurchase,adOpen:adUI.isOpen,adType:adUI.type,adStats:adUI.stats,lastAd,adFree:isAdFree(),adFreeOffer:canOfferAdFree(),statsOpen:statsUI.isOpen,statsStats:{opens:statsUI.stats.opens,exports:statsUI.stats.exports,resets:statsUI.stats.resets,lastExportMode:statsUI.stats.lastExportMode},toolLog:{attempts:toolLog.attempts.length,events:toolLog.events.length,current:logAttempt?{...logAttempt}:null,summary:ToolLog.summarize(toolLog)},freeTools:camp?.free?{...camp.free}:null,available:camp?availableTools():null,levelsLoaded:!!levels,resultOpen:campaignUI.resultOpen,armedTool,hintBusy,lastHint,toolFx:toolFx.stats,celebrating,timeline:campaignUI.timeline.slice()};},
   // Screen point of a board cell (for input tests).
   cellPoint(row,col){const host=document.getElementById('graphics').getBoundingClientRect(),loc=location(row,col);return {x:host.left+loc.x/100*host.width,y:host.top+(loc.y+1.5)/100*host.height};}};
 // QA only (?vfxdemo=1): stage a board, then swipe with SquishGame.move().

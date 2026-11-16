@@ -5,7 +5,7 @@
 // Wire-Format v1:
 //   { v: 1, epoch: 18, levels: { "12": { s: 3, m: 17 } }, inv: {...} | null, invAt: 1700000000000 }
 //   epoch  = Nummer des letzten Fortschritts-Resets (launch-24 → 24). Höhere Epoche ersetzt Level und Abenteuer-Vorrat.
-//   levels = pro Level die besten Sterne (1–3) und die wenigsten Züge dafür.
+//   levels = pro Level die besten Sterne (0–3) und die wenigsten Züge dafür.
 //   inv    = Werkzeug-Vorrat {extraMoves, rocket, hint, wand, gifts:[ids], pending:[{id,type}]}.
 //   invAt  = Zeitpunkt der letzten Vorrats-Änderung (ms). Neuerer Vorrat gewinnt,
 //            vergebene Geschenk-ids werden vereinigt (nichts wird doppelt verschenkt).
@@ -72,7 +72,7 @@ export function normalizeWire(raw, now = Date.now()) {
     if (!/^\d{1,4}$/.test(k)) continue;
     const id = Number(k);
     if (id < 1 || id > MAX_LEVEL_ID || !r || typeof r !== 'object') continue;
-    const s = int(r.s, 1, 3), m = int(r.m, 1, MAX_MOVES);
+    const s = int(r.s, 0, 3), m = int(r.m, 1, MAX_MOVES);
     if (s === null || m === null) continue;
     levels[String(id)] = { s, m };
     if (++n >= MAX_LEVEL_ID) break;

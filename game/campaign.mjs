@@ -2,8 +2,8 @@
 // Ein Level = feste Startaufstellung + feste Steinfolge + Ziele + Zuglimit.
 // Dieses Modul ist reine Logik (kein DOM). Es wird von der UI, dem Solver,
 // dem Generator und den Tests gemeinsam benutzt, damit alle exakt gleich zählen.
-import { SIZE, insertTile, settle, isGameOver, tickBombs, BOMB_MS, BOMB_UNIT_MS } from './game-logic.mjs?v=launch-25';
-import { t, fmtNum } from './i18n.mjs?v=launch-25';
+import { SIZE, insertTile, settle, isGameOver, tickBombs, BOMB_MS, BOMB_UNIT_MS } from './game-logic.mjs?v=launch-26';
+import { t, fmtNum } from './i18n.mjs?v=launch-26';
 
 export const DIRECTIONS = ['left', 'right', 'up', 'down'];
 export const QUEUE_PREVIEW = 3;
@@ -313,16 +313,22 @@ export function nextBombMs(run) {
 /**
  * Sterne für einen Lauf. Schwellen stehen im Level (`stars.three`, `stars.two`):
  *   3★: Züge ≤ three (= Optimum + 1)   2★: Züge ≤ two   1★: gewonnen innerhalb des Zuglimits
- * Mit Hilfsmittel höchstens 2★; gewonnen erst mit Extra-Zügen = 1★.
+ * launch-26: Hilfsmittel deckeln die Sterne stufenweise, das Level zählt trotzdem als gelöst.
+ *   0 Hilfsmittel → normale Sterne (max. 3)   1 → max. 2   2 → max. 1   3 oder mehr → 0★
  */
+export function toolStarCap(toolsUsed = 0) {
+  const n = toolsUsed | 0;
+  if (n <= 0) return 3;
+  if (n === 1) return 2;
+  if (n === 2) return 1;
+  return 0;
+}
 export function starsFor(level, movesUsed, won = true, { toolsUsed = 0 } = {}) {
   if (!won) return 0;
-  let stars = movesUsed <= level.stars.three ? 3 : movesUsed <= level.stars.two ? 2 : 1;
-  // launch-16: Werkzeug-Spitzen sind ohne Werkzeug lösbar → 3★ möglich; nur der Einsatz eines Hilfsmittels deckelt auf 2★.
-  if (toolsUsed > 0) stars = Math.min(stars, MAX_STARS_WITH_TOOLS);
-  return stars;
+  const stars = movesUsed <= level.stars.three ? 3 : movesUsed <= level.stars.two ? 2 : 1;
+  return Math.min(stars, toolStarCap(toolsUsed));
 }
-export const MAX_STARS_WITH_TOOLS = 2;
+export const MAX_STARS_WITH_TOOLS = 2; // historisch (ein Hilfsmittel); siehe toolStarCap
 /** Sterne für einen fertigen Lauf (berücksichtigt Hilfsmittel). */
 export const starsOfRun = run => starsFor(run.level, run.moves, run.status === 'won', { toolsUsed: run.toolsUsed.length });
 
@@ -404,9 +410,9 @@ export function saveProgress(progress, storage = globalThis.localStorage) {
   try { storage?.setItem(PROGRESS_KEY, JSON.stringify(progress)); return true; } catch { return false; }
 }
 
-/** Ergebnis eintragen; behält jeweils das Beste (Sterne, dann Züge). */
+/** Ergebnis eintragen; behält jeweils das Beste (Sterne, dann Züge). 0★ zählt als geschafft (launch-26). */
 export function recordResult(progress, levelId, { stars, moves, now = Date.now() }) {
-  if (!(stars >= 1)) return progress;
+  if (!Number.isInteger(stars) || stars < 0 || stars > 3) return progress;
   const key = String(levelId), old = progress.levels[key];
   const better = !old || stars > old.stars || (stars === old.stars && moves < old.moves);
   if (!better) return progress;
@@ -428,7 +434,8 @@ export const totalStars = progress => Object.values(progress.levels).reduce((n, 
 // ---------------- Kapitel und Sterne-Schranken ----------------
 // Kapitel à 10 Level. Für Kapitel k ≥ 2 braucht man insgesamt
 // STARS_PER_CHAPTER_GATE × (k − 1) Sterne (= Ø 1,8★ pro bisherigem Level,
-// also 60 % der möglichen Sterne; mit Hilfsmitteln (max. 2★) erreichbar).
+// also 60 % der möglichen 3★). Ohne Hilfsmittel bequem erreichbar; mit vielen
+// Hilfsmitteln (2→max. 1★, 3+→0★) bewusst knapper.
 export const CHAPTER_SIZE = 10;
 export const STARS_PER_CHAPTER_GATE = 18;
 export const chapterOf = n => Math.floor((n - 1) / CHAPTER_SIZE) + 1;
@@ -452,9 +459,9 @@ export function lockReason(progress, n) {
 }
 /** Level n ist frei: Vorgänger geschafft und ggf. Sterne-Schranke erreicht. Einmal frei = bleibt frei (Bestwerte sinken nie). */
 export const isUnlocked = (progress, n) => lockReason(progress, n) === null;
-/** launch-22: Endlos und 2 Spieler sind frei, sobald Level 5 geschafft ist (mind. 1★). */
+/** launch-22: Endlos und 2 Spieler sind frei, sobald Level 5 geschafft ist (auch mit 0★). */
 export const MODES_UNLOCK_LEVEL = 5;
-export const modesUnlocked = progress => (progress?.levels?.[String(MODES_UNLOCK_LEVEL)]?.stars | 0) >= 1;
+export const modesUnlocked = progress => progress?.levels?.[String(MODES_UNLOCK_LEVEL)] != null;
 
 /**
  * Zug, den der Geisterfinger im Tutorial zeigen soll: zuerst ein Zug, der sofort gewinnt
@@ -491,7 +498,7 @@ export function nextLevel(progress, count) {
 
 // ---------------- Hilfsmittel ----------------
 // launch-12: Rakete (ersetzt den Hammer), Hinweis, Zauberstab, +3 Züge.
-// Jedes Hilfsmittel deckelt das Ergebnis auf höchstens 2 Sterne.
+// launch-26: Sternendeckel nach Anzahl der eingesetzten Hilfsmittel (toolStarCap).
 
 /** Rakete: entfernt einen Stein (kein Zug, keine Fusion). true, wenn etwas entfernt wurde. */
 export function useRocket(run, row, col) {
@@ -584,21 +591,20 @@ export function saveInventory(inv, storage = globalThis.localStorage, touch = tr
   try { storage?.setItem(TOOLS_KEY, JSON.stringify(inv)); return true; } catch { return false; }
 }
 /**
- * Hilfsmittel-Einstellungen:
- *  - FREE_TOOLS_PER_LEVEL (launch-12, Test): jeder Level-Versuch (auch Neustart/Nochmal)
- *    hat so viele Gratis-Ladungen pro Hilfsmittel; sie werden zuerst verbraucht, nie gespeichert.
- *  - TOOL_STOCK (launch-12 wieder an): gespeicherter Vorrat, gefüllt nur durch Geschenke
- *    und Shop-Käufe. Aus = kein Vorrat, keine Geschenke, kein Shop.
- * Altes Verhalten (launch-10): FREE_TOOLS_PER_LEVEL = 0, TOOL_STOCK = true.
- *  - AD_TOOLS (launch-13, Testphase): leeres Hilfsmittel → Dummy-Werbung „Ansehen“ gibt 1 Stück.
- *  - TOOL_GIFTS (launch-13 aus, launch-14 wieder an): Level-Geschenke (3/6/10/20). Sterne-Geschenke gibt es nicht mehr.
- *  - TOOL_STOCK_RESET (launch-13): einmalig beim Laden Vorrat + offene Geschenke leeren.
- * Zurück zu launch-12 (ohne Sterne-Geschenke): FREE_TOOLS_PER_LEVEL = 1, AD_TOOLS = false, SHOP_CONFIG.enabled = true.
+ * Hilfsmittel-Einstellungen (launch-26):
+ *  - FREE_TOOLS_PER_LEVEL = 1: jeder Level-Versuch (auch Neustart/Nochmal) hat genau
+ *    eine Ladung je Hilfsmittel; sie werden nicht gespeichert und sammeln sich nicht.
+ *  - TOOL_STOCK = false: kein Abenteuer-Vorrat, keine Shop-Plus-Knöpfe an den Slots.
+ *  - AD_TOOLS = false: keine Vorrats-Werbung (kein „Ansehen, um +1 in den Vorrat“).
+ *    Der Einsatz selbst verlangt in game.mjs einen Belohnungsclip, außer isAdFree().
+ *    Werbefrei entfernt nur die Werbung, nicht das 1×-Limit je Versuch.
+ *  - TOOL_GIFTS = false: keine Geschenke nach Level 3/6/10/20.
+ * Der Endlos-Vorrat (App-Hülle) ist unabhängig und bleibt bestehen.
  */
-export const FREE_TOOLS_PER_LEVEL = 0;
-export const TOOL_STOCK = true;
-export const AD_TOOLS = true;
-export const TOOL_GIFTS = true;
+export const FREE_TOOLS_PER_LEVEL = 1;
+export const TOOL_STOCK = false;
+export const AD_TOOLS = false;
+export const TOOL_GIFTS = false;
 export const TOOL_STOCK_RESET = 'launch-13';
 export const TOOL_RESET_KEY = 'squish-campaign-tools-reset';
 /**

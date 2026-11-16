@@ -93,10 +93,41 @@ angeschlossen und lässt sich lokal testen:
    ```
    Es erscheint der StoreKit-Testkaufdialog. Ergebnis: `{ok: true, items: {rocket: 3}, …}`.
    (Dieser Test bucht nichts in den Vorrat, er prüft nur den Kaufweg.)
-4. Wer den ganzen Shop sehen will: in `game/shop.mjs` vorübergehend `enabled: true` setzen,
+4. Werbefrei (Nicht-Verbrauch, 2,99 €, Produkt-ID `squish.adfree` — **ohne** das Shop-Präfix):
+   ```js
+   await SquishApp.testAdFreePurchase()   // Kaufdialog, danach isAdFree() === true
+   await SquishApp.testAdFreeRestore()    // Käufe wiederherstellen
+   ```
+   In der App steht derselbe Weg unter Einstellungen: „Werbefrei 2,99 €“ und
+   „Käufe wiederherstellen“ (nur in der nativen App, nicht im Web).
+5. Wer den ganzen Werkzeug-Shop sehen will: in `game/shop.mjs` vorübergehend `enabled: true` setzen,
    `npm run sync`, ▶. **Nicht so committen.**
 
 Abgeschlossene Testkäufe siehst du in Xcode unter **Debug → StoreKit → Manage Transactions**.
+Zum Testen von „Käufe wiederherstellen“: Transaction für `squish.adfree` dort löschen, App neu
+starten (lokales Entitlement ggf. im Web-Inspektor mit `localStorage.removeItem('squish-adfree-v1')`
+löschen) und Restore erneut auslösen — ohne vorhandenen Kauf muss das Ergebnis `owned: false` sein.
+
+### Werbefrei in App Store Connect anlegen
+
+Einmaliger In-App-Kauf, **kein** Abonnement, **kein** Verbrauchsartikel.
+
+1. App Store Connect → die App „Squish Attack“ → **Monetarisierung → In-App-Käufe → „+“**.
+2. Typ: **Nicht-Verbrauch** (Non-Consumable). Referenzname z. B. „Werbefrei“.
+3. Produkt-ID genau **`squish.adfree`** (nicht `de.hoffmann.squishattack.adfree`). Einmal angelegt,
+   lässt sich die ID nicht mehr ändern.
+4. Preis: **2,99 EUR** (Preisstufe wählen, die in Deutschland 2,99 € anzeigt).
+5. Lokalisierung Deutsch: Anzeigename „Werbefrei“, Beschreibung z. B. „Keine Werbung vor
+   Hilfsmitteln, keine Zwischenwerbung. Jedes Hilfsmittel bleibt 1× je Versuch.“
+   Englisch: „Ad-free“ / „No tool ads, no interstitials. Each tool stays 1× per attempt.“
+6. Prüfung: Screenshot der Einstellungen mit Kaufknopf beilegen, Review-Notizen:
+   „Non-consumable unlocks ad-free. Settings → Werbefrei and Käufe wiederherstellen.
+   Does not remove the 1×-per-attempt tool limit.“
+7. Dieselbe ID steht in `app/src/app-config.mjs` (`store.adFreeProductId`) und in der Testdatei
+   `app/ios/App/App/Squish.storekit` (Typ `NonConsumable`, 2,99). Nach Änderungen an der Testdatei
+   in Xcode das Schema prüfen (**StoreKit Configuration** = `Squish.storekit`).
+8. Werkzeug-Pakete (`de.hoffmann.squishattack.*`) bleiben Verbrauchsartikel und der Shop bleibt
+   vorerst ausgeblendet. Sie nicht mit Werbefrei vermischen.
 
 ## TestFlight (mit Apple-Developer-Programm)
 
@@ -123,7 +154,8 @@ Abgeschlossene Testkäufe siehst du in Xcode unter **Debug → StoreKit → Mana
 | **AdMob-App-ID** | `ca-app-pub-3940256099942544~1458002511` (Google-Test) | `app/ios/App/App/Info.plist` → `GADApplicationIdentifier` |
 | **AdMob-Anzeigenblöcke** | Google-Test-IDs für Rewarded und Interstitial | `app/src/app-config.mjs` → `admob.rewardedId`, `admob.interstitialId` |
 | **Test-Modus Werbung** | `testing: true` | `app/src/app-config.mjs` → erst **nach** dem Eintragen der echten IDs auf `false` |
-| **Produkt-IDs (Käufe)** | `de.hoffmann.squishattack.<shop-id>`, z. B. `…rocket_3`, `…bundle_mix` | Präfix in `app/src/app-config.mjs` → `store.productPrefix`; die Shop-IDs kommen aus `SHOP_CONFIG` in `game/shop.mjs`. In App Store Connect als **Verbrauchsartikel** genau so anlegen. Die Testdatei `app/ios/App/App/Squish.storekit` muss dieselben IDs haben (bei neuem Präfix dort mit ändern). |
+| **Produkt-IDs (Werkzeug-Shop)** | `de.hoffmann.squishattack.<shop-id>`, z. B. `…rocket_3`, `…bundle_mix` | Präfix in `app/src/app-config.mjs` → `store.productPrefix`; die Shop-IDs kommen aus `SHOP_CONFIG` in `game/shop.mjs`. In App Store Connect als **Verbrauchsartikel** genau so anlegen. Die Testdatei `app/ios/App/App/Squish.storekit` muss dieselben IDs haben (bei neuem Präfix dort mit ändern). Shop bleibt ausgeblendet. |
+| **Werbefrei (IAP)** | `squish.adfree` (ohne Präfix), einmalig **2,99 EUR**, **Nicht-Verbrauch** | `app/src/app-config.mjs` → `store.adFreeProductId`. In App Store Connect als Non-Consumable mit genau dieser ID anlegen (siehe Abschnitt „Werbefrei in App Store Connect anlegen“). Testdatei `Squish.storekit` enthält denselben Eintrag. Einstellungen: Kauf + „Käufe wiederherstellen“. |
 | **ATT-Text** | „Damit wir dir passendere Werbung zeigen können …“ | `app/ios/App/App/de.lproj/InfoPlist.strings`, `en.lproj/InfoPlist.strings` (und Info.plist) |
 | **ATT ganz weglassen** | `askTracking: true` | `app/src/app-config.mjs`. Bei `false` auch `NSUserTrackingUsageDescription` aus der Info.plist löschen und im Privacy Manifest `NSPrivacyTracking` auf `false`. |
 | **App-Icon / Startbild** | aus `game/icons/squishy-v1-1024.png` und dem Logo erzeugt | neue Vorlagen in `game/…` ablegen, dann `npm run assets` (braucht Python mit Pillow) |
@@ -147,7 +179,7 @@ app/
     app-config.mjs        alle Platzhalter-IDs an einer Stelle
     token-keychain.mjs    Spieler-Token im iOS-Schlüsselbund (Fallback localStorage)
     admob-adapter.mjs     UMP → ATT → Rewarded/Interstitial (nur Test-IDs)
-    store-adapter.mjs     StoreKit über @capgo/native-purchases (Verbrauchsartikel)
+    store-adapter.mjs     StoreKit über @capgo/native-purchases (Werkzeug-Pakete + Werbefrei squish.adfree)
     app.css               kein Zoom/Gummiband in der App
   test/                   Unit-Tests mit Mocks (npm test) + Browser-e2e mit gemocktem Capacitor
   ios/App/                Xcode-Projekt (Swift Package Manager, keine CocoaPods nötig)

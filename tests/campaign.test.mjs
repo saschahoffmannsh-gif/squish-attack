@@ -1,12 +1,13 @@
 import test, { beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { setLang } from '../game/i18n.mjs?v=launch-25';
+import { setLang } from '../game/i18n.mjs?v=launch-26';
 beforeEach(() => setLang('de', { persist: false }));
 import {
   createLevelRun, applyLevelMove, starsFor, replaySolution, goalProgress, queueOf, movesLeft,
   validateLevel, encodeMove, decodeMove, recordResult, mergeProgress, emptyProgress, isUnlocked,
   nextLevel, totalStars, loadProgress, saveProgress, goalText, starThresholds, starsOfRun, addExtraMoves,
   markToolUsed, moveLimit, lockReason, chapterOf, starGate, CHAPTER_SIZE, STARS_PER_CHAPTER_GATE,
+  toolStarCap,
   resetChangedStarsOnce, STARS_RESET, STARS_RESET_KEY,
 } from '../game/campaign.mjs';
 
@@ -65,16 +66,39 @@ test('Sterne: 3★ = Optimum + 1, 2★ = Mitte, 1★ = im Limit', () => {
   assert.equal(starsFor(lv, 3, false), 0);
 });
 
-test('Hilfsmittel deckeln auf 2 Sterne', () => {
+test('launch-26: Hilfsmittel deckeln stufenweise 2/1/0 ★, 0 Hilfsmittel bleibt bei 3★', () => {
   const lv = base({ moves: 6, stars: starThresholds(3, 6) });
+  assert.equal(toolStarCap(0), 3);
+  assert.equal(toolStarCap(1), 2);
+  assert.equal(toolStarCap(2), 1);
+  assert.equal(toolStarCap(3), 0);
+  assert.equal(toolStarCap(4), 0);
+  assert.equal(starsFor(lv, 3, true, { toolsUsed: 0 }), 3);
   assert.equal(starsFor(lv, 3, true, { toolsUsed: 1 }), 2);
   assert.equal(starsFor(lv, 5, true, { toolsUsed: 1 }), 2);
   assert.equal(starsFor(lv, 6, true, { toolsUsed: 2 }), 1);
+  assert.equal(starsFor(lv, 3, true, { toolsUsed: 2 }), 1);
+  assert.equal(starsFor(lv, 3, true, { toolsUsed: 3 }), 0);
+  assert.equal(starsFor(lv, 3, true, { toolsUsed: 4 }), 0);
   const run = createLevelRun(base());
   markToolUsed(run, 'rocket');
   applyLevelMove(run, 'right', 0);
   assert.equal(run.status, 'won');
   assert.equal(starsOfRun(run), 2);
+});
+
+test('launch-26: 0★-Sieg wird gespeichert und schaltet das nächste Level (und Modi nach L5) frei', () => {
+  let p = emptyProgress();
+  p = recordResult(p, 1, { stars: 0, moves: 5, now: 1 });
+  assert.equal(p.levels['1'].stars, 0);
+  assert.equal(isUnlocked(p, 2), true);
+  assert.equal(modesUnlocked(p), false);
+  p = recordResult(p, 5, { stars: 0, moves: 8, now: 2 });
+  assert.equal(p.levels['5'].stars, 0);
+  assert.equal(modesUnlocked(p), true);
+  // besserer Lauf überschreibt 0★
+  p = recordResult(p, 1, { stars: 2, moves: 4, now: 3 });
+  assert.equal(p.levels['1'].stars, 2);
 });
 
 test('+3 Züge: nutzt Reserve-Steine, rettet eine Niederlage, max. 2★, gewonnen nach Limit = 1★', () => {
@@ -132,7 +156,7 @@ test('Fortschritt: bestes Ergebnis bleibt, Zusammenführen, Speichern', () => {
   assert.deepEqual(p.levels['1'], { stars: 2, moves: 5, at: 1 });
   p = recordResult(p, 1, { stars: 2, moves: 4, now: 3 });
   assert.equal(p.levels['1'].moves, 4);
-  assert.equal(recordResult(p, 2, { stars: 0, moves: 4 }), p);
+  assert.equal(recordResult(p, 2, { stars: -1, moves: 4 }), p); // ungültig: kein Eintrag
   const other = recordResult(recordResult(emptyProgress(), 1, { stars: 3, moves: 3, now: 5 }), 2, { stars: 1, moves: 9, now: 6 });
   const m = mergeProgress(p, other);
   assert.equal(m.levels['1'].stars, 3); assert.equal(m.levels['2'].stars, 1);
@@ -290,14 +314,13 @@ test('Hinweis-Suche: kürzester Weg wie der Solver, Züge gewinnen wirklich; kei
 });
 
 test('Ladungen je Versuch (launch-11) + Vorrat (launch-12): zuerst gratis, dann Vorrat', () => {
-  assert.equal(TOOL_STOCK, true);
   const free = freeToolCharges(1);
   assert.deepEqual(free, { extraMoves: 1, rocket: 1, hint: 1, wand: 1 });
   const stock = { ...emptyInventory(), rocket: 3, hint: 2 };
-  assert.deepEqual(toolsAvailable(stock, free), { extraMoves: 1, rocket: 4, hint: 3, wand: 1 });
-  const a = spendCharge(stock, free, 'rocket');
+  assert.deepEqual(toolsAvailable(stock, free, true), { extraMoves: 1, rocket: 4, hint: 3, wand: 1 });
+  const a = spendCharge(stock, free, 'rocket', true);
   assert.equal(a.fromFree, true); assert.equal(a.inventory, stock); assert.equal(a.free.rocket, 0);
-  const b = spendCharge(a.inventory, a.free, 'rocket');
+  const b = spendCharge(a.inventory, a.free, 'rocket', true);
   assert.equal(b.fromFree, false); assert.equal(b.inventory.rocket, 2);
   assert.equal(spendCharge(stock, a.free, 'wand') !== null, true);
   const w = spendCharge(stock, { ...free, wand: 0 }, 'wand');
@@ -308,7 +331,7 @@ test('Ladungen je Versuch (launch-11) + Vorrat (launch-12): zuerst gratis, dann 
   assert.deepEqual(toolsAvailable(stock, free, false), { extraMoves: 1, rocket: 1, hint: 1, wand: 1 });
   assert.equal(spendCharge(stock, a.free, 'rocket', false), null);
   // ohne Gratis-Ladungen: altes Verhalten
-  assert.deepEqual(toolsAvailable(stock, freeToolCharges(0)), { extraMoves: 0, rocket: 3, hint: 2, wand: 0 });
+  assert.deepEqual(toolsAvailable(stock, freeToolCharges(0), true), { extraMoves: 0, rocket: 3, hint: 2, wand: 0 });
 });
 
 test('Geschenke als offene Pakete: einreihen, einzeln einsammeln, gespeichert, nie doppelt', () => {
@@ -371,11 +394,18 @@ import { AD_TOOLS, TOOL_GIFTS, giftLevel, resetStockOnce, TOOL_RESET_KEY, loadIn
 import { loadLog, saveLog, startAttempt, logEvent, endAttempt, reopenAttempt, summarize, exportLog, emptyLog, TOOL_LOG_KEY } from '../game/tool-log.mjs';
 const memStore = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k), m }; };
 
-test('Testphase-Schalter (launch-14): keine Gratis-Ladungen, Werbung an, Level-Geschenke an', () => {
-  assert.equal(FREE_TOOLS_PER_LEVEL, 0);
-  assert.deepEqual(freeToolCharges(), { extraMoves: 0, rocket: 0, hint: 0, wand: 0 });
-  assert.equal(AD_TOOLS, true); assert.equal(TOOL_GIFTS, true);
-  assert.deepEqual(toolsAvailable(emptyInventory(), freeToolCharges()), { extraMoves: 0, rocket: 0, hint: 0, wand: 0 });
+test('launch-26: je Versuch 1× jedes Hilfsmittel, kein Vorrat, keine Vorrats-Werbung, keine Geschenke', () => {
+  assert.equal(FREE_TOOLS_PER_LEVEL, 1);
+  assert.equal(TOOL_STOCK, false);
+  assert.equal(AD_TOOLS, false);
+  assert.equal(TOOL_GIFTS, false);
+  assert.deepEqual(freeToolCharges(), { extraMoves: 1, rocket: 1, hint: 1, wand: 1 });
+  const leftover = { ...emptyInventory(), rocket: 9, hint: 9, wand: 9, extraMoves: 9 };
+  assert.deepEqual(toolsAvailable(leftover, freeToolCharges()), { extraMoves: 1, rocket: 1, hint: 1, wand: 1 });
+  const a = spendCharge(leftover, freeToolCharges(), 'hint');
+  assert.equal(a.fromFree, true);
+  assert.equal(a.inventory, leftover); // Vorrat wird nicht angefasst
+  assert.equal(spendCharge(leftover, a.free, 'hint'), null); // keine zweite Ladung
 });
 
 test('launch-13: Vorrat wird einmalig geleert (auch offene Geschenke), vergebene Geschenk-ids bleiben', () => {
@@ -435,7 +465,7 @@ test('launch-13: Werkzeug-Protokoll – Versuche, Werbung, Einsatz mit Kontext, 
   st.setItem(TOOL_LOG_KEY, '{kaputt'); assert.equal(loadLog(st).events.length, 0);
 });
 
-test('launch-13: Werkzeuge deckeln weiterhin auf 2 Sterne', () => {
+test('launch-13/26: ein Hilfsmittel deckelt auf 2 Sterne, keines lässt 3★ zu', () => {
   assert.equal(starsFor({ stars: { three: 3, two: 5 } }, 3, true, { toolsUsed: 1 }), 2);
   assert.equal(starsFor({ stars: { three: 3, two: 5 } }, 3, true, { toolsUsed: 0 }), 3);
 });

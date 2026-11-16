@@ -36,3 +36,85 @@ export function createStoreKitAdapter({ NativePurchases, prefix, log = () => {} 
     },
   };
 }
+
+const AD_FREE_KEY = 'squish-adfree-v1';
+
+/** Entitlement für das Nicht-Verbrauch-Produkt squish.adfree (isConsumable: false). */
+export function createAdFreeAdapter({
+  NativePurchases,
+  productId = 'squish.adfree',
+  storage = globalThis.localStorage,
+  log = () => {},
+} = {}) {
+  const read = () => {
+    try { return storage?.getItem?.(AD_FREE_KEY) === '1'; } catch { return false; }
+  };
+  const write = (owned) => {
+    try { storage?.setItem?.(AD_FREE_KEY, owned ? '1' : '0'); } catch {}
+  };
+  let owned = read();
+
+  const persist = (v) => { owned = !!v; write(owned); };
+  const hasEntitlement = (purchases = []) => purchases.some(p =>
+    p && p.productIdentifier === productId && !p.revocationDate
+  );
+
+  async function refresh() {
+    try {
+      const { purchases = [] } = await NativePurchases.getPurchases({
+        productType: 'inapp',
+        onlyCurrentEntitlements: true,
+      });
+      persist(hasEntitlement(purchases));
+    } catch (e) { log('adfree refresh', e); }
+    return owned;
+  }
+
+  async function loadPrice() {
+    try {
+      const { products = [] } = await NativePurchases.getProducts({
+        productIdentifiers: [productId],
+        productType: 'inapp',
+      });
+      const p = products.find(x => x.identifier === productId);
+      if (p?.priceString) adapter.priceLabel = p.priceString;
+    } catch (e) { log('adfree price', e); }
+    return adapter.priceLabel || null;
+  }
+
+  const adapter = {
+    name: 'storekit-adfree',
+    productId,
+    get priceLabel() { return this._priceLabel || null; },
+    set priceLabel(v) { this._priceLabel = v; },
+    isAdFree: () => owned,
+    refresh,
+    loadPrice,
+    async purchase() {
+      try {
+        const t = await NativePurchases.purchaseProduct({
+          productIdentifier: productId,
+          productType: 'inapp',
+          quantity: 1,
+          isConsumable: false,
+          autoAcknowledgePurchases: true,
+        });
+        if (!t?.transactionId) return { ok: false, reason: 'no-transaction' };
+        persist(true);
+        return { ok: true, transactionId: String(t.transactionId) };
+      } catch (e) {
+        const msg = String(e?.message || e || '');
+        log('adfree purchase', e);
+        return { ok: false, reason: /cancel/i.test(msg) ? 'cancelled' : 'error', error: msg };
+      }
+    },
+    async restore() {
+      try { await NativePurchases.restorePurchases(); }
+      catch (e) { log('adfree restore', e); }
+      const before = owned;
+      await refresh();
+      return { ok: true, owned, already: owned && before };
+    },
+  };
+  return adapter;
+}
