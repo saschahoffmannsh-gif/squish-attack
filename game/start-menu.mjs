@@ -4,7 +4,7 @@ const controllerKey=Symbol.for('squish.start-menu-controller');
 // title panel only keeps the loading status and retry for failures.
 export function installStartMenu({
   page=document,
-  loadGame=()=>import('./game.mjs?v=launch-20a'),
+  loadGame=()=>import('./game.mjs?v=launch-21'),
   paint=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))),
   delay=ms=>new Promise(resolve=>setTimeout(resolve,ms)),
   splashMs=4000,timeoutMs=30000,

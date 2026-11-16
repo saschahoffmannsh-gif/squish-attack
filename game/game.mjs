@@ -1,34 +1,32 @@
-import {apiFetch,hasSaveToken} from './api.mjs?v=launch-19';
-import {createRng,encodeMove,replayRun,MAX_LOG} from './ranked.mjs?v=launch-19';
-import {createLeaderboard} from './leaderboard.mjs?v=launch-19';
-import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-19';
+import {apiFetch,hasSaveToken} from './api.mjs?v=launch-21';
+import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-21';
 import { nextSpawn, spawnProfile } from './balance.mjs';
-import {canContinueRun} from './run-availability.mjs?v=launch-19';
-import { createMergeEffects } from './merge-effects.mjs?v=launch-19';
-import { createGameGraphics } from './graphics-adapter.mjs?v=launch-20a';
+import {canContinueRun} from './run-availability.mjs?v=launch-21';
+import { createMergeEffects } from './merge-effects.mjs?v=launch-21';
+import { createGameGraphics } from './graphics-adapter.mjs?v=launch-21';
 import { installDeviceMotion } from './device-motion.mjs';
-import { createGameSound } from './sound.mjs?v=launch-20a';
+import { createGameSound } from './sound.mjs?v=launch-21';
 import { installSettings } from './settings.mjs?v=woodland-menu-1';
-import { createDuelClient } from './duel-client.mjs?v=launch-19';
+import { createDuelClient } from './duel-client.mjs?v=launch-21';
 import {installFullscreen} from './fullscreen.mjs?v=timed-duel-1';
-import {createHomeMenu} from './home-menu.mjs?v=launch-20a';
-import {createConfetti} from './confetti.mjs?v=launch-19';
-import {createHaptics} from './haptics.mjs?v=launch-20a';
+import {createHomeMenu} from './home-menu.mjs?v=launch-21';
+import {createConfetti} from './confetti.mjs?v=launch-21';
+import {createHaptics} from './haptics.mjs?v=launch-21';
 import {planMergeRipple} from './merge-ripple.mjs?v=swarm-fx-3';
-import * as Camp from './campaign.mjs?v=launch-19';
-import {createCampaignUI,TOOL_ARTICLE,TOOL_NOM} from './campaign-ui.mjs?v=launch-20';
-import {createToolFx} from './tool-fx.mjs?v=launch-19';
-import {hintState,findHint} from './hint-solver.mjs?v=launch-19';
-import {comicColors} from './comic-style.mjs?v=launch-19';
-import * as Shop from './shop.mjs?v=launch-19';
-import {createShopUI} from './shop-ui.mjs?v=launch-19';
-import {createGiftFx} from './gift-fx.mjs?v=launch-19';
-import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-19';
-import {createAdUI} from './ad-ui.mjs?v=launch-19';
-import {createStatsUI} from './stats-ui.mjs?v=launch-19';
-import * as ToolLog from './tool-log.mjs?v=launch-19';
-import {createProgressSync} from './progress-sync.mjs?v=launch-19';
-import {epochOf} from './progress-merge.mjs?v=launch-19';
+import * as Camp from './campaign.mjs?v=launch-21';
+import {createCampaignUI,TOOL_ARTICLE,TOOL_NOM} from './campaign-ui.mjs?v=launch-21';
+import {createToolFx} from './tool-fx.mjs?v=launch-21';
+import {hintState,findHint} from './hint-solver.mjs?v=launch-21';
+import {comicColors} from './comic-style.mjs?v=launch-21';
+import * as Shop from './shop.mjs?v=launch-21';
+import {createShopUI} from './shop-ui.mjs?v=launch-21';
+import {createGiftFx} from './gift-fx.mjs?v=launch-21';
+import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-21';
+import {createAdUI} from './ad-ui.mjs?v=launch-21';
+import {createStatsUI} from './stats-ui.mjs?v=launch-21';
+import * as ToolLog from './tool-log.mjs?v=launch-21';
+import {createProgressSync} from './progress-sync.mjs?v=launch-21';
+import {epochOf} from './progress-merge.mjs?v=launch-21';
 const playfield = document.getElementById('playfield');
 const gameElement = document.querySelector('.game');
 const visual = createGameGraphics(document.getElementById('graphics'));
@@ -102,14 +100,6 @@ const phoneMotion = installDeviceMotion({
 // The start menu lives on the glass: wide cushions for buttons, standard
 // squishes for the duel code. It drives the same save, settings and duel logic.
 const haptics=createHaptics();
-const leaderboard=createLeaderboard({
-  get ranked(){return !!run;},
-  get playing(){return started&&moves>0;},
-  name:storedName,
-  setName(name){try{localStorage.setItem(NAME_KEY,name);}catch{}},
-  ranks(){try{return JSON.parse(localStorage.getItem(RANK_KEY));}catch{return null;}},
-  storeRanks,
-});
 let moveCombo=0;
 const confetti=createConfetti();
 let celebrating=false;
@@ -119,10 +109,9 @@ const worldMenu=createHomeMenu({sound,reduceMotion,hooks:{
   endlessStats:()=>({best,bestTile:campaignMode&&stashedBestTile!=null?stashedBestTile:bestTile}),
   haptics,
   canContinue:()=>canContinueRun(hasSavedGame,board),
-  gesture:()=>{void fullscreen.enter();sound.unlock();phoneMotion.restoreFromGesture();void prefetchRun();},
+  gesture:()=>{void fullscreen.enter();sound.unlock();phoneMotion.restoreFromGesture();},
   launch:async()=>{},
   duel,
-  leaderboard:()=>leaderboard.open(),
   setMode:mode=>{try{localStorage.setItem(MODE_KEY,mode);}catch{}},
   icons:{gift:GIFT_SVG,shop:SHOP_SVG},
   campaign:{
@@ -145,9 +134,9 @@ const newTile = value => ({ id: nextId++, value });
 // in localStorage unangetastet: während der Kampagne wird nichts davon gespeichert,
 // beim Verlassen wird er wieder geladen.
 const MODE_KEY='squish-mode-v1';
-const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-19',import.meta.url);
+const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-21',import.meta.url);
 // launch-16: Test-Level für die neuen Squishes (Eis, Ketten, Bombe) – eigener kleiner Satz, kein Fortschritt/Protokoll.
-const LAB_URL=new URL('../levels/levels-lab.json?v=launch-19',import.meta.url);
+const LAB_URL=new URL('../levels/levels-lab.json?v=launch-21',import.meta.url);
 let labMode=false,labLevels=null,labLoading=null;
 function loadLab(){
   return labLoading||=fetch(LAB_URL,{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('lab '+r.status);return r.json();})
@@ -178,7 +167,7 @@ const progressSync=createProgressSync({fetch:apiFetch,epoch:epochOf(Camp.STARS_R
   setLocal:(p,inv)=>{campaignProgress=p;Camp.saveProgress(p);if(inv!==inventory){inventory=inv;Camp.saveInventory(inv,undefined,false);}try{renderCampaign();void worldMenu.refresh?.();}catch{}}});
 const cloudSync=()=>{if(!labMode)progressSync.schedule();};
 progressSync.attach(window);
-const BUILD_LABEL='launch-20';
+const BUILD_LABEL='launch-21';
 let toolLog=ToolLog.loadLog(),logAttempt=null;
 // Versuche, die beim letzten Mal offen blieben (Seite geschlossen), gelten als abgebrochen.
 if(toolLog.attempts.some(a=>!a.outcome)){for(const a of toolLog.attempts)if(!a.outcome)ToolLog.endAttempt(toolLog,a.id,{outcome:'quit',moves:a.moves});ToolLog.saveLog(toolLog);}
@@ -301,7 +290,7 @@ async function prepareLevel(n){
   const level=levelList()[n-1];
   if(!level)throw new Error('Level fehlt: '+n);
   if(!campaignMode){stashedBestTile=bestTile;campaignMode=true;}
-  generation++;pendingMove=null;disarmTools();run=null;rng=null;bombLast=0;
+  generation++;pendingMove=null;disarmTools();bombLast=0;
   moveCombo=0;mergeEffects.streak?.(0,{silent:true});
   camp={n,level,run:Camp.createLevelRun(level),free:Camp.freeToolCharges()};   // Gratis-Ladungen je Versuch (FREE_TOOLS_PER_LEVEL)
   beginAttempt();
@@ -498,7 +487,7 @@ let hintWorker=null,hintSeq=0;
 function searchHint(state){
   const budget={want:2,maxStates:160000,maxMs:2500};
   try{
-    hintWorker||=new Worker(new URL('./hint-worker.mjs?v=launch-19',import.meta.url),{type:'module'});
+    hintWorker||=new Worker(new URL('./hint-worker.mjs?v=launch-21',import.meta.url),{type:'module'});
   }catch{hintWorker=null;}
   if(!hintWorker)return Promise.resolve(findHint(state,{...budget,maxMs:900}));
   const id=++hintSeq;
@@ -556,7 +545,7 @@ async function backToMenu(){
   if(busy&&!paused)return;
   campaignUI.hideResult();confetti.stop();
   if(campaignMode)leaveCampaign();
-  else{void submitScore();saveState({now:true});hasSavedGame=board.flat().some(Boolean);}
+  else{saveState({now:true});hasSavedGame=board.flat().some(Boolean);}
   generation++;pendingMove=null;releaseGesture();disarmTools();busy=false;
   paused=false;veil.hidden=true;gameElement.classList.remove('is-paused');
   pauseButton.textContent='Ⅱ';pauseButton.setAttribute('aria-pressed','false');pauseButton.setAttribute('aria-label','Spiel pausieren');
@@ -569,49 +558,8 @@ async function backToMenu(){
   await worldMenu.open({screen:storedMode()==='campaign'?'campaign':'endless'});
 }
 
-// ---------- Ranked runs (leaderboard) ----------
-// A ranked run starts from a server-issued seed; every accepted move is logged
-// as one character. The server replays seed + log to verify the score, so the
-// leaderboard only ever shows results that the real game rules produce.
-const RUN_KEY='squish-next-run-v1',RANK_KEY='squish-rank-v1',NAME_KEY='squish-name-v1';
-const SUBMIT_EVERY_MS=5*60*1000;
-let run=null,rng=null,lastSubmit=0,prefetching=null;
-const random=()=>rng||Math.random;
-function takeTicket(){
-  try{const t=JSON.parse(localStorage.getItem(RUN_KEY));localStorage.removeItem(RUN_KEY);
-    if(t&&typeof t.id==='string'&&Number.isSafeInteger(t.seed))return t;}catch{}
-  return null;
-}
-// Tickets are only fetched once someone actually plays (menu gesture / new game),
-// so people who just open the page or the leaderboard cost no function call.
-function prefetchRun(){
-  if(duelMode)return Promise.resolve();
-  try{if(localStorage.getItem(RUN_KEY))return Promise.resolve();}catch{return Promise.resolve();}
-  return prefetching||=(async()=>{
-    try{
-      const r=await apiFetch('/run',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}',signal:AbortSignal.timeout(8000)});
-      if(r.ok){const t=await r.json();if(t?.id&&Number.isSafeInteger(t.seed))localStorage.setItem(RUN_KEY,JSON.stringify({id:t.id,seed:t.seed}));}
-    }catch{}finally{prefetching=null;}
-  })();
-}
-const ensureTicket=(ms=2000)=>Promise.race([prefetchRun(),new Promise(r=>setTimeout(r,ms))]);
-function storedName(){try{return localStorage.getItem(NAME_KEY)||'';}catch{return '';}}
-function storeRanks(ranks){try{localStorage.setItem(RANK_KEY,JSON.stringify({...ranks,at:Date.now()}));}catch{}}
-async function submitScore({keepalive=false}={}){
-  if(duelMode||campaignMode||!run||!run.log.length||score<=run.sub)return;
-  const target=run,body=JSON.stringify({run:run.id,log:run.log,score,name:storedName()||undefined});
-  lastSubmit=Date.now();
-  try{
-    const r=await apiFetch('/score',{method:'POST',headers:{'Content-Type':'application/json'},body,keepalive});
-    if(r.ok){const data=await r.json();target.sub=Math.max(target.sub,data.verified?.score||0);if(data.ranks)storeRanks(data.ranks);return;}
-    if(r.status===404&&run===target){run=null;return;}
-    if(r.status===422){
-      const msg=(await r.json().catch(()=>({}))).error||'';
-      // "zu schnell" heals itself later; anything else means this run cannot be verified.
-      if(!/schnell/.test(msg)&&run===target){console.warn('[ranked] run rejected:',msg);run=null;}
-    }
-  }catch{}
-}
+// Endlos-Steine kommen zufällig (keine Bestenliste mehr, also keine Server-Seeds/Replays).
+const random=()=>Math.random;
 const wait = ms => reduceMotion.matches ? Promise.resolve() : visual.wait(ms / 1000);
 const format = value => value.toLocaleString('de-DE');
 
@@ -619,14 +567,9 @@ function freshState() {
   generation++;pendingMove=null;
   moveCombo=0;mergeEffects.streak?.(0,{silent:true});
   nextId = 1;
-  const ticket=takeTicket();
-  run=ticket?{id:ticket.id,seed:ticket.seed,log:'',sub:0}:null;
-  rng=ticket?createRng(ticket.seed):null;
-  lastSubmit=Date.now();
   const values=createStartValues(random());
   board = values.map(row => row.map(value => value === null ? null : newTile(value)));
   queue = Array.from({length:3},()=>nextSpawn({board,moves:0,highest:4,random:random()}));
-  if(!booting)setTimeout(()=>void prefetchRun(),0);
   score = 0;
   moves = 0;
   peak = Math.max(...values.flat().filter(value => value !== null));
@@ -659,7 +602,6 @@ function loadState(saved) {
     bestTile = Math.max(bestTile, peak,
       Number.isSafeInteger(saved.bestTile) && saved.bestTile > 0 ? saved.bestTile : 0);
     revision = Number.isSafeInteger(saved.revision) && saved.revision > 0 ? saved.revision : 0;
-    resumeRun(saved.run);
     return true;
   } catch {
     freshState();
@@ -667,20 +609,6 @@ function loadState(saved) {
   }
 }
 
-// Re-derive the RNG by replaying the logged moves; only resume the ranked run if
-// the replay lands on exactly the saved board (otherwise keep playing unranked).
-function resumeRun(saved) {
-  run=null;rng=null;
-  if(!saved||typeof saved.id!=='string'||typeof saved.log!=='string')return;
-  const rep=replayRun(saved.seed,saved.log);
-  if(!rep.ok)return;
-  const vals=b=>b.map(row=>row.map(t=>t?t.value:0).join(',')).join(';');
-  if(vals(rep.state.board)!==vals(board)||rep.state.queue.join()!==queue.join()||rep.state.score!==score||rep.state.moves!==moves)return;
-  run={id:saved.id,seed:saved.seed,log:saved.log,sub:Number.isSafeInteger(saved.sub)?saved.sub:0};
-  rng=rep.run.random;
-  lastSubmit=Date.now();
-}
-const runSnapshot=()=>run?{id:run.id,seed:run.seed,log:run.log,sub:run.sub}:undefined;
 
 function snapshot() {
   // A tab can close in the middle of a merge animation. Finish that turn in
@@ -692,13 +620,13 @@ function snapshot() {
     const futureScore = score + resolved.points;
     // Draw the preview from a clone so the live RNG stays in step with the replay.
     return { board: resolved.board, queue: [...queue, nextSpawn({
-      board: resolved.board, moves: futureMoves, highest: futurePeak, random: rng ? rng.clone() : Math.random,
+      board: resolved.board, moves: futureMoves, highest: futurePeak, random: Math.random,
     })], score: futureScore, best: Math.max(best, futureScore),
       bestTile: Math.max(bestTile, futurePeak), moves: futureMoves,
-      peak: futurePeak, revision: ++revision, run: runSnapshot() };
+      peak: futurePeak, revision: ++revision };
   }
   return { board, queue, score, best, bestTile: Math.max(bestTile, peak),
-    moves, peak, revision: ++revision, run: runSnapshot() };
+    moves, peak, revision: ++revision };
 }
 
 // Server saves are batched: every move still lands in localStorage right away,
@@ -989,7 +917,6 @@ function resume() {
 async function restart() {
   if(duelMode){void duel.exit();return;}
   if(campaignMode&&camp){void playLevel(camp.n);return;}
-  void submitScore();
   releaseGesture();pendingMove=null;
   mergeEffects.clear();
   visual.clear();
@@ -1097,7 +1024,7 @@ function reconcileDuelState(state) {
 }
 async function prepareDuel(state) {
   if(worldMenu.active||worldMenu.stats.items)await worldMenu.dismiss();
-  duelMode=true;pendingSave=null;generation++;busy=true;moveCombo=0;run=null;rng=null;mergeEffects.streak?.(0,{silent:true});
+  duelMode=true;pendingSave=null;generation++;busy=true;moveCombo=0;mergeEffects.streak?.(0,{silent:true});
   releaseGesture();phoneMotion.reset();mergeEffects.clear();visual.clear();
   try{applyDuelState(state);renderBest();await prepareEntryScene();}finally{busy=false;}
 }
@@ -1224,7 +1151,6 @@ async function move(direction, line, {fromHint=false}={}) {
     return;
   }
   const turn=generation;
-  if(run){run.log+=encodeMove(direction,line);if(run.log.length>=MAX_LOG){void submitScore();run=null;}}
   let previousProfile=spawnProfile(moves, peak);
   busy = true;
   try {
@@ -1259,8 +1185,7 @@ async function move(direction, line, {fromHint=false}={}) {
   if (currentProfile.floor > previousProfile.floor || currentProfile.ceiling > previousProfile.ceiling) {
     showNote('Neue Steinwerte freigeschaltet', 2200);
   }
-  if (isGameOver(board)) {void submitScore();showDialog(true);return;}
-  if (run && score > run.sub && Date.now() - lastSubmit > SUBMIT_EVERY_MS) void submitScore();
+  if (isGameOver(board)) {showDialog(true);return;}
   if(queued)void move(queued.direction,queued.line).catch(()=>{});
 }
 
@@ -1309,7 +1234,7 @@ restartButton.addEventListener('click', restart);
 toMenuButton.addEventListener('click', () => void backToMenu());
 
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden && !booting && !duelMode) { saveState(); void flushPending({ keepalive: true }); void submitScore({ keepalive: true }); }
+  if (document.hidden && !booting && !duelMode) { saveState(); void flushPending({ keepalive: true }); }
   else if (!document.hidden && pendingSave) scheduleFlush(2000);
 });
 window.addEventListener('pagehide', event => {
@@ -1323,7 +1248,7 @@ window.addEventListener('pagehide', event => {
 });
 window.addEventListener('online', () => void flushPending());
 // Read-only inspection for integration checks; game state still belongs here.
-window.SquishGame={graphics,move,restart,get state(){return {board,queue,score,best,bestTile,moves,peak,busy,paused,booting,started,hasSavedGame,duelMode,duelRevision,ranked:run?{id:run.id,logLength:run.log.length,submitted:run.sub}:null};},get effects(){return mergeEffects.stats;},get sound(){return sound.stats;},get menu(){return worldMenu.stats;},get fusion(){return visual.fusion?.stats||null;},
+window.SquishGame={graphics,move,restart,get state(){return {board,queue,score,best,bestTile,moves,peak,busy,paused,booting,started,hasSavedGame,duelMode,duelRevision};},get effects(){return mergeEffects.stats;},get sound(){return sound.stats;},get menu(){return worldMenu.stats;},get fusion(){return visual.fusion?.stats||null;},
   get campaign(){return {mode:campaignMode,lab:labMode,bombMs:camp?Camp.nextBombMs(camp.run):null,bombClock:!!camp?.run.bombClock,exploded:camp?.run.exploded??0,specials:camp?camp.run.board.flatMap((row,r)=>row.map((t,c)=>t&&Camp.specialOf(t)?{kind:Camp.specialOf(t),r,c,value:t.value,id:t.id}:null)).filter(Boolean):[],bombBadges:[...bombBadges.values()].map(e=>e.textContent),level:camp?.n??null,status:camp?.run.status??null,moves:camp?.run.moves??0,movesLeft:camp?Camp.movesLeft(camp.run):null,
     toolsUsed:camp?.run.toolsUsed.slice()??[],progress:campaignProgress,inventory,sync:progressSync.stats,shopOpen:shopUI.isOpen,shopStats:shopUI.stats,gift:{active:giftFx.active,phase:giftFx.phase,...giftFx.stats},lastPurchase,adOpen:adUI.isOpen,adType:adUI.type,adStats:adUI.stats,lastAd,statsOpen:statsUI.isOpen,statsStats:{opens:statsUI.stats.opens,exports:statsUI.stats.exports,resets:statsUI.stats.resets,lastExportMode:statsUI.stats.lastExportMode},toolLog:{attempts:toolLog.attempts.length,events:toolLog.events.length,current:logAttempt?{...logAttempt}:null,summary:ToolLog.summarize(toolLog)},freeTools:camp?.free?{...camp.free}:null,available:camp?availableTools():null,levelsLoaded:!!levels,resultOpen:campaignUI.resultOpen,armedTool,hintBusy,lastHint,toolFx:toolFx.stats,celebrating,timeline:campaignUI.timeline.slice()};},
   // Screen point of a board cell (for input tests).
@@ -1332,7 +1257,7 @@ window.SquishGame={graphics,move,restart,get state(){return {board,queue,score,b
 if(new URLSearchParams(globalThis.location.search).has('vfxdemo'))window.SquishVFX={
   setBoard(grid,next=[1,2,3]){
     if(busy)return false;
-    board=grid.map(row=>row.map(value=>value&&typeof value==='object'?{id:nextId++,...value}:value?{id:nextId++,value}:null));queue=next.slice(0,3);run=null;rng=null;
+    board=grid.map(row=>row.map(value=>value&&typeof value==='object'?{id:nextId++,...value}:value?{id:nextId++,value}:null));queue=next.slice(0,3);
     renderBoard();renderQueue();renderBest();return true;
   },
   slow(v=1){mergeEffects.vfx.timeScale=v;},
@@ -1365,8 +1290,6 @@ export const menuActions={
     }
     if (campaignMode) leaveCampaign();
     if (newGame) {
-      void submitScore();
-      await ensureTicket();
       mergeEffects.clear();visual.clear();freshState();renderBest();saveState();
       await prepareEntryScene();
     } else if (needsEntry) {

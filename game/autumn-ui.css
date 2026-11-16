@@ -127,7 +127,7 @@ html.is-boot-splash .brand-splash {background:transparent;}
 .aw-chip i {display:grid;place-items:center;min-width:24px;height:24px;padding:0 5px;border-radius:999px;font:400 13px/1 var(--aw-display);font-style:normal;color:#fff;background:linear-gradient(180deg,#78d6ff,#145fb8);}
 .aw-chip.is-zero {opacity:.5;}
 
-/* ---------- Panels (Einstellungen, Levelauswahl, Bestenliste, Duell, Dialoge) ---------- */
+/* ---------- Panels (Einstellungen, Levelauswahl, Duell, Dialoge) ---------- */
 .aw .duel-screen,.aw .settings-screen {display:flex;flex-direction:column;align-items:center;overflow-y:auto;overscroll-behavior:contain;
   padding:max(30px,calc(env(safe-area-inset-top) + 22px)) 16px max(24px,env(safe-area-inset-bottom));
   background:radial-gradient(80% 50% at 50% 40%,#1a2350cc,#070b1ee6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);color:var(--aw-ink);}
@@ -183,7 +183,7 @@ html.is-boot-splash .brand-splash {background:transparent;}
 .aw-deco.d3 {right:-24px;top:34%;width:44px;height:44px;color:#f2a01e;transform:rotate(64deg);}
 .aw-deco.d4 {left:-20px;top:14px;width:38px;height:38px;color:#d94a17;transform:rotate(-70deg);}
 
-/* Kleine Tab-Leisten (Duell, Bestenliste) */
+/* Kleine Tab-Leisten (Duell) */
 .aw .duel-tabs {display:flex;gap:6px;padding:5px;margin-bottom:14px;border-radius:999px;background:#0a1130;box-shadow:inset 0 2px 6px #000a;}
 .aw .duel-tabs button {flex:1;min-height:42px;border:0;border-radius:999px;background:none;color:#aeb6dc;font:400 16px/1 var(--aw-display);letter-spacing:.02em;cursor:pointer;}
 .aw .duel-tabs button[aria-pressed=true] {color:#fff;background:linear-gradient(180deg,#d29bff,#8a4be6 55%,#5d26aa);box-shadow:inset 0 2px 0 #ffffff55,0 2px 0 #3a1270;text-shadow:0 2px 0 #3a1270;}
@@ -202,16 +202,6 @@ html.is-boot-splash .brand-splash {background:transparent;}
 .aw .duel-rules b {background:#0a1130;color:var(--aw-gold);font:400 15px/1 var(--aw-display);}
 .aw .duel-panel .duel-fair {color:#9aa3cc;opacity:1;}
 .aw .duel-back:not([id]) {color:#ffe2b0;}
-
-/* Bestenliste */
-.aw .board-panel {width:min(100%,380px);}
-.aw .board-list {border:2px solid #ffffff14;border-radius:16px;background:#0a1130;box-shadow:inset 0 3px 10px #000a;}
-.aw .board-list li {font-family:var(--aw-text);}
-.aw .board-list .s {color:var(--aw-gold);font-weight:600;}
-.aw .board-list li.is-me {background:#3d2a6e;}
-.aw .board-panel .board-me {color:#ffe2b0;}
-.aw .board-panel .board-name input {border-radius:14px;font:600 17px/1.2 var(--aw-text);color:var(--aw-ink);letter-spacing:0;}
-.aw .board-panel .board-name-row .duel-action {font-size:17px;padding:6px 14px;}
 
 /* Einstellungen */
 .aw .settings-panel {width:min(100%,350px);}

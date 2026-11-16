@@ -1,7 +1,7 @@
 // Kampagne: DOM-Teile (Ziel-Anzeige, Züge, Hilfsmittel, Ergebnis-Dialog, Levelauswahl).
 // Reine Darstellung; Spiellogik und Speichern liegen in game.mjs / campaign.mjs.
-import {TOOL_ICONS,GIFT_SVG} from './tool-icons.mjs?v=launch-19';
-import {goalProgress,goalText,goalShort,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName} from './campaign.mjs?v=launch-19';
+import {TOOL_ICONS,GIFT_SVG} from './tool-icons.mjs?v=launch-21';
+import {goalProgress,goalText,goalShort,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName} from './campaign.mjs?v=launch-21';
 
 const $=id=>document.getElementById(id);
 export const TOOL_ARTICLE={extraMoves:'+3 Züge',hint:'den Hinweis',rocket:'die Rakete',wand:'den Zauberstab'};

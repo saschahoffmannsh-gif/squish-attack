@@ -1,8 +1,8 @@
 // Startbildschirm und Modus-Menüs im Herbst-Design (reines DOM, kein 3D).
 // Ersetzt das frühere 3D-Glastisch-Menü (world-menu.mjs) mit derselben
 // Schnittstelle, die game.mjs und start-menu.mjs erwarten.
-import {ICONS,TILE_ICONS,leafSvg} from './aw-icons.mjs?v=launch-19';
-import {BUILD} from './flags.mjs?v=launch-20a';
+import {ICONS,TILE_ICONS,leafSvg} from './aw-icons.mjs?v=launch-21';
+import {BUILD} from './flags.mjs?v=launch-21';
 
 const LEAF_COLORS=['#f07a1c','#e8541a','#c9301c','#f2a01e','#d94a17','#b8321a','#ffb030'];
 const fmt=n=>Number(n||0).toLocaleString('de-DE');
@@ -98,7 +98,6 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
     const tiles=page.createElement('div');tiles.className='aw-tiles';
     tiles.append(
       tile({label:'Levels',icon:'star',action:()=>{tap();hooks.setMode?.('campaign');hooks.campaign?.openSelect?.();}}),
-      tile({label:'Bestenliste',icon:'trophy',action:()=>{tap();hooks.leaderboard?.();}}),
       tile({label:'Regeln',icon:'cap',action:()=>{tap();void go('rules');}}));
     return [
       button({label:'Abenteuer',icon:'play',color:'aw-green',size:'aw-big',
@@ -157,7 +156,6 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
     }});
     const fresh=button({label:'Neues Spiel',icon:can?'plus':'play',color:can?'aw-orange':'aw-green',size:can?'':'aw-big',action:()=>{tap('move');hooks.gesture?.();void play(true);}});
     items.push(...(can?[cont,fresh]:[fresh,cont]));
-    items.push(button({label:'Bestenliste',icon:'bars',color:'aw-blue',action:()=>{tap();hooks.leaderboard?.();}}));
     items.push(button({label:'Zurück',icon:'back',color:'aw-slate',size:'aw-small',action:()=>{tap();void go('home');}}));
     return items;
   }

@@ -2,7 +2,7 @@
 // Ein Level = feste Startaufstellung + feste Steinfolge + Ziele + Zuglimit.
 // Dieses Modul ist reine Logik (kein DOM). Es wird von der UI, dem Solver,
 // dem Generator und den Tests gemeinsam benutzt, damit alle exakt gleich zählen.
-import { SIZE, insertTile, settle, isGameOver, tickBombs, BOMB_MS, BOMB_UNIT_MS } from './game-logic.mjs?v=launch-19';
+import { SIZE, insertTile, settle, isGameOver, tickBombs, BOMB_MS, BOMB_UNIT_MS } from './game-logic.mjs?v=launch-21';
 
 export const DIRECTIONS = ['left', 'right', 'up', 'down'];
 export const QUEUE_PREVIEW = 3;
