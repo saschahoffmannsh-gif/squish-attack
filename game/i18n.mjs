@@ -123,3 +123,24 @@ export function bindDocument(root = globalThis.document) {
   applyDom(root);
   return onLangChange(() => applyDom(root));
 }
+
+export function installLangPicker(root = globalThis.document) {
+  if (!root) return;
+  const sync = () => {
+    const current = getLang();
+    const nodes = root.querySelectorAll?.('[data-lang]') || [];
+    for (const b of nodes) {
+      const on = b.getAttribute('data-lang') === current;
+      b.setAttribute('aria-pressed', String(on));
+      b.classList.toggle('is-on', on);
+    }
+  };
+  root.addEventListener('click', ev => {
+    const b = ev.target?.closest?.('[data-lang]');
+    if (!b || (root.contains && !root.contains(b))) return;
+    const next = b.getAttribute('data-lang');
+    if (next === 'de' || next === 'en') setLang(next);
+  });
+  onLangChange(sync);
+  sync();
+}

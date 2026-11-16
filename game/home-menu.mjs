@@ -3,9 +3,10 @@
 // Schnittstelle, die game.mjs und start-menu.mjs erwarten.
 import {ICONS,TILE_ICONS,leafSvg} from './aw-icons.mjs?v=launch-22';
 import {BUILD} from './flags.mjs?v=launch-22';
+import {t, fmtNum, onLangChange} from './i18n.mjs?v=launch-23';
 
 const LEAF_COLORS=['#f07a1c','#e8541a','#c9301c','#f2a01e','#d94a17','#b8321a','#ffb030'];
-const fmt=n=>Number(n||0).toLocaleString('de-DE');
+const fmt=n=>fmtNum(n);
 const rand=(a,b)=>a+Math.random()*(b-a);
 
 export function installBackdrop(page=document){
@@ -44,7 +45,7 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
     if(!vibration)return;
     const on=hooks.haptics?.enabled!==false;
     vibration.setAttribute('aria-checked',String(on));
-    vibration.querySelector('[data-toggle-state]').textContent=on?'An':'Aus';
+    vibration.querySelector('[data-toggle-state]').textContent=on?t('on'):t('off');
   }
   if(vibration){
     if(!hooks.haptics?.supported)vibration.hidden=true;
@@ -62,9 +63,9 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
     hooks.haptics?.pulse?.(kind);
     try{sound?.play?.('land',2);}catch{}
   }
-  function button({label,sub,icon,color='aw-green',size='',action,dim=false,id}){
+  function button({label,sub,icon,color='aw-green',size='',action,dim=false,id,nav}){
     const b=page.createElement('button');b.type='button';b.className=`aw-btn ${color} ${size}`.trim();
-    b.dataset.label=label;if(id)b.id=id;if(dim)b.classList.add('is-dim');
+    b.dataset.label=label;if(id)b.id=id;if(nav)b.dataset.nav=nav;if(dim)b.classList.add('is-dim');
     b.innerHTML=`<span class="aw-ico">${ICONS[icon]||''}</span><span class="aw-label"><span></span>${sub?'<small></small>':''}</span>`;
     b.querySelector('.aw-label>span').textContent=label;
     if(sub)b.querySelector('small').textContent=sub;
@@ -72,8 +73,8 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
     b.addEventListener('click',()=>{if(busy||!active)return;action(b);});
     return b;
   }
-  function tile({label,icon,action,badge=0}){
-    const b=page.createElement('button');b.type='button';b.className='aw-tile';b.dataset.label=label;
+  function tile({label,icon,action,badge=0,nav,id}){
+    const b=page.createElement('button');b.type='button';b.className='aw-tile';b.dataset.label=label;if(id)b.id=id;if(nav)b.dataset.nav=nav;
     b.innerHTML=`<span class="aw-tile-ico">${TILE_ICONS[icon]||''}</span><span class="aw-tile-label"></span>`;
     b.querySelector('.aw-tile-label').textContent=label;
     if(badge>0){const n=page.createElement('b');n.className='aw-badge';n.textContent=String(badge);b.append(n);}
@@ -94,18 +95,18 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
   }
 
   // ---------- Bildschirme ----------
-  const LOCK_HINT='Schalte frei: Abenteuer Level 1–5';
+  const lockHint=()=>t('lock.hint');
   function decorateLock(b,label){
     b.classList.add('is-locked');b.dataset.locked='1';
     const badge=page.createElement('span');badge.className='aw-lock';badge.innerHTML=ICONS.lock||'';
     badge.setAttribute('aria-hidden','true');b.append(badge);
-    b.setAttribute('aria-label',`${label}, gesperrt. ${LOCK_HINT}`);
+    b.setAttribute('aria-label',t('menu.lockedAria',{label,hint:lockHint()}));
     return b;
   }
   function lockedTap(b){
     tap('tap');
     b.classList.remove('aw-wobble');void b.offsetWidth;b.classList.add('aw-wobble');
-    say(LOCK_HINT,2800);
+    say(lockHint(),2800);
   }
   function burstUnlock(b){
     b.classList.add('is-unlocking');
@@ -128,20 +129,20 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
     const celebrate=unlocked&&hooks.consumeUnlockCelebration?.();
     const tiles=page.createElement('div');tiles.className='aw-tiles';
     tiles.append(
-      tile({label:'Levels',icon:'star',action:()=>{tap();hooks.setMode?.('campaign');hooks.campaign?.openSelect?.();}}),
-      tile({label:'Regeln',icon:'cap',action:()=>{tap();void go('rules');}}));
-    const endlos=button({label:'Endlos',icon:'infinity',color:'aw-orange',id:'home-endless',dim:!unlocked,
+      tile({label:t('menu.levels'),icon:'star',nav:'levels',action:()=>{tap();hooks.setMode?.('campaign');hooks.campaign?.openSelect?.();}}),
+      tile({label:t('menu.rules'),icon:'cap',nav:'rules',action:()=>{tap();void go('rules');}}));
+    const endlos=button({label:t('menu.endless'),icon:'infinity',color:'aw-orange',id:'home-endless',nav:'endless',dim:!unlocked,
       action:b=>{if(!hooks.campaign?.summary?.().modesUnlocked){lockedTap(b);return;}tap();hooks.setMode?.('endless');void go('endless');}});
-    const duo=button({label:'2 Spieler',icon:'duo',color:'aw-blue',id:'home-duel',dim:!unlocked,
+    const duo=button({label:t('menu.duel'),icon:'duo',color:'aw-blue',id:'home-duel',nav:'duel',dim:!unlocked,
       action:b=>{if(!hooks.campaign?.summary?.().modesUnlocked){lockedTap(b);return;}tap();hooks.gesture?.();void hooks.duel?.open?.();}});
-    if(!unlocked){decorateLock(endlos,'Endlos');decorateLock(duo,'2 Spieler');}
+    if(!unlocked){decorateLock(endlos,t('menu.endless'));decorateLock(duo,t('menu.duel'));}
     else if(celebrate){
       burstUnlock(endlos);burstUnlock(duo);
-      say('Endlos und 2 Spieler sind frei!',3200);
+      say(t('lock.unlocked'),3200);
       hooks.haptics?.pulse?.('big');
     }
     return [
-      button({label:'Abenteuer',icon:'play',color:'aw-green',size:'aw-big',
+      button({label:t('menu.adventure'),icon:'play',color:'aw-green',size:'aw-big',nav:'adventure',
         action:()=>{tap();hooks.setMode?.('campaign');void go('campaign');}}),
       endlos, duo, tiles,
     ];
@@ -150,56 +151,57 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
     const box=page.createElement('div');box.className='aw-card aw-rules';box.tabIndex=0;
     const src=[...page.querySelectorAll('#veil .rules p')];
     const intro=page.createElement('p');intro.className='aw-rules-lead';
-    intro.textContent='Im Abenteuer zeigt jedes Level oben sein Ziel und die Züge, die du dafür hast.';
+    intro.textContent=t('rules.lead');
     box.append(...src.map(p=>{const c=page.createElement('p');c.textContent=p.textContent;return c;}),intro);
-    return [ribbon('Spielregeln','aw-r-purple'),box,
-      button({label:'Neue Squishes testen',icon:'play',color:'aw-blue',size:'aw-small',action:()=>{tap('move');hooks.gesture?.();hooks.campaign?.openLab?.();}}),
-      button({label:'Zurück',icon:'back',color:'aw-slate',size:'aw-small',action:()=>{tap();void go('home');}})];
+    return [ribbon(t('rules.ribbon'),'aw-r-purple'),box,
+      button({label:t('menu.lab'),icon:'play',color:'aw-blue',size:'aw-small',nav:'lab',action:()=>{tap('move');hooks.gesture?.();hooks.campaign?.openLab?.();}}),
+      button({label:t('menu.back'),icon:'back',color:'aw-slate',size:'aw-small',nav:'back',action:()=>{tap();void go('home');}})];
   }
   function campaignItems(){
     const info=hooks.campaign?.summary?.()||{next:1,ready:false};
     const inv=info.inventory;   // null = kein Vorrat (TOOL_STOCK aus) → keine Chips
-    const c=card(`★ ${info.total??0} / ${(info.count||25)*3}`,info.caption||'',inv?[{n:inv.extraMoves||0,label:'+3 Züge',type:'extraMoves'},{n:inv.hint||0,label:'Hinweis',type:'hint'},{n:inv.rocket||0,label:'Rakete',type:'rocket'},{n:inv.wand||0,label:'Zauber',type:'wand'}]:null);
+    const c=card(`★ ${info.total??0} / ${(info.count||25)*3}`,info.caption||'',inv?[{n:inv.extraMoves||0,label:t('tool.extraMoves'),type:'extraMoves'},{n:inv.hint||0,label:t('tool.hint'),type:'hint'},{n:inv.rocket||0,label:t('tool.rocket'),type:'rocket'},{n:inv.wand||0,label:t('tool.wandShort'),type:'wand'}]:null);
     // Vorrat-Aktionen in der Karte: offene Geschenke öffnen, Werkzeug-Shop.
     const acts=page.createElement('div');acts.className='aw-card-actions';
     if(info.pendingGifts>0){
-      const g=page.createElement('button');g.type='button';g.className='gift-btn';g.id='home-gift';g.dataset.label='Geschenk';
-      g.innerHTML=(hooks.icons?.gift||'')+'<span>Geschenk</span>'+(info.pendingGifts>1?`<b class="gift-n">${info.pendingGifts}</b>`:'');
-      g.setAttribute('aria-label',`${info.pendingGifts} Geschenk${info.pendingGifts>1?'e':''} öffnen`);
+      const g=page.createElement('button');g.type='button';g.className='gift-btn';g.id='home-gift';g.dataset.label=t('menu.gift');g.dataset.nav='gift';
+      g.innerHTML=(hooks.icons?.gift||'')+'<span></span>'+(info.pendingGifts>1?`<b class="gift-n">${info.pendingGifts}</b>`:'');
+      g.querySelector('span').textContent=t('menu.gift');
+      g.setAttribute('aria-label',t('result.giftAria',{n:info.pendingGifts}));
       g.addEventListener('click',()=>{tap();hooks.campaign?.openGift?.();});acts.append(g);
     }
     if(info.shop){
-      const b=page.createElement('button');b.type='button';b.className='shop-pill';b.id='home-shop';b.dataset.label='Shop';
-      b.innerHTML=(hooks.icons?.shop||'')+'<span>Shop</span>';b.setAttribute('aria-label','Werkzeug-Shop öffnen');
+      const b=page.createElement('button');b.type='button';b.className='shop-pill';b.id='home-shop';b.dataset.label=t('menu.shop');b.dataset.nav='shop';
+      b.innerHTML=(hooks.icons?.shop||'')+'<span></span>';b.querySelector('span').textContent=t('menu.shop');b.setAttribute('aria-label',t('shop.openAria'));
       b.addEventListener('click',()=>{tap();hooks.campaign?.openShop?.();});acts.append(b);
     }
     if(acts.childElementCount)c.append(acts);
-    const items=[ribbon('Abenteuer','aw-r-green'),c];
-    items.push(button({label:`Level ${info.next} spielen`,icon:'play',color:'aw-green',size:'aw-big',id:'home-play-level',action:()=>{
-      if(!info.ready&&!hooks.campaign?.summary?.().ready){say('Level werden geladen …',2000);return;}
+    const items=[ribbon(t('menu.adventure'),'aw-r-green'),c];
+    items.push(button({label:t('menu.playLevel',{n:info.next}),icon:'play',color:'aw-green',size:'aw-big',id:'home-play-level',nav:'play-level',action:()=>{
+      if(!info.ready&&!hooks.campaign?.summary?.().ready){say(t('menu.loadingLevels'),2000);return;}
       tap('move');hooks.gesture?.();void play({campaign:hooks.campaign.summary().next});
     }}));
-    items.push(button({label:'Levelauswahl',icon:'grid',color:'aw-blue',action:()=>{tap();hooks.campaign?.openSelect?.();}}));
-    items.push(button({label:'Zurück',icon:'back',color:'aw-slate',size:'aw-small',action:()=>{tap();void go('home');}}));
+    items.push(button({label:t('menu.select'),icon:'grid',color:'aw-blue',nav:'select',action:()=>{tap();hooks.campaign?.openSelect?.();}}));
+    items.push(button({label:t('menu.back'),icon:'back',color:'aw-slate',size:'aw-small',nav:'back',action:()=>{tap();void go('home');}}));
     return items;
   }
   function endlessItems(){
     const e=hooks.endlessStats?.()||{},can=!!hooks.canContinue?.();
-    const sub=e.bestTile?`Bester Stein: ${e.bestTile}`:'';
-    const items=[ribbon('Endlos','aw-r-orange'),card(e.best?`Rekord ${fmt(e.best)}`:'Noch kein Rekord',sub)];
-    const cont=button({label:'Weiterspielen',icon:'play',color:can?'aw-green':'aw-orange',size:can?'aw-big':'',dim:!can,action:b=>{
-      if(!hooks.canContinue?.()){say('Noch kein Spielstand – starte ein neues Spiel.',2600);return;}
+    const sub=e.bestTile?t('menu.bestTile',{n:e.bestTile}):'';
+    const items=[ribbon(t('menu.endless'),'aw-r-orange'),card(e.best?t('menu.record',{score:fmt(e.best)}):t('menu.noRecord'),sub)];
+    const cont=button({label:t('menu.continue'),icon:'play',color:can?'aw-green':'aw-orange',size:can?'aw-big':'',dim:!can,nav:'continue',action:b=>{
+      if(!hooks.canContinue?.()){say(t('menu.noSave'),2600);return;}
       tap('move');hooks.gesture?.();void play(false);
     }});
-    const fresh=button({label:'Neues Spiel',icon:can?'plus':'play',color:can?'aw-orange':'aw-green',size:can?'':'aw-big',action:()=>{tap('move');hooks.gesture?.();void play(true);}});
+    const fresh=button({label:t('menu.newGame'),icon:can?'plus':'play',color:can?'aw-orange':'aw-green',size:can?'':'aw-big',nav:'new-game',action:()=>{tap('move');hooks.gesture?.();void play(true);}});
     items.push(...(can?[cont,fresh]:[fresh,cont]));
-    items.push(button({label:'Zurück',icon:'back',color:'aw-slate',size:'aw-small',action:()=>{tap();void go('home');}}));
+    items.push(button({label:t('menu.back'),icon:'back',color:'aw-slate',size:'aw-small',nav:'back',action:()=>{tap();void go('home');}}));
     return items;
   }
   function updateTopbar(){
     const c=hooks.campaign?.summary?.()||{},e=hooks.endlessStats?.()||{};
-    if(starsEl){starsEl.querySelector('b').textContent=`${c.total??0}/${(c.count||25)*3}`;starsEl.setAttribute('aria-label',`${c.total??0} von ${(c.count||25)*3} Sternen im Abenteuer`);}
-    if(recordEl){recordEl.querySelector('b').textContent=fmt(e.best||0);recordEl.setAttribute('aria-label',`Endlos-Rekord: ${fmt(e.best||0)} Punkte`);}
+    if(starsEl){starsEl.querySelector('b').textContent=`${c.total??0}/${(c.count||25)*3}`;starsEl.setAttribute('aria-label',t('menu.starsAria',{n:c.total??0,max:(c.count||25)*3}));}
+    if(recordEl){recordEl.querySelector('b').textContent=fmt(e.best||0);recordEl.setAttribute('aria-label',t('menu.recordAria',{score:fmt(e.best||0)}));}
   }
   function render(name,{animate=true}={}){
     screen=name;lastScreen=name;root.dataset.screen=name;
@@ -242,6 +244,8 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
     if(page.querySelector('.duel-screen:not([hidden]),.settings-screen:not([hidden]),.shop-veil,.gift-fx,.ad-veil'))return;
     ev.preventDefault();void go('home');
   });
+
+  onLangChange(()=>{syncVibration();if(active&&!busy)render(screen||'home',{animate:false});else updateTopbar();});
 
   return {
     get active(){return active;},get screen(){return screen;},

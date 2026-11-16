@@ -6,6 +6,7 @@
 // Später (App): ein natives Store-Modul (StoreKit / Play Billing über Capacitor) registriert sich
 // mit registerNativeStore({...}) und liefert dieselbe Schnittstelle (products/purchase).
 import { TOOL_TYPES, toolName } from './campaign.mjs?v=launch-22';
+import { t, fmtPrice } from './i18n.mjs?v=launch-23';
 
 /** Eine Stelle für alle Angebote und Platzhalter-Preise (EUR). */
 export const SHOP_CONFIG = Object.freeze({
@@ -16,7 +17,7 @@ export const SHOP_CONFIG = Object.freeze({
   packs: Object.freeze([[1, 0.99], [3, 2.49], [5, 3.99]]),
   // Gemischtes Paket
   bundles: Object.freeze([
-    Object.freeze({ id: 'bundle-mix', title: 'Werkzeugkiste', items: Object.freeze({ extraMoves: 2, hint: 2, rocket: 2, wand: 2 }), price: 4.99 }),
+    Object.freeze({ id: 'bundle-mix', titleKey: 'shop.bundleName', items: Object.freeze({ extraMoves: 2, hint: 2, rocket: 2, wand: 2 }), price: 4.99 }),
   ]),
 });
 
@@ -25,13 +26,12 @@ export function shopProducts(config = SHOP_CONFIG) {
   const out = [];
   for (const type of TOOL_TYPES) for (const [count, price] of config.packs)
     out.push({ id: `${type}-${count}`, type, title: `${count}× ${toolName(type)}`, items: { [type]: count }, price });
-  for (const b of config.bundles) out.push({ id: b.id, type: null, title: b.title, items: { ...b.items }, price: b.price });
+  for (const b of config.bundles) out.push({ id: b.id, type: null, title: t(b.titleKey || 'shop.bundleName'), items: { ...b.items }, price: b.price });
   return out;
 }
 export const productById = (id, config = SHOP_CONFIG) => shopProducts(config).find(p => p.id === id) || null;
 
-const fmtEUR = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
-export const formatPrice = (price, product) => product?.priceLabel || fmtEUR.format(price);
+export const formatPrice = (price, product, currency = 'EUR') => product?.priceLabel || fmtPrice(price, currency);
 
 let nativeStore = null;
 /**
