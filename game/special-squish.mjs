@@ -1,72 +1,43 @@
-// launch-17: einfaches Comic-Aussehen der besonderen Squishes.
-//  ice   – weißer Körper, kleines Eis-/Schneeflocken-Abzeichen oben, dunkelblaue Zahl.
-//  bound – grauer Körper, kleines Schloss-Abzeichen oben, weiße Zahl.
-//  bomb  – schwarzer Körper, kleines Bomben-Abzeichen oben, goldene Zahl
-//          (die Sekunden zeigt weiter das DOM-Abzeichen in game.mjs).
-// Die Abzeichen folgen der Verformung des Körpers (gleiche Formel wie die Zahl).
+// squish-art: Eis, Schloss und Bombe im genehmigten Konzept-Look.
+//  Der Körper wird eingefärbt, darüber liegt die Konzept-Textur auf der
+//  Oberseite und folgt der Gel-Verformung. Die Zahl bleibt versteckt, solange
+//  der Squish gefroren, versperrt oder eine Bombe ist; nach dem Befreien
+//  (Eis/Schloss) erscheint die normale Zahl wieder. Der Bomben-Countdown
+//  bleibt das DOM-Abzeichen in game.mjs. Keine Idle-Animation (0 fps in Ruhe).
 import {THREE,PARAMETERS} from '../squish/squish-graphics.js?v=play-sharp-1';
 import {pillowTopHeight} from './original-gel-models.js?v=menu-1';
-import {INK,setComicValue,setComicLabel} from './comic-style.mjs?v=launch-21';
+import {comicColors,setComicValue} from './comic-style.mjs?v=launch-21';
 
-const ICE=[new THREE.Color('#f6f8fc'),new THREE.Color('#c5d0de')];
-const STEEL=[new THREE.Color('#9aa3ad'),new THREE.Color('#4a535c')];
-const BLACK=[new THREE.Color('#3d3d48'),new THREE.Color('#12121a')];
-const GOLD='#ffc94a';
+const ICE=[new THREE.Color('#c5ebff'),new THREE.Color('#2f74b0')];
+const STONE=[new THREE.Color('#c5c3be'),new THREE.Color('#5a5854')];
+const BLACK=[new THREE.Color('#2a2a30'),new THREE.Color('#08080c')];
+const ART='squish-art-1';
+const URLS={
+  ice:new URL(`./assets/specials/ice.webp?v=${ART}`,import.meta.url).href,
+  bound:new URL(`./assets/specials/bound.webp?v=${ART}`,import.meta.url).href,
+  bomb:new URL(`./assets/specials/bomb.webp?v=${ART}`,import.meta.url).href,
+};
 
 const textures=new Map();
 function tex(kind){
   let t=textures.get(kind);if(t)return t;
-  const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');
-  x.lineJoin=x.lineCap='round';x.translate(128,128);
-  const ink=(fn)=>{x.save();x.strokeStyle=INK;x.fillStyle=INK;fn(14);x.restore();x.save();fn(7);x.restore();};
-  if(kind==='ice'){
-    // Sechsarmige Schneeflocke, weiß mit Tinten-Kontur.
-    ink(w=>{
-      x.strokeStyle=w>10?INK:'#ffffff';x.lineWidth=w;x.fillStyle=w>10?INK:'#e8f6ff';
-      for(let i=0;i<6;i++){
-        x.rotate(Math.PI/3);
-        x.beginPath();x.moveTo(0,-86);x.lineTo(0,86);x.moveTo(-22,-58);x.lineTo(0,-36);x.lineTo(22,-58);
-        x.moveTo(-16,58);x.lineTo(0,36);x.lineTo(16,58);x.stroke();
-      }
-      x.beginPath();x.arc(0,0,16,0,Math.PI*2);x.fill();
-      if(w<=10){x.strokeStyle=INK;x.lineWidth=3;x.stroke();}
-    });
-  }else if(kind==='bound'){
-    // Vorhängeschloss: goldener Bügel und Körper, Schlüsselloch.
-    ink(w=>{
-      const fat=w>10;
-      x.strokeStyle=fat?INK:GOLD;x.lineWidth=w+2;x.beginPath();x.arc(0,-28,36,Math.PI,0);x.lineTo(36,-4);x.stroke();
-      if(!fat){x.strokeStyle='#fff4b8';x.lineWidth=5;x.beginPath();x.arc(0,-28,36,Math.PI,0);x.stroke();}
-      const rr=(l,t,bw,bh,r)=>{x.beginPath();x.moveTo(l+r,t);x.arcTo(l+bw,t,l+bw,t+bh,r);x.arcTo(l+bw,t+bh,l,t+bh,r);x.arcTo(l,t+bh,l,t,r);x.arcTo(l,t,l+bw,t,r);x.closePath();};
-      rr(-52,-8,104,92,18);x.fillStyle=fat?INK:GOLD;x.fill();
-      if(!fat){x.strokeStyle=INK;x.lineWidth=6;x.stroke();
-        x.beginPath();x.arc(0,28,12,0,Math.PI*2);x.fillStyle=INK;x.fill();
-        x.fillRect(-6,28,12,28);}
-    });
-  }else if(kind==='bomb'){
-    // Runde Bombe, goldene Kappe, kurze Lunte, kleiner Funke.
-    ink(w=>{
-      const fat=w>10;
-      x.beginPath();x.arc(0,18,78,0,Math.PI*2);x.fillStyle=fat?INK:'#1a1a22';x.fill();
-      if(!fat){x.strokeStyle=INK;x.lineWidth=8;x.stroke();}
-      const cap=()=>{x.beginPath();x.moveTo(-22,-52);x.lineTo(22,-52);x.lineTo(18,-72);x.lineTo(-18,-72);x.closePath();};
-      cap();x.fillStyle=fat?INK:GOLD;x.fill();
-      x.beginPath();x.moveTo(8,-72);x.quadraticCurveTo(42,-108,58,-96);x.strokeStyle=fat?INK:'#c8a46a';x.lineWidth=fat?w:8;x.stroke();
-      if(!fat){
-        x.beginPath();for(let i=0;i<10;i++){const a=i*Math.PI/5,r=i%2?7:16;x.lineTo(58+Math.cos(a)*r,-96+Math.sin(a)*r);}x.closePath();
-        x.fillStyle=GOLD;x.strokeStyle=INK;x.lineWidth=4;x.stroke();x.fill();
-      }
-    });
-  }
-  t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.generateMipmaps=true;t.minFilter=THREE.LinearMipmapLinearFilter;t.anisotropy=8;
+  t=new THREE.TextureLoader().load(URLS[kind]);
+  t.colorSpace=THREE.SRGBColorSpace;
+  t.generateMipmaps=true;
+  t.minFilter=THREE.LinearMipmapLinearFilter;
+  t.magFilter=THREE.LinearFilter;
+  t.anisotropy=8;
   textures.set(kind,t);return t;
 }
+// Preload so the first test board already has the art.
+tex('ice');tex('bound');tex('bomb');
 
-const SPAN=.5,Z=-.36;
+// Gel width is 1.86; this square sits on the top face without falling off the pillow.
+const SPAN=1.52,Z=0,LIFT=.028;
 function badgeGeometry(lift){
-  const g=new THREE.PlaneGeometry(SPAN,SPAN,12,12),p=g.attributes.position;
+  const g=new THREE.PlaneGeometry(SPAN,SPAN,20,20),p=g.attributes.position;
   for(let i=0;i<p.count;i++){const x=p.getX(i),z=-p.getY(i)+Z;p.setXYZ(i,x,pillowTopHeight(x,z)+lift,z);}
-  g.computeBoundingSphere();return g;
+  g.computeVertexNormals();g.computeBoundingSphere();return g;
 }
 function deform(mesh,s){
   const d=s.deformation;if(!d)return;
@@ -77,25 +48,42 @@ function deform(mesh,s){
   mesh.geometry.attributes.position.needsUpdate=true;
 }
 function makeBadge(kind,s){
-  const geometry=badgeGeometry(.03);
-  const material=new THREE.MeshBasicMaterial({map:tex(kind),transparent:true,depthWrite:false,toneMapped:false,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3});
+  const geometry=badgeGeometry(LIFT);
+  const material=new THREE.MeshBasicMaterial({
+    map:tex(kind),transparent:true,depthWrite:false,toneMapped:false,
+    polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3,
+  });
   const mesh=new THREE.Mesh(geometry,material);mesh.name='Special_'+kind;mesh.castShadow=false;mesh.renderOrder=4;
   mesh.userData.rest=geometry.attributes.position.array.slice();mesh.raycast=()=>{};
   mesh.onBeforeRender=()=>deform(mesh,s);
   return mesh;
 }
+function outlineOf(s){
+  return s.body?.children?.find(o=>o.name==='Comic_outline')||null;
+}
 function tint(s,kind){
   const u=s.body?.material?.uniforms;if(!u?.uLight)return;
-  if(kind==='bound'){u.uLight.value.copy(STEEL[0]);u.uShade.value.copy(STEEL[1]);}
+  if(kind==='bound'){u.uLight.value.copy(STONE[0]);u.uShade.value.copy(STONE[1]);}
   else if(kind==='ice'){u.uLight.value.copy(ICE[0]);u.uShade.value.copy(ICE[1]);}
   else if(kind==='bomb'){u.uLight.value.copy(BLACK[0]);u.uShade.value.copy(BLACK[1]);}
+  // Die Konzept-Textur bringt das Licht mit; der Comic-Glanzfleck würde doppelt sitzen.
+  if(u.uSpot)u.uSpot.value=0;
+}
+function setSpot(s,on){
+  const u=s.body?.material?.uniforms;if(u?.uSpot)u.uSpot.value=on?1:0;
+}
+function restoreBody(s){
+  if(s.body?.material)setComicValue(s.body.material,s.value);
+  setSpot(s,true);
 }
 function labelOf(s,kind){
   if(!s.label)return;
-  s.label.visible=true;
-  if(kind==='ice')setComicLabel(s.label.material,{face:INK,ink:'#ffffff'});
-  else if(kind==='bomb')setComicLabel(s.label.material,{face:GOLD,ink:INK});
-  else setComicLabel(s.label.material,{face:'#ffffff',ink:INK});
+  if(s.userData?.freeJob)return;
+  s.label.visible=!kind;
+  if(s.label.material&&s.label.material.opacity!=null&&!kind)s.label.material.opacity=1;
+}
+function showOutline(s,on){
+  const o=outlineOf(s);if(o)o.visible=on;
 }
 
 let runtime={job:null,reduced:()=>false};
@@ -107,22 +95,37 @@ function disposeDecor(mesh){
 function cancelFree(s){
   const j=s.userData?.freeJob;if(!j)return;s.userData.freeJob=null;j.cancel?.();
 }
-/** Kurzes Aufpoppen / Ausblenden des Abzeichens, wenn Eis oder Schloss fällt. */
-function popFree(s,mesh){
+
+/** Overlay ausblenden, Körperfarbe und Zahl einblenden (Eis/Schloss/Bombe). */
+function popFree(s,mesh,fromKind){
   cancelFree(s);
   if(!mesh)return;
-  if(!runtime.job||runtime.reduced()||s.group?.visible===false){disposeDecor(mesh);return;}
+  const finish=()=>{
+    disposeDecor(mesh);
+    restoreBody(s);
+    showOutline(s,true);
+    if(s.label){s.label.visible=true;if(s.label.material&&s.label.material.opacity!=null)s.label.material.opacity=1;}
+  };
+  if(!runtime.job||runtime.reduced()||s.group?.visible===false){finish();return;}
   mesh.material.transparent=true;mesh.material.depthWrite=false;
+  const u=s.body?.material?.uniforms;
+  const fromLight=u?.uLight?.value.clone(),fromShade=u?.uShade?.value.clone();
+  const to=comicColors(s.value||1);
+  if(s.label){s.label.visible=true;if(s.label.material&&s.label.material.opacity!=null)s.label.material.opacity=0;}
   const job={
     t0:null,
     update(time){
+      if(!mesh.parent){finish();if(s.userData?.freeJob===job)s.userData.freeJob=null;return true;}
       if(this.t0==null)this.t0=time;
-      const t=Math.min(1,(time-this.t0)/.28),k=1+t*.45;
-      mesh.scale.set(k,k,k);mesh.material.opacity=1-t;
-      if(t>=1){disposeDecor(mesh);if(s.userData?.freeJob===job)s.userData.freeJob=null;return true;}
+      const t=Math.min(1,(time-this.t0)/.4),e=t*t*(3-2*t);
+      const k=1+e*.22;
+      mesh.scale.set(k,k,k);mesh.material.opacity=1-e;
+      if(fromLight&&u?.uLight){u.uLight.value.copy(fromLight).lerp(to.light,e);u.uShade.value.copy(fromShade).lerp(to.shade,e);}
+      if(s.label?.material&&s.label.material.opacity!=null)s.label.material.opacity=e;
+      if(e>=1){finish();if(s.userData?.freeJob===job)s.userData.freeJob=null;return true;}
       return false;
     },
-    cancel(){disposeDecor(mesh);}
+    cancel(){finish();}
   };
   (s.userData||={}).freeJob=job;runtime.job(job);
 }
@@ -133,14 +136,15 @@ export function applySpecial(s,kind,{freed=false}={}){
   if(prev!==kind){
     const old=s.specialDecor;s.specialDecor=null;
     if(old){
-      if(freed&&!kind&&(prev==='ice'||prev==='bound'))popFree(s,old);
+      if(!kind)popFree(s,old,prev);
       else{cancelFree(s);disposeDecor(old);}
     }
     if(kind){cancelFree(s);s.specialDecor=makeBadge(kind,s);s.group.add(s.specialDecor);}
-    if(!kind&&s.body?.material)setComicValue(s.body.material,s.value);
+    if(!kind&&!s.userData?.freeJob)restoreBody(s);
     s.special=kind;
   }
-  if(kind)tint(s,kind);
+  if(kind){tint(s,kind);showOutline(s,false);}
+  else if(!s.userData?.freeJob)showOutline(s,true);
   labelOf(s,kind);
   return prev!==kind;
 }
