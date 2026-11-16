@@ -35,9 +35,9 @@
 #home-play-level {font-size:26px;}
 .aw-btn.aw-big::before {left:22px;top:6px;width:22px;height:6px;}
 .aw-screen > .aw-btn:not(.aw-big):not(.aw-small) {width:90%;align-self:center;}
-.aw-btn.aw-small {width:min(100%,190px);min-height:50px;font-size:21px;padding:4px 18px 9px;}
-.aw-btn.aw-small .aw-ico svg {width:20px;height:20px;}
-.aw-btn.aw-small .aw-label {margin-right:14px;}
+.aw-btn.aw-small {width:min(100%,220px);min-height:50px;font-size:18px;padding:4px 12px 9px;gap:6px;}
+.aw-btn.aw-small .aw-ico svg {width:18px;height:18px;}
+.aw-btn.aw-small .aw-label {margin-right:4px;}
 .aw-btn.aw-small::before {left:16px;width:14px;height:4px;}
 .aw-pair .aw-btn {font-size:22px;min-height:56px;padding:4px 10px 10px;gap:6px;}
 .aw-pair .aw-btn .aw-ico svg {width:22px;height:22px;}

@@ -24,10 +24,13 @@ export function fitLabels(root, { minBtn = 11, minTile = 8 } = {}) {
 
 export function fitLabelsSoon(root, opts) {
   if (!root) return;
-  fitLabels(root, opts);
+  const run = () => fitLabels(root, opts);
+  run();
   const win = root.ownerDocument?.defaultView;
   win?.requestAnimationFrame(() => {
-    fitLabels(root, opts);
-    win.requestAnimationFrame(() => fitLabels(root, opts));
+    run();
+    win.requestAnimationFrame(run);
   });
+  const fonts = root.ownerDocument?.fonts;
+  if (fonts?.ready) fonts.ready.then(run).catch(() => {});
 }

@@ -306,21 +306,32 @@ function overflowHits() {
   const vis = el => {
     if (!el || !el.getClientRects().length) return false;
     const s = getComputedStyle(el);
-    return s.display !== 'none' && s.visibility !== 'hidden' && s.opacity !== '0';
+    if (s.display === 'none' || s.visibility === 'hidden' || s.opacity === '0') return false;
+    let n = el.parentElement;
+    while (n && n !== document.body) {
+      const ps = getComputedStyle(n);
+      if (n.hidden || ps.display === 'none' || ps.visibility === 'hidden') return false;
+      n = n.parentElement;
+    }
+    return true;
   };
   const hits = [];
   const seen = new Set();
-  for (const el of document.querySelectorAll('.aw-btn, .aw-tile, .aw-lang-btn, .campaign-tool, .campaign-level-btn, .gift-btn, button.menu-button, #campaign-extra, #campaign-next, #campaign-retry, #campaign-menu, #home-play-level')) {
+  const sel = '.aw-btn, .aw-tile, .aw-lang-btn, .gift-btn, .shop-pill, button.menu-button, #campaign-extra, #campaign-next, #campaign-retry, #campaign-menu, #home-play-level';
+  const openOverlay = document.querySelector('.campaign-result:not([hidden]), .settings-screen:not([hidden]), .duel-screen:not([hidden]), .ad-veil, .shop-veil');
+  for (const el of document.querySelectorAll(sel)) {
     if (!vis(el) || seen.has(el)) continue;
+    if (openOverlay && !openOverlay.contains(el) && !el.closest('.aw-lang, .aw-topbar')) continue;
     seen.add(el);
-    const nodes = [el, ...el.querySelectorAll('.aw-label>span, .aw-label small, .aw-tile-label, small')];
-    for (const node of nodes) {
+    const labels = [...el.querySelectorAll('.aw-label>span, .aw-label small, .aw-tile-label')];
+    if (!labels.length && /[A-Za-zÄÖÜäöüß]/.test(el.textContent || '')) labels.push(el);
+    for (const node of labels) {
       if (node !== el && !vis(node)) continue;
       const ls = getComputedStyle(node);
       const clipped = node.scrollWidth > node.clientWidth + 1;
       const ellipsis = /\bellipsis\b/.test(ls.textOverflow);
       if (clipped || ellipsis) {
-        hits.push({ nav: el.dataset.nav || el.id, text: (el.innerText||'').replace(/\s+/g,' ').trim().slice(0,48), sw: node.scrollWidth, cw: node.clientWidth, ellipsis: ls.textOverflow, tag: node.className || node.tagName });
+        hits.push({ nav: el.dataset.nav || el.id, text: (node.textContent||'').replace(/\s+/g,' ').trim().slice(0,48), sw: node.scrollWidth, cw: node.clientWidth, ellipsis: ls.textOverflow });
         break;
       }
     }
@@ -361,10 +372,13 @@ function overflowHits() {
 
 // ---------- langes Label „Level 100 spielen“ / „Play Level 100“ ----------
 {
-  const prog = { version: 1, levels: Object.fromEntries(Array.from({ length: 99 }, (_, i) => [String(i + 1), { stars: 1, moves: 6, at: 1 }])), updatedAt: 1 };
+  const prog = { version: 1, levels: Object.fromEntries(Array.from({ length: 99 }, (_, i) => [String(i + 1), { stars: 3, moves: 5, at: 1 }])), updatedAt: 1 };
   for (const [locale, want] of [['de', 'Level 100 spielen'], ['en', 'Play Level 100']]) {
     const { page, errors } = await newPage(false, {
       'squish-campaign-v1': JSON.stringify(prog),
+      'squish-campaign-tools-reset': 'launch-13',
+      'squish-campaign-progress-reset': 'launch-14',
+      'squish-campaign-stars-reset': 'launch-18',
       'squish-campaign-tutorial-reset': 'launch-24',
       'squish-modes-unlock-seen': '1',
       'squish-lang-v1': locale,
