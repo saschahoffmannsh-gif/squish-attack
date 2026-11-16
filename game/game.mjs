@@ -16,7 +16,7 @@ import {createConfetti} from './confetti.mjs?v=launch-19';
 import {createHaptics} from './haptics.mjs?v=launch-19';
 import {planMergeRipple} from './merge-ripple.mjs?v=swarm-fx-3';
 import * as Camp from './campaign.mjs?v=launch-19';
-import {createCampaignUI,TOOL_ARTICLE,TOOL_NOM} from './campaign-ui.mjs?v=launch-19';
+import {createCampaignUI,TOOL_ARTICLE,TOOL_NOM} from './campaign-ui.mjs?v=launch-20';
 import {createToolFx} from './tool-fx.mjs?v=launch-19';
 import {hintState,findHint} from './hint-solver.mjs?v=launch-19';
 import {comicColors} from './comic-style.mjs?v=launch-19';
@@ -178,7 +178,7 @@ const progressSync=createProgressSync({fetch:apiFetch,epoch:epochOf(Camp.STARS_R
   setLocal:(p,inv)=>{campaignProgress=p;Camp.saveProgress(p);if(inv!==inventory){inventory=inv;Camp.saveInventory(inv,undefined,false);}try{renderCampaign();void worldMenu.refresh?.();}catch{}}});
 const cloudSync=()=>{if(!labMode)progressSync.schedule();};
 progressSync.attach(window);
-const BUILD_LABEL='launch-19';
+const BUILD_LABEL='launch-20';
 let toolLog=ToolLog.loadLog(),logAttempt=null;
 // Versuche, die beim letzten Mal offen blieben (Seite geschlossen), gelten als abgebrochen.
 if(toolLog.attempts.some(a=>!a.outcome)){for(const a of toolLog.attempts)if(!a.outcome)ToolLog.endAttempt(toolLog,a.id,{outcome:'quit',moves:a.moves});ToolLog.saveLog(toolLog);}

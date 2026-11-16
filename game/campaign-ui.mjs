@@ -96,7 +96,7 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
     bNext.title=nextLock?lockText(nextLock):'';
     bExtra.hidden=won||!extraOffer||lostReason!=='moves';
     const viaAd=!(extraAvailable>0);bExtra.dataset.refill=viaAd?'ad':'';
-    setLabel(bExtra,viaAd?'+3 Züge · Werbung':`+3 Züge (${extraAvailable})`);
+    setLabel(bExtra,viaAd?'+3 Züge (Werbung)':`+3 Züge (${extraAvailable})`);
     bExtra.setAttribute('aria-label',viaAd?'Werbung ansehen für +3 Züge':`+3 Züge einsetzen, ${extraAvailable} vorhanden`);
     // Verloren ohne +3: "Nochmal" wird der große Hauptknopf.
     const retryMain=!won&&bExtra.hidden;
