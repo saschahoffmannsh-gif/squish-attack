@@ -6,9 +6,9 @@
 //  sichtbaren Kanten laufen kurze Kettenglieder hinunter. Beim Befreien
 //  zerplatzen die Glieder.
 import {THREE,PARAMETERS} from '../squish/squish-graphics.js?v=play-sharp-1';
-import {applyComic,LIGHT} from './comic-style.mjs?v=launch-24';
+import {applyComic,LIGHT} from './comic-style.mjs?v=launch-25';
 
-const ART='squish-art-10';
+const ART='launch-25';
 const url=name=>new URL(`./assets/specials/${name}.webp?v=${ART}`,import.meta.url).href;
 
 // style: 0 Eis, 1 Schloss/Joker, 2 Bombe
