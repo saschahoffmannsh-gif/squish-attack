@@ -5,7 +5,7 @@
 // Der Kauf entfernt nur die Werbung (Clip vor dem Einsatz, Zwischenwerbung alle
 // 5 Abenteuer-Siege, Endlos-Angebot alle 10 Minuten). Das Limit gilt für alle:
 // jedes Hilfsmittel genau 1× je Versuch, kein Ansammeln, kein Vorrat.
-import { fmtPrice } from './i18n.mjs?v=launch-25';
+import { fmtPrice } from './i18n.mjs?v=launch-26';
 
 export const AD_FREE_PRODUCT = Object.freeze({
   id: 'squish.adfree',

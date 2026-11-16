@@ -1,36 +1,36 @@
-import {apiFetch,hasSaveToken} from './api.mjs?v=launch-25';
-import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-25';
+import {apiFetch,hasSaveToken} from './api.mjs?v=launch-26';
+import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-26';
 import { nextSpawn, spawnProfile } from './balance.mjs';
-import {canContinueRun} from './run-availability.mjs?v=launch-25';
-import { createMergeEffects } from './merge-effects.mjs?v=launch-25';
-import { createGameGraphics } from './graphics-adapter.mjs?v=launch-25';
-import { installDeviceMotion } from './device-motion.mjs?v=launch-25';
-import { createGameSound } from './sound.mjs?v=launch-25';
+import {canContinueRun} from './run-availability.mjs?v=launch-26';
+import { createMergeEffects } from './merge-effects.mjs?v=launch-26';
+import { createGameGraphics } from './graphics-adapter.mjs?v=launch-26';
+import { installDeviceMotion } from './device-motion.mjs?v=launch-26';
+import { createGameSound } from './sound.mjs?v=launch-26';
 import { installSettings } from './settings.mjs?v=woodland-menu-1';
-import { createDuelClient } from './duel-client.mjs?v=launch-25';
+import { createDuelClient } from './duel-client.mjs?v=launch-26';
 import {installFullscreen} from './fullscreen.mjs?v=timed-duel-1';
-import {createHomeMenu} from './home-menu.mjs?v=launch-25';
-import {createConfetti} from './confetti.mjs?v=launch-25';
-import {createHaptics} from './haptics.mjs?v=launch-25';
+import {createHomeMenu} from './home-menu.mjs?v=launch-26';
+import {createConfetti} from './confetti.mjs?v=launch-26';
+import {createHaptics} from './haptics.mjs?v=launch-26';
 import {planMergeRipple} from './merge-ripple.mjs?v=swarm-fx-3';
-import * as Camp from './campaign.mjs?v=launch-25';
-import {createCampaignUI} from './campaign-ui.mjs?v=launch-25';
-import {createToolFx} from './tool-fx.mjs?v=launch-25';
-import {createGhostFinger} from './ghost-finger.mjs?v=launch-25';
-import {hintState,findHint} from './hint-solver.mjs?v=launch-25';
-import {comicColors} from './comic-style.mjs?v=launch-25';
-import * as Shop from './shop.mjs?v=launch-25';
-import {createShopUI} from './shop-ui.mjs?v=launch-25';
-import {createGiftFx} from './gift-fx.mjs?v=launch-25';
-import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-25';
-import {createAdUI} from './ad-ui.mjs?v=launch-25';
-import {createStatsUI} from './stats-ui.mjs?v=launch-25';
-import * as ToolLog from './tool-log.mjs?v=launch-25';
-import {createProgressSync} from './progress-sync.mjs?v=launch-25';
-import {epochOf} from './progress-merge.mjs?v=launch-25';
+import * as Camp from './campaign.mjs?v=launch-26';
+import {createCampaignUI} from './campaign-ui.mjs?v=launch-26';
+import {createToolFx} from './tool-fx.mjs?v=launch-26';
+import {createGhostFinger} from './ghost-finger.mjs?v=launch-26';
+import {hintState,findHint} from './hint-solver.mjs?v=launch-26';
+import {comicColors} from './comic-style.mjs?v=launch-26';
+import * as Shop from './shop.mjs?v=launch-26';
+import {createShopUI} from './shop-ui.mjs?v=launch-26';
+import {createGiftFx} from './gift-fx.mjs?v=launch-26';
+import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-26';
+import {createAdUI} from './ad-ui.mjs?v=launch-26';
+import {createStatsUI} from './stats-ui.mjs?v=launch-26';
+import * as ToolLog from './tool-log.mjs?v=launch-26';
+import {createProgressSync} from './progress-sync.mjs?v=launch-26';
+import {epochOf} from './progress-merge.mjs?v=launch-26';
 import {createAdPacing} from './ad-pacing.mjs?v=launch-26';
 import {isAdFree,canOfferAdFree,purchaseAdFree,adFreePriceLabel} from './ad-free.mjs?v=launch-26';
-import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-25';
+import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-26';
 const playfield = document.getElementById('playfield');
 const gameElement = document.querySelector('.game');
 const visual = createGameGraphics(document.getElementById('graphics'));
@@ -144,9 +144,9 @@ const newTile = value => ({ id: nextId++, value });
 // in localStorage unangetastet: während der Kampagne wird nichts davon gespeichert,
 // beim Verlassen wird er wieder geladen.
 const MODE_KEY='squish-mode-v1';
-const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-25',import.meta.url);
+const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-26',import.meta.url);
 // launch-16: Test-Level für die neuen Squishes (Eis, Ketten, Bombe) – eigener kleiner Satz, kein Fortschritt/Protokoll.
-const LAB_URL=new URL('../levels/levels-lab.json?v=launch-25',import.meta.url);
+const LAB_URL=new URL('../levels/levels-lab.json?v=launch-26',import.meta.url);
 let labMode=false,labLevels=null,labLoading=null;
 function loadLab(){
   return labLoading||=fetch(LAB_URL,{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('lab '+r.status);return r.json();})
@@ -187,7 +187,7 @@ const progressSync=createProgressSync({fetch:apiFetch,epoch:epochOf(Camp.PROGRES
   setLocal:(p,inv)=>{campaignProgress=p;Camp.saveProgress(p);if(inv!==inventory){inventory=inv;Camp.saveInventory(inv,undefined,false);}try{renderCampaign();void worldMenu.refresh?.();}catch{}}});
 const cloudSync=()=>{if(!labMode)progressSync.schedule();};
 progressSync.attach(window);
-const BUILD_LABEL='launch-22';
+const BUILD_LABEL='launch-26';
 let toolLog=ToolLog.loadLog(),logAttempt=null;
 // Versuche, die beim letzten Mal offen blieben (Seite geschlossen), gelten als abgebrochen.
 if(toolLog.attempts.some(a=>!a.outcome)){for(const a of toolLog.attempts)if(!a.outcome)ToolLog.endAttempt(toolLog,a.id,{outcome:'quit',moves:a.moves});ToolLog.saveLog(toolLog);}
@@ -588,7 +588,7 @@ let hintWorker=null,hintSeq=0;
 function searchHint(state){
   const budget={want:2,maxStates:160000,maxMs:2500};
   try{
-    hintWorker||=new Worker(new URL('./hint-worker.mjs?v=launch-25',import.meta.url),{type:'module'});
+    hintWorker||=new Worker(new URL('./hint-worker.mjs?v=launch-26',import.meta.url),{type:'module'});
   }catch{hintWorker=null;}
   if(!hintWorker)return Promise.resolve(findHint(state,{...budget,maxMs:900}));
   const id=++hintSeq;
