@@ -160,9 +160,12 @@ if(Camp.TOOL_STOCK_RESET)inventory=Camp.resetStockOnce(inventory).inventory;
 if(Camp.CAMPAIGN_RESET){const r=Camp.resetCampaignOnce(campaignProgress,inventory);campaignProgress=r.progress;inventory=r.inventory;}
 // launch-18: Sterne der umgebauten Level 11–100 einmalig zurücksetzen; 1–10 bleiben.
 if(Camp.STARS_RESET){const s=Camp.resetChangedStarsOnce(campaignProgress);campaignProgress=s.progress;}
+// launch-22: Abenteuer (Sterne, Vorrat, Geschenke, Freischaltungen) einmalig leeren für die Tutorials.
+// Endlos-Spielstand, Rekord und Endlos-Vorrat bleiben. Epoche 22, damit die Cloud den alten Stand nicht zurückbringt.
+if(Camp.TUTORIAL_RESET){const t=Camp.resetAdventureForTutorialsOnce(campaignProgress,inventory);campaignProgress=t.progress;inventory=t.inventory;}
 // launch-19: Abenteuer-Fortschritt + Vorrat zusätzlich in der Cloud sichern (anonym, gleicher Geräte-Token).
 // Offline zuerst: lokal bleibt die Wahrheit, der Abgleich läuft still im Hintergrund (progress-sync.mjs).
-const progressSync=createProgressSync({fetch:apiFetch,epoch:epochOf(Camp.STARS_RESET),hasToken:hasSaveToken,
+const progressSync=createProgressSync({fetch:apiFetch,epoch:epochOf(Camp.PROGRESS_EPOCH),hasToken:hasSaveToken,
   getLocal:()=>({progress:campaignProgress,inventory}),
   setLocal:(p,inv)=>{campaignProgress=p;Camp.saveProgress(p);if(inv!==inventory){inventory=inv;Camp.saveInventory(inv,undefined,false);}try{renderCampaign();void worldMenu.refresh?.();}catch{}}});
 const cloudSync=()=>{if(!labMode)progressSync.schedule();};

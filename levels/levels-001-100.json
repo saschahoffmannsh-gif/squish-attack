@@ -4,19 +4,35 @@
   "tool": "tools/campaign/build100.mjs",
   "plan": "tools/campaign/plan100.mjs",
   "reserve": 5,
-  "v1": "Level 1–10 unverändert aus Generator v1 (Saat 20261114)",
-  "launch": "launch-18"
+  "v1": "Level 6–10 unverändert aus Generator v1 (Saat 20261114); Level 1–5 seit launch-22 Tutorials",
+  "launch": "launch-18",
+  "tutorials": "Level 1–5: launch-22 Tutorials (3er-, 4er-, T-, 5er-Fusion, Straße). Level 6–100 unverändert."
  },
  "count": 100,
  "levels": [
   {
    "id": 1,
    "chapter": 1,
-   "kind": "tile",
+   "kind": "tutorial",
+   "tip": "Drei gleiche in einer Reihe werden zu einem höheren Squish.",
    "board": [
     [
      null,
      null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     1,
      1,
      null,
      null
@@ -29,21 +45,7 @@
      null
     ],
     [
-     2,
      null,
-     null,
-     null,
-     null
-    ],
-    [
-     1,
-     2,
-     null,
-     null,
-     null
-    ],
-    [
-     2,
      null,
      null,
      null,
@@ -51,78 +53,45 @@
     ]
    ],
    "sequence": [
-    2,
-    3,
-    2,
-    3,
     1,
     1,
     1,
-    2,
-    3,
-    2
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
    ],
    "moves": 5,
    "goals": [
     {
-     "type": "tile",
-     "value": 3
+     "type": "fuse",
+     "size": 3
     }
    ],
    "stars": {
     "three": 2,
     "two": 4
    },
-   "solution": "i",
+   "solution": "h",
    "meta": {
-    "seed": 24711592,
-    "difficulty": 10,
-    "difficultyRaw": 6.21,
     "minMoves": 1,
     "slack": 4,
     "optimalSolutions": 1,
-    "pathsAtMin": 20,
-    "pOptimal": 0.05,
-    "statesExplored": 1,
-    "avgBranching": 20,
-    "winRate": {
-     "random": 0.405,
-     "casual": 1,
-     "good": 1
-    },
-    "withExtraMoves3": {
-     "casual": 1,
-     "good": 1
-    },
-    "expectedAttempts": {
-     "casual": 1,
-     "casualWithExtraMoves3": 1
-    },
-    "greedySolves": true,
-    "solverMs": 0,
-    "generator": "v1"
+    "generator": "tutorial",
+    "launch": 22,
+    "difficulty": 1
    }
   },
   {
    "id": 2,
    "chapter": 1,
-   "kind": "tile",
+   "kind": "tutorial",
+   "tip": "Vier gleiche verschmelzen ebenfalls – und werden nur um 1 höher.",
    "board": [
     [
-     1,
-     null,
-     1,
-     null,
-     null
-    ],
-    [
-     1,
-     null,
-     null,
-     2,
-     null
-    ],
-    [
      null,
      null,
      null,
@@ -137,84 +106,71 @@
      null
     ],
     [
+     1,
+     1,
      null,
      1,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
      null,
      null,
      null
     ]
    ],
    "sequence": [
-    3,
-    2,
-    2,
-    1,
-    2,
-    1,
-    2,
     1,
     1,
-    2,
-    3,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
     1
    ],
-   "moves": 7,
+   "moves": 5,
    "goals": [
     {
-     "type": "tile",
-     "value": 3
+     "type": "fuse",
+     "size": 4,
+     "shape": "line"
     }
    ],
    "stars": {
-    "three": 3,
-    "two": 5
+    "three": 2,
+    "two": 4
    },
-   "solution": "as",
+   "solution": "h",
    "meta": {
-    "seed": 21480640,
-    "difficulty": 16,
-    "difficultyRaw": 9.66,
-    "minMoves": 2,
-    "slack": 5,
-    "optimalSolutions": 10,
-    "pathsAtMin": 400,
-    "pOptimal": 0.025,
-    "statesExplored": 18,
-    "avgBranching": 20,
-    "winRate": {
-     "random": 0.28,
-     "casual": 0.97,
-     "good": 0.98
-    },
-    "withExtraMoves3": {
-     "casual": 0.99,
-     "good": 1
-    },
-    "expectedAttempts": {
-     "casual": 1,
-     "casualWithExtraMoves3": 1
-    },
-    "greedySolves": true,
-    "solverMs": 3,
-    "generator": "v1"
+    "minMoves": 1,
+    "slack": 4,
+    "optimalSolutions": 1,
+    "generator": "tutorial",
+    "launch": 22,
+    "difficulty": 1
    }
   },
   {
    "id": 3,
    "chapter": 1,
-   "kind": "tile",
+   "kind": "tutorial",
+   "tip": "Ein gleicher Squish an der Mitte einer Dreier-Reihe ergibt ein T.",
    "board": [
     [
      null,
-     3,
-     null,
-     null,
-     null
-    ],
-    [
      1,
      1,
-     null,
      null,
      null
     ],
@@ -223,87 +179,75 @@
      1,
      null,
      null,
-     1
+     null
     ],
     [
      null,
      null,
-     3,
-     3,
-     2
+     null,
+     null,
+     null
     ],
     [
      null,
      null,
-     2,
-     1,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
      null
     ]
    ],
    "sequence": [
-    2,
-    2,
-    2,
-    2,
-    3,
-    3,
-    3,
     1,
-    2,
     1,
-    3
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
    ],
-   "moves": 6,
+   "moves": 5,
    "goals": [
     {
-     "type": "tile",
-     "value": 4
+     "type": "fuse",
+     "size": 4,
+     "shape": "t"
     }
    ],
    "stars": {
-    "three": 3,
-    "two": 5
+    "three": 2,
+    "two": 4
    },
-   "solution": "ce",
+   "solution": "f",
    "meta": {
-    "seed": 21100528,
-    "difficulty": 20,
-    "difficultyRaw": 12.27,
-    "minMoves": 2,
+    "minMoves": 1,
     "slack": 4,
-    "optimalSolutions": 6,
-    "pathsAtMin": 400,
-    "pOptimal": 0.015,
-    "statesExplored": 17,
-    "avgBranching": 20,
-    "winRate": {
-     "random": 0.125,
-     "casual": 0.86,
-     "good": 0.92
-    },
-    "withExtraMoves3": {
-     "casual": 0.99,
-     "good": 0.98
-    },
-    "expectedAttempts": {
-     "casual": 1.2,
-     "casualWithExtraMoves3": 1
-    },
-    "greedySolves": true,
-    "solverMs": 3,
-    "generator": "v1"
+    "optimalSolutions": 2,
+    "generator": "tutorial",
+    "launch": 22,
+    "difficulty": 2
    }
   },
   {
    "id": 4,
    "chapter": 1,
-   "kind": "tile",
+   "kind": "tutorial",
+   "tip": "Fünf gleiche werden um 2 höher – aus fünf Einsen wird eine Drei.",
    "board": [
     [
      null,
-     1,
      null,
-     1,
+     null,
+     null,
      null
     ],
     [
@@ -311,14 +255,14 @@
      null,
      null,
      null,
-     2
+     null
     ],
     [
-     null,
      1,
      1,
      null,
-     null
+     1,
+     1
     ],
     [
      null,
@@ -336,157 +280,111 @@
     ]
    ],
    "sequence": [
-    2,
-    1,
-    1,
-    2,
     1,
     1,
     1,
-    2,
     1,
-    2,
+    1,
+    1,
+    1,
     1,
     1,
     1
    ],
-   "moves": 8,
+   "moves": 5,
    "goals": [
     {
-     "type": "tile",
-     "value": 3
+     "type": "fuse",
+     "size": 5
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 6
+    "three": 2,
+    "two": 4
    },
-   "solution": "ass",
+   "solution": "h",
    "meta": {
-    "seed": 20276952,
-    "difficulty": 25,
-    "difficultyRaw": 14.81,
-    "minMoves": 3,
-    "slack": 5,
-    "optimalSolutions": 24,
-    "pathsAtMin": 8000,
-    "pOptimal": 0.003,
-    "statesExplored": 271,
-    "avgBranching": 20,
-    "winRate": {
-     "random": 0.215,
-     "casual": 0.83,
-     "good": 0.96
-    },
-    "withExtraMoves3": {
-     "casual": 0.99,
-     "good": 1
-    },
-    "expectedAttempts": {
-     "casual": 1.2,
-     "casualWithExtraMoves3": 1
-    },
-    "greedySolves": true,
-    "solverMs": 115,
-    "generator": "v1"
+    "minMoves": 1,
+    "slack": 4,
+    "optimalSolutions": 2,
+    "generator": "tutorial",
+    "launch": 22,
+    "difficulty": 2
    }
   },
   {
    "id": 5,
    "chapter": 1,
-   "kind": "make",
+   "kind": "tutorial",
+   "tip": "Aufeinanderfolgende Werte (1-2-3) bilden eine Straße und werden zur höchsten.",
    "board": [
     [
      null,
-     1,
-     null,
-     null,
-     null
-    ],
-    [
-     null,
-     2,
-     1,
-     null,
-     null
-    ],
-    [
-     1,
      null,
      null,
      null,
      null
     ],
     [
-     2,
-     1,
+     null,
+     null,
      null,
      null,
      null
     ],
     [
      null,
+     null,
+     null,
      1,
-     null,
-     null,
      2
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null,
+     null,
+     null
     ]
    ],
    "sequence": [
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    2,
-    1,
-    2,
-    2,
-    1
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3
    ],
-   "moves": 8,
+   "moves": 5,
    "goals": [
     {
-     "type": "make",
-     "value": 2,
-     "count": 3
+     "type": "street",
+     "count": 1
     }
    ],
    "stars": {
-    "three": 4,
-    "two": 6
+    "three": 2,
+    "two": 4
    },
-   "solution": "ghq",
+   "solution": "c",
    "meta": {
-    "seed": 23183225,
-    "difficulty": 24,
-    "difficultyRaw": 14.4,
-    "minMoves": 3,
-    "slack": 5,
-    "optimalSolutions": 21,
-    "pathsAtMin": 7894,
-    "pOptimal": 0.00266,
-    "statesExplored": 153,
-    "avgBranching": 19.8,
-    "winRate": {
-     "random": 0.21,
-     "casual": 0.91,
-     "good": 0.99
-    },
-    "withExtraMoves3": {
-     "casual": 0.99,
-     "good": 1
-    },
-    "expectedAttempts": {
-     "casual": 1.1,
-     "casualWithExtraMoves3": 1
-    },
-    "greedySolves": true,
-    "solverMs": 27,
-    "generator": "v1"
+    "minMoves": 1,
+    "slack": 4,
+    "optimalSolutions": 1,
+    "generator": "tutorial",
+    "launch": 22,
+    "difficulty": 3
    }
   },
   {
@@ -1248,7 +1146,7 @@
     "slack": 8,
     "toolMin": null,
     "optimalSolutions": 3,
-    "pOptimal": 0.00000139,
+    "pOptimal": 1.39e-06,
     "target": 20,
     "estimate": {
      "D": 20,
@@ -1750,7 +1648,7 @@
     "slack": 9,
     "toolMin": null,
     "optimalSolutions": 177,
-    "pOptimal": 0.00000165,
+    "pOptimal": 1.65e-06,
     "target": 26,
     "estimate": {
      "D": 26,
@@ -2060,7 +1958,7 @@
     "slack": 8,
     "toolMin": null,
     "optimalSolutions": 3,
-    "pOptimal": 0.0000206,
+    "pOptimal": 2.06e-05,
     "target": 15,
     "estimate": {
      "D": 15,
@@ -2159,7 +2057,7 @@
     "slack": 7,
     "toolMin": null,
     "optimalSolutions": 1477,
-    "pOptimal": 0.00003,
+    "pOptimal": 3e-05,
     "target": 20,
     "estimate": {
      "D": 22,
@@ -2373,7 +2271,7 @@
     "slack": 11,
     "toolMin": null,
     "optimalSolutions": 58,
-    "pOptimal": 0.0000954,
+    "pOptimal": 9.54e-05,
     "target": 29,
     "estimate": {
      "D": 18,
@@ -3216,7 +3114,7 @@
     "slack": 9,
     "toolMin": null,
     "optimalSolutions": 586,
-    "pOptimal": 0.0000736,
+    "pOptimal": 7.36e-05,
     "target": 24,
     "estimate": {
      "D": 23,
@@ -3432,7 +3330,7 @@
     "slack": 14,
     "toolMin": null,
     "optimalSolutions": 3,
-    "pOptimal": 0.0000051,
+    "pOptimal": 5.1e-06,
     "target": 33,
     "estimate": {
      "D": 35,
@@ -3643,7 +3541,7 @@
     "slack": 10,
     "toolMin": null,
     "optimalSolutions": 6,
-    "pOptimal": 0.00000281,
+    "pOptimal": 2.81e-06,
     "target": 22,
     "estimate": {
      "D": 21,
@@ -4293,7 +4191,7 @@
     "slack": 14,
     "toolMin": null,
     "optimalSolutions": 2,
-    "pOptimal": 0.0000127,
+    "pOptimal": 1.27e-05,
     "target": 29,
     "estimate": {
      "D": 30,
@@ -5721,7 +5619,7 @@
     "slack": 0,
     "toolMin": 3,
     "optimalSolutions": 3,
-    "pOptimal": 0.00000212,
+    "pOptimal": 2.12e-06,
     "target": 45,
     "estimate": {
      "D": 72,

@@ -25,27 +25,28 @@ export function toWire(progress, inventory, epoch) {
 
 /**
  * Zusammengeführten Server-Stand in den lokalen übernehmen. Gibt {progress, inventory, changed}
- * zurück. Level anderer Epochen (vor dem letzten Sterne-Reset) werden ignoriert.
+ * zurück. Level und Vorrat anderer Epochen (vor dem letzten Fortschritts-Reset) werden ignoriert.
  */
 export function applyWire(local, inventory, wire, epoch, now = Date.now()) {
   const w = normalizeWire(wire, now);
   if (!w) return { progress: local, inventory, changed: false };
   let changed = false;
-  const levels = { ...local.levels };
+  let progress = local;
+  let inv = inventory;
   if (w.epoch === epoch) {
+    const levels = { ...local.levels };
     for (const [k, r] of Object.entries(w.levels)) {
       const o = levels[k];
       if (!o || r.s > o.stars || (r.s === o.stars && r.m < o.moves)) { levels[k] = { stars: r.s, moves: r.m, at: o?.at || now }; changed = true; }
     }
-  }
-  const progress = changed ? { ...local, levels, updatedAt: Math.max(local.updatedAt || 0, now) } : local;
-  let inv = inventory;
-  const mine = toWire({ levels: {} }, inventory, epoch);
-  const merged = mergeWire(mine, { ...w, levels: {} });
-  if (merged?.inv && wireKey({ ...merged, epoch: 0 }) !== wireKey({ ...mine, epoch: 0 })) {
-    inv = { ...inventory, ...merged.inv, gifts: [...merged.inv.gifts], pending: merged.inv.pending.map(g => ({ ...g })) };
-    if (merged.invAt > 0) inv.at = merged.invAt; else delete inv.at;
-    changed = true;
+    progress = changed ? { ...local, levels, updatedAt: Math.max(local.updatedAt || 0, now) } : local;
+    const mine = toWire({ levels: {} }, inventory, epoch);
+    const merged = mergeWire(mine, { ...w, levels: {} });
+    if (merged?.inv && wireKey({ ...merged, epoch: 0 }) !== wireKey({ ...mine, epoch: 0 })) {
+      inv = { ...inventory, ...merged.inv, gifts: [...merged.inv.gifts], pending: merged.inv.pending.map(g => ({ ...g })) };
+      if (merged.invAt > 0) inv.at = merged.invAt; else delete inv.at;
+      changed = true;
+    }
   }
   return { progress, inventory: inv, changed };
 }
