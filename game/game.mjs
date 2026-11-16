@@ -1314,7 +1314,13 @@ export const menuActions={
   world:worldMenu,
   async start(){
     await enterGame();
-    if(campaignMode&&camp){showNote(levelNote(),labMode?5200:2600);scheduleBombTick();}
+    if(campaignMode&&camp){
+      if(labMode)showNote(levelNote(),5200);
+      else if(camp.level.tool)showNote(levelNote(),4200);
+      else if(!camp.level.tip)showNote(levelNote(),2600);
+      scheduleBombTick();
+      showTutorialFinger(true);
+    }
   },
   async select(newGame=false) {
     if (booting || started || busy) return;
