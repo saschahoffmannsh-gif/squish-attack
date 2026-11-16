@@ -1,10 +1,10 @@
 // Startbildschirm und Modus-Menüs im Herbst-Design (reines DOM, kein 3D).
 // Ersetzt das frühere 3D-Glastisch-Menü (world-menu.mjs) mit derselben
 // Schnittstelle, die game.mjs und start-menu.mjs erwarten.
-import {ICONS,TILE_ICONS,leafSvg} from './aw-icons.mjs?v=launch-27';
-import {BUILD} from './flags.mjs?v=launch-27';
-import {t, fmtNum, onLangChange} from './i18n.mjs?v=launch-27';
-import {fitLabelsSoon} from './fit-labels.mjs?v=launch-27';
+import {ICONS,TILE_ICONS,leafSvg} from './aw-icons.mjs?v=launch-28';
+import {BUILD} from './flags.mjs?v=launch-28';
+import {t, fmtNum, onLangChange} from './i18n.mjs?v=launch-28';
+import {fitLabelsSoon} from './fit-labels.mjs?v=launch-28';
 
 const LEAF_COLORS=['#f07a1c','#e8541a','#c9301c','#f2a01e','#d94a17','#b8321a','#ffb030'];
 const fmt=n=>fmtNum(n);
@@ -89,7 +89,7 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
     if(sub){const s=page.createElement('span');s.className='aw-card-sub';s.textContent=sub;c.append(s);}
     if(chips?.length){
       const row=page.createElement('div');row.className='aw-chips';
-      for(const ch of chips){const e=page.createElement('span');e.className='aw-chip'+(ch.n?'':' is-zero');if(ch.type)e.dataset.type=ch.type;e.innerHTML='<i></i><span></span>';e.querySelector('i').textContent=String(ch.n);e.lastChild.textContent=ch.label;row.append(e);}
+      for(const ch of chips){const e=page.createElement('span');e.className='aw-chip'+(ch.n?'':' is-zero')+(ch.gold?' is-gold':'');if(ch.type)e.dataset.type=ch.type;e.innerHTML='<i></i><span></span>';e.querySelector('i').textContent=String(ch.n);e.lastChild.textContent=ch.label;row.append(e);}
       c.append(row);
     }
     return c;
@@ -154,13 +154,32 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
     const intro=page.createElement('p');intro.className='aw-rules-lead';
     intro.textContent=t('rules.lead');
     box.append(...src.map(p=>{const c=page.createElement('p');c.textContent=p.textContent;return c;}),intro);
-    return [ribbon(t('rules.ribbon'),'aw-r-purple'),box,
+    // launch-28: bebilderte Erklärungen (explain.mjs) – jedes Thema jederzeit nachlesbar.
+    const topics=hooks.explain?.topics?.()||[];
+    const out=[ribbon(t('rules.ribbon'),'aw-r-purple')];
+    if(topics.length){
+      const lead=page.createElement('p');lead.className='aw-ex-lead';lead.textContent=t('rules.topics');
+      const list=page.createElement('div');list.className='aw-ex-list';list.id='rules-topics';
+      for(const tp of topics){
+        const b=page.createElement('button');b.type='button';b.className='aw-ex-btn';b.dataset.topic=tp.topic;b.dataset.nav='ex-'+tp.topic;
+        const ico=page.createElement('span');ico.setAttribute('aria-hidden','true');try{ico.append(tp.icon());}catch{}
+        const label=page.createElement('span');label.textContent=tp.title;
+        b.append(ico,label);b.addEventListener('click',()=>{tap();void hooks.explain.show(tp.topic);});
+        list.append(b);
+      }
+      const head=page.createElement('p');head.className='aw-rules-lead';head.textContent=t('rules.full');
+      box.prepend(head);
+      out.push(lead,list);
+    }
+    return [...out,box,
       button({label:t('menu.back'),icon:'back',color:'aw-slate',size:'aw-small',nav:'back',action:()=>{tap();void go('home');}})];
   }
   function campaignItems(){
     const info=hooks.campaign?.summary?.()||{next:1,ready:false};
     const inv=info.inventory;   // null = kein Vorrat (TOOL_STOCK aus) → keine Chips
-    const c=card(`★ ${info.total??0} / ${(info.count||25)*3}`,info.caption||'',inv?[{n:inv.extraMoves||0,label:t('tool.extraMoves'),type:'extraMoves'},{n:inv.hint||0,label:t('tool.hint'),type:'hint'},{n:inv.rocket||0,label:t('tool.rocket'),type:'rocket'},{n:inv.wand||0,label:t('tool.wandShort'),type:'wand'}]:null);
+    // launch-28: Chips nur für den Gold-Vorrat (seltene Geschenke); normale Hilfen sind unbegrenzt.
+    const goldChips=inv&&(inv.extraMoves>0||inv.rocket>0)?[{n:inv.extraMoves||0,label:t('gift.goldName',{tool:t('tool.extraMoves')}),type:'extraMoves',gold:true},{n:inv.rocket||0,label:t('gift.goldName',{tool:t('tool.rocket')}),type:'rocket',gold:true}]:null;
+    const c=card(`★ ${info.total??0} / ${(info.count||25)*3}`,info.caption||'',goldChips);
     // Vorrat-Aktionen in der Karte: offene Geschenke öffnen, Werkzeug-Shop.
     const acts=page.createElement('div');acts.className='aw-card-actions';
     if(info.pendingGifts>0){

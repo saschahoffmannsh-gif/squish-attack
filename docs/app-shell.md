@@ -307,3 +307,12 @@ in der App liegen.
 4. Schlüsselbund für den Spieler-Token.
 5. Datenschutz- und Impressum-Seiten mit Saschas Daten.
 6. TestFlight-Build über Saschas Konto, auf dem iPhone testen, dann einreichen.
+
+## launch-28: Endlos-Werkzeuge über Meilensteine
+
+- Erreicht der höchste Squish der Endlos-Runde eine neue Zehnerstufe (10, 20, 30 …), gibt es je Stufe
+  1 Werkzeug in den Endlos-Vorrat, reihum Rakete/Zauberstab (`endlessMilestones`, Rotation über
+  `adPacing.takeEndlessReward`). Der Runden-Rekord (`peak`) wird gespeichert – nach Neuladen keine Doppelvergabe.
+- Die Endlos-Werbung alle 10 Minuten ist eine normale Zwischenwerbung ohne Belohnung; Werbefrei entfernt sie.
+- Abenteuer-Zwischenwerbung alle 10 gewonnenen Level (vorher 5). Erklär-Fenster „Endlos-Werkzeuge“
+  (`explainer.register('endless')`) beim ersten Meilenstein, nachlesbar unter Spielregeln.

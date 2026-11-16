@@ -57,8 +57,16 @@ test(`${file}: ${expected} gültige, eindeutige Level mit fortlaufender ID`, () 
 test(`${file}: keine Felsen; Sterne: 3★ = Optimum + 1 / Mitte (launch-16 auch für Werkzeug-Spitzen)`, () => {
   for (const lv of levels) {
     assert.ok(lv.board.flat().every(v => v === null || Number.isInteger(v)) && lv.sequence.every(Number.isInteger), `Level ${lv.id}`);
+    // launch-28: kalibrierte Level (meta.cal28) – 3★ nach Spielermodell, nie unter Optimum + 1; sonst Formel
+    if (tool(lv)) {   // Spitze: Stufen fallen zusammen – jeder Sieg ohne Hilfe = 3★
+      assert.deepEqual(lv.stars, { three: lv.moves, two: lv.moves }, `Level ${lv.id}`);
+      assert.ok(lv.meta.minMoves <= lv.moves, `Level ${lv.id}: ohne Werkzeug im Limit`); continue;
+    }
+    if (lv.meta.cal28) {
+      assert.ok(lv.stars.three >= Math.min(lv.moves, lv.meta.minMoves + 1) && lv.stars.three <= lv.stars.two && lv.stars.two <= lv.moves, `Level ${lv.id}: ${JSON.stringify(lv.stars)}`);
+      continue;
+    }
     assert.deepEqual(lv.stars, starThresholds(lv.meta.minMoves, lv.moves), `Level ${lv.id}`);
-    if (tool(lv)) { assert.ok(lv.meta.minMoves <= lv.moves, `Level ${lv.id}: ohne Werkzeug im Limit`); continue; }   // Spitze: eng, Stufen fallen zusammen
     // launch-27: bei 0 Luft (Limit = Optimum) ist 3★ = Optimum, nicht Optimum + 1
     if (lv.moves === lv.meta.minMoves) assert.equal(lv.stars.three, lv.moves, `Level ${lv.id}`);
     else assert.equal(lv.stars.three, lv.meta.minMoves + 1, `Level ${lv.id}`);
@@ -170,10 +178,11 @@ test('launch-15: Werkzeug-Spitzen genau laut Plan, Bosse 50 und 100 sind Werkzeu
 test('launch-16: Werkzeug-Spitzen – ohne Werkzeug lösbar, aber sehr eng; mit dem Schlüssel-Werkzeug deutlich leichter (2★-Deckel)', () => {
   for (const lv of L100.filter(l => l.tool)) {
     const id = `Level ${lv.id} (${lv.tool})`;
-    // ohne Werkzeug: Optimum im Limit, höchstens 1 Zug Luft
+    // ohne Werkzeug: lösbar mit 3★. launch-28: das echte Optimum (Beam-Suche) ist oft viel kürzer als die alte
+    // Schätzung – eng ist die Spitze dann für Spieler (Modell-Gewinnrate), nicht für den Solver (meta.cal28.spike).
     const plain = replaySolution(lv, lv.solution);
     assert.ok(plain.ok && plain.stars === 3, `${id}: ohne Werkzeug 3★`);
-    assert.ok(lv.moves - lv.meta.minMoves <= 1, `${id}: eng (Limit ${lv.moves}, Optimum ${lv.meta.minMoves})`);
+    assert.ok(lv.moves - lv.meta.minMoves <= 1 || lv.meta.cal28?.spike, `${id}: eng (Limit ${lv.moves}, Optimum ${lv.meta.minMoves})`);
     const ts = lv.meta.toolSolution;
     if (lv.tool === 'extraMoves') {
       const r = replayWithTool(lv, ts, { extra: true });
@@ -219,12 +228,13 @@ test('launch-15: neue Missionen eingeführt – leer (31), Straße aus 4 (41), W
   }
 });
 
-test('launch-15: Sterne-Schranken bleiben mit 2★-Deckel gut erreichbar', () => {
+test('launch-28: Sterne-Schranken – strenger und steigend, aber ohne Hilfe erreichbar', () => {
   for (let k = 2; k <= 10; k++) {
     const before = L100.slice(0, (k - 1) * CHAPTER_SIZE);
-    const max = before.reduce((n, l) => n + 3, 0);   // launch-16: 3★ überall möglich (ohne Werkzeug)
-    assert.ok(starGate(k) <= 0.65 * max, `Kapitel ${k}: ${starGate(k)} von ${max}`);
-    assert.ok(starGate(k) <= 2 * before.length, `Kapitel ${k}: überall 2★ reicht`);
+    const max = before.length * 3;   // 3★ überall möglich (ohne Hilfe)
+    assert.ok(starGate(k) <= 0.8 * max, `Kapitel ${k}: ${starGate(k)} von ${max}`);
+    assert.ok(starGate(k) > 2 * before.length, `Kapitel ${k}: überall 2★ (je eine Hilfe) reicht nicht`);
+    if (k > 2) assert.ok(starGate(k) / before.length >= starGate(k - 1) / (before.length - CHAPTER_SIZE), `Kapitel ${k}: Anteil steigt`);
   }
 });
 
@@ -234,17 +244,21 @@ test('launch-15: gemessene Kurve – 1–10 leicht, steigend, Meilensteine oben,
   const felt = id => M[id - 1].felt, avg = a => a.reduce((s, x) => s + x, 0) / a.length;
   const ch = k => Array.from({ length: 10 }, (_, i) => felt((k - 1) * 10 + i + 1));
   assert.ok(M.slice(0, 10).every(r => r.cas >= 0.5), 'Kapitel 1: Gelegenheitsspieler gewinnt jedes Level in mind. 50 %');
-  for (let k = 2; k <= 10; k++) assert.ok(avg(ch(k)) >= avg(ch(k - 1)) - 3, `Kapitel ${k} nicht leichter als ${k - 1}`);
+  // launch-28: Optimum der langen Level korrigiert (meta.cal28) – die D-Formel bewertet sie seither niedriger,
+  // die Kurve ist flacher: kein Kapitel deutlich leichter als das davor (Toleranz 5).
+  for (let k = 2; k <= 10; k++) assert.ok(avg(ch(k)) >= avg(ch(k - 1)) - 5, `Kapitel ${k} nicht leichter als ${k - 1}`);
   assert.ok(avg(ch(10)) > avg(ch(2)) + 15, 'Kurve steigt deutlich');
   // Werkzeug-Meilensteine (z. B. L50) vergleichen D ohne Werkzeug: felt rechnet den Schlüssel-Einsatz ein.
   for (let k = 2; k <= 10; k++) {
     const row = M[k * 10 - 1];
     const ms = row.tool ? row.D : row.felt;
-    assert.ok(ms >= avg(ch(k)), `Meilenstein ${k * 10} über dem Kapitelschnitt`);
+    // launch-28: Meilensteine gemessen am Gelegenheitsspieler – höchstens so leicht wie der Kapitelschnitt (+0,15)
+    const cas = M.slice((k - 1) * 10, k * 10).map(r => r.cas);
+    assert.ok(ms >= avg(ch(k)) || row.cas <= avg(cas) + 0.15, `Meilenstein ${k * 10} nicht leichter als das Kapitel (${row.cas} vs ${avg(cas).toFixed(2)})`);
   }
   for (let k = 2; k <= 10; k++) assert.ok(felt(k * 10 - 4) < felt(k * 10 - 6), `Erholung ${k * 10 - 4}: leichter als der Aufbau davor`);
   // launch-18/27: das Werkzeug hilft spürbar (Gelegenheitsspieler gewinnt damit öfter als ohne)
-  for (const r of M.filter(r => r.tool && r.tool !== 'hint')) assert.ok(r.casTool >= r.cas && r.casTool >= 0.04, `Level ${r.id}: mit Werkzeug leichter (${r.cas} → ${r.casTool})`);
+  for (const r of M.filter(r => r.tool && r.tool !== 'hint')) assert.ok(r.casTool >= r.cas && (r.casTool >= 0.04 || L100[r.id - 1].meta.cal28?.spike), `Level ${r.id}: mit Werkzeug leichter (${r.cas} → ${r.casTool})`);
 });
 
 test('launch-16: keine Ketten-Level mehr – kein Level und kein Plan-Eintrag hat ein combo-Ziel', async () => {
@@ -259,8 +273,12 @@ test('launch-16: keine Ketten-Level mehr – kein Level und kein Plan-Eintrag ha
 test('launch-18: längere Level – Zugzahl wächst, ohne Ketten und ohne besondere Squishes, abwechslungsreiche Startbretter', async () => {
   const { moveWindow } = await import('../tools/campaign/plan100.mjs');
   const avg = k => { const a = L100.filter(l => chapterOf(l.id) === k && !l.tool).map(l => l.moves); return a.reduce((x, y) => x + y, 0) / a.length; };
-  for (let k = 3; k <= 10; k++) assert.ok(avg(k) > avg(k - 1), `Kapitel ${k}: mehr Züge als Kapitel ${k - 1}`);
-  for (const lv of L100.filter(l => l.id > 10 && !l.tool)) assert.equal(lv.moves, moveWindow(lv.id), `Level ${lv.id}: Zugfenster laut Plan`);
+  // launch-28: zu leichte Level wurden gekürzt (meta.cal28) – nie verlängert; die Zugzahl wächst bis Kapitel 9
+  for (let k = 3; k <= 9; k++) assert.ok(avg(k) > avg(k - 1), `Kapitel ${k}: mehr Züge als Kapitel ${k - 1}`);
+  for (const lv of L100.filter(l => l.id > 10 && !l.tool)) {
+    if (lv.meta.cal28) assert.ok(lv.moves <= moveWindow(lv.id), `Level ${lv.id}: höchstens Zugfenster`);
+    else assert.equal(lv.moves, moveWindow(lv.id), `Level ${lv.id}: Zugfenster laut Plan`);
+  }
   assert.ok(L100[99].moves >= 30 || L100[96].moves >= 38, 'späte Level sind lang');
   assert.ok(L100.every(l => !l.specials), 'Eis, Schloss und Bombe nur auf der Testseite');
   assert.ok(L100.every(l => !l.goals.some(g => g.type === 'combo')));

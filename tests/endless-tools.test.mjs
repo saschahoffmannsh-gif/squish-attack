@@ -111,3 +111,14 @@ test('Sync: toWire/applyWire tragen den Endlos-Vorrat, neuerer Server-Stand wird
   const fresh = applyWire(progress, inv, server, 18, 5000, null);
   assert.deepEqual(fresh.endless, { rocket: 4, wand: 2, at: 2000 }, 'neues Gerät holt den Vorrat aus der Cloud');
 });
+
+// launch-28: Endlos-Werkzeuge kommen nur noch über Meilensteine (Rekord-Squish 10, 20, …), nicht aus Werbung.
+import { readFileSync as readSrc28 } from 'node:fs';
+test('launch-28: Meilenstein-Werkzeuge, 10-Minuten-Werbung ohne Belohnung', () => {
+  const src = readSrc28(new URL('../game/game.mjs', import.meta.url), 'utf8');
+  assert.ok(/const ENDLESS_MILESTONE=10;/.test(src));
+  assert.ok(/function endlessMilestones\(prev\)/.test(src));
+  const offer = src.slice(src.indexOf('function maybeEndlessOffer'), src.indexOf('const ENDLESS_MILESTONE'));
+  assert.ok(offer.includes("playInterstitial('endless')") && !offer.includes('changeEndlessInv') && !offer.includes('adUI.open'));
+  assert.ok(!src.includes("where==='endless'"), 'kein Belohnungs-Zweig mehr');
+});

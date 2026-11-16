@@ -3,9 +3,9 @@
 // jeder Hilfsmitteleinsatz im Abenteuer verlangt einen Belohnungsclip (Dummy-Werbung).
 //
 // Der Kauf entfernt nur die Werbung (Clip vor dem Einsatz, Zwischenwerbung alle
-// 5 Abenteuer-Siege, Endlos-Angebot alle 10 Minuten). Das Limit gilt für alle:
-// jedes Hilfsmittel genau 1× je Versuch, kein Ansammeln, kein Vorrat.
-import { fmtPrice } from './i18n.mjs?v=launch-27';
+// 10 Abenteuer-Siege, Werbung alle 10 Minuten im Endlos-Modus). launch-28: Hilfsmittel sind für alle
+// unbegrenzt; jede Hilfe deckelt weiter die Sterne (1 Hilfe höchstens 2★, mehr 1★).
+import { fmtPrice } from './i18n.mjs?v=launch-28';
 
 export const AD_FREE_PRODUCT = Object.freeze({
   id: 'squish.adfree',

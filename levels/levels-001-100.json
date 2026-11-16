@@ -1023,7 +1023,7 @@
     2,
     1
    ],
-   "moves": 12,
+   "moves": 11,
    "goals": [
     {
      "type": "make",
@@ -1033,7 +1033,7 @@
    ],
    "stars": {
     "three": 5,
-    "two": 9
+    "two": 8
    },
    "solution": "afrs",
    "meta": {
@@ -1043,7 +1043,7 @@
     "role": "relief",
     "note": null,
     "minMoves": 4,
-    "slack": 8,
+    "slack": 7,
     "toolMin": null,
     "optimalSolutions": 35,
     "pOptimal": 0.00024,
@@ -1060,6 +1060,17 @@
     "searched": {
      "tried": 30,
      "usable": 22
+    },
+    "cal28": {
+     "oldMin": 4,
+     "oldStars": {
+      "three": 5,
+      "two": 9
+     },
+     "oldMoves": 12,
+     "good3": 0.09,
+     "cas": 0.85,
+     "casOld": 0.93
     }
    }
   },
@@ -1124,7 +1135,7 @@
     1,
     2
    ],
-   "moves": 13,
+   "moves": 12,
    "goals": [
     {
      "type": "clear",
@@ -1133,7 +1144,7 @@
    ],
    "stars": {
     "three": 6,
-    "two": 10
+    "two": 9
    },
    "solution": "assms",
    "meta": {
@@ -1143,7 +1154,7 @@
     "role": "normal",
     "note": null,
     "minMoves": 5,
-    "slack": 8,
+    "slack": 7,
     "toolMin": null,
     "optimalSolutions": 3,
     "pOptimal": 0.00000139,
@@ -1160,6 +1171,17 @@
     "searched": {
      "tried": 30,
      "usable": 26
+    },
+    "cal28": {
+     "oldMin": 5,
+     "oldStars": {
+      "three": 6,
+      "two": 10
+     },
+     "oldMoves": 13,
+     "good3": 0.01,
+     "cas": 0.81,
+     "casOld": 0.91
     }
    }
   },
@@ -1423,7 +1445,7 @@
     2,
     1
    ],
-   "moves": 12,
+   "moves": 9,
    "goals": [
     {
      "type": "score",
@@ -1432,7 +1454,7 @@
    ],
    "stars": {
     "three": 5,
-    "two": 9
+    "two": 7
    },
    "solution": "aadn",
    "meta": {
@@ -1442,7 +1464,7 @@
     "role": "relief",
     "note": "Erholung",
     "minMoves": 4,
-    "slack": 8,
+    "slack": 5,
     "toolMin": null,
     "optimalSolutions": 1732,
     "pOptimal": 0.0109,
@@ -1459,6 +1481,17 @@
     "searched": {
      "tried": 79,
      "usable": 8
+    },
+    "cal28": {
+     "oldMin": 4,
+     "oldStars": {
+      "three": 5,
+      "two": 9
+     },
+     "oldMoves": 12,
+     "good3": 0.72,
+     "cas": 0.96,
+     "casOld": 1
     }
    }
   },
@@ -1739,15 +1772,15 @@
     "three": 9,
     "two": 12
    },
-   "solution": "rrbssmss",
+   "solution": "paaqaf",
    "meta": {
     "generator": "build18",
     "k": 136,
     "seed": 207178993,
     "role": "normal",
     "note": null,
-    "minMoves": 8,
-    "slack": 7,
+    "minMoves": 6,
+    "slack": 9,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -1764,6 +1797,17 @@
     "searched": {
      "tried": 163,
      "usable": 67
+    },
+    "cal28": {
+     "oldMin": 8,
+     "oldStars": {
+      "three": 9,
+      "two": 12
+     },
+     "oldMoves": 15,
+     "good3": 0,
+     "cas": 0.8,
+     "casOld": 0.8
     }
    }
   },
@@ -1848,15 +1892,15 @@
     "three": 13,
     "two": 16
    },
-   "solution": "npmtbnocqqod",
+   "solution": "ordrrr",
    "meta": {
     "generator": "build18",
     "k": 60,
     "seed": 338798656,
     "role": "milestone",
     "note": "Meilenstein: ein 5er liegt schon auf dem Brett, dazu räumen",
-    "minMoves": 12,
-    "slack": 6,
+    "minMoves": 6,
+    "slack": 12,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -1873,6 +1917,17 @@
     "searched": {
      "tried": 77,
      "usable": 36
+    },
+    "cal28": {
+     "oldMin": 12,
+     "oldStars": {
+      "three": 13,
+      "two": 16
+     },
+     "oldMoves": 18,
+     "good3": 0.15,
+     "cas": 0.32,
+     "casOld": 0.32
     }
    }
   },
@@ -1936,7 +1991,7 @@
     2,
     2
    ],
-   "moves": 12,
+   "moves": 11,
    "goals": [
     {
      "type": "clear",
@@ -1945,7 +2000,7 @@
    ],
    "stars": {
     "three": 5,
-    "two": 9
+    "two": 8
    },
    "solution": "dhjm",
    "meta": {
@@ -1955,7 +2010,7 @@
     "role": "relief",
     "note": "Erholung (statt Kette)",
     "minMoves": 4,
-    "slack": 8,
+    "slack": 7,
     "toolMin": null,
     "optimalSolutions": 3,
     "pOptimal": 0.0000206,
@@ -1972,6 +2027,17 @@
     "searched": {
      "tried": 30,
      "usable": 14
+    },
+    "cal28": {
+     "oldMin": 4,
+     "oldStars": {
+      "three": 5,
+      "two": 9
+     },
+     "oldMoves": 12,
+     "good3": 0,
+     "cas": 0.95,
+     "casOld": 1
     }
    }
   },
@@ -2138,7 +2204,7 @@
     1,
     2
    ],
-   "moves": 16,
+   "moves": 15,
    "goals": [
     {
      "type": "tile",
@@ -2150,18 +2216,18 @@
     }
    ],
    "stars": {
-    "three": 9,
-    "two": 13
+    "three": 8,
+    "two": 12
    },
-   "solution": "tmgfhhhh",
+   "solution": "ijjmj",
    "meta": {
     "generator": "build18",
     "k": 168,
     "seed": 3577292845,
     "role": "normal",
     "note": "Doppelziel mit bekannten Typen",
-    "minMoves": 8,
-    "slack": 8,
+    "minMoves": 5,
+    "slack": 10,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -2178,6 +2244,17 @@
     "searched": {
      "tried": 205,
      "usable": 38
+    },
+    "cal28": {
+     "oldMin": 8,
+     "oldStars": {
+      "three": 9,
+      "two": 13
+     },
+     "oldMoves": 16,
+     "good3": 0.45,
+     "cas": 0.95,
+     "casOld": 0.98
     }
    }
   },
@@ -2245,7 +2322,7 @@
     1,
     4
    ],
-   "moves": 16,
+   "moves": 10,
    "goals": [
     {
      "type": "score",
@@ -2258,7 +2335,7 @@
    ],
    "stars": {
     "three": 6,
-    "two": 11
+    "two": 8
    },
    "solution": "eddlm",
    "meta": {
@@ -2268,7 +2345,7 @@
     "role": "normal",
     "note": null,
     "minMoves": 5,
-    "slack": 11,
+    "slack": 5,
     "toolMin": null,
     "optimalSolutions": 58,
     "pOptimal": 0.0000954,
@@ -2285,6 +2362,17 @@
     "searched": {
      "tried": 872,
      "usable": 22
+    },
+    "cal28": {
+     "oldMin": 5,
+     "oldStars": {
+      "three": 6,
+      "two": 11
+     },
+     "oldMoves": 16,
+     "good3": 0.42,
+     "cas": 0.93,
+     "casOld": 1
     }
    }
   },
@@ -2363,17 +2451,16 @@
     "three": 16,
     "two": 16
    },
-   "solution": "sibrrtatrmgsatmm",
-   "tool": "wand",
+   "solution": "csbgsq",
+   "tool": "extraMoves",
    "meta": {
     "generator": "build18",
     "k": 46,
     "seed": 1821025605,
     "role": "tool",
     "note": "Werkzeug-Spitze: Zauberstab",
-    "minMoves": 16,
+    "minMoves": 6,
     "slack": 0,
-    "toolMin": 2,
     "optimalSolutions": null,
     "pOptimal": null,
     "target": 31,
@@ -2388,11 +2475,20 @@
      "goodTool": 0.456,
      "goodStarts": 8
     },
-    "toolSolution": "W01=4 as",
+    "toolSolution": "csbgsq",
     "exact": false,
     "searched": {
      "tried": 47,
      "usable": 7
+    },
+    "cal28": {
+     "spike": {
+      "tool": "wand",
+      "minMoves": 16,
+      "solution": "sibrrtatrmgsatmm",
+      "toolSolution": "W01=4 as",
+      "toolMin": 2
+     }
     }
    }
   },
@@ -2457,7 +2553,7 @@
     2,
     2
    ],
-   "moves": 13,
+   "moves": 11,
    "goals": [
     {
      "type": "score",
@@ -2466,7 +2562,7 @@
    ],
    "stars": {
     "three": 6,
-    "two": 10
+    "two": 9
    },
    "solution": "afooc",
    "meta": {
@@ -2476,7 +2572,7 @@
     "role": "relief",
     "note": "Erholung (launch-27: statt Kachel 5, die zu schwer war)",
     "minMoves": 5,
-    "slack": 8,
+    "slack": 6,
     "toolMin": null,
     "optimalSolutions": 148,
     "pOptimal": 0.000173,
@@ -2492,6 +2588,17 @@
     "searched": {
      "tried": 880,
      "via": "search-one.mjs"
+    },
+    "cal28": {
+     "oldMin": 5,
+     "oldStars": {
+      "three": 6,
+      "two": 10
+     },
+     "oldMoves": 13,
+     "good3": 0.23,
+     "cas": 0.93,
+     "casOld": 0.98
     }
    }
   },
@@ -2571,15 +2678,15 @@
     "three": 10,
     "two": 14
    },
-   "solution": "qsbroddsa",
+   "solution": "aaasrcs",
    "meta": {
     "generator": "build18",
     "k": 96,
     "seed": 1431723889,
     "role": "normal",
     "note": null,
-    "minMoves": 9,
-    "slack": 8,
+    "minMoves": 7,
+    "slack": 10,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -2596,6 +2703,17 @@
     "searched": {
      "tried": 97,
      "usable": 39
+    },
+    "cal28": {
+     "oldMin": 9,
+     "oldStars": {
+      "three": 10,
+      "two": 14
+     },
+     "oldMoves": 17,
+     "good3": 0.49,
+     "cas": 0.87,
+     "casOld": 0.87
     }
    }
   },
@@ -2676,15 +2794,15 @@
     "three": 9,
     "two": 13
    },
-   "solution": "rqqgggdr",
+   "solution": "rbgqrb",
    "meta": {
     "generator": "build18",
     "k": 51,
     "seed": 2225471767,
     "role": "normal",
     "note": "(statt Kette)",
-    "minMoves": 8,
-    "slack": 9,
+    "minMoves": 6,
+    "slack": 11,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -2701,6 +2819,17 @@
     "searched": {
      "tried": 57,
      "usable": 17
+    },
+    "cal28": {
+     "oldMin": 8,
+     "oldStars": {
+      "three": 9,
+      "two": 13
+     },
+     "oldMoves": 17,
+     "good3": 0.04,
+     "cas": 0.34,
+     "casOld": 0.34
     }
    }
   },
@@ -2770,7 +2899,7 @@
     4,
     1
    ],
-   "moves": 18,
+   "moves": 14,
    "goals": [
     {
      "type": "score",
@@ -2783,17 +2912,17 @@
    ],
    "stars": {
     "three": 10,
-    "two": 14
+    "two": 12
    },
-   "solution": "tbsgprfgh",
+   "solution": "cgcihc",
    "meta": {
     "generator": "build18",
     "k": 232,
     "seed": 1677511167,
     "role": "normal",
     "note": null,
-    "minMoves": 9,
-    "slack": 9,
+    "minMoves": 6,
+    "slack": 8,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -2810,6 +2939,17 @@
     "searched": {
      "tried": 245,
      "usable": 35
+    },
+    "cal28": {
+     "oldMin": 9,
+     "oldStars": {
+      "three": 10,
+      "two": 14
+     },
+     "oldMoves": 18,
+     "good3": 0.32,
+     "cas": 0.82,
+     "casOld": 1
     }
    }
   },
@@ -2882,7 +3022,7 @@
     1,
     1
    ],
-   "moves": 21,
+   "moves": 18,
    "goals": [
     {
      "type": "make",
@@ -2895,18 +3035,18 @@
     }
    ],
    "stars": {
-    "three": 17,
-    "two": 19
+    "three": 16,
+    "two": 17
    },
-   "solution": "gtsccphqfdddemmc",
+   "solution": "tffrqrr",
    "meta": {
     "generator": "build18",
     "k": 29,
     "seed": 3984657111,
     "role": "milestone",
     "note": "Meilenstein, 5er schon auf dem Brett",
-    "minMoves": 16,
-    "slack": 5,
+    "minMoves": 7,
+    "slack": 14,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -2923,6 +3063,24 @@
     "searched": {
      "tried": 30,
      "usable": 16
+    },
+    "cal28": {
+     "oldMin": 16,
+     "oldStars": {
+      "three": 17,
+      "two": 19
+     },
+     "oldMoves": 21,
+     "good3": 0.38,
+     "cas": 0.8,
+     "casOld": 0.8,
+     "milestone": {
+      "moves": 21,
+      "stars": {
+       "three": 16,
+       "two": 19
+      }
+     }
     }
    }
   },
@@ -3208,15 +3366,15 @@
     "three": 11,
     "two": 15
    },
-   "solution": "hasersdhhd",
+   "solution": "acdthacr",
    "meta": {
     "generator": "build18",
     "k": 23,
     "seed": 923558980,
     "role": "normal",
     "note": null,
-    "minMoves": 10,
-    "slack": 9,
+    "minMoves": 8,
+    "slack": 11,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -3233,6 +3391,17 @@
     "searched": {
      "tried": 30,
      "usable": 30
+    },
+    "cal28": {
+     "oldMin": 10,
+     "oldStars": {
+      "three": 11,
+      "two": 15
+     },
+     "oldMoves": 19,
+     "good3": 0,
+     "cas": 0.66,
+     "casOld": 0.66
     }
    }
   },
@@ -3421,7 +3590,7 @@
     "three": 12,
     "two": 12
    },
-   "solution": "ofrihjomjmob",
+   "solution": "gclbclc",
    "tool": "rocket",
    "meta": {
     "generator": "build18",
@@ -3429,7 +3598,7 @@
     "seed": 1777667580,
     "role": "tool",
     "note": "Werkzeug-Spitze: Rakete",
-    "minMoves": 12,
+    "minMoves": 7,
     "slack": 0,
     "toolMin": 3,
     "optimalSolutions": null,
@@ -3451,6 +3620,15 @@
     "searched": {
      "tried": 102,
      "usable": 1
+    },
+    "cal28": {
+     "spike": {
+      "tool": "rocket",
+      "minMoves": 12,
+      "solution": "ofrihjomjmob",
+      "toolSolution": "R13 bfr",
+      "toolMin": 3
+     }
     }
    }
   },
@@ -3518,7 +3696,7 @@
     1,
     1
    ],
-   "moves": 16,
+   "moves": 14,
    "goals": [
     {
      "type": "street",
@@ -3527,7 +3705,7 @@
    ],
    "stars": {
     "three": 7,
-    "two": 12
+    "two": 11
    },
    "solution": "apqsrr",
    "meta": {
@@ -3537,7 +3715,7 @@
     "role": "relief",
     "note": "Erholung",
     "minMoves": 6,
-    "slack": 10,
+    "slack": 8,
     "toolMin": null,
     "optimalSolutions": 6,
     "pOptimal": 0.00000281,
@@ -3554,6 +3732,17 @@
     "searched": {
      "tried": 30,
      "usable": 17
+    },
+    "cal28": {
+     "oldMin": 6,
+     "oldStars": {
+      "three": 7,
+      "two": 12
+     },
+     "oldMoves": 16,
+     "good3": 0,
+     "cas": 0.86,
+     "casOld": 0.91
     }
    }
   },
@@ -3636,15 +3825,15 @@
     "three": 7,
     "two": 14
    },
-   "solution": "kolmid",
+   "solution": "chlmc",
    "meta": {
     "generator": "build18",
     "k": 20,
     "seed": 1583420027,
     "role": "normal",
     "note": "Brett fast leer: 3",
-    "minMoves": 6,
-    "slack": 14,
+    "minMoves": 5,
+    "slack": 15,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -3661,6 +3850,17 @@
     "searched": {
      "tried": 141,
      "usable": 67
+    },
+    "cal28": {
+     "oldMin": 6,
+     "oldStars": {
+      "three": 7,
+      "two": 14
+     },
+     "oldMoves": 20,
+     "good3": 0.01,
+     "cas": 0,
+     "casOld": 0
     }
    }
   },
@@ -3732,7 +3932,7 @@
     2,
     1
    ],
-   "moves": 20,
+   "moves": 16,
    "goals": [
     {
      "type": "score",
@@ -3741,17 +3941,17 @@
    ],
    "stars": {
     "three": 10,
-    "two": 15
+    "two": 13
    },
-   "solution": "pggnnbbrs",
+   "solution": "bhbggb",
    "meta": {
     "generator": "build18",
     "k": 25,
     "seed": 1898526651,
     "role": "normal",
     "note": null,
-    "minMoves": 9,
-    "slack": 11,
+    "minMoves": 6,
+    "slack": 10,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -3768,6 +3968,17 @@
     "searched": {
      "tried": 115,
      "usable": 60
+    },
+    "cal28": {
+     "oldMin": 9,
+     "oldStars": {
+      "three": 10,
+      "two": 15
+     },
+     "oldMoves": 20,
+     "good3": 0.18,
+     "cas": 0.81,
+     "casOld": 1
     }
    }
   },
@@ -3840,7 +4051,7 @@
     2,
     1
    ],
-   "moves": 21,
+   "moves": 20,
    "goals": [
     {
      "type": "tile",
@@ -3852,18 +4063,18 @@
     }
    ],
    "stars": {
-    "three": 16,
-    "two": 19
+    "three": 14,
+    "two": 17
    },
-   "solution": "mndllcbihcmlonc",
+   "solution": "ehlihm",
    "meta": {
     "generator": "build18",
     "k": 21,
     "seed": 4175422384,
     "role": "normal",
     "note": "5er schon auf dem Brett",
-    "minMoves": 15,
-    "slack": 6,
+    "minMoves": 6,
+    "slack": 14,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -3880,6 +4091,17 @@
     "searched": {
      "tried": 30,
      "usable": 6
+    },
+    "cal28": {
+     "oldMin": 15,
+     "oldStars": {
+      "three": 16,
+      "two": 19
+     },
+     "oldMoves": 21,
+     "good3": 0.54,
+     "cas": 0.87,
+     "casOld": 0.93
     }
    }
   },
@@ -4292,15 +4514,15 @@
     "three": 15,
     "two": 19
    },
-   "solution": "rrpgsrqirbbihg",
+   "solution": "grprfh",
    "meta": {
     "generator": "build18",
     "k": 9,
     "seed": 2372101752,
     "role": "normal",
     "note": null,
-    "minMoves": 14,
-    "slack": 8,
+    "minMoves": 6,
+    "slack": 16,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -4317,6 +4539,17 @@
     "searched": {
      "tried": 70,
      "usable": 18
+    },
+    "cal28": {
+     "oldMin": 14,
+     "oldStars": {
+      "three": 15,
+      "two": 19
+     },
+     "oldMoves": 22,
+     "good3": 0.27,
+     "cas": 0.41,
+     "casOld": 0.41
     }
    }
   },
@@ -4507,17 +4740,16 @@
     "three": 14,
     "two": 14
    },
-   "solution": "niitarbsnnthha",
-   "tool": "hint",
+   "solution": "ninisbn",
+   "tool": "extraMoves",
    "meta": {
     "generator": "build18",
     "k": 129,
     "seed": 3143301110,
     "role": "tool",
     "note": "Werkzeug-Spitze: Hinweis",
-    "minMoves": 14,
+    "minMoves": 7,
     "slack": 0,
-    "toolMin": 14,
     "optimalSolutions": null,
     "pOptimal": null,
     "target": 40,
@@ -4532,11 +4764,20 @@
      "goodTool": 0.944
     },
     "hintMoves": "bh",
-    "toolSolution": "niitarbsnnthha",
+    "toolSolution": "ninisbn",
     "exact": false,
     "searched": {
      "tried": 242,
      "usable": 17
+    },
+    "cal28": {
+     "spike": {
+      "tool": "hint",
+      "minMoves": 14,
+      "solution": "niitarbsnnthha",
+      "toolSolution": "niitarbsnnthha",
+      "toolMin": 14
+     }
     }
    }
   },
@@ -4618,15 +4859,15 @@
     "three": 10,
     "two": 15
    },
-   "solution": "bsattbbta",
+   "solution": "arabgb",
    "meta": {
     "generator": "build18",
     "k": 10,
     "seed": 748103904,
     "role": "relief",
     "note": "Erholung",
-    "minMoves": 9,
-    "slack": 10,
+    "minMoves": 6,
+    "slack": 13,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -4643,6 +4884,17 @@
     "searched": {
      "tried": 30,
      "usable": 30
+    },
+    "cal28": {
+     "oldMin": 9,
+     "oldStars": {
+      "three": 10,
+      "two": 15
+     },
+     "oldMoves": 19,
+     "good3": 0.03,
+     "cas": 0.74,
+     "casOld": 0.74
     }
    }
   },
@@ -4732,15 +4984,15 @@
     "three": 15,
     "two": 19
    },
-   "solution": "ptgscsssasbjki",
+   "solution": "dhscg",
    "meta": {
     "generator": "build18",
     "k": 56,
     "seed": 2666509557,
     "role": "normal",
     "note": "(statt Kette)",
-    "minMoves": 14,
-    "slack": 9,
+    "minMoves": 5,
+    "slack": 18,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -4757,6 +5009,17 @@
     "searched": {
      "tried": 90,
      "usable": 7
+    },
+    "cal28": {
+     "oldMin": 14,
+     "oldStars": {
+      "three": 15,
+      "two": 19
+     },
+     "oldMoves": 23,
+     "good3": 0.11,
+     "cas": 0.45,
+     "casOld": 0.45
     }
    }
   },
@@ -4832,7 +5095,7 @@
     3,
     4
    ],
-   "moves": 24,
+   "moves": 17,
    "goals": [
     {
      "type": "street",
@@ -4844,18 +5107,18 @@
     }
    ],
    "stars": {
-    "three": 16,
-    "two": 20
+    "three": 10,
+    "two": 14
    },
-   "solution": "bhgihhdrrdoedec",
+   "solution": "pmoccc",
    "meta": {
     "generator": "build18",
     "k": 76,
     "seed": 4205071388,
     "role": "normal",
     "note": "fast fertige Straße aus 5",
-    "minMoves": 15,
-    "slack": 9,
+    "minMoves": 6,
+    "slack": 11,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -4872,6 +5135,17 @@
     "searched": {
      "tried": 114,
      "usable": 19
+    },
+    "cal28": {
+     "oldMin": 15,
+     "oldStars": {
+      "three": 16,
+      "two": 20
+     },
+     "oldMoves": 24,
+     "good3": 0.39,
+     "cas": 0.84,
+     "casOld": 0.97
     }
    }
   },
@@ -4946,7 +5220,7 @@
     "three": 12,
     "two": 12
    },
-   "solution": "dkcdtbsssfrb",
+   "solution": "armstpg",
    "tool": "extraMoves",
    "meta": {
     "generator": "build18",
@@ -4954,7 +5228,7 @@
     "seed": 3301443427,
     "role": "tool",
     "note": "Werkzeug-Spitze: +3 Züge",
-    "minMoves": 12,
+    "minMoves": 7,
     "slack": 0,
     "toolMin": 12,
     "optimalSolutions": null,
@@ -4970,11 +5244,20 @@
      "casualTool": 0.444,
      "goodTool": 0.75
     },
-    "toolSolution": "dkcdtbsssfrb",
+    "toolSolution": "armstpg",
     "exact": false,
     "searched": {
      "tried": 177,
      "usable": 12
+    },
+    "cal28": {
+     "spike": {
+      "tool": "extraMoves",
+      "minMoves": 12,
+      "solution": "dkcdtbsssfrb",
+      "toolSolution": "dkcdtbsssfrb",
+      "toolMin": 12
+     }
     }
    }
   },
@@ -5063,17 +5346,16 @@
     "three": 22,
     "two": 22
    },
-   "solution": "ebamkjpgharqppspgrrmmh",
-   "tool": "wand",
+   "solution": "cssacs",
+   "tool": "extraMoves",
    "meta": {
     "generator": "build18",
     "k": 138,
     "seed": 1260218492,
     "role": "boss",
     "note": "Boss: eine 6 und Punkte, Werkzeug-Spitze (Zauberstab)",
-    "minMoves": 22,
+    "minMoves": 6,
     "slack": 0,
-    "toolMin": 3,
     "optimalSolutions": null,
     "pOptimal": null,
     "target": 49,
@@ -5088,11 +5370,20 @@
      "goodTool": 0.542,
      "goodStarts": 8
     },
-    "toolSolution": "W03=5 qss",
+    "toolSolution": "cssacs",
     "exact": false,
     "searched": {
      "tried": 336,
      "usable": 7
+    },
+    "cal28": {
+     "spike": {
+      "tool": "wand",
+      "minMoves": 22,
+      "solution": "ebamkjpgharqppspgrrmmh",
+      "toolSolution": "W03=5 qss",
+      "toolMin": 3
+     }
     }
    }
   },
@@ -5177,15 +5468,15 @@
     "three": 11,
     "two": 13
    },
-   "solution": "gggnqhnnnn",
+   "solution": "hindqjdq",
    "meta": {
     "generator": "build18",
     "k": 454,
     "seed": 2506882239,
     "role": "relief",
     "note": "NEU Wert räumen (Einführung, offensichtlich)",
-    "minMoves": 10,
-    "slack": 4,
+    "minMoves": 8,
+    "slack": 6,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -5202,6 +5493,17 @@
     "searched": {
      "tried": 552,
      "usable": 48
+    },
+    "cal28": {
+     "oldMin": 10,
+     "oldStars": {
+      "three": 11,
+      "two": 13
+     },
+     "oldMoves": 14,
+     "good3": 0.49,
+     "cas": 0.76,
+     "casOld": 0.76
     }
    }
   },
@@ -5285,15 +5587,15 @@
     "three": 9,
     "two": 11
    },
-   "solution": "hbkioioc",
+   "solution": "cdcddi",
    "meta": {
     "generator": "build18",
     "k": 75,
     "seed": 1499059015,
     "role": "relief",
     "note": null,
-    "minMoves": 8,
-    "slack": 5,
+    "minMoves": 6,
+    "slack": 7,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -5310,6 +5612,17 @@
     "searched": {
      "tried": 135,
      "usable": 98
+    },
+    "cal28": {
+     "oldMin": 8,
+     "oldStars": {
+      "three": 9,
+      "two": 11
+     },
+     "oldMoves": 13,
+     "good3": 0.19,
+     "cas": 0.5,
+     "casOld": 0.5
     }
    }
   },
@@ -5397,15 +5710,15 @@
     "three": 19,
     "two": 22
    },
-   "solution": "iilddmmnemnnenpqrr",
+   "solution": "jjilri",
    "meta": {
     "generator": "build18",
     "k": 129,
     "seed": 3135038958,
     "role": "normal",
     "note": null,
-    "minMoves": 18,
-    "slack": 7,
+    "minMoves": 6,
+    "slack": 19,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -5422,6 +5735,17 @@
     "searched": {
      "tried": 212,
      "usable": 10
+    },
+    "cal28": {
+     "oldMin": 18,
+     "oldStars": {
+      "three": 19,
+      "two": 22
+     },
+     "oldMoves": 25,
+     "good3": 0.15,
+     "cas": 0.39,
+     "casOld": 0.39
     }
    }
   },
@@ -5514,15 +5838,15 @@
     "three": 13,
     "two": 17
    },
-   "solution": "rbrccddjbktb",
+   "solution": "aqgssr",
    "meta": {
     "generator": "build18",
     "k": 18,
     "seed": 483488848,
     "role": "normal",
     "note": "(statt Kette)",
-    "minMoves": 12,
-    "slack": 8,
+    "minMoves": 6,
+    "slack": 14,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -5539,6 +5863,17 @@
     "searched": {
      "tried": 189,
      "usable": 11
+    },
+    "cal28": {
+     "oldMin": 12,
+     "oldStars": {
+      "three": 13,
+      "two": 17
+     },
+     "oldMoves": 20,
+     "good3": 0.19,
+     "cas": 0.42,
+     "casOld": 0.42
     }
    }
   },
@@ -5720,15 +6055,15 @@
     "three": 10,
     "two": 16
    },
-   "solution": "eefrnndmm",
+   "solution": "chcddh",
    "meta": {
     "generator": "build18",
     "k": 130,
     "seed": 1534965066,
     "role": "relief",
     "note": "Erholung",
-    "minMoves": 9,
-    "slack": 13,
+    "minMoves": 6,
+    "slack": 16,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -5745,6 +6080,17 @@
     "searched": {
      "tried": 131,
      "usable": 26
+    },
+    "cal28": {
+     "oldMin": 9,
+     "oldStars": {
+      "three": 10,
+      "two": 16
+     },
+     "oldMoves": 22,
+     "good3": 0.02,
+     "cas": 0.47,
+     "casOld": 0.47
     }
    }
   },
@@ -6059,17 +6405,16 @@
     "three": 15,
     "two": 15
    },
-   "solution": "doegmnccoftkpig",
-   "tool": "hint",
+   "solution": "dcogcaa",
+   "tool": "extraMoves",
    "meta": {
     "generator": "build18",
     "k": 15,
     "seed": 1187275822,
     "role": "tool",
     "note": "Werkzeug-Spitze: Hinweis",
-    "minMoves": 15,
+    "minMoves": 7,
     "slack": 0,
-    "toolMin": 15,
     "optimalSolutions": null,
     "pOptimal": null,
     "target": 47,
@@ -6084,11 +6429,20 @@
      "goodTool": 0.833
     },
     "hintMoves": "dc",
-    "toolSolution": "doegmnccoftkpig",
+    "toolSolution": "dcogcaa",
     "exact": false,
     "searched": {
      "tried": 117,
      "usable": 19
+    },
+    "cal28": {
+     "spike": {
+      "tool": "hint",
+      "minMoves": 15,
+      "solution": "doegmnccoftkpig",
+      "toolSolution": "doegmnccoftkpig",
+      "toolMin": 15
+     }
     }
    }
   },
@@ -6170,7 +6524,7 @@
     3,
     2
    ],
-   "moves": 30,
+   "moves": 24,
    "goals": [
     {
      "type": "tile",
@@ -6182,18 +6536,18 @@
     }
    ],
    "stars": {
-    "three": 29,
-    "two": 30
+    "three": 18,
+    "two": 21
    },
-   "solution": "rjrshhmmndnppontphhhhfhhhccm",
+   "solution": "qfhjq",
    "meta": {
     "generator": "build18",
     "k": 187,
     "seed": 2434163711,
     "role": "milestone",
     "note": "Meilenstein, 5er schon auf dem Brett",
-    "minMoves": 28,
-    "slack": 2,
+    "minMoves": 5,
+    "slack": 25,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -6210,6 +6564,24 @@
     "searched": {
      "tried": 206,
      "usable": 2
+    },
+    "cal28": {
+     "oldMin": 28,
+     "oldStars": {
+      "three": 29,
+      "two": 30
+     },
+     "oldMoves": 30,
+     "good3": 0.35,
+     "cas": 0.72,
+     "casOld": 0.72,
+     "milestone": {
+      "moves": 30,
+      "stars": {
+       "three": 18,
+       "two": 24
+      }
+     }
     }
    }
   },
@@ -6300,15 +6672,15 @@
     "three": 10,
     "two": 17
    },
-   "solution": "iaklllbha",
+   "solution": "aqhirb",
    "meta": {
     "generator": "build18",
     "k": 605,
     "seed": 3937951418,
     "role": "relief",
     "note": "Erholung",
-    "minMoves": 9,
-    "slack": 15,
+    "minMoves": 6,
+    "slack": 18,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -6325,6 +6697,17 @@
     "searched": {
      "tried": 627,
      "usable": 32
+    },
+    "cal28": {
+     "oldMin": 9,
+     "oldStars": {
+      "three": 10,
+      "two": 17
+     },
+     "oldMoves": 24,
+     "good3": 0.03,
+     "cas": 0,
+     "casOld": 0
     }
    }
   },
@@ -6526,15 +6909,15 @@
     "three": 17,
     "two": 23
    },
-   "solution": "bhgnihdgllmeeiil",
+   "solution": "bhdijl",
    "meta": {
     "generator": "build18",
     "k": 50,
     "seed": 3843328751,
     "role": "normal",
     "note": "Erste 7 – langer Aufbau",
-    "minMoves": 16,
-    "slack": 12,
+    "minMoves": 6,
+    "slack": 22,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -6551,6 +6934,17 @@
     "searched": {
      "tried": 53,
      "usable": 3
+    },
+    "cal28": {
+     "oldMin": 16,
+     "oldStars": {
+      "three": 17,
+      "two": 23
+     },
+     "oldMoves": 28,
+     "good3": 0.04,
+     "cas": 0.07,
+     "casOld": 0.07
     }
    }
   },
@@ -6646,15 +7040,15 @@
     "three": 19,
     "two": 24
    },
-   "solution": "kljcjmknmprblcoddd",
+   "solution": "frplqq",
    "meta": {
     "generator": "build18",
     "k": 119,
     "seed": 2283340167,
     "role": "normal",
     "note": "fast fertige Straße aus 5",
-    "minMoves": 18,
-    "slack": 11,
+    "minMoves": 6,
+    "slack": 23,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -6671,6 +7065,17 @@
     "searched": {
      "tried": 120,
      "usable": 7
+    },
+    "cal28": {
+     "oldMin": 18,
+     "oldStars": {
+      "three": 19,
+      "two": 24
+     },
+     "oldMoves": 29,
+     "good3": 0.16,
+     "cas": 0.56,
+     "casOld": 0.56
     }
    }
   },
@@ -6862,7 +7267,7 @@
     1,
     2
    ],
-   "moves": 25,
+   "moves": 22,
    "goals": [
     {
      "type": "make",
@@ -6872,17 +7277,17 @@
    ],
    "stars": {
     "three": 12,
-    "two": 19
+    "two": 17
    },
-   "solution": "mlddcbdcbnm",
+   "solution": "fjjrsaf",
    "meta": {
     "generator": "build18",
     "k": 133,
     "seed": 826092979,
     "role": "relief",
     "note": "Erholung",
-    "minMoves": 11,
-    "slack": 14,
+    "minMoves": 7,
+    "slack": 15,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -6899,6 +7304,17 @@
     "searched": {
      "tried": 168,
      "usable": 39
+    },
+    "cal28": {
+     "oldMin": 11,
+     "oldStars": {
+      "three": 12,
+      "two": 19
+     },
+     "oldMoves": 25,
+     "good3": 0.25,
+     "cas": 0.9,
+     "casOld": 0.98
     }
    }
   },
@@ -6995,15 +7411,15 @@
     "three": 16,
     "two": 23
    },
-   "solution": "csmmnlmhhhhbdii",
+   "solution": "dcdsdejd",
    "meta": {
     "generator": "build18",
     "k": 20,
     "seed": 1605097053,
     "role": "normal",
     "note": null,
-    "minMoves": 15,
-    "slack": 15,
+    "minMoves": 8,
+    "slack": 22,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -7020,6 +7436,17 @@
     "searched": {
      "tried": 30,
      "usable": 16
+    },
+    "cal28": {
+     "oldMin": 15,
+     "oldStars": {
+      "three": 16,
+      "two": 23
+     },
+     "oldMoves": 30,
+     "good3": 0.39,
+     "cas": 0.54,
+     "casOld": 0.54
     }
    }
   },
@@ -7101,7 +7528,7 @@
     1,
     3
    ],
-   "moves": 30,
+   "moves": 17,
    "goals": [
     {
      "type": "street",
@@ -7113,18 +7540,18 @@
     }
    ],
    "stars": {
-    "three": 14,
-    "two": 22
+    "three": 12,
+    "two": 15
    },
-   "solution": "rqfprggrprrfm",
+   "solution": "fqrfrii",
    "meta": {
     "generator": "build18",
     "k": 62,
     "seed": 1432543506,
     "role": "normal",
     "note": null,
-    "minMoves": 13,
-    "slack": 17,
+    "minMoves": 7,
+    "slack": 10,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -7141,6 +7568,17 @@
     "searched": {
      "tried": 79,
      "usable": 33
+    },
+    "cal28": {
+     "oldMin": 13,
+     "oldStars": {
+      "three": 14,
+      "two": 22
+     },
+     "oldMoves": 30,
+     "good3": 0.47,
+     "cas": 0.81,
+     "casOld": 1
     }
    }
   },
@@ -7231,17 +7669,16 @@
     "three": 24,
     "two": 24
    },
-   "solution": "khhlsrsssfpgfsshhqhcqiiq",
-   "tool": "wand",
+   "solution": "jmbsih",
+   "tool": "extraMoves",
    "meta": {
     "generator": "build18",
     "k": 48,
     "seed": 2927234367,
     "role": "tool",
     "note": "Werkzeug-Spitze: Zauberstab",
-    "minMoves": 24,
+    "minMoves": 6,
     "slack": 0,
-    "toolMin": 5,
     "optimalSolutions": null,
     "pOptimal": null,
     "target": 52,
@@ -7256,11 +7693,20 @@
      "goodTool": 0.25,
      "goodStarts": 8
     },
-    "toolSolution": "W20=4 khlsg",
+    "toolSolution": "jmbsih",
     "exact": false,
     "searched": {
      "tried": 52,
      "usable": 4
+    },
+    "cal28": {
+     "spike": {
+      "tool": "wand",
+      "minMoves": 24,
+      "solution": "khhlsrsssfpgfsshhqhcqiiq",
+      "toolSolution": "W20=4 khlsg",
+      "toolMin": 5
+     }
     }
    }
   },
@@ -7481,18 +7927,18 @@
     }
    ],
    "stars": {
-    "three": 17,
+    "three": 16,
     "two": 22
    },
-   "solution": "ccnqrkksrggqddng",
+   "solution": "naaqns",
    "meta": {
     "generator": "build18",
     "k": 36,
     "seed": 1006009457,
     "role": "relief",
     "note": "NEU drei Ziele (Einführung, je leicht)",
-    "minMoves": 16,
-    "slack": 11,
+    "minMoves": 6,
+    "slack": 21,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -7509,6 +7955,17 @@
     "searched": {
      "tried": 37,
      "usable": 8
+    },
+    "cal28": {
+     "oldMin": 16,
+     "oldStars": {
+      "three": 17,
+      "two": 22
+     },
+     "oldMoves": 27,
+     "good3": 0.57,
+     "cas": 0.87,
+     "casOld": 0.87
     }
    }
   },
@@ -7718,15 +8175,15 @@
     "three": 19,
     "two": 26
    },
-   "solution": "icarmlmpnlbqmrrood",
+   "solution": "mfhjmh",
    "meta": {
     "generator": "build18",
     "k": 4,
     "seed": 2089026527,
     "role": "normal",
     "note": "(statt Kette)",
-    "minMoves": 18,
-    "slack": 14,
+    "minMoves": 6,
+    "slack": 26,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -7743,6 +8200,17 @@
     "searched": {
      "tried": 49,
      "usable": 18
+    },
+    "cal28": {
+     "oldMin": 18,
+     "oldStars": {
+      "three": 19,
+      "two": 26
+     },
+     "oldMoves": 32,
+     "good3": 0.01,
+     "cas": 0.12,
+     "casOld": 0.12
     }
    }
   },
@@ -8072,15 +8540,15 @@
     "three": 14,
     "two": 21
    },
-   "solution": "pqghqdggdnrrh",
+   "solution": "imndmmcc",
    "meta": {
     "generator": "build18",
     "k": 68,
     "seed": 37484768,
     "role": "relief",
     "note": "Erholung",
-    "minMoves": 13,
-    "slack": 15,
+    "minMoves": 8,
+    "slack": 20,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -8097,6 +8565,17 @@
     "searched": {
      "tried": 69,
      "usable": 37
+    },
+    "cal28": {
+     "oldMin": 13,
+     "oldStars": {
+      "three": 14,
+      "two": 21
+     },
+     "oldMoves": 28,
+     "good3": 0.02,
+     "cas": 0.32,
+     "casOld": 0.32
     }
    }
   },
@@ -8181,7 +8660,7 @@
     1,
     1
    ],
-   "moves": 33,
+   "moves": 19,
    "goals": [
     {
      "type": "score",
@@ -8194,18 +8673,18 @@
     }
    ],
    "stars": {
-    "three": 19,
-    "two": 26
+    "three": 14,
+    "two": 17
    },
-   "solution": "rgqqrriiffqepitmii",
+   "solution": "fsaqqar",
    "meta": {
     "generator": "build18",
     "k": 8,
     "seed": 4113376175,
     "role": "normal",
     "note": null,
-    "minMoves": 18,
-    "slack": 15,
+    "minMoves": 7,
+    "slack": 12,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -8222,6 +8701,17 @@
     "searched": {
      "tried": 144,
      "usable": 26
+    },
+    "cal28": {
+     "oldMin": 18,
+     "oldStars": {
+      "three": 19,
+      "two": 26
+     },
+     "oldMoves": 33,
+     "good3": 0.63,
+     "cas": 0.83,
+     "casOld": 1
     }
    }
   },
@@ -8432,17 +8922,16 @@
     "three": 23,
     "two": 23
    },
-   "solution": "dittqqkfilfqimccbssbscc",
-   "tool": "hint",
+   "solution": "imabdb",
+   "tool": "extraMoves",
    "meta": {
     "generator": "build18",
     "k": 18,
     "seed": 458489055,
     "role": "tool",
     "note": "Werkzeug-Spitze: Hinweis",
-    "minMoves": 23,
+    "minMoves": 6,
     "slack": 0,
-    "toolMin": 23,
     "optimalSolutions": null,
     "pOptimal": null,
     "target": 56,
@@ -8457,11 +8946,20 @@
      "goodTool": 0.333
     },
     "hintMoves": "im",
-    "toolSolution": "dittqqkfilfqimccbssbscc",
+    "toolSolution": "imabdb",
     "exact": false,
     "searched": {
      "tried": 87,
      "usable": 3
+    },
+    "cal28": {
+     "spike": {
+      "tool": "hint",
+      "minMoves": 23,
+      "solution": "dittqqkfilfqimccbssbscc",
+      "toolSolution": "dittqqkfilfqimccbssbscc",
+      "toolMin": 23
+     }
     }
    }
   },
@@ -8550,7 +9048,7 @@
     3,
     4
    ],
-   "moves": 37,
+   "moves": 22,
    "goals": [
     {
      "type": "tile",
@@ -8566,18 +9064,18 @@
     }
    ],
    "stars": {
-    "three": 35,
-    "two": 36
+    "three": 19,
+    "two": 21
    },
-   "solution": "hblptodccmhitbtdhmmbghpcgdlldednhc",
+   "solution": "lclahse",
    "meta": {
     "generator": "build100",
     "k": 19,
     "seed": 3134897363,
     "role": "milestone",
     "note": "Meilenstein: drei Ziele, 5er schon auf dem Brett (launch-27)",
-    "minMoves": 34,
-    "slack": 3,
+    "minMoves": 7,
+    "slack": 26,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -8595,7 +9093,25 @@
      "via": "search-one.mjs"
     },
     "exact": false,
-    "approximate": true
+    "approximate": true,
+    "cal28": {
+     "oldMin": 34,
+     "oldStars": {
+      "three": 35,
+      "two": 36
+     },
+     "oldMoves": 37,
+     "good3": 0.39,
+     "cas": 0.85,
+     "casOld": 0.92,
+     "milestone": {
+      "moves": 33,
+      "stars": {
+       "three": 19,
+       "two": 26
+      }
+     }
+    }
    }
   },
   {
@@ -8676,7 +9192,7 @@
     1,
     1
    ],
-   "moves": 30,
+   "moves": 29,
    "goals": [
     {
      "type": "clear",
@@ -8685,7 +9201,7 @@
    ],
    "stars": {
     "three": 17,
-    "two": 24
+    "two": 23
    },
    "solution": "hhfffrgqblilhhmm",
    "meta": {
@@ -8695,7 +9211,7 @@
     "role": "relief",
     "note": "Erholung (launch-27: klarer, aber nicht trivial)",
     "minMoves": 16,
-    "slack": 14,
+    "slack": 13,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -8713,7 +9229,18 @@
      "via": "search-one.mjs"
     },
     "exact": false,
-    "approximate": true
+    "approximate": true,
+    "cal28": {
+     "oldMin": 16,
+     "oldStars": {
+      "three": 17,
+      "two": 24
+     },
+     "oldMoves": 30,
+     "good3": 0,
+     "cas": 0.94,
+     "casOld": 0.97
+    }
    }
   },
   {
@@ -8805,15 +9332,15 @@
     "three": 12,
     "two": 21
    },
-   "solution": "cfhnnnatnfn",
+   "solution": "ghiih",
    "meta": {
     "generator": "build18",
     "k": 192,
     "seed": 2910354870,
     "role": "relief",
     "note": "fast fertige Straße aus 5",
-    "minMoves": 11,
-    "slack": 19,
+    "minMoves": 5,
+    "slack": 25,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -8830,6 +9357,17 @@
     "searched": {
      "tried": 193,
      "usable": 26
+    },
+    "cal28": {
+     "oldMin": 11,
+     "oldStars": {
+      "three": 12,
+      "two": 21
+     },
+     "oldMoves": 30,
+     "good3": 0,
+     "cas": 0.2,
+     "casOld": 0.2
     }
    }
   },
@@ -8931,15 +9469,15 @@
     "three": 24,
     "two": 30
    },
-   "solution": "jhfjaarqlsltabbnndasbtb",
+   "solution": "qdhnj",
    "meta": {
     "generator": "build18",
     "k": 40,
     "seed": 3159980049,
     "role": "normal",
     "note": null,
-    "minMoves": 23,
-    "slack": 12,
+    "minMoves": 5,
+    "slack": 30,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -8956,6 +9494,17 @@
     "searched": {
      "tried": 45,
      "usable": 4
+    },
+    "cal28": {
+     "oldMin": 23,
+     "oldStars": {
+      "three": 24,
+      "two": 30
+     },
+     "oldMoves": 35,
+     "good3": 0.03,
+     "cas": 0.06,
+     "casOld": 0.06
     }
    }
   },
@@ -9171,7 +9720,7 @@
     "three": 22,
     "two": 22
    },
-   "solution": "nqqpgkhigibbbdnjccirrq",
+   "solution": "ggkgkn",
    "tool": "extraMoves",
    "meta": {
     "generator": "build18",
@@ -9179,7 +9728,7 @@
     "seed": 2055944695,
     "role": "tool",
     "note": "Werkzeug-Spitze: +3 Züge",
-    "minMoves": 22,
+    "minMoves": 6,
     "slack": 0,
     "toolMin": 22,
     "optimalSolutions": null,
@@ -9195,11 +9744,20 @@
      "casualTool": 0.417,
      "goodTool": 0.333
     },
-    "toolSolution": "nqqpgkhigibbbdnjccirrq",
+    "toolSolution": "ggkgkn",
     "exact": false,
     "searched": {
      "tried": 124,
      "usable": 17
+    },
+    "cal28": {
+     "spike": {
+      "tool": "extraMoves",
+      "minMoves": 22,
+      "solution": "nqqpgkhigibbbdnjccirrq",
+      "toolSolution": "nqqpgkhigibbbdnjccirrq",
+      "toolMin": 22
+     }
     }
    }
   },
@@ -9283,7 +9841,7 @@
     1,
     1
    ],
-   "moves": 32,
+   "moves": 20,
    "goals": [
     {
      "type": "clear",
@@ -9292,17 +9850,17 @@
    ],
    "stars": {
     "three": 12,
-    "two": 22
+    "two": 16
    },
-   "solution": "necmdedqqpf",
+   "solution": "himhlemm",
    "meta": {
     "generator": "build18",
     "k": 95,
     "seed": 3015076397,
     "role": "relief",
     "note": "Erholung",
-    "minMoves": 11,
-    "slack": 21,
+    "minMoves": 8,
+    "slack": 12,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -9319,6 +9877,17 @@
     "searched": {
      "tried": 107,
      "usable": 106
+    },
+    "cal28": {
+     "oldMin": 11,
+     "oldStars": {
+      "three": 12,
+      "two": 22
+     },
+     "oldMoves": 32,
+     "good3": 0.01,
+     "cas": 0.89,
+     "casOld": 1
     }
    }
   },
@@ -9421,15 +9990,15 @@
     "three": 17,
     "two": 27
    },
-   "solution": "dlqikhghogssnmhh",
+   "solution": "gphhld",
    "meta": {
     "generator": "build18",
     "k": 71,
     "seed": 3830269138,
     "role": "normal",
     "note": null,
-    "minMoves": 16,
-    "slack": 20,
+    "minMoves": 6,
+    "slack": 30,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -9446,6 +10015,17 @@
     "searched": {
      "tried": 93,
      "usable": 69
+    },
+    "cal28": {
+     "oldMin": 16,
+     "oldStars": {
+      "three": 17,
+      "two": 27
+     },
+     "oldMoves": 36,
+     "good3": 0.18,
+     "cas": 0.37,
+     "casOld": 0.37
     }
    }
   },
@@ -9668,17 +10248,16 @@
     "three": 32,
     "two": 32
    },
-   "solution": "irennbrsacnkkhihhqtbrppbfbrbsscc",
-   "tool": "wand",
+   "solution": "qflil",
+   "tool": "extraMoves",
    "meta": {
     "generator": "build18",
     "k": 38,
     "seed": 2037520653,
     "role": "tool",
     "note": "Werkzeug-Spitze: Zauberstab (statt Kette)",
-    "minMoves": 32,
+    "minMoves": 5,
     "slack": 0,
-    "toolMin": 3,
     "optimalSolutions": null,
     "pOptimal": null,
     "target": 61,
@@ -9693,11 +10272,20 @@
      "goodTool": 0.375,
      "goodStarts": 8
     },
-    "toolSolution": "W01=6 qgm",
+    "toolSolution": "qflil",
     "exact": false,
     "searched": {
      "tried": 39,
      "usable": 5
+    },
+    "cal28": {
+     "spike": {
+      "tool": "wand",
+      "minMoves": 32,
+      "solution": "irennbrsacnkkhihhqtbrppbfbrbsscc",
+      "toolSolution": "W01=6 qgm",
+      "toolMin": 3
+     }
     }
    }
   },
@@ -9804,15 +10392,15 @@
     "three": 34,
     "two": 37
    },
-   "solution": "mipgbbrookijrrlitamkcmdbsrstststb",
+   "solution": "aiioetn",
    "meta": {
     "generator": "build18",
     "k": 18,
     "seed": 448513532,
     "role": "milestone",
     "note": "Meilenstein, 5er schon auf dem Brett",
-    "minMoves": 33,
-    "slack": 7,
+    "minMoves": 7,
+    "slack": 33,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -9829,6 +10417,17 @@
     "searched": {
      "tried": 67,
      "usable": 14
+    },
+    "cal28": {
+     "oldMin": 33,
+     "oldStars": {
+      "three": 34,
+      "two": 37
+     },
+     "oldMoves": 40,
+     "good3": 0.14,
+     "cas": 0.17,
+     "casOld": 0.17
     }
    }
   },
@@ -10033,7 +10632,7 @@
     1,
     1
    ],
-   "moves": 33,
+   "moves": 15,
    "goals": [
     {
      "type": "score",
@@ -10045,18 +10644,18 @@
     }
    ],
    "stars": {
-    "three": 15,
-    "two": 24
+    "three": 11,
+    "two": 13
    },
-   "solution": "sshcchgqtgrmff",
+   "solution": "hijhhh",
    "meta": {
     "generator": "build18",
     "k": 64,
     "seed": 2292563028,
     "role": "relief",
     "note": "Erholung",
-    "minMoves": 14,
-    "slack": 19,
+    "minMoves": 6,
+    "slack": 9,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -10073,6 +10672,17 @@
     "searched": {
      "tried": 315,
      "usable": 24
+    },
+    "cal28": {
+     "oldMin": 14,
+     "oldStars": {
+      "three": 15,
+      "two": 24
+     },
+     "oldMoves": 33,
+     "good3": 0.59,
+     "cas": 0.9,
+     "casOld": 1
     }
    }
   },
@@ -10420,7 +11030,7 @@
     "three": 17,
     "two": 17
    },
-   "solution": "grtgqhfpnrthphran",
+   "solution": "gggra",
    "tool": "rocket",
    "meta": {
     "generator": "build18",
@@ -10428,7 +11038,7 @@
     "seed": 314373800,
     "role": "tool",
     "note": "Werkzeug-Spitze: Rakete",
-    "minMoves": 17,
+    "minMoves": 5,
     "slack": 0,
     "toolMin": 3,
     "optimalSolutions": null,
@@ -10450,6 +11060,15 @@
     "searched": {
      "tried": 36,
      "usable": 1
+    },
+    "cal28": {
+     "spike": {
+      "tool": "rocket",
+      "minMoves": 17,
+      "solution": "grtgqhfpnrthphran",
+      "toolSolution": "R02 gsc",
+      "toolMin": 3
+     }
     }
    }
   },
@@ -10536,7 +11155,7 @@
     1,
     2
    ],
-   "moves": 35,
+   "moves": 32,
    "goals": [
     {
      "type": "street",
@@ -10545,17 +11164,17 @@
    ],
    "stars": {
     "three": 13,
-    "two": 24
+    "two": 23
    },
-   "solution": "hkhoorrrhhnh",
+   "solution": "jhlhid",
    "meta": {
     "generator": "build18",
     "k": 152,
     "seed": 4115175480,
     "role": "relief",
     "note": "Erholung, hoher Wert als Blocker",
-    "minMoves": 12,
-    "slack": 23,
+    "minMoves": 6,
+    "slack": 26,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -10572,6 +11191,17 @@
     "searched": {
      "tried": 666,
      "usable": 93
+    },
+    "cal28": {
+     "oldMin": 12,
+     "oldStars": {
+      "three": 13,
+      "two": 24
+     },
+     "oldMoves": 35,
+     "good3": 0.03,
+     "cas": 0.85,
+     "casOld": 0.9
     }
    }
   },
@@ -10788,7 +11418,7 @@
     2,
     2
    ],
-   "moves": 39,
+   "moves": 17,
    "goals": [
     {
      "type": "street",
@@ -10800,18 +11430,18 @@
     }
    ],
    "stars": {
-    "three": 18,
-    "two": 29
+    "three": 10,
+    "two": 14
    },
-   "solution": "hsmhhmmchacbsbbqq",
+   "solution": "bfssmr",
    "meta": {
     "generator": "build18",
     "k": 40,
     "seed": 3179044366,
     "role": "normal",
     "note": "hoher Wert (~30) als Blocker plus Straße",
-    "minMoves": 17,
-    "slack": 22,
+    "minMoves": 6,
+    "slack": 11,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -10828,6 +11458,17 @@
     "searched": {
      "tried": 176,
      "usable": 47
+    },
+    "cal28": {
+     "oldMin": 17,
+     "oldStars": {
+      "three": 18,
+      "two": 29
+     },
+     "oldMoves": 39,
+     "good3": 0.51,
+     "cas": 0.86,
+     "casOld": 1
     }
    }
   },
@@ -10906,17 +11547,16 @@
     "three": 12,
     "two": 12
    },
-   "solution": "hhdhhhhtnqrq",
-   "tool": "hint",
+   "solution": "lrqqhmd",
+   "tool": "extraMoves",
    "meta": {
     "generator": "build18",
     "k": 8,
     "seed": 4099756641,
     "role": "tool",
     "note": "Werkzeug-Spitze: Hinweis",
-    "minMoves": 12,
+    "minMoves": 7,
     "slack": 0,
-    "toolMin": 12,
     "optimalSolutions": null,
     "pOptimal": null,
     "target": 66,
@@ -10931,11 +11571,20 @@
      "goodTool": 0.333
     },
     "hintMoves": "dd",
-    "toolSolution": "hhdhhhhtnqrq",
+    "toolSolution": "lrqqhmd",
     "exact": false,
     "searched": {
      "tried": 125,
      "usable": 13
+    },
+    "cal28": {
+     "spike": {
+      "tool": "hint",
+      "minMoves": 12,
+      "solution": "hhdhhhhtnqrq",
+      "toolSolution": "hhdhhhhtnqrq",
+      "toolMin": 12
+     }
     }
    }
   },
@@ -11041,7 +11690,7 @@
     "three": 39,
     "two": 39
    },
-   "solution": "ahblqgbmjjjgmgjjlllthhmlcjtdcmnmbbmmmms",
+   "solution": "gfgmh",
    "tool": "extraMoves",
    "meta": {
     "generator": "build100",
@@ -11049,7 +11698,7 @@
     "seed": 316703321,
     "role": "boss",
     "note": "Finale: eine 8 und räumen; ohne Werkzeug lösbar, +3 Züge helfen (höchstens 2★).",
-    "minMoves": 39,
+    "minMoves": 5,
     "slack": 0,
     "toolMin": 39,
     "optimalSolutions": null,
@@ -11071,7 +11720,16 @@
     },
     "exact": false,
     "approximate": true,
-    "toolSolution": "ahblqgbmjjjgmgjjlllthhmlcjtdcmnmbbmmmms"
+    "toolSolution": "gfgmh",
+    "cal28": {
+     "spike": {
+      "tool": "extraMoves",
+      "minMoves": 39,
+      "solution": "ahblqgbmjjjgmgjjlllthhmlcjtdcmnmbbmmmms",
+      "toolSolution": "ahblqgbmjjjgmgjjlllthhmlcjtdcmnmbbmmmms",
+      "toolMin": 39
+     }
+    }
    }
   }
  ]

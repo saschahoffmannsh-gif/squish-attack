@@ -1,13 +1,13 @@
 import test, { beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { setLang } from '../game/i18n.mjs?v=launch-27';
+import { setLang } from '../game/i18n.mjs?v=launch-28';
 beforeEach(() => setLang('de', { persist: false }));
 import {
   createLevelRun, applyLevelMove, starsFor, replaySolution, goalProgress, queueOf, movesLeft,
   validateLevel, encodeMove, decodeMove, recordResult, mergeProgress, emptyProgress, isUnlocked,
   nextLevel, totalStars, loadProgress, saveProgress, goalText, starThresholds, starsOfRun, addExtraMoves,
   markToolUsed, moveLimit, lockReason, chapterOf, starGate, CHAPTER_SIZE, STARS_PER_CHAPTER_GATE,
-  toolStarCap,
+  toolStarCap, tileAt, migrateRules28Once,
   resetChangedStarsOnce, STARS_RESET, STARS_RESET_KEY,
   resetCurveStarsOnce, CURVE_STARS_RESET, CURVE_STARS_RESET_KEY, CURVE_STARS_RESET_IDS, PROGRESS_EPOCH,
 } from '../game/campaign.mjs';
@@ -67,20 +67,30 @@ test('Sterne: 3★ = Optimum + 1, 2★ = Mitte, 1★ = im Limit', () => {
   assert.equal(starsFor(lv, 3, false), 0);
 });
 
-test('launch-26: Hilfsmittel deckeln stufenweise 2/1/0 ★, 0 Hilfsmittel bleibt bei 3★', () => {
+test('launch-28: ohne Hilfe bis 3★, 1 Hilfe höchstens 2★, mehr als 1 Hilfe 1★ – gelöst nie 0★; Gold ist sternneutral', () => {
   const lv = base({ moves: 6, stars: starThresholds(3, 6) });
   assert.equal(toolStarCap(0), 3);
   assert.equal(toolStarCap(1), 2);
   assert.equal(toolStarCap(2), 1);
-  assert.equal(toolStarCap(3), 0);
-  assert.equal(toolStarCap(4), 0);
+  assert.equal(toolStarCap(3), 1);
+  assert.equal(toolStarCap(9), 1);
   assert.equal(starsFor(lv, 3, true, { toolsUsed: 0 }), 3);
   assert.equal(starsFor(lv, 3, true, { toolsUsed: 1 }), 2);
   assert.equal(starsFor(lv, 5, true, { toolsUsed: 1 }), 2);
+  assert.equal(starsFor(lv, 6, true, { toolsUsed: 1 }), 1);
   assert.equal(starsFor(lv, 6, true, { toolsUsed: 2 }), 1);
   assert.equal(starsFor(lv, 3, true, { toolsUsed: 2 }), 1);
-  assert.equal(starsFor(lv, 3, true, { toolsUsed: 3 }), 0);
-  assert.equal(starsFor(lv, 3, true, { toolsUsed: 4 }), 0);
+  assert.equal(starsFor(lv, 3, true, { toolsUsed: 3 }), 1);
+  assert.equal(starsFor(lv, 3, true, { toolsUsed: 7 }), 1);
+  assert.equal(starsFor(lv, 3, false, { toolsUsed: 0 }), 0);
+  // +3 verschiebt die Zug-Schwellen mit: 1 Hilfe kann noch 2★ geben
+  assert.equal(starsFor(lv, 8, true, { toolsUsed: 1, extraMoves: 3 }), 2);
+  const gold = createLevelRun(base());
+  markToolUsed(gold, 'rocket', { gift: true });
+  applyLevelMove(gold, 'right', 0);
+  assert.equal(gold.status, 'won');
+  assert.deepEqual(gold.giftsUsed, ['rocket']); assert.deepEqual(gold.toolsUsed, []);
+  assert.equal(starsOfRun(gold), 3);
   const run = createLevelRun(base());
   markToolUsed(run, 'rocket');
   applyLevelMove(run, 'right', 0);
@@ -88,7 +98,7 @@ test('launch-26: Hilfsmittel deckeln stufenweise 2/1/0 ★, 0 Hilfsmittel bleibt
   assert.equal(starsOfRun(run), 2);
 });
 
-test('launch-26: 0★-Sieg wird gespeichert und schaltet das nächste Level (und Modi nach L5) frei', () => {
+test('alt (launch-26): 0★-Eintrag wird gespeichert und schaltet das nächste Level (und Modi nach L5) frei', () => {
   let p = emptyProgress();
   p = recordResult(p, 1, { stars: 0, moves: 5, now: 1 });
   assert.equal(p.levels['1'].stars, 0);
@@ -102,7 +112,7 @@ test('launch-26: 0★-Sieg wird gespeichert und schaltet das nächste Level (und
   assert.equal(p.levels['1'].stars, 2);
 });
 
-test('+3 Züge: nutzt Reserve-Steine, rettet eine Niederlage, max. 2★, gewonnen nach Limit = 1★', () => {
+test('+3 Züge (launch-28): beliebig oft, Folge läuft weiter, rettet eine Niederlage, 1 Hilfe = max. 2★', () => {
   // Ziel braucht 2 Züge (zwei 1er von links in Reihe 0), Limit aber nur 1.
   const lv = base({ board: [[1, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E]],
     sequence: [1, 1, 2, 2], moves: 1, stars: { three: 1, two: 1 } });
@@ -115,10 +125,15 @@ test('+3 Züge: nutzt Reserve-Steine, rettet eine Niederlage, max. 2★, gewonne
   assert.deepEqual(queueOf(run), [1, 2, 2]);
   applyLevelMove(run, 'right', 0);
   assert.equal(run.status, 'won');
-  assert.equal(starsOfRun(run), 1);
+  assert.equal(starsOfRun(run), 2);                    // Schwellen + 3 Züge, 1 Hilfe → 2★
   assert.equal(addExtraMoves(run, 3), 0);               // nach dem Sieg nicht mehr
-  const run2 = createLevelRun({ ...lv, sequence: [1, 1] });
-  assert.equal(addExtraMoves(run2, 3), 1);              // nur so viele wie Reserve-Steine
+  const run2 = createLevelRun({ ...lv, sequence: [1, 2] });
+  assert.equal(addExtraMoves(run2, 3), 3);              // kein Reserve-Limit mehr: die Folge wiederholt sich
+  assert.equal(addExtraMoves(run2, 3), 3);
+  assert.equal(moveLimit(run2), 7);
+  assert.deepEqual(Array.from({ length: 5 }, (_, i) => tileAt(run2.level, i)), [1, 2, 1, 2, 1]);
+  assert.equal(run2.toolsUsed.length, 2);
+  assert.equal(starsFor(run2.level, 2, true, { toolsUsed: 2, extraMoves: 6 }), 1);
 });
 
 test('Ziele: make, score, clear, street, combo', () => {
@@ -170,10 +185,12 @@ test('Fortschritt: bestes Ergebnis bleibt, Zusammenführen, Speichern', () => {
 
 const withStars = list => list.reduce((p, stars, i) => (stars ? recordResult(p, i + 1, { stars, moves: 5, now: 1 }) : p), emptyProgress());
 
-test('Kapitel: 10 Level, Schranke 18★ je Kapitel', () => {
-  assert.equal(CHAPTER_SIZE, 10); assert.equal(STARS_PER_CHAPTER_GATE, 18);
+test('Kapitel (launch-28): 10 Level, steigende Schranken 21/22/…/25★ je Kapitel', () => {
+  assert.equal(CHAPTER_SIZE, 10); assert.equal(STARS_PER_CHAPTER_GATE, 18);   // historisch (bis launch-27)
   assert.deepEqual([1, 10, 11, 20, 21, 25, 100].map(chapterOf), [1, 1, 2, 2, 3, 3, 10]);
-  assert.deepEqual([1, 2, 3, 10].map(starGate), [0, 18, 36, 162]);
+  assert.deepEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(starGate), [0, 21, 43, 65, 88, 111, 135, 159, 184, 209]);
+  for (let k = 3; k <= 10; k++) assert.ok(starGate(k) / (k - 1) > starGate(k - 1) / Math.max(1, k - 2) - 1e-9, `Kapitel ${k}: Schnitt steigt`);
+  for (let k = 2; k <= 10; k++) assert.ok(starGate(k) > 2 * (k - 1) * CHAPTER_SIZE, `Kapitel ${k}: überall 2★ reicht nicht`);
 });
 
 test('Freischalten: der Reihe nach', () => {
@@ -184,21 +201,25 @@ test('Freischalten: der Reihe nach', () => {
   assert.equal(nextLevel(emptyProgress(), 25), 1);
 });
 
-test('Freischalten: Sterne-Schranke am Kapitelanfang', () => {
-  const low = withStars(Array(10).fill(1));                 // 10★ < 18★
-  assert.deepEqual(lockReason(low, 11), { reason: 'stars', need: 18, have: 10, chapter: 2 });
+test('Freischalten (launch-28): Sterne-Schranke am Kapitelanfang; offene Kapitel bleiben offen', () => {
+  const low = withStars(Array(10).fill(2));                 // 20★ < 21★: überall 2★ reicht nicht
+  assert.deepEqual(lockReason(low, 11), { reason: 'stars', need: 21, have: 20, chapter: 2 });
   assert.equal(nextLevel(low, 25), 10);                     // alles geschafft, Kapitel 2 noch zu
-  const ok = withStars([2, 2, 2, 2, 2, 2, 2, 2, 1, 1]);     // 18★, z. B. alles mit Hilfsmitteln (max. 2★)
+  const ok = withStars([3, 2, 2, 2, 2, 2, 2, 2, 2, 2]);     // 21★: mindestens ein Level ohne Hilfe
   assert.ok(isUnlocked(ok, 11));
   assert.ok(!isUnlocked(ok, 12));                           // innerhalb des Kapitels weiter der Reihe nach
-  const ch3 = withStars([...Array(10).fill(2), ...Array(9).fill(2), 1]); // 39★ ≥ 36★
+  const ch3 = withStars([3, 3, 3, ...Array(17).fill(2)]);   // 43★
   assert.ok(isUnlocked(ch3, 21));
-  const ch3low = withStars([...Array(10).fill(2), ...Array(10).fill(1)]); // 30★ < 36★
+  const ch3low = withStars([...Array(10).fill(3), ...Array(10).fill(1)]); // 40★ < 43★
   assert.equal(lockReason(ch3low, 21).reason, 'stars');
   assert.ok(isUnlocked(ch3low, 20));                        // gesperrt wird nur der Kapitelanfang
+  // schon gespielt bzw. vor launch-28 offen (openChapters): keine neue Sperre
+  assert.equal(lockReason({ ...ch3low, openChapters: [3] }, 21), null);
+  const played = withStars([...Array(10).fill(1), 1]);      // Level 11 schon gespielt, 11★
+  assert.equal(lockReason(played, 11), null);
 });
 
-import { FREE_TOOLS_PER_LEVEL, TOOL_STOCK, freeToolCharges, toolsAvailable, spendCharge, queueGifts, collectGift, addToStock } from '../game/campaign.mjs';
+import { FREE_TOOLS_PER_LEVEL, TOOL_STOCK, goldStock, spendGold, ADVENTURE_TOOLS, LEVEL_GIFTS, queueGifts, collectGift, addToStock } from '../game/campaign.mjs';
 import { SHOP_CONFIG, shopProducts, formatPrice, purchase, activeStore, registerNativeStore } from '../game/shop.mjs';
 import { useRocket, useWand, wandChoices, wandCap, progressVector, emptyInventory, loadInventory, saveInventory, spendTool, grantGifts, toolName } from '../game/campaign.mjs';
 import { findHint, hintState } from '../game/hint-solver.mjs';
@@ -229,26 +250,33 @@ test('Inventar: laden, speichern, verbrauchen; alter Hammer wird Rakete', () => 
   assert.equal(toolName('rocket'), 'Rakete'); assert.equal(toolName('wand'), 'Zauberstab'); assert.equal(toolName('hint'), 'Hinweis');
 });
 
-test('Geschenke (launch-14): nur Level 3/6/10/20, keine Sterne-Geschenke – jeweils nur einmal', () => {
+test('Gold-Geschenke (launch-28): nur nach Level 3, 10, 20, 30, 50, 75, 100 – je einmal, nur Rakete/+3', () => {
+  assert.deepEqual(LEVEL_GIFTS.map(([n]) => n), [3, 10, 20, 30, 50, 75, 100]);
+  assert.ok(LEVEL_GIFTS.every(([, ty]) => ADVENTURE_TOOLS.includes(ty)));
   let p = emptyProgress();
   for (let n = 1; n <= 9; n++) p = recordResult(p, n, { stars: 3, moves: 5, now: 1 });   // 27★
   let r = grantGifts(emptyInventory(), p);
-  assert.deepEqual(r.granted.map(g => g.id), ['level-3', 'level-6']);                      // trotz 27★ kein Sterne-Geschenk
-  assert.equal(r.inventory.hint, 1); assert.equal(r.inventory.wand, 1);
+  assert.deepEqual(r.granted.map(g => g.id), ['gold-3']);                                 // kein Sterne-Geschenk, kein Level 6 mehr
+  assert.equal(r.inventory.rocket, 1);
   p = recordResult(p, 10, { stars: 3, moves: 5, now: 1 });
   r = grantGifts(r.inventory, p);
-  assert.deepEqual(r.granted.map(g => g.id), ['level-10']);
+  assert.deepEqual(r.granted.map(g => g.id), ['gold-10']);
   assert.equal(r.inventory.extraMoves, 1);
-  assert.deepEqual(grantGifts(r.inventory, p).granted, []);                               // nicht doppelt
-  for (let n = 11; n <= 25; n++) p = recordResult(p, n, { stars: 3, moves: 4, now: 2 });  // 75★
+  assert.deepEqual(grantGifts(r.inventory, p).granted, []);                               // nicht doppelt (auch nicht beim Wiederholen)
+  p = recordResult(p, 10, { stars: 3, moves: 4, now: 3 });
+  assert.deepEqual(grantGifts(r.inventory, p).granted, []);
+  for (let n = 11; n <= 25; n++) p = recordResult(p, n, { stars: 3, moves: 4, now: 2 });
   r = grantGifts(r.inventory, p);
-  assert.deepEqual(r.granted, [{ id: 'level-20', type: 'rocket' }]);
-  assert.ok(!r.inventory.gifts.some(id => id.startsWith('stars-')));
-  // Alter Spielstand: vergebene Geschenke bleiben vergeben, offene Sterne-Geschenke fallen weg
-  const migrated = loadInventory({ getItem: () => '{"version":3,"extraMoves":0,"rocket":0,"hint":0,"wand":0,"gifts":["level-10","stars-10"],"pending":[{"id":"stars-10","type":"wand"},{"id":"level-10","type":"extraMoves"}]}' });
-  assert.deepEqual(migrated.pending, [{ id: 'level-10', type: 'extraMoves' }]);
-  assert.deepEqual(grantGifts(migrated, p).granted.map(g => g.id), ['level-3', 'level-6', 'level-20']);
-  assert.equal(giftLevel('level-20'), 20); assert.equal(giftLevel('stars-10'), null);
+  assert.deepEqual(r.granted, [{ id: 'gold-20', type: 'rocket' }]);
+  // alte Merker (level-3 …) blockieren die neuen Gold-Geschenke nicht
+  const old = loadInventory({ getItem: () => '{"version":3,"extraMoves":0,"rocket":0,"hint":0,"wand":0,"gifts":["level-3","level-6","level-10"],"pending":[]}' });
+  assert.deepEqual(grantGifts(old, p).granted.map(g => g.id), ['gold-3', 'gold-10', 'gold-20']);
+  assert.equal(giftLevel('gold-20'), 20); assert.equal(giftLevel('level-20'), 20); assert.equal(giftLevel('stars-10'), null);
+  // Gold-Vorrat: nur Rakete/+3, Verbrauch einzeln
+  assert.deepEqual(goldStock({ ...emptyInventory(), rocket: 2, hint: 5 }), { extraMoves: 0, rocket: 2 });
+  assert.equal(spendGold({ ...emptyInventory(), rocket: 1 }, 'rocket').rocket, 0);
+  assert.equal(spendGold({ ...emptyInventory(), hint: 1 }, 'hint'), null);
+  assert.equal(spendGold(emptyInventory(), 'rocket'), null);
 });
 
 test('Zauberstab: Zahlen 1 … Zielwert, nicht der aktuelle Wert, kein Sofort-Sieg; danach normale Fusion', () => {
@@ -314,48 +342,37 @@ test('Hinweis-Suche: kürzester Weg wie der Solver, Züge gewinnen wirklich; kei
   assert.equal(tight.exact, false);
 });
 
-test('Ladungen je Versuch (launch-11) + Vorrat (launch-12): zuerst gratis, dann Vorrat', () => {
-  const free = freeToolCharges(1);
-  assert.deepEqual(free, { extraMoves: 1, rocket: 1, hint: 1, wand: 1 });
-  const stock = { ...emptyInventory(), rocket: 3, hint: 2 };
-  assert.deepEqual(toolsAvailable(stock, free, true), { extraMoves: 1, rocket: 4, hint: 3, wand: 1 });
-  const a = spendCharge(stock, free, 'rocket', true);
-  assert.equal(a.fromFree, true); assert.equal(a.inventory, stock); assert.equal(a.free.rocket, 0);
-  const b = spendCharge(a.inventory, a.free, 'rocket', true);
-  assert.equal(b.fromFree, false); assert.equal(b.inventory.rocket, 2);
-  assert.equal(spendCharge(stock, a.free, 'wand') !== null, true);
-  const w = spendCharge(stock, { ...free, wand: 0 }, 'wand');
-  assert.equal(w, null);                                        // weder gratis noch Vorrat
-  assert.equal(spendCharge(stock, free, 'hammer'), null);
-  assert.deepEqual(freeToolCharges(1), free);                   // neuer Versuch = wieder volle Ladungen
-  // Schalter: ohne Vorrat zählt nur gratis
-  assert.deepEqual(toolsAvailable(stock, free, false), { extraMoves: 1, rocket: 1, hint: 1, wand: 1 });
-  assert.equal(spendCharge(stock, a.free, 'rocket', false), null);
-  // ohne Gratis-Ladungen: altes Verhalten
-  assert.deepEqual(toolsAvailable(stock, freeToolCharges(0), true), { extraMoves: 0, rocket: 3, hint: 2, wand: 0 });
+test('launch-28: Hilfsmittel unbegrenzt – keine Ladungen mehr, nur +3 Züge und Rakete im Abenteuer', () => {
+  assert.equal(FREE_TOOLS_PER_LEVEL, Infinity);
+  assert.equal(TOOL_STOCK, false);
+  assert.deepEqual([...ADVENTURE_TOOLS], ['extraMoves', 'rocket']);
+  const run = createLevelRun(base({ moves: 3 }));
+  for (let i = 0; i < 4; i++) { run.board[0][0] ||= { value: 1 }; assert.ok(useRocket(run, 0, 0)); }
+  assert.equal(run.toolsUsed.length, 4);                          // beliebig oft
+  assert.equal(starsFor(run.level, 1, true, { toolsUsed: run.toolsUsed.length }), 1);
 });
 
-test('Geschenke als offene Pakete: einreihen, einzeln einsammeln, gespeichert, nie doppelt', () => {
+test('Gold-Geschenke als offene Pakete: einreihen, einzeln einsammeln, gespeichert, nie doppelt', () => {
   let p = emptyProgress();
-  for (let n = 1; n <= 10; n++) p = recordResult(p, n, { stars: 1, moves: 5, now: 1 });   // 10★, Level 3/6/10
+  for (let n = 1; n <= 10; n++) p = recordResult(p, n, { stars: 1, moves: 5, now: 1 });   // Level 3 und 10
   let q = queueGifts(emptyInventory(), p);
-  assert.deepEqual(q.queued.map(g => g.id), ['level-3', 'level-6', 'level-10']);
+  assert.deepEqual(q.queued.map(g => g.id), ['gold-3', 'gold-10']);
   assert.deepEqual(q.inventory.pending, q.queued);
-  assert.equal(q.inventory.hint, 0);                                                      // noch nicht gutgeschrieben
+  assert.equal(q.inventory.rocket, 0);                                                    // noch nicht gutgeschrieben
   assert.deepEqual(queueGifts(q.inventory, p).queued, []);                                // nicht doppelt
   const mem = new Map(); const storage = { getItem: k => mem.get(k) ?? null, setItem: (k, v) => mem.set(k, v) };
   saveInventory(q.inventory, storage);
   let inv = loadInventory(storage);
-  assert.deepEqual(inv.pending.map(g => g.id), ['level-3', 'level-6', 'level-10']);   // bleibt bis zum Einsammeln
+  assert.deepEqual(inv.pending.map(g => g.id), ['gold-3', 'gold-10']);   // bleibt bis zum Einsammeln
   const c = collectGift(inv);
-  assert.deepEqual(c.gift, { id: 'level-3', type: 'hint' });
-  assert.equal(c.inventory.hint, 1); assert.equal(c.inventory.pending.length, 2);
-  const d = collectGift(c.inventory, 'level-10');
-  assert.equal(d.inventory.extraMoves, 1); assert.deepEqual(d.inventory.pending.map(g => g.id), ['level-6']);
+  assert.deepEqual(c.gift, { id: 'gold-3', type: 'rocket' });
+  assert.equal(c.inventory.rocket, 1); assert.equal(c.inventory.pending.length, 1);
+  const d = collectGift(c.inventory, 'gold-10');
+  assert.equal(d.inventory.extraMoves, 1); assert.deepEqual(d.inventory.pending, []);
   assert.equal(collectGift(d.inventory, 'nope'), null);
   assert.equal(collectGift(emptyInventory()), null);
+  assert.equal(collectGift({ ...emptyInventory(), pending: [{ id: 'level-6', type: 'wand' }] }), null);   // alte Typen nicht mehr
   assert.deepEqual(queueGifts(d.inventory, p).queued, []);                                // eingesammelt = vergeben
-  // kaputte Einträge werden beim Laden verworfen
   const bad = loadInventory({ getItem: () => '{"version":3,"gifts":[],"pending":[{"id":"x","type":"hammer"},{"id":"y","type":"wand"},null]}' });
   assert.deepEqual(bad.pending, [{ id: 'y', type: 'wand' }]);
   assert.deepEqual(addToStock(emptyInventory(), { rocket: 3, hammer: 2, wand: -1 }).rocket, 3);
@@ -395,18 +412,13 @@ import { AD_TOOLS, TOOL_GIFTS, giftLevel, resetStockOnce, TOOL_RESET_KEY, loadIn
 import { loadLog, saveLog, startAttempt, logEvent, endAttempt, reopenAttempt, summarize, exportLog, emptyLog, TOOL_LOG_KEY } from '../game/tool-log.mjs';
 const memStore = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k), m }; };
 
-test('launch-26: je Versuch 1× jedes Hilfsmittel, kein Vorrat, keine Vorrats-Werbung, keine Geschenke', () => {
-  assert.equal(FREE_TOOLS_PER_LEVEL, 1);
+test('launch-28: Hilfsmittel unbegrenzt, Gold-Geschenke an, kein Vorrats-Shop, keine Vorrats-Werbung', () => {
+  assert.equal(FREE_TOOLS_PER_LEVEL, Infinity);
   assert.equal(TOOL_STOCK, false);
   assert.equal(AD_TOOLS, false);
-  assert.equal(TOOL_GIFTS, false);
-  assert.deepEqual(freeToolCharges(), { extraMoves: 1, rocket: 1, hint: 1, wand: 1 });
+  assert.equal(TOOL_GIFTS, true);
   const leftover = { ...emptyInventory(), rocket: 9, hint: 9, wand: 9, extraMoves: 9 };
-  assert.deepEqual(toolsAvailable(leftover, freeToolCharges()), { extraMoves: 1, rocket: 1, hint: 1, wand: 1 });
-  const a = spendCharge(leftover, freeToolCharges(), 'hint');
-  assert.equal(a.fromFree, true);
-  assert.equal(a.inventory, leftover); // Vorrat wird nicht angefasst
-  assert.equal(spendCharge(leftover, a.free, 'hint'), null); // keine zweite Ladung
+  assert.deepEqual(goldStock(leftover), { extraMoves: 9, rocket: 9 });   // Vorrat-Felder tragen jetzt den Gold-Vorrat
 });
 
 test('launch-13: Vorrat wird einmalig geleert (auch offene Geschenke), vergebene Geschenk-ids bleiben', () => {
@@ -510,7 +522,7 @@ test('launch-14: Abenteuer einmalig zurückgesetzt (Fortschritt + Geschenke), Re
   assert.equal(isUnl14(r.progress, 1), true); assert.equal(isUnl14(r.progress, 2), false);
   // nach Reset: Level 3 geschafft → Geschenk kommt wieder
   const p3 = { ...emptyP14(), levels: { 1: { stars: 3 }, 2: { stars: 3 }, 3: { stars: 3 } } };
-  assert.deepEqual(queueGifts(li, p3).queued, [{ id: 'level-3', type: 'hint' }]);
+  assert.deepEqual(queueGifts(li, p3).queued, [{ id: 'gold-3', type: 'rocket' }]);   // launch-28: Gold-Geschenk
   // Neuladen: kein zweiter Reset
   st.setItem(PK14, JSON.stringify(p3));
   const again = resetCampaignOnce(loadP14(st), li, st);
@@ -602,17 +614,17 @@ test('launch-15: Sterne-Schwellen für Werkzeug-Level', () => {
   assert.deepEqual(toolStars(5, 5, 'hint'), { three: 5, two: 5 });
 });
 
-test('launch-15: 100 Level = 10 Kapitel; Schranke 18★ × (Kapitel − 1) bis Level 91', () => {
+test('launch-28: 100 Level = 10 Kapitel; Schranke 209★ bis Level 91 – überall 2★ reicht nicht mehr', () => {
   assert.equal(chapterOf(100), 10);
   assert.equal(chapterOf(91), 10);
   assert.equal(chapterOf(90), 9);
-  assert.equal(starGate(10), 162);
+  assert.equal(starGate(10), 209);
   const p = emptyProgress();
-  for (let n = 1; n <= 90; n++) p.levels[String(n)] = { stars: 2, moves: 5, at: 0 };   // überall 2★ reicht
+  for (let n = 1; n <= 90; n++) p.levels[String(n)] = { stars: 2, moves: 5, at: 0 };
+  assert.deepEqual(lockReason(p, 91), { reason: 'stars', need: 209, have: 180, chapter: 10 });
+  for (let n = 1; n <= 29; n++) p.levels[String(n)].stars = 3;                          // 209★
   assert.equal(lockReason(p, 91), null);
   assert.equal(nextLevel(p, 100), 91);
-  p.levels['90'].stars = 1; for (let n = 1; n <= 19; n++) p.levels[String(n)].stars = 1;
-  assert.deepEqual(lockReason(p, 91), { reason: 'stars', need: 162, have: 160, chapter: 10 });
 });
 
 test('launch-18: Sterne ab Level 11 einmalig zurücksetzen, 1–10 und launch-14-Merker bleiben', () => {
@@ -642,7 +654,6 @@ test('launch-27: nur Sterne der umgearbeiteten Level einmalig löschen, Rest und
   const a = resetCurveStarsOnce(p0, st);
   assert.equal(a.reset, true);
   assert.equal(CURVE_STARS_RESET, 'launch-27');
-  assert.equal(PROGRESS_EPOCH, 'launch-27');
   assert.equal(st.getItem(CURVE_STARS_RESET_KEY), 'launch-27');
   for (const id of CURVE_STARS_RESET_IDS) assert.equal(a.progress.levels[String(id)], undefined, `L${id} zurückgesetzt`);
   for (const id of [1, 2, 3, 4, 5, 10, 11, 25, 50, 90, 99]) {
@@ -652,6 +663,34 @@ test('launch-27: nur Sterne der umgearbeiteten Level einmalig löschen, Rest und
   const b = resetCurveStarsOnce(a.progress, st);
   assert.equal(b.reset, false);
   assert.equal(Object.keys(b.progress.levels).length, 100 - CURVE_STARS_RESET_IDS.length);
+});
+
+test('launch-28: Regel-Umstellung – Sterne neu bewertet (nie gelöscht, mind. 1★), offene Kapitel bleiben offen, alter Vorrat weg', () => {
+  const st = new Map(); st.getItem = k => (st.has(k) ? st.get(k) : null); st.setItem = (k, v) => st.set(k, v);
+  assert.equal(PROGRESS_EPOCH, 'launch-28');
+  const p0 = emptyProgress();
+  for (let n = 1; n <= 30; n++) p0.levels[String(n)] = { stars: 2, moves: 9, at: 0 };   // 60★: alt Kapitel 2–4 offen (18/36/54)
+  p0.levels['12'] = { stars: 3, moves: 6, at: 0 };                                      // neu: 3★ erst bei ≤ 5 Zügen
+  p0.levels['13'] = { stars: 3, moves: 6, at: 0 };                                      // neu: 3★ bei ≤ 6 → bleibt
+  const inv = { ...emptyInventory(), rocket: 4, hint: 2, wand: 1, extraMoves: 3, gifts: ['level-3', 'gold-3'], pending: [{ id: 'level-6', type: 'wand' }, { id: 'gold-10', type: 'extraMoves' }] };
+  const thresholds = { 12: [5, 8], 13: [6, 9], 20: [3, 5] };
+  const m = migrateRules28Once(p0, inv, st, { thresholds });
+  assert.equal(m.migrated, true);
+  assert.equal(Object.keys(m.progress.levels).length, 30);                              // nichts gelöscht
+  assert.equal(m.progress.levels['12'].stars, 2);
+  assert.equal(m.progress.levels['13'].stars, 3);
+  assert.equal(m.progress.levels['20'].stars, 1);                                       // 9 Züge > 2★-Schwelle 5 → 1★, nie 0
+  assert.ok(Object.values(m.progress.levels).every(l => l.stars >= 1));
+  assert.deepEqual([...m.progress.openChapters].sort((x, y) => x - y), [2, 3, 4]);
+  assert.equal(lockReason(m.progress, 31), null);                                       // trotz neuer Schranke (65★) offen
+  assert.deepEqual({ ...goldStock(m.inventory) }, { extraMoves: 0, rocket: 0 });
+  assert.equal(m.inventory.hint, 0); assert.equal(m.inventory.wand, 0);
+  assert.deepEqual(m.inventory.gifts, ['level-3', 'gold-3']);
+  assert.deepEqual(m.inventory.pending, [{ id: 'gold-10', type: 'extraMoves' }]);
+  const again = migrateRules28Once(m.progress, m.inventory, st, { thresholds });
+  assert.equal(again.migrated, false);
+  // Zusammenführen behält offene Kapitel beider Seiten
+  assert.deepEqual(mergeProgress({ ...emptyProgress(), openChapters: [2] }, { ...emptyProgress(), openChapters: [3] }).openChapters.sort(), [2, 3]);
 });
 
 // ---------------- launch-22/24: Tutorials, Reset, Freischaltung ----------------

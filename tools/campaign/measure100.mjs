@@ -11,6 +11,7 @@ import { targetD, roleOf, moveWindow } from './plan100.mjs';
 
 const root = new URL('../../', import.meta.url);
 const levels = JSON.parse(readFileSync(new URL('levels/levels-001-100.json', root), 'utf8')).levels;
+const rowsOut = process.argv.includes('--rows') ? process.argv[process.argv.indexOf('--rows') + 1] : null;
 const only = process.argv.includes('--only') ? process.argv[process.argv.indexOf('--only') + 1].split(',').map(Number) : null;
 // Zwischenstand je Level (fortsetzbar): tools/campaign/.cache/measure100.jsonl
 const part = new URL('tools/campaign/.cache/measure100.jsonl', root);
@@ -42,6 +43,7 @@ for (const lv of levels) {
     D, felt, target: targetD(lv.id), cas: +M.cas(L).toFixed(3), good: +M.good(L).toFixed(3), casTool: casTool == null ? null : +casTool.toFixed(3) };
   out.push(row);
   if (!only) appendFileSync(part, JSON.stringify(row) + '\n');
+  else if (rowsOut) appendFileSync(rowsOut, JSON.stringify(row) + '\n');   // launch-28: --rows <datei> für merge28
   console.log([row.id, row.role, row.tool ?? '-', `D ${D}`, `gefühlt ${felt}`, `Soll ${row.target}`, `min ${row.min}`, `Limit ${L}`, `gel ${row.cas}`, `mit Wkz ${row.casTool ?? "-"}`].join('\t'));
 }
 if (!only) writeFileSync(new URL('tools/campaign/measure-001-100.json', root), JSON.stringify({ measuredWith: 'metricsFrom N=160 Modellspiele + 2500 Zufall, D-Formel der Planungsseite', levels: out }, null, 1) + '\n');

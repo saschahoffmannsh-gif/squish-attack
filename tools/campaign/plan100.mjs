@@ -11,8 +11,9 @@ const T = (type, a, b) => ({ tile: { type, value: a }, make: { type, value: a, c
 const base = i => 14 + 46 * (i - 1) / 99;
 const OFF = [-8, -4, 0, 4, 8, -8, 0, 4, 6, 16];
 const CH1 = [3, 6, 10, 13, 12, 15, 20, 22, 22, 28];
-export const TOOL_LEVELS = { 15: 'extraMoves', 25: 'wand', 35: 'rocket', 45: 'hint', 49: 'extraMoves', 50: 'wand', 55: 'rocket', 59: 'hint', 65: 'extraMoves',
-  69: 'wand', 75: 'rocket', 79: 'hint', 85: 'extraMoves', 89: 'wand', 95: 'rocket', 99: 'hint', 100: 'extraMoves' };
+// launch-28: Hinweis/Zauberstab entfernt – ihre Spitzen sind jetzt „+3 Züge“-Spitzen (tools/campaign/spikes28.mjs).
+export const TOOL_LEVELS = { 15: 'extraMoves', 25: 'extraMoves', 35: 'rocket', 45: 'extraMoves', 49: 'extraMoves', 50: 'extraMoves', 55: 'rocket', 59: 'extraMoves', 65: 'extraMoves',
+  69: 'extraMoves', 75: 'rocket', 79: 'extraMoves', 85: 'extraMoves', 89: 'extraMoves', 95: 'rocket', 99: 'extraMoves', 100: 'extraMoves' };
 export const BOSSES = [50, 100];
 export function targetD(i) {
   const ch = Math.ceil(i / 10), p = (i - 1) % 10 + 1;

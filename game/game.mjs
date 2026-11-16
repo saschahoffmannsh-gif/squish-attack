@@ -1,39 +1,39 @@
-import {apiFetch,hasSaveToken} from './api.mjs?v=launch-27';
-import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-27';
+import {apiFetch,hasSaveToken} from './api.mjs?v=launch-28';
+import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-28';
 import { nextSpawn, spawnProfile } from './balance.mjs';
-import {canContinueRun} from './run-availability.mjs?v=launch-27';
-import { createMergeEffects } from './merge-effects.mjs?v=launch-27';
-import { createGameGraphics } from './graphics-adapter.mjs?v=launch-27';
-import { installDeviceMotion } from './device-motion.mjs?v=launch-27';
-import { createGameSound } from './sound.mjs?v=launch-27';
+import {canContinueRun} from './run-availability.mjs?v=launch-28';
+import { createMergeEffects } from './merge-effects.mjs?v=launch-28';
+import { createGameGraphics } from './graphics-adapter.mjs?v=launch-28';
+import { installDeviceMotion } from './device-motion.mjs?v=launch-28';
+import { createGameSound } from './sound.mjs?v=launch-28';
 import { installSettings } from './settings.mjs?v=woodland-menu-1';
-import { createDuelClient } from './duel-client.mjs?v=launch-27';
+import { createDuelClient } from './duel-client.mjs?v=launch-28';
 import {installFullscreen} from './fullscreen.mjs?v=timed-duel-1';
-import {createHomeMenu} from './home-menu.mjs?v=launch-27';
-import {createConfetti} from './confetti.mjs?v=launch-27';
-import {createHaptics} from './haptics.mjs?v=launch-27';
-import * as native from './native.mjs?v=launch-27';
+import {createHomeMenu} from './home-menu.mjs?v=launch-28';
+import {createConfetti} from './confetti.mjs?v=launch-28';
+import {createHaptics} from './haptics.mjs?v=launch-28';
+import * as native from './native.mjs?v=launch-28';
 import {planMergeRipple} from './merge-ripple.mjs?v=swarm-fx-3';
-import * as Camp from './campaign.mjs?v=launch-27';
-import {createCampaignUI} from './campaign-ui.mjs?v=launch-27';
-import {createToolFx} from './tool-fx.mjs?v=launch-27';
-import {createGhostFinger} from './ghost-finger.mjs?v=launch-27';
-import {hintState,findHint} from './hint-solver.mjs?v=launch-27';
-import {comicColors} from './comic-style.mjs?v=launch-27';
-import * as Shop from './shop.mjs?v=launch-27';
-import {createShopUI} from './shop-ui.mjs?v=launch-27';
-import {createGiftFx} from './gift-fx.mjs?v=launch-27';
-import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-27';
-import {createAdUI} from './ad-ui.mjs?v=launch-27';
-import {hasNativeAds,showInterstitial} from './native-ads.mjs?v=launch-27';
-import {createAdPacing} from './ad-pacing.mjs?v=launch-27';
-import {ENDLESS_TOOLS,endlessToolName,loadEndlessInv,saveEndlessInv,changeEndlessInv,createEndlessToolBar} from './endless-tool.mjs?v=launch-27';
-import {createStatsUI} from './stats-ui.mjs?v=launch-27';
-import * as ToolLog from './tool-log.mjs?v=launch-27';
-import {createProgressSync} from './progress-sync.mjs?v=launch-27';
-import {epochOf} from './progress-merge.mjs?v=launch-27';
-import {isAdFree,canOfferAdFree,canRestoreAdFree,purchaseAdFree,restoreAdFree,adFreePriceLabel,onAdFreeChange} from './ad-free.mjs?v=launch-27';
-import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-27';
+import * as Camp from './campaign.mjs?v=launch-28';
+import {createCampaignUI} from './campaign-ui.mjs?v=launch-28';
+import {createToolFx} from './tool-fx.mjs?v=launch-28';
+import {createGhostFinger} from './ghost-finger.mjs?v=launch-28';
+import * as Shop from './shop.mjs?v=launch-28';
+import {createShopUI} from './shop-ui.mjs?v=launch-28';
+import {createGiftFx} from './gift-fx.mjs?v=launch-28';
+import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-28';
+import {comicColors} from './comic-style.mjs?v=launch-28';
+import {createAdUI} from './ad-ui.mjs?v=launch-28';
+import {hasNativeAds,showInterstitial} from './native-ads.mjs?v=launch-28';
+import {ENDLESS_TOOLS,endlessToolName,loadEndlessInv,saveEndlessInv,changeEndlessInv,createEndlessToolBar} from './endless-tool.mjs?v=launch-28';
+import {createStatsUI} from './stats-ui.mjs?v=launch-28';
+import * as ToolLog from './tool-log.mjs?v=launch-28';
+import {createProgressSync} from './progress-sync.mjs?v=launch-28';
+import {epochOf} from './progress-merge.mjs?v=launch-28';
+import {createAdPacing} from './ad-pacing.mjs?v=launch-28';
+import {isAdFree,canOfferAdFree,canRestoreAdFree,purchaseAdFree,restoreAdFree,adFreePriceLabel,onAdFreeChange} from './ad-free.mjs?v=launch-28';
+import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-28';
+import {createExplainer,miniTile} from './explain.mjs?v=launch-28';
 const playfield = document.getElementById('playfield');
 const gameElement = document.querySelector('.game');
 const visual = createGameGraphics(document.getElementById('graphics'));
@@ -121,6 +121,7 @@ const worldMenu=createHomeMenu({sound,reduceMotion,hooks:{
   duel,
   setMode:mode=>{try{localStorage.setItem(MODE_KEY,mode);}catch{}},
   icons:{gift:GIFT_SVG,shop:SHOP_SVG},
+  explain:{topics:()=>explainer.topics(),show:topic=>explainer.show(topic,topic==='gates'?gatesCtx():null)},   // launch-28: Regeln-Bildschirm
   consumeUnlockCelebration:()=>{
     if(!Camp.modesUnlocked(campaignProgress))return false;
     try{if(localStorage.getItem(Camp.MODES_UNLOCK_SEEN_KEY)==='1')return false;localStorage.setItem(Camp.MODES_UNLOCK_SEEN_KEY,'1');}
@@ -147,9 +148,9 @@ const newTile = value => ({ id: nextId++, value });
 // in localStorage unangetastet: während der Kampagne wird nichts davon gespeichert,
 // beim Verlassen wird er wieder geladen.
 const MODE_KEY='squish-mode-v1';
-const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-27',import.meta.url);
+const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-28',import.meta.url);
 // launch-16: Test-Level für die neuen Squishes (Eis, Ketten, Bombe) – eigener kleiner Satz, kein Fortschritt/Protokoll.
-const LAB_URL=new URL('../levels/levels-lab.json?v=launch-27',import.meta.url);
+const LAB_URL=new URL('../levels/levels-lab.json?v=launch-28',import.meta.url);
 let labMode=false,labLevels=null,labLoading=null;
 function loadLab(){
   return labLoading||=fetch(LAB_URL,{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('lab '+r.status);return r.json();})
@@ -172,7 +173,7 @@ function levelNote(){
   return t('campaign.note.plain',{n:camp.n,goals});
 }
 function storedMode(){try{return localStorage.getItem(MODE_KEY)||'';}catch{return '';}}
-let campaignMode=false,camp=null,levels=null,levelsLoading=null,stashedBestTile=null,needsEntry=false,armedTool=null,hintBusy=false,wandPicker=null;
+let campaignMode=false,camp=null,levels=null,levelsLoading=null,stashedBestTile=null,needsEntry=false,armedTool=null;
 let campaignProgress=Camp.loadProgress(),inventory=Camp.loadInventory();
 // launch-13 (Testphase): Vorrat einmalig leeren; Werkzeug-Protokoll nur lokal (tool-log.mjs).
 if(Camp.TOOL_STOCK_RESET)inventory=Camp.resetStockOnce(inventory).inventory;
@@ -184,6 +185,10 @@ if(Camp.STARS_RESET){const s=Camp.resetChangedStarsOnce(campaignProgress);campai
 // Endlos-Spielstand, Rekord und Endlos-Vorrat bleiben. Epoche 22, damit die Cloud den alten Stand nicht zurückbringt.
 if(Camp.TUTORIAL_RESET){const t=Camp.resetAdventureForTutorialsOnce(campaignProgress,inventory);campaignProgress=t.progress;inventory=t.inventory;}
 if(Camp.CURVE_STARS_RESET){const c=Camp.resetCurveStarsOnce(campaignProgress);campaignProgress=c.progress;}
+// launch-28: neue Regeln (Hilfen kosten Sterne, strengere Kapitel-Hürden). Sterne werden einmalig nach den neuen
+// Schwellen neu bewertet – nie gelöscht, gelöste Level bleiben gelöst, schon offene Kapitel bleiben offen
+// (openChapters). Alter Werkzeug-Vorrat entfällt (Hilfen sind jetzt unbegrenzt), Gold-Geschenke bleiben. Epoche 28.
+{const m=Camp.migrateRules28Once(campaignProgress,inventory);if(m.migrated){campaignProgress=m.progress;inventory=m.inventory;Camp.saveProgress(campaignProgress);}}
 // launch-19: Abenteuer-Fortschritt + Vorrat zusätzlich in der Cloud sichern (anonym, gleicher Geräte-Token).
 // Offline zuerst: lokal bleibt die Wahrheit, der Abgleich läuft still im Hintergrund (progress-sync.mjs).
 // App: eigener Endlos-Werkzeug-Vorrat (endless-tool.mjs), mit in der Cloud gesichert (Feld einv).
@@ -195,7 +200,7 @@ const progressSync=createProgressSync({fetch:apiFetch,epoch:epochOf(Camp.PROGRES
     try{renderCampaign();void worldMenu.refresh?.();}catch{}}});
 const cloudSync=()=>{if(!labMode)progressSync.schedule();};
 progressSync.attach(window);
-const BUILD_LABEL='launch-27';
+const BUILD_LABEL='launch-28';
 let toolLog=ToolLog.loadLog(),logAttempt=null;
 // Versuche, die beim letzten Mal offen blieben (Seite geschlossen), gelten als abgebrochen.
 if(toolLog.attempts.some(a=>!a.outcome)){for(const a of toolLog.attempts)if(!a.outcome)ToolLog.endAttempt(toolLog,a.id,{outcome:'quit',moves:a.moves});ToolLog.saveLog(toolLog);}
@@ -212,38 +217,41 @@ function campaignSummary(){
   if(lock?.reason==='stars')caption=t('campaign.chapterNeed',{chapter:lock.chapter,need:lock.need});
   else if(!open&&levels)caption=t('campaign.allDone');
   else caption=t('campaign.chapterCaption',{chapter:Camp.chapterOf(next),n:next});
-  return {next,ready:!!levels,caption,total,count,inventory:Camp.TOOL_STOCK?inventory:null,pendingGifts:Camp.TOOL_STOCK&&Camp.TOOL_GIFTS?inventory.pending.length:0,shop:shopEnabled(),allDone:!open&&!!levels,modesUnlocked:Camp.modesUnlocked(campaignProgress)};
+  return {next,ready:!!levels,caption,total,count,inventory:Camp.goldStock(inventory),gold:true,pendingGifts:Camp.TOOL_GIFTS?inventory.pending.length:0,shop:shopEnabled(),allDone:!open&&!!levels,modesUnlocked:Camp.modesUnlocked(campaignProgress)};
 }
 const campaignUI=createCampaignUI({
   onPlay:n=>{void worldMenu.play({campaign:n});},
   onNext:()=>{if(camp)void playLevel(camp.n+1);},
   onRetry:()=>{if(camp)void playLevel(camp.n);},
-  onExtra:()=>{void withToolAd('extraMoves',()=>useExtraMoves(),'result');},
+  onExtra:()=>{void useExtraMoves('result');},
   onMenu:()=>void backToMenu(),
-  onTool:type=>{if(type==='extraMoves')void withToolAd('extraMoves',()=>useExtraMoves());else if(type==='hint')void withToolAd('hint',()=>void useHint());else toggleTool(type);},
+  onTool:type=>{if(type==='extraMoves')void useExtraMoves();else toggleTool(type);},
   onGift:()=>void openGift(),
   onStar:i=>{sound.play('star',i+1);haptics.pulse(i===2?'big':'merge');},
   reduceMotion,
 });
 onLangChange(()=>{if(labMode&&camp&&campaignMode)campaignUI.renderHud(camp.run,camp.n,labHudLabel());});
-const availableTools=()=>Camp.toolsAvailable(inventory,camp?.free);
+// launch-28: Hilfsmittel (+3 Züge, Rakete) beliebig oft. Gold-Geschenke werden zuerst verbraucht (ohne Werbung,
+// sternneutral); sonst kostet jeder Einsatz Sterne (toolStarCap) und – ohne Werbefrei – vorher einen Belohnungsclip.
+const goldNow=()=>Camp.goldStock(inventory);
+const hasGold=type=>(inventory?.[type]|0)>0;
 function toolCapNote(run=camp?.run){
   const n=run?.toolsUsed.length|0;if(!n)return '';
-  const max=Camp.toolStarCap(n);
-  return max>0?t('note.toolCap',{n,max}):t('note.toolCapZero');
+  return t('note.toolCap',{n});
 }
-function announceToolCap(){const msg=toolCapNote();if(msg)showNote(msg,2800);}
-/** Ladung reservieren (zuerst gratis, dann Inventar). Gibt eine commit-Funktion zurück oder null. */
-function takeTool(type){
-  const s=camp&&Camp.spendCharge(inventory,camp.free,type);
-  if(!s)return null;
-  const c=camp,ctx=logCtx(campaignUI.resultOpen?'result':'level');   // Stand VOR dem Einsatz protokollieren
-  return ()=>{c.free=s.free;if(!s.fromFree){inventory=s.inventory;Camp.saveInventory(inventory);cloudSync();}logTool('use',type,ctx);};
+function announceToolCap(gold=false,type='rocket'){const msg=gold?t('note.goldUsed',{tool:Camp.toolName(type)}):toolCapNote();if(msg)showNote(msg,2800);}
+/** Einsatz verbuchen: Gold aus dem Vorrat nehmen (falls Gold), protokollieren. ctx = Stand VOR dem Einsatz. */
+function commitTool(type,gold,ctx){
+  if(gold){const g=Camp.spendGold(inventory,type);if(g){inventory=g;Camp.saveInventory(inventory);cloudSync();}}
+  logTool('use',type,{...ctx,gold:!!gold});
 }
+// Tutorial (Level 6, bis es einmal gelöst ist): erst ein Hilfsmittel ausprobieren – gratis, ohne Werbung.
+const TOOL_TUTORIAL_LEVEL=6;
+const tutorialToolPending=()=>!!(campaignMode&&camp?.tutorialTool&&!camp.run.toolsUsed.length&&!(camp.run.giftsUsed?.length));
+function tutorialToolDone(){if(camp?.tutorialTool){camp.tutorialTool=false;campaignUI.toolButton('rocket')?.classList.remove('is-tutor');campaignUI.toolButton('extraMoves')?.classList.remove('is-tutor');camp.tutorialDone=true;}}
 // ---------- Werbung (Dummy) + Werkzeug-Protokoll ----------
-// launch-26: Vorrats-Werbung (AD_TOOLS) bleibt aus. Der Einsatz eines Abenteuer-
-// Hilfsmittels verlangt einen Belohnungsclip, außer der Spieler hat Werbefrei.
-// Werbefrei ändert nicht das 1×-Limit je Versuch.
+// launch-28: Jeder Einsatz eines Abenteuer-Hilfsmittels verlangt einen Belohnungsclip, außer der Spieler
+// hat Werbefrei (App) oder setzt ein Gold-Geschenk ein. Im Web bleibt der Dummy-Clip als Testpfad.
 const adsEnabled=()=>Camp.AD_TOOLS;
 const refillMode=()=>adsEnabled()?'ad':shopEnabled()?'shop':null;
 const toolAdRequired=()=>campaignMode&&!!camp&&!labMode&&!isAdFree();
@@ -262,36 +270,58 @@ function endLogAttempt(outcome,extra={}){if(!logAttempt)return;ToolLog.endAttemp
 const adUI=createAdUI({sound,haptics,onWatch:type=>{
   const f=adFollow;adFollow=null;
   lastAd={type,where:f?.where||'tool'};
-  if(f?.where==='endless'){
-    adPacing.takeEndlessReward(ENDLESS_TOOLS);
-    endlessInv=changeEndlessInv(endlessInv,type,1);saveEndlessInv(endlessInv);cloudSync();
-    logTool('ad-endless',type,{where:'endless'});
-    renderEndlessTools();showNote(`+1 ${endlessToolName(type)} · unten links antippen zum Einsetzen`,2600);
-    return;
-  }
   logTool('ad',type,logCtx(f?.where||'tool'));
   if(f?.then)f.then();else renderCampaign();
 },onClose:()=>{const f=adFollow;adFollow=null;f?.cancel?.();renderCampaign();},
   onAdStart:()=>{adShowing=true;sound.pause();},onAdEnd:()=>{adShowing=false;if(!paused)sound.resume();}});
 // ---------- App-Werbung (App-Hülle; im Browser ohne Adapter: nichts davon) ----------
 const adPacing=createAdPacing({isAdFree});
+// launch-28: bebilderte Erklär-Fenster (Regeln, Hilfsmittel, Gold-Geschenke, Kapitel, Werbung).
+const explainer=createExplainer({sound,haptics});
+let wandPicker=null;   // nur Endlos-Zauberstab (App)
 let adShowing=false,adFollow=null,lastAd=null;
 async function playInterstitial(placement){
   adShowing=true;sound.pause();
   try{await showInterstitial({placement});}finally{adShowing=false;sound.resume();}
 }
 /** Endlos: nach einem fertigen Zug (Animationen durch, kein Game Over, kein Zug in der Warteschlange).
- *  Belohnung = 1 Endlos-Werkzeug (reihum Rakete/Zauberstab) im eigenen Endlos-Vorrat. Entfällt bei Werbefrei. */
+ *  launch-28: alle 10 Minuten aktiver Spielzeit eine normale Zwischenwerbung – ohne Belohnung. Entfällt bei Werbefrei. */
 function maybeEndlessOffer(){
   const due=adPacing.endlessMove();
-  if(!due||!hasNativeAds()||isAdFree()||adUI.isOpen||paused||busy||campaignMode||duelMode)return;
+  if(!due||!hasNativeAds()||isAdFree()||adUI.isOpen||adShowing||paused||busy||campaignMode||duelMode)return;
   adPacing.endlessOffered();
-  const type=adPacing.peekEndlessReward(ENDLESS_TOOLS);
-  adFollow={then:null,where:'endless'};
-  adUI.open(type,{placement:'endless',title:t('endless.offerTitle'),
-    desc:t(type==='rocket'?'endless.offerRocket':'endless.offerWand'),
-    foot:t('endless.offerFoot')});
+  logTool('ad-endless','interstitial',{where:'endless'});
+  void playInterstitial('endless');
 }
+/** launch-28: Endlos-Werkzeug je Meilenstein. Erreicht der höchste Squish der Runde eine neue Zehnerstufe
+ *  (10, 20, 30 …), gibt es je Stufe 1 Werkzeug (reihum Rakete/Zauberstab) in den Endlos-Vorrat. Der Rekord-
+ *  Squish der Runde wird mitgespeichert, daher zählt jede Stufe auch nach Neuladen nur einmal. */
+const ENDLESS_MILESTONE=10;
+function endlessMilestones(prev){
+  if(campaignMode||duelMode||!(prev>0))return [];
+  const a=Math.floor(prev/ENDLESS_MILESTONE),b=Math.floor(peak/ENDLESS_MILESTONE);
+  if(b<=a)return [];
+  const got=[];
+  for(let k=a+1;k<=b;k++){const ty=adPacing.takeEndlessReward(ENDLESS_TOOLS);endlessInv=changeEndlessInv(endlessInv,ty,1);got.push(ty);}
+  saveEndlessInv(endlessInv);cloudSync();renderEndlessTools();
+  logTool('milestone',got[0],{where:'endless',peak});
+  showNote(t('endless.milestone',{n:b*ENDLESS_MILESTONE,tool:got.map(endlessToolName).join(' + ')}),3400);
+  haptics.pulse('big');sound.play('gift');
+  void explainer.showOnce('endless');
+  return got;
+}
+explainer.register('endless',{
+  icon:()=>miniTile(10,{gold:true}),
+  title:()=>t('ex.endless.title'),
+  pic:()=>{
+    const row=document.createElement('div');row.className='ex-chips';
+    [10,20,30,40,50].forEach((n,i)=>{const c=document.createElement('span');c.className='ex-chip';c.textContent=String(n);
+      const sm=document.createElement('small');sm.textContent=endlessToolName(ENDLESS_TOOLS[i%ENDLESS_TOOLS.length]);c.append(sm);row.append(c);});
+    const note=document.createElement('p');note.className='ex-note';note.textContent=t('ex.endless.note');
+    return [row,note];
+  },
+  lines:()=>[t('ex.endless.l1'),t('ex.endless.l2'),t('ex.endless.l3')],
+},{after:'gates'});
 // ---------- Endlos-Werkzeuge (App): Rakete und Zauberstab direkt in der Endlos-Runde ----------
 const endlessBar=createEndlessToolBar({onClick:tool=>{
   if(!endlessToolUsable()||!(endlessInv[tool]>0))return;
@@ -356,7 +386,9 @@ async function applyEndlessWand(tileId,value){
     if(turn!==generation)return true;
     await resolveMerges(turn,{streak:true});
     if(turn!==generation)return true;
+    const peakBefore=peak;
     peak=Math.max(peak,...board.flat().filter(Boolean).map(t=>t.value));
+    endlessMilestones(peakBefore);
     bestTile=Math.max(bestTile,peak);renderBest();saveState();
   }finally{if(turn===generation){busy=false;renderEndlessTools();}}
   if(turn===generation&&isGameOver(board))showDialog(true);
@@ -366,21 +398,12 @@ async function applyEndlessWand(tileId,value){
 function requestToolAd(type,where='tool'){
   if(!toolAdRequired())return Promise.resolve(true);
   if(adUI.isOpen)return Promise.resolve(false);
-  return new Promise(resolve=>{
+  return explainer.showOnce('ads').then(()=>new Promise(resolve=>{
     let done=false;
     const finish=ok=>{if(done)return;done=true;adFollow=null;resolve(!!ok);};
     adFollow={type,where,then:()=>finish(true),cancel:()=>finish(false)};
     adUI.open(type);
-  });
-}
-async function withToolAd(type,then,where='tool'){
-  if(!campaignMode||!camp)return;
-  if(!(availableTools()[type]>0)){
-    const key=type==='extraMoves'?'note.noExtra':type==='hint'?'note.noHint':type==='rocket'?'note.noRocket':'note.noWand';
-    showNote(t(key),2200);return;
-  }
-  if(!await requestToolAd(type,where))return;
-  then?.();
+  }));
 }
 function refreshAdFreeSettings(){
   const buy=document.getElementById('adfree-buy');
@@ -458,14 +481,16 @@ function openShop(type){
 const giftFx=createGiftFx({reduceMotion,sound,haptics});
 /** Ältestes offenes Geschenk öffnen: Blase → Platzen → Gutschrift → Symbole fliegen in Leiste/Karte. */
 async function openGift(){
-  if(!Camp.TOOL_STOCK||!Camp.TOOL_GIFTS||giftFx.active||!inventory.pending.length)return false;
+  if(!Camp.TOOL_GIFTS||giftFx.active||explainer.isOpen||!inventory.pending.length)return false;
   const gift=inventory.pending[0];
+  await explainer.showOnce('gifts');   // launch-28: beim ersten Gold-Geschenk erklären
+  if(giftFx.active||!inventory.pending.some(g=>g.id===gift.id))return false;
   const target=type=>{
     const b=campaignMode&&!campaignUI.resultOpen?campaignUI.toolButton(type):null;
     if(b&&b.offsetWidth)return b;
     return document.querySelector(`#home-menu:not([hidden]) .aw-chip[data-type="${type}"]`)||(campaignUI.resultOpen?campaignUI.giftButton:null);
   };
-  await giftFx.open({items:[{type:gift.type,count:1}],targetFor:target,onPop:()=>{
+  await giftFx.open({items:[{type:gift.type,count:1}],gold:true,targetFor:target,onPop:()=>{
     const c=Camp.collectGift(inventory,gift.id);if(!c)return;
     inventory=c.inventory;Camp.saveInventory(inventory);cloudSync();
     logTool('gift',gift.type,{...logCtx(campaignUI.resultOpen?'result':campaignMode?'level':'menu'),giftId:gift.id,giftLevel:Camp.giftLevel(gift.id)});   // launch-14: Geschenke im Protokoll
@@ -477,9 +502,11 @@ async function openGift(){
 }
 function renderCampaign(){
   if(!campaignMode||!camp)return;
-  campaignUI.renderHud(camp.run,camp.n,labHudLabel());
-  const room=camp.run.level.sequence.length-Camp.moveLimit(camp.run);
-  campaignUI.renderTools(availableTools(),{refill:refillMode(),needsAd:toolAdRequired(),canExtra:room>0&&camp.run.status!=='won'&&!hintBusy,armed:armedTool,busy:hintBusy?'hint':null,locked:hintBusy||camp.run.status!=='playing',toolsUsed:camp.run.toolsUsed.length});
+  campaignUI.renderHud(camp.run,camp.n,labMode?labHudLabel():null);   // launch-28: Test-Titel nur im Testmodus
+  const tutor=tutorialToolPending();
+  campaignUI.renderTools(goldNow(),{needsAd:toolAdRequired(),canExtra:camp.run.status==='playing',armed:armedTool,locked:camp.run.status!=='playing',
+    toolsUsed:camp.run.toolsUsed.length,giftsUsed:camp.run.giftsUsed?.length|0,freeTry:tutor||null});
+  for(const ty of Camp.ADVENTURE_TOOLS)campaignUI.toolButton(ty)?.classList.toggle('is-tutor',tutor);
 }
 async function prepareLevel(n){
   // App: nach jedem 10. gewonnenen Level eine Zwischenwerbung, immer VOR dem nächsten Level.
@@ -490,7 +517,7 @@ async function prepareLevel(n){
   if(!campaignMode){stashedBestTile=bestTile;campaignMode=true;}
   generation++;pendingMove=null;disarmTools();bombLast=0;
   moveCombo=0;mergeEffects.streak?.(0,{silent:true});
-  camp={n,level,run:Camp.createLevelRun(level),free:Camp.freeToolCharges()};   // Gratis-Ladungen je Versuch (FREE_TOOLS_PER_LEVEL)
+  camp={n,level,run:Camp.createLevelRun(level),tutorialTool:!labMode&&n===TOOL_TUTORIAL_LEVEL&&!campaignProgress.levels[String(n)],tutorialDone:false};
   beginAttempt();
   board=camp.run.board.map(row=>row.map(tile=>tile?{...tile}:null));
   nextId=camp.run.ctx.nextId;queue=Camp.queueOf(camp.run);score=0;moves=0;
@@ -518,7 +545,7 @@ async function playLevel(n){
   const list=levelList();
   if(list&&n>list.length)return;
   const lock=labMode?null:Camp.lockReason(campaignProgress,n);
-  if(lock){showNote(lock.reason==='stars'?t('note.needStars',{chapter:lock.chapter,need:lock.need}):t('campaign.locked'),3000);return;}
+  if(lock){showNote(lock.reason==='stars'?t('note.needStars',{chapter:lock.chapter,need:lock.need}):t('campaign.locked'),3000);if(lock.reason==='stars')void explainer.show('gates',gatesCtx());return;}
   campaignUI.hideResult();confetti.stop();veil.hidden=true;paused=false;gameElement.classList.remove('is-paused');
   pauseButton.textContent='Ⅱ';pauseButton.setAttribute('aria-pressed','false');pauseButton.setAttribute('aria-label',t('hud.pauseAria'));
   graphics.pause(false);sound.resume();
@@ -529,11 +556,25 @@ async function playLevel(n){
   else if(camp.level.tool)showNote(levelNote(),4200);
   else if(!camp.level.tip)showNote(levelNote(),2600);
   scheduleBombTick();
+  await levelExplainers();
   showTutorialFinger(true);
+}
+// launch-28: Erklär-Fenster, wenn ein Thema zum ersten Mal wichtig wird (später unter Regeln nachlesbar).
+const gatesCtx=()=>{const n=Camp.nextLevel(campaignProgress,levels?.length||100),k=Camp.chapterOf(n)+1;return {chapter:k,need:Camp.starGate(k),have:Camp.totalStars(campaignProgress)};};
+const LEVEL_TOPICS={1:'merge',4:'merge5',5:'street',10:'gates'};
+async function levelExplainers(){
+  if(!campaignMode||!camp||labMode)return;
+  const n=camp.n,topic=LEVEL_TOPICS[n];
+  if(topic)await explainer.showOnce(topic,topic==='gates'?gatesCtx():undefined);
+  if(camp?.n===n&&camp.tutorialTool){
+    await explainer.show('tools');
+    if(camp?.n===n&&tutorialToolPending()){showNote(t('note.tutorialTool'),0);renderCampaign();}
+  }
 }
 async function moveCampaign(direction,line){
   const r=camp.run;
   if(r.status!=='playing')return;
+  if(tutorialToolPending()){showNote(t('note.tutorialTool'),3000);haptics.pulse('tap');for(const ty of Camp.ADVENTURE_TOOLS){const b=campaignUI.toolButton(ty);if(b){b.classList.remove('is-nudge');void b.offsetWidth;b.classList.add('is-nudge');}}return;}
   ghostFinger.hide();
   if(armedTool)toggleTool(null);
   const value=Camp.queueOf(r)[0];
@@ -576,7 +617,7 @@ async function finishLevel(){
   if(won){
     stars=Camp.starsOfRun(r);
     if(!labMode){campaignProgress=Camp.recordResult(campaignProgress,camp.level.id,{stars,moves:r.moves});Camp.saveProgress(campaignProgress);cloudSync();adPacing.levelWon();}
-    if(!labMode&&Camp.TOOL_STOCK&&Camp.TOOL_GIFTS){const g=Camp.queueGifts(inventory,campaignProgress);inventory=g.inventory;Camp.saveInventory(inventory);cloudSync();}
+    if(!labMode&&Camp.TOOL_GIFTS){const g=Camp.queueGifts(inventory,campaignProgress);if(g.queued.length){inventory=g.inventory;Camp.saveInventory(inventory);cloudSync();}}
     sound.play('record');haptics.pulse('big');
     if(!reduceMotion.matches)visual.celebrateHud?.('queue-0',.3);
     // Erst kurz Konfetti über dem Brett, dann der Dialog mit den Sternen.
@@ -588,28 +629,31 @@ async function finishLevel(){
   paused=true;releaseGesture();phoneMotion.reset();
   const count=levelList().length,nextLock=n<count&&!labMode?Camp.lockReason(campaignProgress,n+1):null;
   campaignUI.showResult({n,won,stars,moves:r.moves,limit:Camp.moveLimit(r),lostReason:r.lostReason,toolLevel:r.level.tool||null,
-    canNext:won&&n<count&&!nextLock,nextLock,gifts:Camp.TOOL_STOCK&&Camp.TOOL_GIFTS?inventory.pending.slice():gifts,extraAvailable:availableTools().extraMoves,extraAd:toolAdRequired(),toolsUsed:r.toolsUsed.length,
+    canNext:won&&n<count&&!nextLock,nextLock,gifts:Camp.TOOL_GIFTS&&!labMode?inventory.pending.slice():gifts,extraAvailable:1,extraGold:inventory.extraMoves|0,extraAd:toolAdRequired()&&!hasGold('extraMoves'),toolsUsed:r.toolsUsed.length,giftsUsed:r.giftsUsed?.length|0,tutorialTool:won&&!!camp.tutorialDone,
     unlockModes:won&&!labMode&&n===Camp.MODES_UNLOCK_LEVEL&&Camp.modesUnlocked(campaignProgress)});
   renderCampaign();
 }
-function useExtraMoves(){
+async function useExtraMoves(where='tool'){
   if(!campaignMode||!camp||busy)return;
   const r=camp.run;
-  if(r.status==='won')return;
-  const spent=takeTool('extraMoves');
-  if(!spent){showNote(t('note.noExtra'),2200);return;}
+  if(r.status==='won'||(r.status==='lost'&&r.lostReason!=='moves')){if(r.status==='lost')showNote(t('note.extraNoHelp'),2600);return;}
+  const gold=hasGold('extraMoves'),free=tutorialToolPending();
+  if(!gold&&!free&&!await requestToolAd('extraMoves',where==='result'?'result':'tool'))return;
+  if(!campaignMode||camp?.run!==r||busy)return;
+  const ctx=logCtx(campaignUI.resultOpen?'result':'level');
   const wasLost=r.status==='lost';
-  const added=Camp.addExtraMoves(r,3);
-  if(!added){showNote(r.status==='lost'?t('note.extraNoHelp'):t('note.noMoreTiles'),2600);return;}
+  const added=Camp.addExtraMoves(r,3,{gift:gold});
+  if(!added){showNote(t('note.extraNoHelp'),2600);return;}
   if(wasLost&&logAttempt){ToolLog.reopenAttempt(toolLog,logAttempt.id);ToolLog.saveLog(toolLog);}   // Weiterspielen: Ausgang folgt später
-  spent();
+  commitTool('extraMoves',gold,ctx);
+  if(free)tutorialToolDone();
   queue=Camp.queueOf(r);renderQueue();
   if(campaignUI.resultOpen){campaignUI.hideResult();paused=false;}
   renderCampaign();haptics.pulse('merge');sound.play('record');
-  showNote(t('note.extraUsed',{n:added})+' '+toolCapNote(),2800);
+  showNote(gold?t('note.goldUsed',{tool:Camp.toolName('extraMoves')}):t('note.extraUsed',{n:added})+' '+toolCapNote(),2800);
   showTutorialFinger();
 }
-// ---------- Hilfsmittel (launch-12): Rakete, Zauberstab, Hinweis ----------
+// ---------- Hilfsmittel: Rakete (launch-28: Hinweis und Zauberstab entfernt) ----------
 const toolFx=createToolFx({reduceMotion,shakeTarget:()=>document.getElementById('playfield')});
 const ghostFinger=createGhostFinger({reduceMotion});
 function showTutorialFinger(afterEntry=false){
@@ -624,16 +668,14 @@ function showTutorialFinger(afterEntry=false){
   else place();
 }
 
-const TOOL_NOTES=()=>({rocket:t('tool.note.rocket'),wand:t('tool.note.wand')});
-function disarmTools(){armedTool=null;hintBusy=false;wandPicker?.close();wandPicker=null;}
+function disarmTools(){armedTool=null;}
 function toggleTool(type){
   if(!campaignMode||!camp)return;
+  if(type!=null&&type!=='rocket')return;
   const on=type!=null&&armedTool!==type;
-  if(on&&(camp.run.status!=='playing'||busy||hintBusy))return;
-  if(on&&!(availableTools()[type]>0)){showNote(t(type==='rocket'?'note.noRocket':'note.noWand'),2200);return;}
-  wandPicker?.close();wandPicker=null;
+  if(on&&(camp.run.status!=='playing'||busy))return;
   armedTool=on?type:null;renderCampaign();
-  if(on)showNote(TOOL_NOTES()[type],0);else note.hidden=true;
+  if(on)showNote(t(hasGold('rocket')?'tool.note.rocketGold':'tool.note.rocket'),0);else if(!tutorialToolPending())note.hidden=true;else showNote(t('note.tutorialTool'),0);
 }
 function cellOf(tileId){let cell=null;board.forEach((row,r)=>row.forEach((t,c)=>{if(t&&t.id===tileId)cell=[r,c];}));return cell;}
 // Bildschirmposition (Client-Pixel) einer Brettzelle.
@@ -646,10 +688,13 @@ async function rocketAt(tileId){
   const cell=cellOf(tileId);
   if(!cell||!camp||busy)return false;
   if(camp.run.board[cell[0]][cell[1]]?.bound){showNote(t('note.chainVsRocket'),2200);return false;}
-  if(!await requestToolAd('rocket'))return false;
-  const spent=takeTool('rocket');
-  if(!spent||!Camp.useRocket(camp.run,cell[0],cell[1]))return false;
-  spent();armedTool=null;note.hidden=true;
+  const gold=hasGold('rocket'),free=tutorialToolPending(),run=camp.run;
+  if(!gold&&!free&&!await requestToolAd('rocket'))return false;
+  if(!campaignMode||camp?.run!==run||busy||!cellOf(tileId))return false;
+  const ctx=logCtx('level');
+  if(!Camp.useRocket(run,cell[0],cell[1],{gift:gold}))return false;
+  commitTool('rocket',gold,ctx);if(free)tutorialToolDone();
+  armedTool=null;note.hidden=true;
   const turn=generation;busy=true;renderCampaign();
   try{
     const target=cellPoint(cell[0],cell[1]);
@@ -664,105 +709,16 @@ async function rocketAt(tileId){
     }
     board=board.map(row=>row.slice());board[cell[0]][cell[1]]=null;
     renderBoard();
-  }finally{if(turn===generation){busy=false;renderCampaign();announceToolCap();}}
+  }finally{if(turn===generation){busy=false;renderCampaign();announceToolCap(gold,'rocket');}}
   // launch-15: „höchstens N Steine übrig“ kann direkt durch die Rakete erfüllt werden
   if(turn===generation&&camp?.run?.status==='won')await finishLevel();
   return true;
-}
-function wandAt(tileId){
-  const cell=cellOf(tileId);
-  if(!cell||!camp||busy)return;
-  const r=camp.run,choices=Camp.wandChoices(r,cell[0],cell[1]);
-  if(!choices.length){showNote(r.board[cell[0]][cell[1]]?.bound?t('note.chainVsWand'):t('note.noWandChoice'),2400);return;}
-  const tile=board[cell[0]][cell[1]],at=cellPoint(cell[0],cell[1]),turn=generation;
-  wandPicker?.close();note.hidden=true;
-  wandPicker=toolFx.picker({anchor:at,choices,current:tile.value,colors:v=>comicColors(v).hex,
-    onPick:v=>{wandPicker=null;if(turn===generation)void applyWand(tileId,v);},
-    onCancel:()=>{wandPicker=null;if(turn===generation)toggleTool(null);}});
-}
-async function applyWand(tileId,value){
-  const cell=cellOf(tileId);
-  if(!cell||!camp||busy)return;
-  const r=camp.run;
-  if(!await requestToolAd('wand'))return;
-  const spent=takeTool('wand');
-  if(!spent)return;
-  const res=Camp.useWand(r,cell[0],cell[1],value);
-  if(!res.ok){showNote(t('note.badWandNumber'),2200);return;}
-  spent();armedTool=null;
-  const turn=generation;busy=true;
-  try{
-    const at=cellPoint(cell[0],cell[1]);
-    board=board.map(row=>row.slice());board[cell[0]][cell[1]]={...board[cell[0]][cell[1]],value};
-    renderBoard();renderCampaign();
-    toolFx.sparkle(at,at.size);sound.play('magic');haptics.pulse('merge');announceToolCap();
-    if(!reduceMotion.matches){graphics.wobble(tileId,.55);await wait(320);}
-    if(turn!==generation)return;
-    await resolveMerges(turn,{streak:true});
-    if(turn!==generation)return;
-    const vals=b=>b.map(row=>row.map(t=>t?t.id+':'+t.value:'.').join(',')).join(';');
-    if(vals(board)!==vals(r.board)){console.warn('[campaign] board resync (wand)');board=r.board.map(row=>row.map(t=>t?{...t}:null));renderBoard();}
-    renderCampaign();
-  }finally{if(turn===generation)busy=false;}
-  if(turn===generation&&r.status!=='playing')await finishLevel();
-}
-// Hinweis-Suche im Worker (Fallback: direkt, mit kleinerem Budget).
-let hintWorker=null,hintSeq=0;
-function searchHint(state){
-  const budget={want:2,maxStates:160000,maxMs:2500};
-  try{
-    hintWorker||=new Worker(new URL('./hint-worker.mjs?v=launch-27',import.meta.url),{type:'module'});
-  }catch{hintWorker=null;}
-  if(!hintWorker)return Promise.resolve(findHint(state,{...budget,maxMs:900}));
-  const id=++hintSeq;
-  return new Promise(resolve=>{
-    const timer=setTimeout(()=>{cleanup();resolve({found:false,reason:'budget'});},7000);
-    function onMessage(ev){if(ev.data?.id!==id)return;cleanup();resolve(ev.data.result);}
-    function onError(){cleanup();hintWorker?.terminate();hintWorker=null;resolve(findHint(state,{...budget,maxMs:900}));}
-    function cleanup(){clearTimeout(timer);hintWorker?.removeEventListener('message',onMessage);hintWorker?.removeEventListener('error',onError);}
-    hintWorker.addEventListener('message',onMessage);hintWorker.addEventListener('error',onError);
-    hintWorker.postMessage({id,state,options:budget});
-  });
 }
 // Einschubseite → Zellen der Bahn in Laufrichtung (left = von rechts, down = von oben …).
 function hintLane(direction,line){
   const idx=[0,1,2,3,4];
   const cells=direction==='right'?idx.map(c=>[line,c]):direction==='left'?idx.map(c=>[line,4-c]):direction==='down'?idx.map(r=>[r,line]):idx.map(r=>[4-r,line]);
   return cells.map(([r,c])=>cellPoint(r,c));
-}
-let lastHint=null;
-async function useHint(){
-  if(!campaignMode||!camp||busy||hintBusy||paused)return;
-  const r=camp.run;
-  if(r.status!=='playing')return;
-  if(!(availableTools().hint>0)){showNote(t('note.noHint'),2200);return;}
-  if(armedTool)toggleTool(null);
-  const turn=generation;hintBusy=true;renderCampaign();showNote(t('note.hintSearch'),0);
-  let result;
-  try{result=await searchHint(hintState(r,{movesLeft:Camp.movesLeft(r),vec:Camp.progressVector(r)}));}
-  catch{result={found:false,reason:'error'};}
-  lastHint=result;
-  if(turn!==generation||!camp||camp.run!==r){hintBusy=false;return;}
-  if(!result?.found){
-    hintBusy=false;renderCampaign();haptics.pulse('tap');
-    showNote(result?.reason==='none'?t('note.hintNone'):t('note.hintFail'),3400);
-    return;
-  }
-  const spent=takeTool('hint');
-  if(!spent){hintBusy=false;renderCampaign();return;}
-  spent();Camp.markToolUsed(r,'hint');
-  note.hidden=true;renderCampaign();announceToolCap();
-  try{
-    for(const ch of result.moves){
-      if(turn!==generation||r.status!=='playing')break;
-      const m=Camp.decodeMove(ch),lane=hintLane(m.direction,m.line);
-      sound.play('tap');
-      await toolFx.hintArrow(lane,lane[0].size,reduceMotion.matches?450:850);
-      if(turn!==generation||r.status!=='playing')break;
-      await move(m.direction,m.line,{fromHint:true});
-      while(busy&&turn===generation)await new Promise(res=>setTimeout(res,40));
-    }
-  }finally{if(turn===generation){hintBusy=false;renderCampaign();}}
 }
 async function backToMenu(){
   if(booting||!started||duelMode)return;
@@ -1024,7 +980,7 @@ function renderBoard(incoming) {
 // Anzeige: kleine DOM-Abzeichen über den Bomben (Text ändert sich 1×/s) – kein WebGL-Frame nötig.
 const bombBadges=new Map();let bombLayer=null,bombTimer=0,bombLast=0,bombBlast=false;
 function bombPaused(){
-  return paused||document.hidden||busy||hintBusy||celebrating||!started||!!wandPicker||campaignUI.resultOpen||shopUI.isOpen||adUI.isOpen||giftFx.active||statsUI.isOpen||worldMenu.active;
+  return paused||document.hidden||busy||celebrating||!started||explainer.isOpen||campaignUI.resultOpen||shopUI.isOpen||adUI.isOpen||giftFx.active||statsUI.isOpen||worldMenu.active;
 }
 function renderBombBadges(){
   const list=[];
@@ -1357,7 +1313,6 @@ async function moveDuel(direction,line) {
 }
 
 async function move(direction, line, {fromHint=false}={}) {
-  if(hintBusy&&!fromHint)return;
   if(shopUI.isOpen||giftFx.active)return;
   if(busy&&started&&!booting&&!paused&&visual.fusion?.active){
     // A swipe during a merge speeds the gel up and plays right after it.
@@ -1398,7 +1353,9 @@ async function move(direction, line, {fromHint=false}={}) {
   await resolveMerges(turn,{streak:true});
   if(turn!==generation)return;
   moves++;
+  const peakBefore=peak;
   peak = Math.max(peak, ...board.flat().filter(Boolean).map(tile => tile.value));
+  endlessMilestones(peakBefore);
   bestTile = Math.max(bestTile, peak);
   renderBest();
   queue.push(nextSpawn({ board, moves, highest: peak, random: random() }));
@@ -1423,14 +1380,13 @@ function releaseGesture() {
   pointerStart=null;
 }
 playfield.addEventListener('pointerdown',event=> {
-  if(hintBusy&&campaignMode)return;
   if(endlessArmed&&!campaignMode&&!duelMode&&started&&!busy&&!paused&&event.isPrimary){
     const id=visual.pick(event);
     if(id!=null){event.preventDefault();if(endlessArmed==='rocket')void endlessRocketAt(id);else endlessWandAt(id);return;}
   }
   if(armedTool&&campaignMode&&started&&!busy&&!paused&&event.isPrimary){
     const id=visual.pick(event);
-    if(id!=null){event.preventDefault();if(armedTool==='rocket')void rocketAt(id);else wandAt(id);return;}
+    if(id!=null){event.preventDefault();if(armedTool==='rocket')void rocketAt(id);return;}
   }
   const merging=busy&&!duelMode&&visual.fusion?.active;
   if(!started||booting||(busy&&!merging)||paused||!event.isPrimary)return;
@@ -1493,7 +1449,7 @@ window.addEventListener('online', () => void flushPending());
 window.SquishGame={graphics,move,restart,get state(){return {board,queue,score,best,bestTile,moves,peak,busy,paused,booting,started,hasSavedGame,duelMode,duelRevision};},get effects(){return mergeEffects.stats;},get sound(){return sound.stats;},get menu(){return worldMenu.stats;},get fusion(){return visual.fusion?.stats||null;},
   get appAds(){return {pacing:adPacing,native:hasNativeAds(),adOpen:adUI.isOpen,adType:adUI.type,showing:adShowing,lastAd,endless:{...endlessInv},armed:endlessArmed,rocketAt:endlessRocketAt,wand:applyEndlessWand,wandChoices:endlessWandChoices};},
   get campaign(){return {mode:campaignMode,lab:labMode,bombMs:camp?Camp.nextBombMs(camp.run):null,bombClock:!!camp?.run.bombClock,exploded:camp?.run.exploded??0,specials:camp?camp.run.board.flatMap((row,r)=>row.map((t,c)=>t&&Camp.specialOf(t)?{kind:Camp.specialOf(t),r,c,value:t.value,id:t.id}:null)).filter(Boolean):[],bombBadges:[...bombBadges.values()].map(e=>e.textContent),level:camp?.n??null,status:camp?.run.status??null,moves:camp?.run.moves??0,movesLeft:camp?Camp.movesLeft(camp.run):null,
-    toolsUsed:camp?.run.toolsUsed.slice()??[],progress:campaignProgress,inventory,sync:progressSync.stats,shopOpen:shopUI.isOpen,shopStats:shopUI.stats,gift:{active:giftFx.active,phase:giftFx.phase,...giftFx.stats},lastPurchase,adOpen:adUI.isOpen,adType:adUI.type,adStats:adUI.stats,lastAd,adFree:isAdFree(),adFreeOffer:canOfferAdFree(),statsOpen:statsUI.isOpen,statsStats:{opens:statsUI.stats.opens,exports:statsUI.stats.exports,resets:statsUI.stats.resets,lastExportMode:statsUI.stats.lastExportMode},toolLog:{attempts:toolLog.attempts.length,events:toolLog.events.length,current:logAttempt?{...logAttempt}:null,summary:ToolLog.summarize(toolLog)},freeTools:camp?.free?{...camp.free}:null,available:camp?availableTools():null,levelsLoaded:!!levels,resultOpen:campaignUI.resultOpen,armedTool,hintBusy,lastHint,toolFx:toolFx.stats,celebrating,timeline:campaignUI.timeline.slice()};},
+    toolsUsed:camp?.run.toolsUsed.slice()??[],progress:campaignProgress,inventory,sync:progressSync.stats,shopOpen:shopUI.isOpen,shopStats:shopUI.stats,gift:{active:giftFx.active,phase:giftFx.phase,...giftFx.stats},lastPurchase,adOpen:adUI.isOpen,adType:adUI.type,adStats:adUI.stats,lastAd,adFree:isAdFree(),adFreeOffer:canOfferAdFree(),statsOpen:statsUI.isOpen,statsStats:{opens:statsUI.stats.opens,exports:statsUI.stats.exports,resets:statsUI.stats.resets,lastExportMode:statsUI.stats.lastExportMode},toolLog:{attempts:toolLog.attempts.length,events:toolLog.events.length,current:logAttempt?{...logAttempt}:null,summary:ToolLog.summarize(toolLog)},gold:goldNow(),giftsUsed:camp?.run.giftsUsed?.slice()??[],tutorialTool:tutorialToolPending(),explain:{open:explainer.isOpen,topic:explainer.topic,seen:explainer.topics().map(x=>x.topic).filter(x=>explainer.seen(x))},levelsLoaded:!!levels,resultOpen:campaignUI.resultOpen,armedTool,toolFx:toolFx.stats,celebrating,timeline:campaignUI.timeline.slice()};},
   // Screen point of a board cell (for input tests).
   cellPoint(row,col){const host=document.getElementById('graphics').getBoundingClientRect(),loc=location(row,col);return {x:host.left+loc.x/100*host.width,y:host.top+(loc.y+1.5)/100*host.height};}};
 // QA only (?vfxdemo=1): stage a board, then swipe with SquishGame.move().
@@ -1526,6 +1482,7 @@ export const menuActions={
       else if(camp.level.tool)showNote(levelNote(),4200);
       else if(!camp.level.tip)showNote(levelNote(),2600);
       scheduleBombTick();
+      await levelExplainers();
       showTutorialFinger(true);
     }
   },
