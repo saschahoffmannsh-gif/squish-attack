@@ -2,8 +2,8 @@
 // Ein Level = feste Startaufstellung + feste Steinfolge + Ziele + Zuglimit.
 // Dieses Modul ist reine Logik (kein DOM). Es wird von der UI, dem Solver,
 // dem Generator und den Tests gemeinsam benutzt, damit alle exakt gleich zählen.
-import { SIZE, insertTile, settle, isGameOver, tickBombs, BOMB_MS, BOMB_UNIT_MS } from './game-logic.mjs?v=launch-26';
-import { t, fmtNum } from './i18n.mjs?v=launch-26';
+import { SIZE, insertTile, settle, isGameOver, tickBombs, BOMB_MS, BOMB_UNIT_MS } from './game-logic.mjs?v=launch-27';
+import { t, fmtNum } from './i18n.mjs?v=launch-27';
 
 export const DIRECTIONS = ['left', 'right', 'up', 'down'];
 export const QUEUE_PREVIEW = 3;
@@ -719,13 +719,34 @@ export function resetChangedStarsOnce(progress, storage = globalThis.localStorag
   return { progress: p, reset: true };
 }
 /**
+ * launch-27: Sterne nur der umgearbeiteten Level einmalig löschen.
+ * Unveränderte Level, Tutorials (1–5), Freischaltungen und Vorrat bleiben.
+ * Eigener Merker; TUTORIAL_RESET bleibt launch-24 (kein neuer Abenteuer-Reset).
+ * PROGRESS_EPOCH ist launch-27, damit die Cloud die alten Sterne der umgearbeiteten
+ * Level nicht per Max-Merge der Epoche 24 zurückbringt.
+ */
+export const CURVE_STARS_RESET = 'launch-27';
+export const CURVE_STARS_RESET_KEY = 'squish-campaign-curve-stars-reset';
+export const CURVE_STARS_RESET_IDS = Object.freeze([26, 51, 52, 54, 58, 80, 81, 84, 91, 100]);
+export function resetCurveStarsOnce(progress, storage = globalThis.localStorage, { tag = CURVE_STARS_RESET, ids = CURVE_STARS_RESET_IDS } = {}) {
+  let done = null;
+  try { done = storage?.getItem(CURVE_STARS_RESET_KEY); } catch {}
+  if (!tag || done === tag) return { progress, reset: false };
+  const levels = { ...progress.levels };
+  for (const id of ids) delete levels[String(id)];
+  const p = { ...progress, levels, updatedAt: Date.now() };
+  saveProgress(p, storage);
+  try { storage?.setItem(CURVE_STARS_RESET_KEY, tag); } catch {}
+  return { progress: p, reset: true };
+}
+/**
  * launch-24: Abenteuer einmalig komplett zurücksetzen (Sterne, Freischaltungen, Vorrat, Geschenke,
  * Tutorial-Merker). Endlos-Spielstand, Endlos-Rekord und Endlos-Vorrat bleiben unberührt.
  * Sprache und Einstellungen ebenfalls. Geräte mit Merker launch-22 setzen erneut zurück,
  * weil der Merker jetzt launch-24 ist. Epoche PROGRESS_EPOCH, damit die Cloud den alten
  * Stand nicht zurückbringt. Ein Merker verhindert Wiederholungen. Rückgabe {progress, inventory, reset}.
  */
-export const PROGRESS_EPOCH = 'launch-24';
+export const PROGRESS_EPOCH = 'launch-27';
 export const TUTORIAL_RESET = 'launch-24';
 export const TUTORIAL_RESET_KEY = 'squish-campaign-tutorial-reset';
 export const MODES_UNLOCK_SEEN_KEY = 'squish-modes-unlock-seen';

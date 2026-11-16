@@ -1,6 +1,6 @@
 import test, { beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { setLang } from '../game/i18n.mjs?v=launch-26';
+import { setLang } from '../game/i18n.mjs?v=launch-27';
 beforeEach(() => setLang('de', { persist: false }));
 import {
   createLevelRun, applyLevelMove, starsFor, replaySolution, goalProgress, queueOf, movesLeft,
@@ -9,6 +9,7 @@ import {
   markToolUsed, moveLimit, lockReason, chapterOf, starGate, CHAPTER_SIZE, STARS_PER_CHAPTER_GATE,
   toolStarCap,
   resetChangedStarsOnce, STARS_RESET, STARS_RESET_KEY,
+  resetCurveStarsOnce, CURVE_STARS_RESET, CURVE_STARS_RESET_KEY, CURVE_STARS_RESET_IDS, PROGRESS_EPOCH,
 } from '../game/campaign.mjs';
 
 const E = null;
@@ -629,6 +630,28 @@ test('launch-18: Sterne ab Level 11 einmalig zurücksetzen, 1–10 und launch-14
   const b = resetChangedStarsOnce(a.progress, st);
   assert.equal(b.reset, false);
   assert.equal(Object.keys(b.progress.levels).length, 10);
+});
+
+
+test('launch-27: nur Sterne der umgearbeiteten Level einmalig löschen, Rest und Tutorials bleiben', () => {
+  const st = new Map();
+  st.getItem = k => (st.has(k) ? st.get(k) : null);
+  st.setItem = (k, v) => st.set(k, v);
+  const p0 = emptyProgress();
+  for (let n = 1; n <= 100; n++) p0.levels[String(n)] = { stars: 3, moves: 5, at: 0 };
+  const a = resetCurveStarsOnce(p0, st);
+  assert.equal(a.reset, true);
+  assert.equal(CURVE_STARS_RESET, 'launch-27');
+  assert.equal(PROGRESS_EPOCH, 'launch-27');
+  assert.equal(st.getItem(CURVE_STARS_RESET_KEY), 'launch-27');
+  for (const id of CURVE_STARS_RESET_IDS) assert.equal(a.progress.levels[String(id)], undefined, `L${id} zurückgesetzt`);
+  for (const id of [1, 2, 3, 4, 5, 10, 11, 25, 50, 90, 99]) {
+    assert.equal(a.progress.levels[String(id)].stars, 3, `L${id} bleibt`);
+  }
+  assert.equal(Object.keys(a.progress.levels).length, 100 - CURVE_STARS_RESET_IDS.length);
+  const b = resetCurveStarsOnce(a.progress, st);
+  assert.equal(b.reset, false);
+  assert.equal(Object.keys(b.progress.levels).length, 100 - CURVE_STARS_RESET_IDS.length);
 });
 
 // ---------------- launch-22/24: Tutorials, Reset, Freischaltung ----------------

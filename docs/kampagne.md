@@ -636,3 +636,9 @@ Aktueller Stand im Spiel (Schalter in `campaign.mjs`):
 - **Testseite:** Der Regeln-Eintrag „Neue Squishes testen“ / „Try the new Squishes“ ist aus der UI entfernt. Lab-Engine, `levels-lab.json` und Tests dürfen bleiben, sind aber nicht mehr über das Menü erreichbar.
 - **Werbung (Takt in `game/ad-pacing.mjs`):** Zwischenwerbung im Abenteuer nach jedem **5.** gewonnenen Level (Web ruft `levelWon` auf, zeigt aber keine echte Werbung und verbraucht den Slot nicht mit `takeInterstitial`). Endlos: Angebot alle **10 Minuten** aktiver Spielzeit wie bisher. Beides entfällt bei Werbefrei. Echte Clips gibt es nur in der App-Hülle.
 
+## Schwierigkeitskurve (launch-27)
+
+- Kapitel 6 und 9 sowie Meilenstein 80 waren zu leicht gegenüber den Vorgängern; bei manchen Werkzeug-Leveln brachte das Hilfsmittel zu wenig. Die Kurve wurde nachgezogen. Die Messung nutzt bei Stab und Rakete `meta.toolSolution` (nicht die Lösung ohne Werkzeug).
+- Geänderte Level: 26 (Erholung, Punkte statt 5er), 51/52/54/58 (engeres Zugfenster), 80 (Meilenstein: 6er, räumen 16, zwei Straßen), 81 (räumen 18), 84 (engeres Fenster), 91 (Kapitel-10-Einstieg enger), 100 (Finale: eine 8 und räumen 12, +3 hilft). Tutorials 1–5 unverändert. Keine Sonder-Squishes im Abenteuer. Alle Level bleiben ohne Werkzeug lösbar.
+- **Gezielter Sternen-Reset:** nur die Sterne dieser umgearbeiteten Level werden einmalig gelöscht (`CURVE_STARS_RESET`, Merker `squish-campaign-curve-stars-reset`). Unveränderte Level, Freischaltungen, Abenteuer-Vorrat, Endlos-Spielstand und Tutorials bleiben. `TUTORIAL_RESET` bleibt `launch-24` (kein neuer Abenteuer-Reset).
+- **Epoche `PROGRESS_EPOCH = launch-27`:** damit die Cloud die alten Sterne der umgearbeiteten Level nicht per Max-Merge der Epoche 24 zurückschreibt. Kein globaler Epochen-Reset des ganzen Abenteuers: unveränderte Level werden in die neue Epoche mitgenommen.

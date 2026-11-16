@@ -29,11 +29,18 @@ export const RETUNE = {};
 export const KEEP = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 /** Zugfenster: L11 ≈ 12, L20 ≈ 16, L50 ≈ 28, L100 = 40, plus Rollen-Korrektur. */
-export function moveWindow(i) {
+// launch-27: einzelne zu leichte Level enger machen, ohne die Kapitel-Zugzahl-Reihenfolge zu brechen.
+const MOVE_OVERRIDES = Object.freeze({ 51: 14, 52: 13, 54: 20, 58: 24, 84: 18, 91: 20 });
+/** Zugfenster laut Formel, ohne die launch-27-Verengungen (für die Erzeugung/Reproduktion). */
+export function naturalMoveWindow(i) {
   if (i <= 10) return null;
   const mid = 12 + 28 * (i - 11) / 89;
   const adj = { relief: -4, normal: 0, tool: 0, milestone: 3, boss: 4 }[roleOf(i)] ?? 0;
   return Math.round(Math.max(12, Math.min(40, mid + adj)));
+}
+export function moveWindow(i) {
+  if (MOVE_OVERRIDES[i] != null) return MOVE_OVERRIDES[i];
+  return naturalMoveWindow(i);
 }
 /** Gewünschtes Optimum (ohne Werkzeug) als Anteil am Fenster. */
 function naturalMinCap(i) {
@@ -77,7 +84,7 @@ export const MISSIONS = {
   23: { goals: [T('tile', 4), T('clear', 6)], note: 'Doppelziel mit bekannten Typen' },
   24: { goals: [T('score', 200), T('clear', 6)] },
   25: { goals: [T('tile', 5)], note: 'Werkzeug-Spitze: Zauberstab' },
-  26: { goals: [T('tile', 5)], note: 'Erholung' },
+  26: { goals: [T('score', 200)], note: 'Erholung (launch-27: statt Kachel 5, die zu schwer war)' },
   27: { goals: [T('street', 3)] },
   28: { goals: [T('make', 4, 2)], note: '(statt Kette)' },
   29: { goals: [T('score', 280), T('clear', 8)] },
@@ -131,8 +138,8 @@ export const MISSIONS = {
   77: { goals: [T('score', 500), T('purge', 2, 6)] },
   78: { goals: [T('make', 6, 2)] },
   79: { goals: [T('tile', 7), T('street', 2)], note: 'Werkzeug-Spitze: Hinweis' },
-  80: { goals: [T('tile', 6), T('clear', 12), T('street', 1)], note: 'Meilenstein: drei Ziele, 5er schon auf dem Brett' },
-  81: { goals: [T('clear', 12)], note: 'Erholung' },
+  80: { goals: [T('tile', 6), T('clear', 16), T('street', 2)], note: 'Meilenstein: drei Ziele, 5er schon auf dem Brett (launch-27)' },
+  81: { goals: [T('clear', 18)], note: 'Erholung (launch-27: klarer, aber nicht trivial)' },
   82: { goals: [T('long', 1)], note: 'fast fertige Straße aus 5' },
   83: { goals: [T('tile', 7), T('clear', 10)] },
   84: { goals: [T('score', 600), T('clear', 10)], note: 'hoher Wert (~30) als Blocker auf dem Brett' },
@@ -151,7 +158,7 @@ export const MISSIONS = {
   97: { goals: [T('tile', 8)], note: 'Erste 8 – langer Aufbau aus 3ern, 4ern und einem 5er' },
   98: { goals: [T('street', 2), T('clear', 10)], note: 'hoher Wert (~30) als Blocker plus Straße' },
   99: { goals: [T('street', 2), T('score', 400)], note: 'Werkzeug-Spitze: Hinweis' },
-  100: { goals: [T('tile', 8)], note: 'Finale: 3er, 4er und ein 5er auf dem Brett, eine 8 in 40 Zügen. +3 hilft (höchstens 2★).' },
+  100: { goals: [T('tile', 8), T('clear', 12)], note: 'Finale: eine 8 und räumen; ohne Werkzeug lösbar, +3 Züge helfen (höchstens 2★).' },
 };
 export const RETIRED_GOALS = ['combo', 'group'];
 export const FIRST_USE = { empty: 31, long: 41, purge: 51, three: 71 };
