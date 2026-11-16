@@ -40,6 +40,8 @@ let nativeStore = null;
  * purchase() muss erst nach bestätigter Zahlung {ok:true} liefern; die Gutschrift macht das Spiel.
  */
 export function registerNativeStore(adapter) { nativeStore = adapter || null; }
+// Für die App-Hülle ohne Modul-Import erreichbar (window.SquishNative.registerNativeStore(...)).
+if (typeof globalThis !== 'undefined') globalThis.SquishNative = Object.assign(globalThis.SquishNative || {}, { registerNativeStore });
 
 /** Aktiver Store: nativ (falls angemeldet), sonst Testkauf (falls erlaubt), sonst keiner. */
 export function activeStore(config = SHOP_CONFIG) {

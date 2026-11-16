@@ -27,6 +27,8 @@ import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-18';
 import {createAdUI} from './ad-ui.mjs?v=launch-18';
 import {createStatsUI} from './stats-ui.mjs?v=launch-18';
 import * as ToolLog from './tool-log.mjs?v=launch-18';
+import {createProgressSync} from './progress-sync.mjs?v=launch-18';
+import {epochOf} from './progress-merge.mjs?v=launch-18';
 const playfield = document.getElementById('playfield');
 const gameElement = document.querySelector('.game');
 const visual = createGameGraphics(document.getElementById('graphics'));
@@ -169,6 +171,13 @@ if(Camp.TOOL_STOCK_RESET)inventory=Camp.resetStockOnce(inventory).inventory;
 if(Camp.CAMPAIGN_RESET){const r=Camp.resetCampaignOnce(campaignProgress,inventory);campaignProgress=r.progress;inventory=r.inventory;}
 // launch-18: Sterne der umgebauten Level 11–100 einmalig zurücksetzen; 1–10 bleiben.
 if(Camp.STARS_RESET){const s=Camp.resetChangedStarsOnce(campaignProgress);campaignProgress=s.progress;}
+// launch-19: Abenteuer-Fortschritt + Vorrat zusätzlich in der Cloud sichern (anonym, gleicher Geräte-Token).
+// Offline zuerst: lokal bleibt die Wahrheit, der Abgleich läuft still im Hintergrund (progress-sync.mjs).
+const progressSync=createProgressSync({fetch:apiFetch,epoch:epochOf(Camp.STARS_RESET),hasToken:hasSaveToken,
+  getLocal:()=>({progress:campaignProgress,inventory}),
+  setLocal:(p,inv)=>{campaignProgress=p;Camp.saveProgress(p);if(inv!==inventory){inventory=inv;Camp.saveInventory(inv,undefined,false);}try{renderCampaign();void worldMenu.refresh?.();}catch{}}});
+const cloudSync=()=>{if(!labMode)progressSync.schedule();};
+progressSync.attach(window);
 const BUILD_LABEL='launch-18';
 let toolLog=ToolLog.loadLog(),logAttempt=null;
 // Versuche, die beim letzten Mal offen blieben (Seite geschlossen), gelten als abgebrochen.
@@ -205,7 +214,7 @@ function takeTool(type){
   const s=camp&&Camp.spendCharge(inventory,camp.free,type);
   if(!s)return null;
   const c=camp,ctx=logCtx(campaignUI.resultOpen?'result':'level');   // Stand VOR dem Einsatz protokollieren
-  return ()=>{c.free=s.free;if(!s.fromFree){inventory=s.inventory;Camp.saveInventory(inventory);}logTool('use',type,ctx);};
+  return ()=>{c.free=s.free;if(!s.fromFree){inventory=s.inventory;Camp.saveInventory(inventory);cloudSync();}logTool('use',type,ctx);};
 }
 // ---------- Werbung (Dummy) + Werkzeug-Protokoll (launch-13, Testphase) ----------
 const adsEnabled=()=>Camp.AD_TOOLS;
@@ -231,7 +240,7 @@ function openAd(type,{then=null,where='tool'}={}){
 }
 function grantByAd(type){
   const f=adFollow;adFollow=null;
-  inventory=Camp.addToStock(inventory,{[type]:1});Camp.saveInventory(inventory);
+  inventory=Camp.addToStock(inventory,{[type]:1});Camp.saveInventory(inventory);cloudSync();
   logTool('ad',type,logCtx(f?.where||'tool'));lastAd={type,where:f?.where||'tool'};
   renderCampaign();void worldMenu.refresh?.();
   const b=campaignMode&&!campaignUI.resultOpen?campaignUI.toolButton(type):null;
@@ -250,7 +259,7 @@ const shopUI=createShopUI({
   getStock:()=>inventory,sound,haptics,reduceMotion,
   onBuy:async id=>{
     const r=await Shop.purchase(id);
-    if(r.ok){inventory=Camp.addToStock(inventory,r.items);Camp.saveInventory(inventory);lastPurchase={id,items:r.items,test:r.test};renderCampaign();}
+    if(r.ok){inventory=Camp.addToStock(inventory,r.items);Camp.saveInventory(inventory);cloudSync();lastPurchase={id,items:r.items,test:r.test};renderCampaign();}
     return r;
   },
   onClose:()=>{renderCampaign();void worldMenu.refresh?.();},
@@ -273,7 +282,7 @@ async function openGift(){
   };
   await giftFx.open({items:[{type:gift.type,count:1}],targetFor:target,onPop:()=>{
     const c=Camp.collectGift(inventory,gift.id);if(!c)return;
-    inventory=c.inventory;Camp.saveInventory(inventory);
+    inventory=c.inventory;Camp.saveInventory(inventory);cloudSync();
     logTool('gift',gift.type,{...logCtx(campaignUI.resultOpen?'result':campaignMode?'level':'menu'),giftId:gift.id,giftLevel:Camp.giftLevel(gift.id)});   // launch-14: Geschenke im Protokoll
     renderCampaign();if(campaignUI.resultOpen)campaignUI.setGifts(inventory.pending);
   }});
@@ -371,8 +380,8 @@ async function finishLevel(){
   endLogAttempt(won?'won':'lost',{moves:r.moves,stars:won?Camp.starsOfRun(r):0,lostReason:r.lostReason});
   if(won){
     stars=Camp.starsOfRun(r);
-    if(!labMode){campaignProgress=Camp.recordResult(campaignProgress,camp.level.id,{stars,moves:r.moves});Camp.saveProgress(campaignProgress);}
-    if(!labMode&&Camp.TOOL_STOCK&&Camp.TOOL_GIFTS){const g=Camp.queueGifts(inventory,campaignProgress);inventory=g.inventory;Camp.saveInventory(inventory);}
+    if(!labMode){campaignProgress=Camp.recordResult(campaignProgress,camp.level.id,{stars,moves:r.moves});Camp.saveProgress(campaignProgress);cloudSync();}
+    if(!labMode&&Camp.TOOL_STOCK&&Camp.TOOL_GIFTS){const g=Camp.queueGifts(inventory,campaignProgress);inventory=g.inventory;Camp.saveInventory(inventory);cloudSync();}
     sound.play('record');haptics.pulse('big');
     if(!reduceMotion.matches)visual.celebrateHud?.('queue-0',.3);
     // Erst kurz Konfetti über dem Brett, dann der Dialog mit den Sternen.
@@ -1316,7 +1325,7 @@ window.addEventListener('online', () => void flushPending());
 // Read-only inspection for integration checks; game state still belongs here.
 window.SquishGame={graphics,move,restart,get state(){return {board,queue,score,best,bestTile,moves,peak,busy,paused,booting,started,hasSavedGame,duelMode,duelRevision,ranked:run?{id:run.id,logLength:run.log.length,submitted:run.sub}:null};},get effects(){return mergeEffects.stats;},get sound(){return sound.stats;},get menu(){return worldMenu.stats;},get fusion(){return visual.fusion?.stats||null;},
   get campaign(){return {mode:campaignMode,lab:labMode,bombMs:camp?Camp.nextBombMs(camp.run):null,bombClock:!!camp?.run.bombClock,exploded:camp?.run.exploded??0,specials:camp?camp.run.board.flatMap((row,r)=>row.map((t,c)=>t&&Camp.specialOf(t)?{kind:Camp.specialOf(t),r,c,value:t.value,id:t.id}:null)).filter(Boolean):[],bombBadges:[...bombBadges.values()].map(e=>e.textContent),level:camp?.n??null,status:camp?.run.status??null,moves:camp?.run.moves??0,movesLeft:camp?Camp.movesLeft(camp.run):null,
-    toolsUsed:camp?.run.toolsUsed.slice()??[],progress:campaignProgress,inventory,shopOpen:shopUI.isOpen,shopStats:shopUI.stats,gift:{active:giftFx.active,phase:giftFx.phase,...giftFx.stats},lastPurchase,adOpen:adUI.isOpen,adType:adUI.type,adStats:adUI.stats,lastAd,statsOpen:statsUI.isOpen,statsStats:{opens:statsUI.stats.opens,exports:statsUI.stats.exports,resets:statsUI.stats.resets,lastExportMode:statsUI.stats.lastExportMode},toolLog:{attempts:toolLog.attempts.length,events:toolLog.events.length,current:logAttempt?{...logAttempt}:null,summary:ToolLog.summarize(toolLog)},freeTools:camp?.free?{...camp.free}:null,available:camp?availableTools():null,levelsLoaded:!!levels,resultOpen:campaignUI.resultOpen,armedTool,hintBusy,lastHint,toolFx:toolFx.stats,celebrating,timeline:campaignUI.timeline.slice()};},
+    toolsUsed:camp?.run.toolsUsed.slice()??[],progress:campaignProgress,inventory,sync:progressSync.stats,shopOpen:shopUI.isOpen,shopStats:shopUI.stats,gift:{active:giftFx.active,phase:giftFx.phase,...giftFx.stats},lastPurchase,adOpen:adUI.isOpen,adType:adUI.type,adStats:adUI.stats,lastAd,statsOpen:statsUI.isOpen,statsStats:{opens:statsUI.stats.opens,exports:statsUI.stats.exports,resets:statsUI.stats.resets,lastExportMode:statsUI.stats.lastExportMode},toolLog:{attempts:toolLog.attempts.length,events:toolLog.events.length,current:logAttempt?{...logAttempt}:null,summary:ToolLog.summarize(toolLog)},freeTools:camp?.free?{...camp.free}:null,available:camp?availableTools():null,levelsLoaded:!!levels,resultOpen:campaignUI.resultOpen,armedTool,hintBusy,lastHint,toolFx:toolFx.stats,celebrating,timeline:campaignUI.timeline.slice()};},
   // Screen point of a board cell (for input tests).
   cellPoint(row,col){const host=document.getElementById('graphics').getBoundingClientRect(),loc=location(row,col);return {x:host.left+loc.x/100*host.width,y:host.top+(loc.y+1.5)/100*host.height};}};
 // QA only (?vfxdemo=1): stage a board, then swipe with SquishGame.move().
@@ -1368,5 +1377,7 @@ export const menuActions={
   },
 };
 export const ready=start();
+// Erster Abgleich nach dem Laden, ohne den Start zu bremsen (nur wenn nötig, siehe progress-sync.mjs).
+void ready.then(()=>setTimeout(()=>{if(!duelMode)void progressSync.flush();},2500)).catch(()=>{});
 void ready.then(()=>loadLevels()).catch(()=>{});
 void ready.catch(()=> {booting=true;showNote('Die 3D-Grafik konnte nicht geladen werden. Bitte lade die Seite neu.',60000);});

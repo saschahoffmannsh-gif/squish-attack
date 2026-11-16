@@ -2,6 +2,7 @@
 // Keine echte Werbung, kein Warten, kein Netz. Comic-Stil wie der Shop.
 import { TOOL_ICONS } from './tool-icons.mjs?v=launch-18';
 import { toolName } from './campaign.mjs?v=launch-18';
+import { showRewarded } from './native-ads.mjs?v=launch-18';
 
 const DESC = { extraMoves: 'Drei Züge mehr im Level', hint: 'Spielt 2 Züge zum Ziel', rocket: 'Sprengt einen Stein weg', wand: 'Stein bekommt deine Zahl' };
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
@@ -39,9 +40,12 @@ export function createAdUI({ onWatch, onClose, sound, haptics } = {}) {
   async function doWatch() {
     if (!veil || !current) return;
     const type = current;
+    api.close({ silent: true });
+    // App: echter Clip über den nativen Adapter; Werkzeug nur, wenn er zu Ende geschaut wurde.
+    const res = await showRewarded({ placement: 'tool', tool: type });
+    if (!res.ok) return;
     stats.watched++;
     sound?.play?.('gift'); haptics?.pulse?.('merge');
-    api.close({ silent: true });
     await onWatch?.(type);
   }
   function key(ev) {

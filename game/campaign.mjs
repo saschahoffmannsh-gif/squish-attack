@@ -507,12 +507,20 @@ export function loadInventory(storage = globalThis.localStorage) {
       const n = x => Math.max(0, x | 0);
       const pending = Array.isArray(v.pending) ? v.pending.filter(g => g && typeof g.id === 'string' && TOOL_TYPES.includes(g.type) && !g.id.startsWith('stars-')).map(g => ({ id: g.id, type: g.type })) : [];
       return { ...emptyInventory(), gifts: v.gifts.slice(), pending, extraMoves: n(v.extraMoves),
-        rocket: n(v.rocket) + (v.version === 1 ? n(v.hammer) : 0), hint: n(v.hint), wand: n(v.wand) };
+        rocket: n(v.rocket) + (v.version === 1 ? n(v.hammer) : 0), hint: n(v.hint), wand: n(v.wand),
+        ...(Number.isSafeInteger(v.at) && v.at > 0 ? { at: v.at } : {}) };
     }
   } catch {}
   return emptyInventory();
 }
-export function saveInventory(inv, storage = globalThis.localStorage) {
+/**
+ * Speichert den Vorrat. `touch` (Standard) setzt `at` = jetzt: der Zeitpunkt der letzten echten
+ * Änderung, mit dem die Cloud-Synchronisierung entscheidet, welcher Vorrat neuer ist (launch-19).
+ * Einmalige Resets und übernommene Cloud-Stände speichern mit touch=false, damit ein frisches
+ * Gerät den Cloud-Vorrat nicht mit einem leeren überschreibt.
+ */
+export function saveInventory(inv, storage = globalThis.localStorage, touch = true) {
+  if (touch && inv && typeof inv === 'object') inv.at = Date.now();
   try { storage?.setItem(TOOLS_KEY, JSON.stringify(inv)); return true; } catch { return false; }
 }
 /**
@@ -542,8 +550,8 @@ export function resetStockOnce(inv, storage = globalThis.localStorage, tag = TOO
   let done = null;
   try { done = storage?.getItem(TOOL_RESET_KEY); } catch {}
   if (!tag || done === tag) return { inventory: inv, reset: false };
-  const out = { ...emptyInventory(), gifts: [...(inv?.gifts || [])], pending: [] };
-  saveInventory(out, storage);
+  const out = { ...emptyInventory(), gifts: [...(inv?.gifts || [])], pending: [], at: inv?.at || 0 };
+  saveInventory(out, storage, false);
   try { storage?.setItem(TOOL_RESET_KEY, tag); } catch {}
   return { inventory: out, reset: true };
 }
@@ -621,7 +629,7 @@ export function resetCampaignOnce(progress, inv, storage = globalThis.localStora
   if (!tag || done === tag) return { progress, inventory: inv, reset: false };
   const p = emptyProgress();
   const out = { ...addToStock(inv || emptyInventory(), {}), gifts: [], pending: [] };
-  saveProgress(p, storage); saveInventory(out, storage);
+  saveProgress(p, storage); saveInventory(out, storage, false);
   try { storage?.setItem(CAMPAIGN_RESET_KEY, tag); } catch {}
   return { progress: p, inventory: out, reset: true };
 }
