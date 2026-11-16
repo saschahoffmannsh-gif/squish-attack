@@ -6,7 +6,7 @@ import {fileURLToPath, pathToFileURL} from 'node:url';
 import puppeteer from '/workspace/squish-e2e/campaign/node_modules/puppeteer-core/lib/puppeteer/puppeteer-core.js';
 
 const ROOT = resolve(fileURLToPath(new URL('../..', import.meta.url)));
-const OUT = process.env.OUT || '/workspace/squish-art-preview';
+const OUT = process.env.OUT || '/workspace/squish-art-preview/v2';
 const PORT = Number(process.env.PORT || 8891);
 const IPHONE = {width:390, height:844, deviceScaleFactor:3, isMobile:true, hasTouch:true};
 const UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1';
@@ -127,8 +127,8 @@ await sleep(1200);
 await page.evaluate(() => {
   window.SquishVFX.setBoard([
     [null, null, null, null, null],
-    [{value:4, ice:true}, {value:4, bound:true}, {value:4, bomb:20000}, null, null],
-    [4, 4, 4, null, null],
+    [{value:4, ice:true}, {value:4, bound:true}, {value:4, bomb:20000}, 4, null],
+    [null, null, null, null, null],
     [null, null, null, null, null],
     [null, null, null, null, null],
   ]);

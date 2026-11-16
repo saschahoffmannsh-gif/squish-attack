@@ -2,7 +2,7 @@
 // Ein Level = feste Startaufstellung + feste Steinfolge + Ziele + Zuglimit.
 // Dieses Modul ist reine Logik (kein DOM). Es wird von der UI, dem Solver,
 // dem Generator und den Tests gemeinsam benutzt, damit alle exakt gleich zählen.
-import { SIZE, insertTile, settle, isGameOver, tickBombs, BOMB_MS, BOMB_UNIT_MS } from './game-logic.mjs?v=launch-21';
+import { SIZE, insertTile, settle, isGameOver, tickBombs, BOMB_MS, BOMB_UNIT_MS } from './game-logic.mjs?v=squish-art-3';
 
 export const DIRECTIONS = ['left', 'right', 'up', 'down'];
 export const QUEUE_PREVIEW = 3;
@@ -67,7 +67,7 @@ export { BOMB_MS };
 /** Solver/Hinweis/Simulation: so viel Bomben-Zeit vergeht pro Zug (Modell eines zügigen Spielers). */
 export const BOMB_MS_PER_MOVE = BOMB_UNIT_MS;
 /** Art eines Steins: 'ice' | 'bomb' | 'bound' | null. */
-export const specialOf = t => (!t ? null : t.bound ? 'bound' : t.ice ? 'ice' : t.bomb != null ? 'bomb' : null);
+export const specialOf = t => (!t ? null : t.bound ? 'bound' : t.ice ? 'ice' : t.bomb != null ? 'bomb' : t.joker ? 'joker' : null);
 function placeSpecials(level, board, ctx) {
   const sp = level.specials;
   if (!sp) return;

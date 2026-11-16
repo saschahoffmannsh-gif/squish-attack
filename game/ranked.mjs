@@ -2,7 +2,7 @@
 // Shared verbatim between the client (game/ranked.mjs) and the Edge Function.
 // A run = server-issued seed + compact move log. Replaying the log with the
 // same seed reproduces board, queue, score, moves and peak exactly.
-import { SIZE, createStartValues, insertTile, settle, isGameOver } from "./game-logic.mjs?v=launch-21";
+import { SIZE, createStartValues, insertTile, settle, isGameOver } from "./game-logic.mjs?v=squish-art-3";
 import { nextSpawn } from "./balance.mjs";
 
 export const DIRECTIONS = ["left", "right", "up", "down"];
