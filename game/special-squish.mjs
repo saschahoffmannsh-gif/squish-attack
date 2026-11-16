@@ -1,119 +1,136 @@
-// squish-art: Sonder-Squishes sind das komplette Konzept-Bild.
-//  Kein Gel-Glanz, keine Comic-Kontur, keine Seitenleiste und kein
-//  zusätzliches Shading. Die ganze Konzept-Kachel (Rand, Fase, Seite,
-//  Schattierung) liegt als unbeleuchtete Sprite-Karte auf dem Footprint;
-//  nur der weiche Kontakt-Schatten des Steins bleibt. Die Karte wird
-//  mit derselben squash/sway-Deformation wie der Gel-Körper verformt.
+// squish-art: Sonder-Squishes sind dasselbe Gel-Modell wie normale Steine
+//  (Silhouette, Tiefe, Kontur, Schatten, Wobble). Darauf liegt ein
+//  kachelbares Material (Eis / Stein / schwarz), das über alle Seiten
+//  läuft, plus ein Symbol-Decal nur auf der Oberseite. Beim Schloss
+//  setzt sich das Metallband um die Seiten fort.
 import {THREE,PARAMETERS} from '../squish/squish-graphics.js?v=play-sharp-1';
-import {applyComic} from './comic-style.mjs?v=squish-art-5';
+import {applyComic,LIGHT} from './comic-style.mjs?v=squish-art-6';
 
-const ART='squish-art-5';
-const URLS={
-  ice:new URL(`./assets/specials/ice.webp?v=${ART}`,import.meta.url).href,
-  bound:new URL(`./assets/specials/bound.webp?v=${ART}`,import.meta.url).href,
-  bomb:new URL(`./assets/specials/bomb.webp?v=${ART}`,import.meta.url).href,
-  joker:new URL(`./assets/specials/joker.webp?v=${ART}`,import.meta.url).href,
+const ART='squish-art-6f';
+const url=name=>new URL(`./assets/specials/${name}.webp?v=${ART}`,import.meta.url).href;
+
+const KINDS={
+  ice:{albedo:'ice-albedo',decal:'ice-decal',band:null,spot:1,tile:2.15,decalScale:.76,crust:1.15,bandY:0,shift:.08},
+  bound:{albedo:'stone-albedo',decal:'lock-decal',band:'band',spot:.22,tile:2.35,decalScale:.70,crust:0,bandY:.88,shift:.08},
+  bomb:{albedo:'black-albedo',decal:'bomb-decal',band:null,spot:.9,tile:1.8,decalScale:.78,crust:0,bandY:0,shift:.07},
+  joker:{albedo:'stone-albedo',decal:'joker-decal',band:'band',spot:.22,tile:2.35,decalScale:.70,crust:0,bandY:.88,shift:.08},
 };
-// Fraction of the texture that is padding around the painted stone (bake_sprite.py).
-const PAD={ice:.06543,bound:.06641,bomb:.06641,joker:.06641};
-const SEGMENTS=24;
-// Slightly larger than gel.width so the painted rim fills the visual slot of a
-// normal squish (which also carries a dark comic outline).
-const FOOT=PARAMETERS.gel.width*1.03;
 
 const textures=new Map();
-function tex(kind){
-  let t=textures.get(kind);if(t)return t;
-  t=new THREE.TextureLoader().load(URLS[kind]);
+function tex(name,{repeat=false}={}){
+  const key=name+'|'+(repeat?'r':'c');
+  let t=textures.get(key);if(t)return t;
+  t=new THREE.TextureLoader().load(url(name));
   t.colorSpace=THREE.SRGBColorSpace;
   t.generateMipmaps=true;
   t.minFilter=THREE.LinearMipmapLinearFilter;
   t.magFilter=THREE.LinearFilter;
   t.anisotropy=16;
-  t.premultiplyAlpha=false;
-  textures.set(kind,t);return t;
+  t.flipY=false;
+  if(repeat){t.wrapS=t.wrapT=THREE.RepeatWrapping;}
+  else{t.wrapS=t.wrapT=THREE.ClampToEdgeWrapping;}
+  textures.set(key,t);return t;
 }
-tex('ice');tex('bound');tex('bomb');tex('joker');
 
-const cardVert=`varying vec2 vUv;
-void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
-const cardFrag=`uniform sampler2D uMap;varying vec2 vUv;
+const bodyVert=`varying vec3 vN;varying vec3 vP;
+void main(){vP=position;vN=normalize(mat3(modelMatrix)*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
+
+const bodyFrag=`uniform sampler2D uAlbedo,uDecal,uBand;
+uniform vec3 uL;uniform float uSpot,uTile,uDecalScale,uDecalShift,uCrust,uHasBand,uBandY,uBandW,uWidth,uRadius,uHeight;
+varying vec3 vN;varying vec3 vP;
+float aastep(float e,float x){float w=max(fwidth(x),1e-4)*.75;return smoothstep(e-w,e+w,x);}
+float sdRoundBox(vec2 p,vec2 b,float r){vec2 q=abs(p)-b+r;return min(max(q.x,q.y),0.)+length(max(q,0.))-r;}
 void main(){
-  vec4 t=texture2D(uMap,vUv);
-  if(t.a<0.04)discard;
-  gl_FragColor=t;
+  float nl=length(vN);vec3 N=nl>1e-5?vN/nl:vec3(0.,1.,0.);
+  // Kachelbares Material, triplanar — oben und Seiten ohne Naht.
+  vec3 an=abs(N);an=pow(an,vec3(4.));an/=max(an.x+an.y+an.z,1e-5);
+  float ts=uTile/max(uWidth,1e-3);
+  vec3 cx=texture2D(uAlbedo,vec2(vP.z,vP.y)*ts).rgb;
+  vec3 cy=texture2D(uAlbedo,vec2(vP.x,vP.z)*ts).rgb;
+  vec3 cz=texture2D(uAlbedo,vec2(vP.x,vP.y)*ts).rgb;
+  vec3 mat=cx*an.x+cy*an.y+cz*an.z;
+  float top=smoothstep(.45,.78,N.y);
+
+  // Frostkruste am oberen Rand (Eis).
+  if(uCrust>0.){
+    float halfW=uWidth*.5;
+    float d=sdRoundBox(vP.xz,vec2(halfW,halfW),uRadius);
+    float crust=(1.-smoothstep(-.02,.11,abs(d)))*smoothstep(.25,.8,N.y);
+    float sideFrost=(1.-smoothstep(.55,.95,N.y))*smoothstep(.2,.65,N.y)*(1.-smoothstep(.1,.22,abs(d)));
+    vec3 frost=vec3(.90,.96,.99);
+    mat=mix(mat,frost,(crust*.55+sideFrost*.4)*uCrust);
+  }
+
+  // Symbol nur auf der Oberseite, zentriert in XZ.
+  vec2 tUv=vP.xz/uWidth+.5;
+  tUv.y-=uDecalShift;
+  vec2 dUv=(tUv-.5)/max(uDecalScale,.05)+.5;
+  float inDec=step(0.,dUv.x)*step(0.,dUv.y)*step(dUv.x,1.)*step(dUv.y,1.);
+  vec4 dec=texture2D(uDecal,dUv);
+  mat=mix(mat,dec.rgb,dec.a*inDec*top);
+
+  // Gleiche Cel-Modellierung wie normale Squishes, als Multiplikator auf dem Material.
+  float nd=dot(N,normalize(uL))*.5+.5;
+  float lit=mix(.62,1.,aastep(.5,nd));
+  float topLit=mix(.78,1.,smoothstep(-.05,.9,N.y));
+  vec3 c=mat*lit*topLit;
+
+  // Schloss-Band nach der Beleuchtung, damit Silber gegen Stein klar bleibt.
+  if(uHasBand>0.){
+    float by=(vP.y-uBandY)/max(uBandW,.001);
+    float bMask=(1.-smoothstep(.42,.62,abs(by)))*(1.-smoothstep(.88,.98,N.y));
+    float uS=atan(vP.x,vP.z)*0.159154943+.5;
+    vec3 b1=texture2D(uBand,vec2(uS,by*.85+.5)).rgb;
+    vec3 b2=texture2D(uBand,vec2(fract(uS+.5),by*.85+.5)).rgb;
+    float seam=1.-smoothstep(.02,.1,min(uS,1.-uS));
+    vec3 grain=mix(b1,b2,seam*.5);
+    float edge=smoothstep(.26,.52,abs(by));
+    float shine=exp(-pow((by+0.16)*3.4,2.));
+    vec3 metal=mix(vec3(.90,.92,.97),vec3(.14,.14,.16),edge);
+    metal=mix(metal,vec3(1.),shine*.5);
+    metal*=mix(vec3(1.),.55+grain*.7,.18);
+    metal*=mix(.90,1.,lit);
+    c=mix(c,metal,bMask*uHasBand);
+  }
+  vec2 q=vP.xz/(uWidth*.5);
+  float g=length((q-vec2(-.52,-.46))*vec2(1.,1.7)),g2=length(q-vec2(-.2,-.62));
+  float spot=max(1.-aastep(.17*max(uSpot,.001),g),1.-aastep(.065*max(uSpot,.001),g2))*aastep(.6,N.y);
+  gl_FragColor=vec4(c,1.);
+  #include <tonemapping_fragment>
+  gl_FragColor.rgb=mix(gl_FragColor.rgb,vec3(1.),spot*uSpot);
   #include <colorspace_fragment>
 }`;
 
-function cardMaterial(kind){
-  const m=new THREE.ShaderMaterial({
-    uniforms:{uMap:{value:tex(kind)}},
-    vertexShader:cardVert,fragmentShader:cardFrag,
-    transparent:true,depthWrite:true,toneMapped:false,side:THREE.DoubleSide,
+const dummyBand=(()=>{const t=tex('band',{repeat:true});return t;})();
+
+function specialBodyMaterial(kind){
+  const cfg=KINDS[kind];if(!cfg)return null;
+  const mat=new THREE.ShaderMaterial({
+    uniforms:{
+      uAlbedo:{value:tex(cfg.albedo,{repeat:true})},
+      uDecal:{value:tex(cfg.decal,{repeat:false})},
+      uBand:{value:cfg.band?tex(cfg.band,{repeat:true}):dummyBand},
+      uL:{value:LIGHT.clone()},
+      uSpot:{value:cfg.spot},
+      uTile:{value:cfg.tile},
+      uDecalScale:{value:cfg.decalScale},
+      uDecalShift:{value:cfg.shift||0},
+      uCrust:{value:cfg.crust},
+      uHasBand:{value:cfg.band?1:0},
+      uBandY:{value:cfg.bandY},
+      uBandW:{value:.20},
+      uWidth:{value:PARAMETERS.gel.width},
+      uRadius:{value:PARAMETERS.gel.radius},
+      uHeight:{value:PARAMETERS.gel.height},
+    },
+    vertexShader:bodyVert,fragmentShader:bodyFrag,toneMapped:true,
   });
-  m.userData.special=kind;
-  return m;
-}
-
-function cameraFacingQuat(){
-  const c=PARAMETERS.camera,p=c.position,t=c.target||[0,.1,0];
-  const normal=new THREE.Vector3(p[0]-t[0],p[1]-t[1],p[2]-t[2]).normalize();
-  return new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,1),normal);
-}
-
-function makeCardGeometry(kind){
-  const pad=PAD[kind]??PAD.bound;
-  const span=FOOT/(1-2*pad);
-  const geo=new THREE.PlaneGeometry(span,span,SEGMENTS,SEGMENTS);
-  const q=cameraFacingQuat();
-  const lift=PARAMETERS.gel.height*.52;
-  const pos=geo.attributes.position;
-  const v=new THREE.Vector3();
-  for(let i=0;i<pos.count;i++){
-    v.set(pos.getX(i),pos.getY(i),pos.getZ(i)).applyQuaternion(q);
-    v.y+=lift;
-    pos.setXYZ(i,v.x,v.y,v.z);
-  }
-  pos.needsUpdate=true;
-  geo.computeVertexNormals();
-  geo.computeBoundingSphere();
-  return geo;
-}
-
-function deformGeometry(geometry,rest,pose){
-  if(!pose||!rest)return;
-  const out=geometry.attributes.position.array;
-  const squash=pose.squash||0,sway=pose.sway||0,swayZ=pose.swayZ||0;
-  const p=1-squash,h=PARAMETERS.gel.height,spread=PARAMETERS.motion.spreadFactor;
-  for(let i=0;i<rest.length;i+=3){
-    const x=rest[i],y=rest[i+1],z=rest[i+2];
-    const a=Math.pow(Math.max(0,y)/h,1.7);
-    const d=1+squash*a*spread;
-    out[i]=x*d+sway*a;
-    out[i+1]=y*p;
-    out[i+2]=z*d+swayZ*a;
-  }
-  geometry.attributes.position.needsUpdate=true;
-}
-
-export function deformSpecial(s){
-  const mesh=s.specialDecor;if(!mesh||!s.deformation)return;
-  deformGeometry(mesh.geometry,mesh.userData.rest,s.deformation);
+  mat.name='Special_body';
+  mat.userData.special=kind;
+  return mat;
 }
 
 function outlineOf(s){return s.body?.children?.find(o=>o.name==='Comic_outline')||null;}
-
-function setGelPass(s,hide){
-  const body=s.body;
-  if(body){
-    if(body.material){body.material.colorWrite=!hide;body.material.depthWrite=!hide;}
-    // Keep the pillow as a shadow-only stand-in so the soft drop shadow matches.
-    // The pillow silhouette must not paint a second shadow halo around the art.
-    body.castShadow=!hide;
-  }
-  const o=outlineOf(s);if(o)o.visible=!hide;
-  if(s.bubbles)s.bubbles.visible=!hide;
-}
 
 function disposeDecor(mesh){
   if(!mesh)return;
@@ -124,79 +141,45 @@ function disposeDecor(mesh){
   mesh.material?.dispose?.();
 }
 
-const shadowVert=`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
-const shadowFrag=`varying vec2 vUv;
-void main(){
-  vec2 q=abs(vUv*2.-1.)-vec2(.22);
-  float e=length(max(q,0.))+min(max(q.x,q.y),0.)-.46;
-  float core=1.-smoothstep(-.02,.12,e);
-  float pen=1.-smoothstep(-.04,.36,e);
-  gl_FragColor=vec4(0.,0.,0.,.42*core+.16*pen);
-}`;
-function makeShadow(){
-  const geo=new THREE.PlaneGeometry(FOOT*1.22,FOOT*1.18,1,1);
-  geo.rotateX(-Math.PI/2);
-  geo.translate(0,.03,FOOT*0.04);
-  const mat=new THREE.ShaderMaterial({
-    vertexShader:shadowVert,fragmentShader:shadowFrag,
-    transparent:true,depthWrite:false,toneMapped:false,side:THREE.DoubleSide,
-  });
-  const mesh=new THREE.Mesh(geo,mat);
-  mesh.name='Special_shadow';
-  mesh.castShadow=false;mesh.receiveShadow=false;
-  mesh.renderOrder=1;mesh.frustumCulled=false;
-  mesh.raycast=()=>{};
-  return mesh;
-}
-
-function attachCard(s,kind){
-  const prev=s.specialDecor;
+function setBody(s,kind){
+  const body=s.body;if(!body)return;
+  // v3-Karte entfernen, falls noch eine am Group hängt.
+  if(s.specialDecor){disposeDecor(s.specialDecor);s.specialDecor=null;}
+  if(body.material){body.material.colorWrite=true;body.material.depthWrite=true;}
+  body.visible=true;body.castShadow=true;
+  const prev=body.material;
   if(prev?.userData?.special===kind){
-    setGelPass(s,true);
+    const o=outlineOf(s);if(o)o.visible=true;
     return;
   }
-  if(prev)disposeDecor(prev);
-  const geometry=makeCardGeometry(kind);
-  const mesh=new THREE.Mesh(geometry,cardMaterial(kind));
-  mesh.name='Special_card';
-  mesh.castShadow=false;
-  mesh.receiveShadow=false;
-  mesh.renderOrder=3;
-  mesh.frustumCulled=false;
-  mesh.userData.special=kind;
-  mesh.userData.rest=geometry.attributes.position.array.slice();
-  mesh.userData.squish=s;
-  mesh.onBeforeRender=function(){
-    const host=this.userData.squish;
-    if(host?.deformation)deformGeometry(this.geometry,this.userData.rest,host.deformation);
-  };
-  const shadow=makeShadow();
-  s.group.add(mesh);
-  s.group.add(shadow);
-  mesh.userData.shadow=shadow;
-  s.specialDecor=mesh;
-  setGelPass(s,true);
+  body.material=specialBodyMaterial(kind);
+  if(prev&&prev!==body.material)setTimeout(()=>prev.dispose(),0);
+  const o=outlineOf(s);if(o)o.visible=true;
+  if(s.bubbles)s.bubbles.visible=false;
 }
 
 function restoreBody(s){
   if(s.specialDecor){disposeDecor(s.specialDecor);s.specialDecor=null;}
-  setGelPass(s,false);
+  const body=s.body;if(!body)return;
+  if(body.material){body.material.colorWrite=true;body.material.depthWrite=true;}
+  if(body.material?.userData)body.material.userData.special=null;
+  body.visible=true;body.castShadow=true;
   applyComic(s,s.value);
   const o=outlineOf(s);if(o)o.visible=true;
 }
 
 let runtime={job:null,reduced:()=>false};
 export function setSpecialRuntime(r){runtime={job:r.job||null,reduced:r.reduced||(()=>false)};}
+// v3-Hook: keine Extra-Geometrie mehr, das Gel wird vom SDK verformt.
+export function deformSpecial(s){}
 
 function cancelFree(s){
   const j=s.userData?.freeJob;if(!j)return;s.userData.freeJob=null;j.cancel?.();
 }
-
 function finishFree(s){
   restoreBody(s);
   if(s.label){s.label.visible=true;if(s.label.material&&s.label.material.opacity!=null)s.label.material.opacity=1;}
 }
-
 function popFree(s){
   cancelFree(s);
   if(!runtime.job||runtime.reduced()||s.group?.visible===false){finishFree(s);return;}
@@ -215,7 +198,6 @@ function popFree(s){
   };
   (s.userData||={}).freeJob=job;runtime.job(job);
 }
-
 function labelOf(s,kind){
   if(!s.label)return;
   if(s.userData?.freeJob)return;
@@ -228,15 +210,13 @@ export function applySpecial(s,kind,{freed=false}={}){
   const prev=s.special||null;
   if(prev!==kind){
     cancelFree(s);
-    if(kind)attachCard(s,kind);
+    if(kind)setBody(s,kind);
     else popFree(s);
     s.special=kind;
   }else if(kind){
-    attachCard(s,kind);
-  }else{
-    setGelPass(s,false);
+    setBody(s,kind);
   }
   labelOf(s,kind);
-  if(kind)setGelPass(s,true);
+  const o=outlineOf(s);if(o)o.visible=true;
   return prev!==kind;
 }
