@@ -1,0 +1,3 @@
+/* App Tracking Transparency (ATT): system prompt text */
+"NSUserTrackingUsageDescription" = "This lets us show you more relevant ads. Squish Attack works fine without it.";
+"CFBundleDisplayName" = "Squish Attack";

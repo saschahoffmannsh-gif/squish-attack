@@ -25,6 +25,7 @@
     "capacitor-secure-storage-plugin": "^0.14.2"
   },
   "devDependencies": {
-    "@capacitor/cli": "^8.6.2"
+    "@capacitor/cli": "^8.6.2",
+    "xcode": "^3.0.1"
   }
 }
