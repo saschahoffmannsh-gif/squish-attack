@@ -152,6 +152,7 @@ function loadLab(){
     .catch(error=>{labLoading=null;throw error;});
 }
 const levelList=()=>labMode?labLevels:levels;
+const labHudLabel=()=>{const title=hasKey('lab.title.'+camp.n)?t('lab.title.'+camp.n):(camp.level.title||'');return t('campaign.hudLab',{n:camp.n,title:title.toUpperCase()});};
 function levelNote(){
   if(!camp)return '';
   const goals=camp.level.goals.map(Camp.goalText).join(' + ');
@@ -214,6 +215,7 @@ const campaignUI=createCampaignUI({
   onStar:i=>{sound.play('star',i+1);haptics.pulse(i===2?'big':'merge');},
   reduceMotion,
 });
+onLangChange(()=>{if(labMode&&camp&&campaignMode)campaignUI.renderHud(camp.run,camp.n,labHudLabel());});
 const availableTools=()=>Camp.toolsAvailable(inventory,camp?.free);
 /** Ladung reservieren (zuerst gratis, dann Inventar). Gibt eine commit-Funktion zurück oder null. */
 function takeTool(type){
@@ -298,7 +300,7 @@ async function openGift(){
 }
 function renderCampaign(){
   if(!campaignMode||!camp)return;
-  campaignUI.renderHud(camp.run,camp.n,labMode?`TEST ${camp.n} · ${camp.level.title.toUpperCase()}`:null);
+  campaignUI.renderHud(camp.run,camp.n,labHudLabel());
   const room=camp.run.level.sequence.length-Camp.moveLimit(camp.run);
   campaignUI.renderTools(availableTools(),{refill:refillMode(),canExtra:room>0&&camp.run.status!=='won'&&!hintBusy,armed:armedTool,busy:hintBusy?'hint':null,locked:hintBusy||camp.run.status!=='playing'});
 }
