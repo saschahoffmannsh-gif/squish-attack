@@ -9,7 +9,7 @@ nur in der App: Werbung über AdMob, später In-App-Käufe über StoreKit.
 - Capacitor packt den Ordner der Website **lokal** in die App. Es wird kein Code aus dem Netz
   nachgeladen, also keine Live-Updates und kein `server.url`. Damit ist App-Store-Richtlinie
   2.5.2 erfüllt.
-- Das Netz wird nur für **Daten** genutzt: Bestenliste, Cloud-Spielstand, Fortschritt und Duell.
+- Das Netz wird nur für **Daten** genutzt: Cloud-Spielstand, Fortschritt und Duell (eine Bestenliste gibt es nicht mehr).
   Fällt es aus, läuft das Spiel trotzdem (offline zuerst; geprüft in den e2e-Tests von launch-19).
 - Pro App-Version gibt es eine feste Build-Kennung (`launch-N`). Neue Inhalte kommen nur per
   App-Update.
@@ -70,7 +70,7 @@ Mobile Ads SDK und die UMP-Einwilligung.
 |---|---|---|
 | Abenteuer: leeres Hilfsmittel → „Ansehen“ | **Rewarded** | freiwillig; Belohnung = 1 Hilfsmittel; nur wenn der Clip zu Ende geschaut wurde |
 | Abenteuer: nach jedem 10. gewonnenen Level (Wiederholungen zählen) | **Interstitial** | Pflichtwerbung, erst vor dem nächsten Level, nie mitten im Level |
-| Endlos: alle 10 Minuten ein Angebot, direkt nach einem Zug (wenn die Animationen fertig sind) | **Rewarded** (Angebot, kann weggedrückt werden) | Belohnung = **ein Werkzeug für den Abenteuer-Vorrat** (reihum Extra-Züge, Rakete, Tipp, Zauberstab; Protokoll-Quelle `ad`); das Endlos-Brett wird nicht verändert, die Runde bleibt gewertet; **kein** Weiterspielen nach Game Over |
+| Endlos: alle 10 Minuten ein Angebot, direkt nach einem Zug (wenn die Animationen fertig sind) | **Rewarded** (Angebot, kann weggedrückt werden) | Belohnung = **ein Werkzeug für den eigenen Endlos-Vorrat** (reihum Rakete, Zauberstab; Protokoll-Quelle `ad-endless`), direkt in Endlos-Runden einsetzbar; der Abenteuer-Vorrat bleibt unberührt; **kein** Weiterspielen nach Game Over |
 | Geschenke nach Level 3/6/10/20 | – | bleiben gratis |
 
 Werbefrei-Kauf: gestrichen. Energie-Systeme: keine.
@@ -98,7 +98,7 @@ window.SquishNative.registerNativeAds({
 
 **Im Spiel noch offen** (kommt mit der App-Hülle, braucht Sascha nicht):
 - Interstitial nach jedem 10. Level aufrufen (`showInterstitial`). Ohne Adapter passiert nichts.
-- Endlos: 10-Minuten-Timer, Angebot nach einem Zug, Werkzeug für den Abenteuer-Vorrat (umgesetzt in `app-shell`).
+- Endlos: 10-Minuten-Timer, Angebot nach einem Zug, Werkzeug für den Endlos-Vorrat (Rakete/Zauberstab), lokal + Cloud (umgesetzt in `app-shell`).
 
 ### 3.2 In-App-Käufe (StoreKit), später
 
@@ -149,7 +149,6 @@ Reihenfolge beim ersten Start, bevor Werbung geladen wird:
 5. **App-Datenschutz-Angaben in App Store Connect** (Vorschlag):
    - *Kennungen, Nutzer-ID:* der anonyme Spieler-Token. Nicht mit der Identität verknüpft, App-Funktion.
    - *Nutzungsdaten, Produktinteraktion:* Fortschritt, Punkte. App-Funktion.
-   - *Sonstige Daten:* Spitzname in der Bestenliste (freiwillig).
    - Mit AdMob zusätzlich: *Kennungen, Geräte-ID* (IDFA, nur mit ATT-Erlaubnis), *Nutzungsdaten,
      Werbedaten*, *Diagnose*. Zweck: Werbung von Drittanbietern; bei ATT-Erlaubnis „Tracking“.
 6. **Altersfreigabe:** Das Spiel richtet sich nicht an Kinder unter 13. Sonst gelten strengere
@@ -172,8 +171,7 @@ Reihenfolge beim ersten Start, bevor Werbung geladen wird:
 
 **2. Kurz gesagt**
 Du kannst Squish Attack ohne Konto, ohne E-Mail und ohne Namen spielen. Wir speichern nur, was
-das Spiel braucht: eine zufällige Spieler-Kennung, deinen Spielstand und, wenn du möchtest, einen
-Spitznamen für die Bestenliste. In der App zeigen wir Werbung von Google AdMob. Dafür fragen wir
+das Spiel braucht: eine zufällige Spieler-Kennung und deinen Spielstand. In der App zeigen wir Werbung von Google AdMob. Dafür fragen wir
 dich vorher um Erlaubnis.
 
 **3. Welche Daten wir verarbeiten**
@@ -181,11 +179,8 @@ dich vorher um Erlaubnis.
   auf deinem Gerät. Unser Server speichert nur einen daraus berechneten, nicht umkehrbaren Wert
   (SHA-256). Daraus lässt sich nicht ablesen, wer du bist.
 - **Spielstand und Fortschritt:** Endlos-Spielstand, Punkte, freigespielte Level, Sterne, beste
-  Züge und Hilfsmittel-Vorrat. Damit dein Spielstand gesichert ist und auf deinem Gerät
+  Züge und Hilfsmittel-Vorrat (Abenteuer und Endlos). Damit dein Spielstand gesichert ist und auf deinem Gerät
   wiederhergestellt werden kann.
-- **Bestenliste:** Punkte, höchster Stein, Zahl der Züge, Datum und der Spitzname, den du
-  freiwillig eingibst. Diese Einträge sind **öffentlich** in der Bestenliste sichtbar. Ohne
-  Spitzname erscheinst du als „Anonym“.
 - **Duell:** Für die Dauer eines Duells der Spielverlauf beider Spieler. Duell-Räume werden nach
   spätestens einer Stunde gelöscht.
 - **Technische Daten:** Zum Schutz vor Missbrauch (Begrenzung der Anfragen) verarbeiten wir deine
@@ -193,7 +188,7 @@ dich vorher um Erlaubnis.
   und der wird nach höchstens 2 Tagen gelöscht.
 
 **4. Zweck und Rechtsgrundlage**
-- Bereitstellung des Spiels, Spielstand, Bestenliste und Duell: Art. 6 Abs. 1 lit. b DSGVO
+- Bereitstellung des Spiels, Spielstand und Duell: Art. 6 Abs. 1 lit. b DSGVO
   (Nutzung des Spiels) und lit. f (berechtigtes Interesse an einem funktionierenden, fairen Spiel).
 - Missbrauchsschutz: Art. 6 Abs. 1 lit. f DSGVO.
 - Personalisierte Werbung und Tracking: nur mit deiner Einwilligung, Art. 6 Abs. 1 lit. a DSGVO
@@ -204,8 +199,9 @@ dich vorher um Erlaubnis.
 - Endlos-Spielstand: wird gelöscht, wenn er 90 Tage nicht benutzt wurde.
 - Fortschritt (Level, Sterne, Vorrat): [bis zu 24 Monate nach der letzten Nutzung. Die
   automatische Löschung ist noch einzurichten.]
-- Bestenliste: Die Wochenliste wird nach 8 Wochen gelöscht, die Allzeit-Liste bleibt, solange es
-  das Spiel gibt. Auf Wunsch löschen wir deinen Eintrag.
+- [Alte Bestenliste-Einträge aus der Web-Version: Die Bestenliste ist abgeschaltet, die Daten liegen
+  noch im Backend. Ob und wann sie gelöscht werden, entscheidet Sascha; bis dahin auf Wunsch Löschung
+  einzelner Einträge.]
 - Daten auf deinem Gerät: bis du die App löschst.
 
 **6. Empfänger und Dienstleister**

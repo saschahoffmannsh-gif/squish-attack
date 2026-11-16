@@ -2,8 +2,8 @@
 
 Stand: 16.11.2026, Branch `app-shell`, Spiel-Stand `launch-19`.
 Die App ist eine Hülle (Capacitor 8) um das unveränderte Spiel aus `game/`. Das Spiel liegt **im
-App-Paket**, es wird nichts aus dem Netz nachgeladen. Das Netz braucht die App nur für Bestenliste,
-Cloud-Sicherung und Werbung. Die Web-Version auf GitHub Pages bleibt, wie sie ist.
+App-Paket**, es wird nichts aus dem Netz nachgeladen. Das Netz braucht die App nur für Cloud-Sicherung,
+Duell und Werbung. Eine Bestenliste gibt es im Spiel nicht mehr (auf `app-shell` entfernt). Die Web-Version auf GitHub Pages bleibt, wie sie ist.
 
 Alles, was zur App gehört, liegt im Ordner `app/`.
 
@@ -59,16 +59,20 @@ Spiel. Werbung läuft mit **Google-Test-Anzeigen** (Banner „Test Ad“). Echte
 
 ### Was du auf dem iPhone testen solltest
 
-- **Start offline:** Flugmodus an, App starten. Das Spiel muss laufen, nur Bestenliste und Sync fehlen.
+- **Start offline:** Flugmodus an, App starten. Das Spiel muss laufen, nur Sync und Duell fehlen.
 - **Haptik:** Bei Zügen und Merges vibriert es spürbar (Einstellungen → Vibration ist in der App an).
 - **Abenteuer:** Leeres Hilfsmittel → „Ansehen“ → Test-Video bis zum Ende → +1 Hilfsmittel.
   Schließt du das Video vorher, gibt es nichts.
 - **Zwischenwerbung:** nach jedem 10. gewonnenen Level (Wiederholungen zählen mit), immer erst
   **vor** dem nächsten Level.
-- **Endlos:** nach je 10 Minuten Spielzeit kommt nach einem Zug das Angebot „Werkzeug fürs Abenteuer“.
-  „Nein danke“ schließt es. Ansehen legt **ein Werkzeug in deinen Abenteuer-Vorrat**, reihum
-  Extra-Züge → Rakete → Tipp → Zauberstab. Die Endlos-Runde selbst bleibt unverändert und gewertet.
-  Nach Game Over gibt es kein Weiterspielen.
+- **Endlos:** nach je 10 Minuten Spielzeit kommt nach einem Zug das Angebot „Werkzeug für Endlos“.
+  „Nein danke“ schließt es. Ansehen legt **ein Werkzeug in den eigenen Endlos-Vorrat** (getrennt vom
+  Abenteuer-Vorrat), reihum Rakete → Zauberstab. Unten links erscheint dann ein Knopf mit Anzahl:
+  antippen, dann einen Stein antippen. Die Rakete sprengt den Stein weg, der Zauberstab gibt ihm
+  eine neue Zahl aus der aktuellen Stein-Spanne (danach wird normal verschmolzen). Extra-Züge und
+  Tipp gibt es in Endlos nicht (kein Ziel, kein Zuglimit). Nach Game Over gibt es kein
+  Weiterspielen und keine Werkzeuge. Der Endlos-Vorrat liegt lokal und wird mit der Cloud
+  abgeglichen (Feld `einv`, siehe unten).
 - **Spielstand über Neuinstallation:** ein paar Level spielen, App löschen, neu installieren
   (▶ in Xcode). Die Sterne kommen über den Schlüsselbund und die Cloud-Sicherung zurück.
 - **Hochformat:** Drehen ändert nichts, Zoomen und Gummiband-Scrollen gehen nicht.
@@ -149,6 +153,7 @@ app/
   ios/App/                Xcode-Projekt (Swift Package Manager, keine CocoaPods nötig)
 game/native.mjs           Brücke im Spiel: Haptik, Bildschirm wach, Speichern bei App-Pause (im Browser ohne Wirkung)
 game/ad-pacing.mjs        Werbe-Takt: jedes 10. gewonnene Level, Endlos-Angebot alle 10 Minuten, Belohnung reihum
+game/endless-tool.mjs     Endlos-Vorrat (Rakete/Zauberstab): lokal speichern, Knopfleiste unten links
 ```
 
 Plugins: `@capacitor-community/admob` (Google Mobile Ads + UMP + ATT), `@capgo/native-purchases`
@@ -167,3 +172,19 @@ kommt vom Ursprung `capacitor://localhost`, den die Funktion per CORS schon erla
 - **Signing-Fehler „No profiles for …“:** Team auswählen bzw. Bundle Identifier ändern.
 - **Keine Test-Werbung:** Erst nach dem Einwilligungsdialog wird Werbung geladen. Im Simulator und
   ohne Netz kommt keine. Das Spiel läuft trotzdem; es gibt dann einfach kein Hilfsmittel.
+
+## Endlos-Vorrat und Cloud
+
+- Lokal: `localStorage` `squish-endless-tools-v1` = `{rocket, wand, at}`.
+- Cloud: `PUT /progress` trägt zusätzlich `einv:{rocket,wand}` und `einvAt`. Neuerer Stand gewinnt.
+  Die Web-Version schickt das Feld nicht; der Server behält dann den gespeicherten Endlos-Vorrat.
+- Werkzeug-Protokoll: Gutschrift aus dem Endlos-Angebot mit Quelle `ad-endless`.
+- Backend: Änderung liegt auf Branch `endless-inventory` im Backend-Repo (rückwärtskompatibel,
+  Backend-Tests grün). **Noch nicht deployt.** Bis zum Deploy wirft der laufende Server das Feld
+  weg, die App behält den Vorrat dann nur lokal (nichts geht verloren).
+
+## Bestenliste entfernt
+
+Auf `app-shell` gibt es keine Bestenliste mehr: kein Menüpunkt, kein Bildschirm, keine Namenseingabe,
+kein Senden von Punkten, kein Abruf. Die Tabelle `sq_leaderboard` und ihre Zeilen im Backend bleiben
+unangetastet, sie werden nur nicht mehr benutzt.
