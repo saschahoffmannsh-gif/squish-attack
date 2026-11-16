@@ -111,18 +111,18 @@
         </style>
     <link rel="stylesheet" href="graphics.css" />
     <link rel="stylesheet" href="fixed-screen.css?v=glass-menu-1" />
-    <link rel="stylesheet" href="duel.css?v=launch-21" />
+    <link rel="stylesheet" href="duel.css?v=launch-22" />
     <link rel="stylesheet" href="reward-effects.css?v=vfx-1" />
     <link rel="stylesheet" href="menu.css?v=glass-title-1" />
     <link rel="stylesheet" href="title-menu.css?v=3" />
-    <link rel="stylesheet" href="clean-screen.css?v=launch-21" />
+    <link rel="stylesheet" href="clean-screen.css?v=launch-22" />
     <link rel="stylesheet" href="combo.css?v=combo-1" />
-    <link rel="stylesheet" href="campaign.css?v=launch-21" />
-    <link rel="stylesheet" href="autumn-ui.css?v=launch-21" />
-    <link rel="stylesheet" href="comic-ui.css?v=launch-21" />
-    <link rel="stylesheet" href="tools.css?v=launch-21" />
-    <link rel="stylesheet" href="store.css?v=launch-21" />
-    <link rel="stylesheet" href="ads.css?v=launch-21" />
+    <link rel="stylesheet" href="campaign.css?v=launch-22" />
+    <link rel="stylesheet" href="autumn-ui.css?v=launch-22" />
+    <link rel="stylesheet" href="comic-ui.css?v=launch-22" />
+    <link rel="stylesheet" href="tools.css?v=launch-22" />
+    <link rel="stylesheet" href="store.css?v=launch-22" />
+    <link rel="stylesheet" href="ads.css?v=launch-22" />
   </head>
   <body>
     <div class="aw-bg" id="aw-bg" aria-hidden="true"></div>
@@ -230,6 +230,7 @@
       <section class="campaign-hud" id="campaign-hud" aria-label="Level-Ziel" hidden>
         <div class="campaign-goal"><span class="campaign-level" id="campaign-level">LEVEL 1</span><ul id="campaign-goals" aria-live="polite"></ul></div>
         <div class="campaign-moves"><span>ZÜGE</span><output id="campaign-moves" aria-live="polite">0</output></div>
+        <p class="campaign-tip" id="campaign-tip" hidden></p>
       </section>
       <div class="campaign-tools" id="campaign-tools" hidden>
         <button class="campaign-tool" id="tool-extra" type="button"><span class="ct-ico ct-plus" aria-hidden="true">+3</span><small>Züge</small><b data-count>0</b></button>
@@ -348,10 +349,10 @@
         <button class="duel-back" id="duel-close" type="button">Zurück zum Menü</button>
       </div>
     </section>
-    <script src="config.js?v=launch-21"></script>
+    <script src="config.js?v=launch-22"></script>
     <script>
     (function(){
-      var BUILD='launch-21';
+      var BUILD='launch-22';
       var key='squish-build-reload';
       fetch('build.txt?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.text();}).then(function(v){
         v=(v||'').trim();
@@ -362,7 +363,7 @@
       }).catch(function(){});
     })();
     </script>
-    <script type="module" src="debug-overlay.mjs?v=launch-21"></script>
-    <script type="module" src="loading-screen.mjs?v=launch-21"></script>
+    <script type="module" src="debug-overlay.mjs?v=launch-22"></script>
+    <script type="module" src="loading-screen.mjs?v=launch-22"></script>
   </body>
 </html>

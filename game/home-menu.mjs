@@ -1,8 +1,8 @@
 // Startbildschirm und Modus-Menüs im Herbst-Design (reines DOM, kein 3D).
 // Ersetzt das frühere 3D-Glastisch-Menü (world-menu.mjs) mit derselben
 // Schnittstelle, die game.mjs und start-menu.mjs erwarten.
-import {ICONS,TILE_ICONS,leafSvg} from './aw-icons.mjs?v=launch-21';
-import {BUILD} from './flags.mjs?v=launch-21';
+import {ICONS,TILE_ICONS,leafSvg} from './aw-icons.mjs?v=launch-22';
+import {BUILD} from './flags.mjs?v=launch-22';
 
 const LEAF_COLORS=['#f07a1c','#e8541a','#c9301c','#f2a01e','#d94a17','#b8321a','#ffb030'];
 const fmt=n=>Number(n||0).toLocaleString('de-DE');
@@ -94,19 +94,56 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
   }
 
   // ---------- Bildschirme ----------
+  const LOCK_HINT='Schalte frei: Abenteuer Level 1–5';
+  function decorateLock(b,label){
+    b.classList.add('is-locked');b.dataset.locked='1';
+    const badge=page.createElement('span');badge.className='aw-lock';badge.innerHTML=ICONS.lock||'';
+    badge.setAttribute('aria-hidden','true');b.append(badge);
+    b.setAttribute('aria-label',`${label}, gesperrt. ${LOCK_HINT}`);
+    return b;
+  }
+  function lockedTap(b){
+    tap('tap');
+    b.classList.remove('aw-wobble');void b.offsetWidth;b.classList.add('aw-wobble');
+    say(LOCK_HINT,2800);
+  }
+  function burstUnlock(b){
+    b.classList.add('is-unlocking');
+    const badge=page.createElement('span');badge.className='aw-lock is-burst';badge.innerHTML=ICONS.lock||'';
+    badge.setAttribute('aria-hidden','true');b.append(badge);
+    const r=reduced();
+    if(!r){
+      for(let i=0;i<6;i++){
+        const s=page.createElement('i');s.className='aw-spark';
+        const a=i/6*Math.PI*2,d=28+i%2*10;
+        s.style.setProperty('--sx',`${Math.cos(a)*d}px`);s.style.setProperty('--sy',`${Math.sin(a)*d-8}px`);
+        s.style.left='auto';s.style.right='16px';s.style.top='50%';s.style.marginTop='-4px';
+        b.append(s);setTimeout(()=>s.remove(),700);
+      }
+    }
+    setTimeout(()=>{badge.remove();b.classList.remove('is-unlocking');},r?0:750);
+  }
   function homeItems(){
+    const unlocked=!!hooks.campaign?.summary?.().modesUnlocked;
+    const celebrate=unlocked&&hooks.consumeUnlockCelebration?.();
     const tiles=page.createElement('div');tiles.className='aw-tiles';
     tiles.append(
       tile({label:'Levels',icon:'star',action:()=>{tap();hooks.setMode?.('campaign');hooks.campaign?.openSelect?.();}}),
       tile({label:'Regeln',icon:'cap',action:()=>{tap();void go('rules');}}));
+    const endlos=button({label:'Endlos',icon:'infinity',color:'aw-orange',id:'home-endless',dim:!unlocked,
+      action:b=>{if(!hooks.campaign?.summary?.().modesUnlocked){lockedTap(b);return;}tap();hooks.setMode?.('endless');void go('endless');}});
+    const duo=button({label:'2 Spieler',icon:'duo',color:'aw-blue',id:'home-duel',dim:!unlocked,
+      action:b=>{if(!hooks.campaign?.summary?.().modesUnlocked){lockedTap(b);return;}tap();hooks.gesture?.();void hooks.duel?.open?.();}});
+    if(!unlocked){decorateLock(endlos,'Endlos');decorateLock(duo,'2 Spieler');}
+    else if(celebrate){
+      burstUnlock(endlos);burstUnlock(duo);
+      say('Endlos und 2 Spieler sind frei!',3200);
+      hooks.haptics?.pulse?.('big');
+    }
     return [
       button({label:'Abenteuer',icon:'play',color:'aw-green',size:'aw-big',
         action:()=>{tap();hooks.setMode?.('campaign');void go('campaign');}}),
-      button({label:'Endlos',icon:'infinity',color:'aw-orange',
-        action:()=>{tap();hooks.setMode?.('endless');void go('endless');}}),
-      button({label:'2 Spieler',icon:'duo',color:'aw-blue',
-        action:()=>{tap();hooks.gesture?.();void hooks.duel?.open?.();}}),
-      tiles,
+      endlos, duo, tiles,
     ];
   }
   function rulesItems(){

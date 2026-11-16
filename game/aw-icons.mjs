@@ -19,6 +19,7 @@ export const ICONS={
   back:s('<path d="M14.8 5.2 8 12l6.8 6.8"/>',{w:3.6}),
   plus:s('<path d="M12 5v14M5 12h14"/>',{w:3.6}),
   gift:s('<rect x="3.5" y="9" width="17" height="11.5" rx="2"/><path d="M2.8 7h18.4v3.4H2.8z"/><path d="M12 7c-1.6-3.4-5.8-3.8-5.8-1.5S9.6 7 12 7c2.4 0 5.8-.8 5.8-1.5S13.6 3.6 12 7z"/>',{fill:true}),
+  lock:s('<rect x="6" y="10.2" width="12" height="10.2" rx="2.4"/><path d="M8.2 10.2V7.8a3.8 3.8 0 0 1 7.6 0v2.4"/><circle cx="12" cy="15.1" r="1.35"/><path d="M12 16.2v1.7"/>',{fill:true}),
 };
 // Farbige Kachel-Symbole (wie die Shop/Belohnungen/Erfolge-Kacheln im Mockup).
 export const TILE_ICONS={

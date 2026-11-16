@@ -1,5 +1,5 @@
 // Worker für die Hinweis-Suche: hält den Hauptthread (Animationen) frei.
-import { findHint } from './hint-solver.mjs?v=launch-21';
+import { findHint } from './hint-solver.mjs?v=launch-22';
 self.onmessage = event => {
   const { id, state, options } = event.data || {};
   let result;

@@ -70,6 +70,7 @@ gezählt (`game/campaign.mjs`, `tally()`):
 | `empty` | `max` (launch-15) | „Höchstens 4 Steine übrig“ | Steine auf dem Brett (HUD „7→4“); auch die Rakete kann es erfüllen |
 | `long` | `count` (launch-15) | „Bilde eine Straße aus 4 Steinen“ | Straßen-Gruppen mit ≥ 4 Feldern |
 | `purge` | `value`, `tiles` (launch-15) | „Löse 6× die 2 auf“ | verschwundene Steine dieses Werts (Fusion: alle der Gruppe; Straße: Wert je Feld, Zielstein bleibt bei Länge 3) |
+| `fuse` | `size`, optional `shape` `line`/`t` (launch-22) | „Verschmelze 3 gleiche Squishes“ / „… in T-Form“ | eine Fusion genau dieser Größe (T = nicht in einer Linie) |
 
 Bei **drei Zielen** zeigt die Ziel-Karte Kurztexte (`goalShort`, z. B. „4er bauen · 6 Steine lösen · 1 Straße“), damit sie auf 375 px passt.
 „Große Gruppe“ gibt es bewusst nicht (Entscheidung Sascha).
@@ -121,6 +122,9 @@ und die Zielarten werden langsamer eingeführt).
   `{reason:'stars', need, have, chapter}` für die UI; `nextLevel()` für „Weiterspielen“.
 - Einmal frei bleibt frei (Bestwerte sinken nie). Werte stehen als Konstanten
   `CHAPTER_SIZE` und `STARS_PER_CHAPTER_GATE` in `campaign.mjs`.
+- **launch-22:** Endlos und 2 Spieler sind auf dem Startbildschirm gesperrt, bis
+  Abenteuer-Level 5 geschafft ist (`modesUnlocked`). Kein automatisches Freischalten
+  für bestehende Spielstände – siehe Tutorial-Reset unten.
 
 Schwierigkeitswert `meta.difficulty` (0–100, feste Skala, also vergleichbar
 zwischen 25er- und 100er-Datei) kombiniert: Minimalzüge, Anteil optimaler
@@ -576,9 +580,25 @@ Alle 100 Level in `levels/levels-001-100.json` neu gebaut (Plan `tools/campaign/
   das Ergebnis zurück, das lokal übernommen wird.
 - Regeln (`game/progress-merge.mjs`, identische Kopie in der Edge Function): pro Level max. Sterne,
   bei Gleichstand weniger Züge; Vereinigung der Level (= Vereinigung der Freischaltungen); eine höhere
-  Epoche (`STARS_RESET`, z. B. launch-18 → 18) ersetzt die Level, damit ein Sterne-Reset nicht von der
-  Cloud rückgängig gemacht wird. Vorrat: der neuere (`at`) gewinnt, vergebene Geschenk-ids werden vereinigt.
+  Epoche (`PROGRESS_EPOCH`, z. B. launch-22 → 22) ersetzt Level **und** Abenteuer-Vorrat, damit ein
+  Fortschritts-Reset nicht von der Cloud rückgängig gemacht wird. Bei gleicher Epoche: Vorrat wie bisher
+  (der neuere `at` gewinnt, Geschenk-ids werden vereinigt). Der optionale Endlos-Vorrat (`einv`, App) ist
+  von der Epoche unabhängig.
 - Einmalige Resets setzen den Vorrats-Zeitstempel nicht (ein frisches Gerät überschreibt die Cloud nicht).
 - Offline / Fehler: nichts blockiert, keine Meldung, nächster Anlass versucht es wieder.
 - Identität: anonymer Geräte-Token wie bei Spielstand und Bestenliste. App: Token im Schlüsselbund,
   später optional Game Center / Sign in with Apple (`sq_progress.account_id`), siehe `app-shell.md`.
+
+
+## Tutorials und Modus-Sperre (launch-22)
+
+- **Level 1–5** sind handgesetzte Tutorials (`kind: tutorial`, `meta.generator: tutorial`), Level 6–100 unverändert.
+  Jedes ist in einem Zug lösbar, ohne Kettenreaktion, ohne Werkzeug, Sterne wie üblich (`3★` = Optimum + 1, Limit 5).
+  - L1: 3er-Fusion (`fuse` size 3)
+  - L2: 4er-Fusion in einer Linie (`fuse` size 4, `shape: line`)
+  - L3: 4er-Fusion in T-Form (`fuse` size 4, `shape: t`) – ein gleicher Stein an der Innenzelle einer Dreier-Reihe
+  - L4: 5er-Fusion (`fuse` size 5) – fünf Gleiche werden um 2 höher
+  - L5: Straße (`street` count 1) – aufeinanderfolgende Werte, nur wenn keine Fusion möglich ist
+- Kurzer deutscher Tipp (`level.tip`) unter dem Brett; ein Geisterfinger (CSS-Transform, bei reduzierter Bewegung still) zeigt den Wisch, bis der Spieler zieht, und kommt nach einem Fehlversuch zurück.
+- **Endlos** und **2 Spieler** sind auf dem Startbildschirm mit goldenem Schloss gesperrt (Tipp: „Schalte frei: Abenteuer Level 1–5“). Nach dem Gewinn von Level 5 werden sie mit einer kurzen Knall-Animation frei.
+- **Einmaliger Reset** (`resetAdventureForTutorialsOnce`, Merker `squish-campaign-tutorial-reset = launch-22`, Epoche 22): Abenteuer-Fortschritt, Sterne, Freischaltungen, Abenteuer-Vorrat und Geschenke werden auf jedem Gerät einmal geleert. Unberührt: Endlos-Spielstand (`shift3-play-v1`), Endlos-Rekord, Endlos-Vorrat, Einstellungen. Der Sync-Merker wird mitgelöscht, damit der leere Stand mit Epoche 22 als Nächstes in die Cloud geht. Backend-Zeilen werden nicht gelöscht; eine höhere Epoche ersetzt den gespeicherten Abenteuer-Stand.
