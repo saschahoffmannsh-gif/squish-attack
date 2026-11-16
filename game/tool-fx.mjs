@@ -1,8 +1,8 @@
 // 2D-Comic-Effekte der Hilfsmittel (launch-12): Raketenflug mit Rauchspur,
 // BOOM-Explosion, Funkeln (Zauberstab), Hinweis-Pfeil und Zahlen-Auswahl.
 // Eigene Ebene über allem (position:fixed), Koordinaten = Client-Pixel.
-import {TOOL_ICONS,boomSvg,SPARK_SVG,ARROW_SVG} from './tool-icons.mjs?v=launch-27';
-import { t } from './i18n.mjs?v=launch-27';
+import {TOOL_ICONS,boomSvg,SPARK_SVG,ARROW_SVG} from './tool-icons.mjs?v=launch-28';
+import { t } from './i18n.mjs?v=launch-28';
 
 export function createToolFx({reduceMotion,root=document.body,shakeTarget=null}={}){
   const layer=document.createElement('div');layer.className='tool-fx';layer.setAttribute('aria-hidden','true');root.append(layer);

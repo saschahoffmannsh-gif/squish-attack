@@ -4,12 +4,12 @@ import { AD_PACING, createAdPacing } from '../game/ad-pacing.mjs';
 
 const mem = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k) }; };
 
-test('launch-26: Zwischenwerbung alle 5 gewonnenen Abenteuer-Level', () => {
-  assert.equal(AD_PACING.interstitialEvery, 5);
+test('launch-28: Zwischenwerbung alle 10 gewonnenen Abenteuer-Level', () => {
+  assert.equal(AD_PACING.interstitialEvery, 10);
   assert.equal(AD_PACING.endlessOfferMs, 10 * 60 * 1000);
   const s = mem();
   const p = createAdPacing({ storage: s });
-  for (let i = 1; i <= 4; i++) {
+  for (let i = 1; i <= 9; i++) {
     assert.equal(p.levelWon(), false, `win ${i} noch nicht fällig`);
   }
   assert.equal(p.levelWon(), true);
@@ -17,7 +17,7 @@ test('launch-26: Zwischenwerbung alle 5 gewonnenen Abenteuer-Level', () => {
   assert.equal(p.takeInterstitial(), true);
   assert.equal(p.interstitialDue, false);
   assert.equal(p.takeInterstitial(), false);
-  for (let i = 1; i <= 4; i++) assert.equal(p.levelWon(), false);
+  for (let i = 1; i <= 9; i++) assert.equal(p.levelWon(), false);
   assert.equal(p.levelWon(), true);
 });
 
@@ -42,8 +42,8 @@ test('Endlos-Angebot nach 10 Minuten aktiver Spielzeit, Pausen zählen nicht', (
 test('Werbefrei unterdrückt Zwischenwerbung und Endlos-Angebot, Siege zählen weiter', () => {
   let owned = true;
   const p = createAdPacing({ storage: mem(), isAdFree: () => owned });
-  for (let i = 1; i <= 5; i++) assert.equal(p.levelWon(), false, `win ${i}`);
-  assert.equal(p.wins, 5);
+  for (let i = 1; i <= 10; i++) assert.equal(p.levelWon(), false, `win ${i}`);
+  assert.equal(p.wins, 10);
   assert.equal(p.interstitialDue, false);
   assert.equal(p.takeInterstitial(), false);
   let now = 1_000_000;

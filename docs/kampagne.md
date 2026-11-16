@@ -642,3 +642,32 @@ Aktueller Stand im Spiel (Schalter in `campaign.mjs`):
 - Geänderte Level: 26 (Erholung, Punkte statt 5er), 51/52/54/58 (engeres Zugfenster), 80 (Meilenstein: 6er, räumen 16, zwei Straßen), 81 (räumen 18), 84 (engeres Fenster), 91 (Kapitel-10-Einstieg enger), 100 (Finale: eine 8 und räumen 12, +3 hilft). Tutorials 1–5 unverändert. Keine Sonder-Squishes im Abenteuer. Alle Level bleiben ohne Werkzeug lösbar.
 - **Gezielter Sternen-Reset:** nur die Sterne dieser umgearbeiteten Level werden einmalig gelöscht (`CURVE_STARS_RESET`, Merker `squish-campaign-curve-stars-reset`). Unveränderte Level, Freischaltungen, Abenteuer-Vorrat, Endlos-Spielstand und Tutorials bleiben. `TUTORIAL_RESET` bleibt `launch-24` (kein neuer Abenteuer-Reset).
 - **Epoche `PROGRESS_EPOCH = launch-27`:** damit die Cloud die alten Sterne der umgearbeiteten Level nicht per Max-Merge der Epoche 24 zurückschreibt. Kein globaler Epochen-Reset des ganzen Abenteuers: unveränderte Level werden in die neue Epoche mitgenommen.
+
+## Neue Regeln: Hilfen, Sterne, Gold-Geschenke, Erklärungen (launch-28)
+
+- **Hilfsmittel im Abenteuer:** nur noch **+3 Züge** und **Rakete** (Hinweis und Zauberstab entfernt),
+  beliebig oft. Ohne Werbefrei kommt vor jedem Einsatz ein Belohnungsclip (Web: Dummy-Clip als Testpfad);
+  mit Werbefrei (`squish.adfree`, 2,99 €, nur App) ohne Clip. `+3` hat kein Reserve-Limit mehr – die
+  Steinfolge wiederholt sich (`tileAt`).
+- **Sterne:** ohne Hilfe bis 3★ (Zug-Schwellen), 1 Hilfe höchstens 2★, mehr als 1 Hilfe 1★. Ein gelöstes
+  Level gibt nie 0★ und schaltet immer das nächste frei. `+3` verschiebt die Zug-Schwellen um 3.
+- **Gold-Geschenke** (nur Abenteuer, je einmal, nicht beim Wiederholen): nach Level 3, 10, 20, 30, 50, 75, 100
+  (Rakete / +3 abwechselnd, `LEVEL_GIFTS`, ids `gold-N`). Gold liegt im Vorrat (`inv.rocket`/`inv.extraMoves`,
+  gleiches Wire-Format wie bisher – Backend unverändert), wird vor der normalen Hilfe verbraucht, braucht
+  keine Werbung und kostet keine Sterne (`run.giftsUsed`). Goldene Blase, goldene Werkzeug-Knöpfe.
+- **Zwischenwerbung** alle 10 gewonnenen Level (vorher 5); Werbefrei entfernt sie.
+- **Kapitel-Hürden** je Kapitel 21, 22, 22, 23, 23, 24, 24, 25, 25★ (kumuliert 21/43/65/88/111/135/159/184/209).
+  Überall 2★ reicht nicht mehr. Bestand: Kapitel, die nach der alten 18★-Regel offen waren, bleiben offen
+  (`progress.openChapters`), ein schon gespielter Kapitelanfang wird nie wieder gesperrt.
+- **Einmalige Umstellung** (`migrateRules28Once`, Merker `squish-campaign-rules28`): Sterne nach den neuen
+  Schwellen neu bewertet (`REGRADE28`, Minimum aus alt und neu, mindestens 1★) – kein Level-Eintrag wird
+  gelöscht. Alter Werkzeug-Vorrat entfällt, vergebene Geschenk-ids bleiben. Epoche `launch-28`.
+- **Kalibrierung** (`tools/campaign/calibrate28.mjs`, `apply28.mjs`): Beam-Suche fand bei langen Leveln viel
+  kürzere Optima; 3★/Limit wurden nach Spielermodell verschärft (nie gelockert), Meilensteine 30/60/80 gekürzt.
+  Hinweis-/Zauberstab-Spitzen (25 45 50 59 69 79 89 99) sind jetzt `+3`-Spitzen (`spikes28.mjs`).
+- **Erklär-Fenster** (`explain.mjs`, `explain.css`): Verschmelzen (Level 1), 5er-Merge +2 (Level 4), Straßen
+  (Level 5; 4er-Straße = höchster Wert **+1**), Hilfsmittel & Sterne (Tutorial Level 6), Gold-Geschenke (erstes
+  Geschenk), Kapitel-Sterne (Level 10 / gesperrtes Kapitel), Werbung & Werbefrei (erster Clip). Jedes Thema
+  erscheint einmal (`squish-explain-seen-v1`) und ist unter Spielregeln nachlesbar.
+- **Tutorial Level 6** (bis es einmal gelöst ist): erst ein Hilfsmittel einsetzen (gratis, ohne Clip),
+  Züge sind bis dahin gesperrt; das Ergebnis erklärt den 2★-Deckel. Jede Raketen-Wahl lässt das Level lösbar.

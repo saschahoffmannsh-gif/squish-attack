@@ -2,8 +2,8 @@
 // Ein Level = feste Startaufstellung + feste Steinfolge + Ziele + Zuglimit.
 // Dieses Modul ist reine Logik (kein DOM). Es wird von der UI, dem Solver,
 // dem Generator und den Tests gemeinsam benutzt, damit alle exakt gleich zählen.
-import { SIZE, insertTile, settle, isGameOver, tickBombs, BOMB_MS, BOMB_UNIT_MS } from './game-logic.mjs?v=launch-27';
-import { t, fmtNum } from './i18n.mjs?v=launch-27';
+import { SIZE, insertTile, settle, isGameOver, tickBombs, BOMB_MS, BOMB_UNIT_MS } from './game-logic.mjs?v=launch-28';
+import { t, fmtNum } from './i18n.mjs?v=launch-28';
 
 export const DIRECTIONS = ['left', 'right', 'up', 'down'];
 export const QUEUE_PREVIEW = 3;
@@ -61,7 +61,7 @@ export function validateLevel(level) {
       if (level.board[r][c] === null) fail(`specials ${kind}: braucht einen Stein (${r},${c})`);   // launch-17: auch Ketten tragen eine Zahl
     }
   }
-  const s = level.stars, room = level.tool === 'extraMoves' ? 3 : 0;   // +3-Level: 2★ auch mit den 3 Extra-Zügen
+  const s = level.stars, room = level.tool === 'extraMoves' ? 3 : 0;   // +3-Level: 2★ auch mit den 3 Extra-Zügen (Schwellen wandern mit, siehe starsFor)
   if (!s || !Number.isInteger(s.three) || !Number.isInteger(s.two) || !(s.three >= 1 && s.three <= s.two && s.two <= level.moves + room)) fail('stars ungültig');
   if (room && level.sequence.length < level.moves + 3) fail('Reserve-Steine für +3 fehlen');
   return level;
@@ -114,7 +114,8 @@ export function createLevelRun(level) {
     created: {},              // Wert -> Anzahl durch Fusion erzeugter Steine
     fuseMarks: [],            // launch-22: {size, line} je Fusion (kein Straßen-Eintrag)
     extraMoves: 0,            // durch Hilfsmittel gewonnene Züge
-    toolsUsed: [],            // eingesetzte Hilfsmittel (Typen)
+    toolsUsed: [],            // eingesetzte Hilfsmittel (Typen) – kosten Sterne
+    giftsUsed: [],            // launch-28: eingesetzte Gold-Geschenke (Typen) – sternneutral
     status: 'playing',        // 'playing' | 'won' | 'lost'
     lostReason: null,
     log: '',
@@ -124,24 +125,36 @@ export function createLevelRun(level) {
 /** Aktuelles Zuglimit inkl. Hilfsmittel „+Züge“. */
 export const moveLimit = run => run.level.moves + run.extraMoves;
 export const movesLeft = run => moveLimit(run) - run.moves;
+/**
+ * launch-28: Stein Nummer i der festen Folge. „+3 Züge“ ist beliebig oft erlaubt; hinter dem
+ * Ende der gespeicherten Folge geht es reproduzierbar von vorn weiter (gleiche Steine, gleiche Reihenfolge).
+ */
+export function tileAt(level, i) {
+  const seq = level.sequence;
+  return i < seq.length ? seq[i] : seq[i % seq.length];
+}
 /** Die nächsten Steine (Vorschau), höchstens bis zum Zuglimit. */
 export function queueOf(run, n = QUEUE_PREVIEW) {
-  return run.level.sequence.slice(run.index, Math.min(moveLimit(run), run.index + n));
+  const out = [];
+  for (let i = run.index; i < Math.min(moveLimit(run), run.index + n); i++) out.push(tileAt(run.level, i));
+  return out;
 }
 
-/** Ein Hilfsmittel als benutzt markieren (deckelt das Ergebnis auf 2 Sterne). */
-export function markToolUsed(run, type) { run.toolsUsed.push(type); }
+/** Ein Hilfsmittel als benutzt markieren (kostet Sterne, siehe toolStarCap). gift = Gold-Geschenk (sternneutral). */
+export function markToolUsed(run, type, { gift = false } = {}) {
+  if (gift) (run.giftsUsed ??= []).push(type);
+  else run.toolsUsed.push(type);
+}
 
 /**
- * Hilfsmittel „+N Züge“: nutzt die Reserve-Steine hinter dem Zuglimit.
+ * Hilfsmittel „+N Züge“ (launch-28: beliebig oft). Die Folge läuft über tileAt() weiter.
  * Darf auch nach einer Niederlage durch Zugmangel eingesetzt werden („Weiterspielen“).
  */
-export function addExtraMoves(run, n = 3) {
-  const room = run.level.sequence.length - moveLimit(run);
-  const add = Math.min(n, room);
+export function addExtraMoves(run, n = 3, { gift = false } = {}) {
+  const add = Math.max(0, n | 0);
   if (add <= 0 || run.status === 'won' || (run.status === 'lost' && run.lostReason !== 'moves')) return 0;
   run.extraMoves += add;
-  markToolUsed(run, 'extraMoves');
+  markToolUsed(run, 'extraMoves', { gift });
   if (run.status === 'lost') { run.status = 'playing'; run.lostReason = null; }
   return add;
 }
@@ -270,7 +283,7 @@ export function hasLegalMove(run) {
 export function applyLevelMove(run, direction, line) {
   if (run.status !== 'playing') return { ok: false, reason: 'finished' };
   if (run.index >= moveLimit(run)) return { ok: false, reason: 'no-moves' };
-  const value = run.level.sequence[run.index];
+  const value = tileAt(run.level, run.index);
   const probe = insertTile(run.board, direction, line, { value: 0 });
   if (!probe.accepted) return { ok: false, reason: 'full-line' };
   const tile = toTile(value, run.ctx);
@@ -312,25 +325,27 @@ export function nextBombMs(run) {
 
 /**
  * Sterne für einen Lauf. Schwellen stehen im Level (`stars.three`, `stars.two`):
- *   3★: Züge ≤ three (= Optimum + 1)   2★: Züge ≤ two   1★: gewonnen innerhalb des Zuglimits
- * launch-26: Hilfsmittel deckeln die Sterne stufenweise, das Level zählt trotzdem als gelöst.
- *   0 Hilfsmittel → normale Sterne (max. 3)   1 → max. 2   2 → max. 1   3 oder mehr → 0★
+ *   3★: Züge ≤ three   2★: Züge ≤ two   1★: gewonnen
+ * launch-28 (Saschas Regel): Hilfen deckeln die Sterne, ein gelöstes Level hat immer mind. 1★.
+ *   keine Hilfe → bis 3★   genau 1 Hilfe → höchstens 2★   mehr als 1 Hilfe → 1★
+ * Gold-Geschenke zählen nicht als Hilfe. Durch „+3 Züge“ (normal oder Gold) gewonnene Züge
+ * verschieben die Zug-Schwellen mit, damit die 3 Extra-Züge nicht zusätzlich Sterne kosten.
  */
 export function toolStarCap(toolsUsed = 0) {
   const n = toolsUsed | 0;
   if (n <= 0) return 3;
   if (n === 1) return 2;
-  if (n === 2) return 1;
-  return 0;
+  return 1;
 }
-export function starsFor(level, movesUsed, won = true, { toolsUsed = 0 } = {}) {
+export function starsFor(level, movesUsed, won = true, { toolsUsed = 0, extraMoves = 0 } = {}) {
   if (!won) return 0;
-  const stars = movesUsed <= level.stars.three ? 3 : movesUsed <= level.stars.two ? 2 : 1;
-  return Math.min(stars, toolStarCap(toolsUsed));
+  const x = Math.max(0, extraMoves | 0);
+  const stars = movesUsed <= level.stars.three + x ? 3 : movesUsed <= level.stars.two + x ? 2 : 1;
+  return Math.max(1, Math.min(stars, toolStarCap(toolsUsed)));
 }
-export const MAX_STARS_WITH_TOOLS = 2; // historisch (ein Hilfsmittel); siehe toolStarCap
-/** Sterne für einen fertigen Lauf (berücksichtigt Hilfsmittel). */
-export const starsOfRun = run => starsFor(run.level, run.moves, run.status === 'won', { toolsUsed: run.toolsUsed.length });
+export const MAX_STARS_WITH_TOOLS = 2; // eine Hilfe; siehe toolStarCap
+/** Sterne für einen fertigen Lauf (berücksichtigt Hilfen; Gold-Geschenke sind sternneutral). */
+export const starsOfRun = run => starsFor(run.level, run.moves, run.status === 'won', { toolsUsed: run.toolsUsed.length, extraMoves: run.extraMoves });
 
 /**
  * Sterne-Schwellen für Werkzeug-Level (launch-15): Ergebnis ist ohnehin auf 2★ gedeckelt.
@@ -410,7 +425,7 @@ export function saveProgress(progress, storage = globalThis.localStorage) {
   try { storage?.setItem(PROGRESS_KEY, JSON.stringify(progress)); return true; } catch { return false; }
 }
 
-/** Ergebnis eintragen; behält jeweils das Beste (Sterne, dann Züge). 0★ zählt als geschafft (launch-26). */
+/** Ergebnis eintragen; behält jeweils das Beste (Sterne, dann Züge). Alte 0★-Einträge (launch-26) zählen als geschafft. */
 export function recordResult(progress, levelId, { stars, moves, now = Date.now() }) {
   if (!Number.isInteger(stars) || stars < 0 || stars > 3) return progress;
   const key = String(levelId), old = progress.levels[key];
@@ -419,9 +434,11 @@ export function recordResult(progress, levelId, { stars, moves, now = Date.now()
   return { ...progress, levels: { ...progress.levels, [key]: { stars, moves, at: now } }, updatedAt: now };
 }
 
-/** Zusammenführen (z. B. lokal + Server): pro Level das Bessere. */
+/** Zusammenführen (z. B. lokal + Server): pro Level das Bessere. Offene Kapitel (launch-28) werden vereinigt. */
 export function mergeProgress(a, b) {
   const out = { ...emptyProgress(), levels: { ...a.levels }, updatedAt: Math.max(a.updatedAt || 0, b.updatedAt || 0) };
+  const open = [...new Set([...(a.openChapters || []), ...(b.openChapters || [])])].sort((x, y) => x - y);
+  if (open.length) out.openChapters = open;
   for (const [k, r] of Object.entries(b.levels || {})) {
     const o = out.levels[k];
     if (!o || r.stars > o.stars || (r.stars === o.stars && r.moves < o.moves)) out.levels[k] = r;
@@ -432,15 +449,23 @@ export function mergeProgress(a, b) {
 export const totalStars = progress => Object.values(progress.levels).reduce((n, r) => n + r.stars, 0);
 
 // ---------------- Kapitel und Sterne-Schranken ----------------
-// Kapitel à 10 Level. Für Kapitel k ≥ 2 braucht man insgesamt
-// STARS_PER_CHAPTER_GATE × (k − 1) Sterne (= Ø 1,8★ pro bisherigem Level,
-// also 60 % der möglichen 3★). Ohne Hilfsmittel bequem erreichbar; mit vielen
-// Hilfsmitteln (2→max. 1★, 3+→0★) bewusst knapper.
+// Kapitel à 10 Level (max. 30★ je Kapitel). launch-28: deutlich strenger und steigend.
+// CHAPTER_QUOTAS[j] = Sterne, die Kapitel j+1 zur Schranke beiträgt; für Kapitel k braucht man
+// die Summe der Quoten aller Kapitel davor (insgesamt, Überschuss früherer Kapitel zählt mit).
+//   Kapitel 1→2: 21 (70 %) … Kapitel 9→10: 25 (83 %). Ø ≈ 2,3★ je Level: die meisten Level
+//   brauchen 3★ ohne Hilfe; die Werkzeug-Spitzen dürfen mit einer Hilfe (2★) gespielt werden.
+// Alte Regel bis launch-27: 18★ je Kapitel (60 %).
 export const CHAPTER_SIZE = 10;
-export const STARS_PER_CHAPTER_GATE = 18;
+export const CHAPTER_QUOTAS = Object.freeze([21, 22, 22, 23, 23, 24, 24, 25, 25]);
+export const STARS_PER_CHAPTER_GATE = 18;   // historisch (bis launch-27)
 export const chapterOf = n => Math.floor((n - 1) / CHAPTER_SIZE) + 1;
 export const chapterStart = k => (k - 1) * CHAPTER_SIZE + 1;
-export const starGate = k => (k <= 1 ? 0 : STARS_PER_CHAPTER_GATE * (k - 1));
+export const starGate = k => {
+  if (k <= 1) return 0;
+  let n = 0;
+  for (let j = 0; j < k - 1; j++) n += CHAPTER_QUOTAS[Math.min(j, CHAPTER_QUOTAS.length - 1)];
+  return n;
+};
 
 /**
  * Warum ist Level n gesperrt? null = frei.
@@ -451,7 +476,9 @@ export function lockReason(progress, n) {
   if (n <= 1) return null;
   if (!progress.levels[String(n - 1)]) return { reason: 'previous' };
   const k = chapterOf(n);
-  if (n === chapterStart(k)) {
+  // launch-28: ein schon gespieltes Kapitel bleibt offen (die Schranke ist strenger geworden,
+  // niemand verliert dadurch ein Level, das er schon erreicht hatte).
+  if (n === chapterStart(k) && !progress.levels[String(n)] && !(progress.openChapters || []).includes(k)) {
     const need = starGate(k), have = totalStars(progress);
     if (have < need) return { reason: 'stars', need, have, chapter: k };
   }
@@ -469,7 +496,7 @@ export const modesUnlocked = progress => progress?.levels?.[String(MODES_UNLOCK_
  */
 export function tutorialHintMove(run) {
   if (run.status !== 'playing' || run.index >= moveLimit(run)) return null;
-  const value = run.level.sequence[run.index];
+  const value = tileAt(run.level, run.index);
   if (value == null) return null;
   const tile = { id: 0, value };
   const vec = progressVector(run);
@@ -498,14 +525,16 @@ export function nextLevel(progress, count) {
 
 // ---------------- Hilfsmittel ----------------
 // launch-12: Rakete (ersetzt den Hammer), Hinweis, Zauberstab, +3 Züge.
-// launch-26: Sternendeckel nach Anzahl der eingesetzten Hilfsmittel (toolStarCap).
+// launch-28: im Abenteuer nur noch Rakete und +3 Züge, beliebig oft (siehe ADVENTURE_TOOLS).
+//   Ohne Werbefrei kostet jeder Einsatz einen Belohnungsclip (game.mjs), mit Werbefrei ist er frei.
+//   Sterne: toolStarCap. Gold-Geschenke (Vorrat inv.extraMoves / inv.rocket) sind sternneutral.
 
 /** Rakete: entfernt einen Stein (kein Zug, keine Fusion). true, wenn etwas entfernt wurde. */
-export function useRocket(run, row, col) {
+export function useRocket(run, row, col, { gift = false } = {}) {
   if (run.status !== 'playing' || !run.board[row]?.[col] || run.board[row][col].bound) return false;   // Ketten halten auch der Rakete stand
   run.board = run.board.map(r => r.slice());
   run.board[row][col] = null;
-  markToolUsed(run, 'rocket');
+  markToolUsed(run, 'rocket', { gift });
   if (goalsDone(run)) run.status = 'won';   // z. B. „höchstens N Steine übrig“
   return true;
 }
@@ -562,7 +591,9 @@ export function useWand(run, row, col, value) {
 export const progressVector = run => run.level.goals.map(g => (g.type === 'empty' ? (goalProgress(g, run).done ? 1 : 0) : goalProgress(g, run).current));
 
 export const TOOLS_KEY = 'squish-campaign-tools-v1';
-export const TOOL_TYPES = ['extraMoves', 'rocket', 'hint', 'wand'];
+export const TOOL_TYPES = ['extraMoves', 'rocket', 'hint', 'wand'];   // Speicher-/Wire-Format (alle bekannten Typen)
+/** launch-28: Hilfsmittel im Abenteuer. Hinweis und Zauberstab gibt es dort nicht mehr. */
+export const ADVENTURE_TOOLS = Object.freeze(['extraMoves', 'rocket']);
 /** Vorrat (v3): Anzahl je Hilfsmittel, vergebene Geschenk-ids, noch nicht geöffnete Geschenke. */
 export const emptyInventory = () => ({ version: 3, extraMoves: 0, rocket: 0, hint: 0, wand: 0, gifts: [], pending: [] });
 
@@ -591,20 +622,19 @@ export function saveInventory(inv, storage = globalThis.localStorage, touch = tr
   try { storage?.setItem(TOOLS_KEY, JSON.stringify(inv)); return true; } catch { return false; }
 }
 /**
- * Hilfsmittel-Einstellungen (launch-26):
- *  - FREE_TOOLS_PER_LEVEL = 1: jeder Level-Versuch (auch Neustart/Nochmal) hat genau
- *    eine Ladung je Hilfsmittel; sie werden nicht gespeichert und sammeln sich nicht.
- *  - TOOL_STOCK = false: kein Abenteuer-Vorrat, keine Shop-Plus-Knöpfe an den Slots.
- *  - AD_TOOLS = false: keine Vorrats-Werbung (kein „Ansehen, um +1 in den Vorrat“).
- *    Der Einsatz selbst verlangt in game.mjs einen Belohnungsclip, außer isAdFree().
- *    Werbefrei entfernt nur die Werbung, nicht das 1×-Limit je Versuch.
- *  - TOOL_GIFTS = false: keine Geschenke nach Level 3/6/10/20.
- * Der Endlos-Vorrat (App-Hülle) ist unabhängig und bleibt bestehen.
+ * Hilfsmittel-Einstellungen (launch-28):
+ *  - UNLIMITED_TOOLS: Rakete und +3 Züge beliebig oft je Versuch (kein 1×-Limit mehr).
+ *    Ohne Werbefrei verlangt jeder Einsatz einen Belohnungsclip (game.mjs), mit Werbefrei nicht.
+ *  - TOOL_STOCK = false: kein gekaufter Abenteuer-Vorrat, kein Shop.
+ *  - TOOL_GIFTS = true: seltene Gold-Geschenke (LEVEL_GIFTS). Sie liegen als Gold-Vorrat in
+ *    inv.extraMoves / inv.rocket, sind in jedem Abenteuer-Level nutzbar und kosten keine Sterne.
+ * Der Endlos-Vorrat (App-Hülle) ist unabhängig.
  */
-export const FREE_TOOLS_PER_LEVEL = 1;
+export const UNLIMITED_TOOLS = true;
+export const FREE_TOOLS_PER_LEVEL = Infinity;   // historisch 1 (launch-26)
 export const TOOL_STOCK = false;
 export const AD_TOOLS = false;
-export const TOOL_GIFTS = false;
+export const TOOL_GIFTS = true;
 export const TOOL_STOCK_RESET = 'launch-13';
 export const TOOL_RESET_KEY = 'squish-campaign-tools-reset';
 /**
@@ -621,19 +651,12 @@ export function resetStockOnce(inv, storage = globalThis.localStorage, tag = TOO
   try { storage?.setItem(TOOL_RESET_KEY, tag); } catch {}
   return { inventory: out, reset: true };
 }
-export function freeToolCharges(count = FREE_TOOLS_PER_LEVEL) {
-  return Object.fromEntries(TOOL_TYPES.map(t => [t, Math.max(0, count | 0)]));
-}
-/** Verfügbare Anzahl je Hilfsmittel = Ladungen des Versuchs (+ Vorrat, wenn TOOL_STOCK). */
-export function toolsAvailable(inv, free, stock = TOOL_STOCK) {
-  return Object.fromEntries(TOOL_TYPES.map(t => [t, (stock ? Math.max(0, inv?.[t] | 0) : 0) + Math.max(0, free?.[t] | 0)]));
-}
-/** Verbraucht eine Ladung: zuerst die des Versuchs, dann (nur mit TOOL_STOCK) den Vorrat. → {inventory, free, fromFree} oder null. */
-export function spendCharge(inv, free, type, stock = TOOL_STOCK) {
-  if (!TOOL_TYPES.includes(type)) return null;
-  if (free?.[type] > 0) return { inventory: inv, free: { ...free, [type]: free[type] - 1 }, fromFree: true };
-  const next = stock ? spendTool(inv, type) : null;
-  return next ? { inventory: next, free, fromFree: false } : null;
+/** Gold-Vorrat (Geschenke) je Abenteuer-Werkzeug. */
+export const goldStock = inv => Object.fromEntries(ADVENTURE_TOOLS.map(t => [t, Math.max(0, inv?.[t] | 0)]));
+/** Ein Gold-Geschenk verbrauchen → neuer Vorrat oder null. */
+export function spendGold(inv, type) {
+  if (!ADVENTURE_TOOLS.includes(type)) return null;
+  return spendTool(inv, type);
 }
 /** Ein Hilfsmittel aus dem Vorrat verbrauchen. Gibt den neuen Vorrat zurück oder null. */
 export function spendTool(inv, type) {
@@ -648,17 +671,18 @@ export function addToStock(inv, items) {
 }
 
 /**
- * Gratis-Geschenke (docs/kampagne.md), jedes nur einmal:
- *  Level 3 → Hinweis, Level 6 → Zauberstab, Level 10 → +3 Züge, Level 20 → Rakete.
- * (Die früheren Sterne-Geschenke „je 10 Sterne ein Hilfsmittel“ sind seit launch-14 entfernt.)
+ * launch-28: Gold-Geschenke, sehr selten und nur im Abenteuer, jedes nur einmal (auch nicht beim
+ * Nachspielen): nach Level 3, 10, 20, 30, 50, 75 und 100. Neue ids `gold-<n>`, damit alte
+ * Geschenk-Merker (level-3 …) nicht stören. Ein Gold-Werkzeug kostet keine Sterne.
  */
-export const LEVEL_GIFTS = Object.freeze([[3, 'hint'], [6, 'wand'], [10, 'extraMoves'], [20, 'rocket']]);
+export const LEVEL_GIFTS = Object.freeze([[3, 'rocket'], [10, 'extraMoves'], [20, 'rocket'], [30, 'extraMoves'], [50, 'rocket'], [75, 'extraMoves'], [100, 'rocket']]);
+export const GIFT_PREFIX = 'gold';
 /** Level, für das ein Geschenk vergeben wird ('level-3' → 3), sonst null. */
-export const giftLevel = id => { const m = /^level-(\d+)$/.exec(String(id)); return m ? Number(m[1]) : null; };
+export const giftLevel = id => { const m = /^(?:level|gold)-(\d+)$/.exec(String(id)); return m ? Number(m[1]) : null; };
 function dueGifts(inv, progress) {
   const due = [], seen = new Set(inv.gifts || []);
   const add = (id, type) => { if (!seen.has(id)) { seen.add(id); due.push({ id, type }); } };
-  for (const [n, type] of LEVEL_GIFTS) if (progress.levels[String(n)]) add(`level-${n}`, type);
+  for (const [n, type] of LEVEL_GIFTS) if (progress.levels[String(n)]) add(`${GIFT_PREFIX}-${n}`, type);
   return due;
 }
 /** Sofort gutschreiben (alt, launch-10). Rückgabe {inventory, granted:[{id, type}]}. */
@@ -746,7 +770,7 @@ export function resetCurveStarsOnce(progress, storage = globalThis.localStorage,
  * weil der Merker jetzt launch-24 ist. Epoche PROGRESS_EPOCH, damit die Cloud den alten
  * Stand nicht zurückbringt. Ein Merker verhindert Wiederholungen. Rückgabe {progress, inventory, reset}.
  */
-export const PROGRESS_EPOCH = 'launch-27';
+export const PROGRESS_EPOCH = 'launch-28';
 export const TUTORIAL_RESET = 'launch-24';
 export const TUTORIAL_RESET_KEY = 'squish-campaign-tutorial-reset';
 export const MODES_UNLOCK_SEEN_KEY = 'squish-modes-unlock-seen';
@@ -768,6 +792,7 @@ export function resetAdventureForTutorialsOnce(progress, inv, storage = globalTh
 /** Offenes Geschenk einsammeln → {inventory, gift} oder null. Ohne id: das älteste. */
 export function collectGift(inv, id) {
   const i = (inv.pending || []).findIndex(g => id == null || g.id === id);
+  if (i >= 0 && !ADVENTURE_TOOLS.includes(inv.pending[i].type)) return null;
   if (i < 0) return null;
   const gift = inv.pending[i];
   const out = addToStock(inv, { [gift.type]: 1 });
@@ -775,3 +800,46 @@ export function collectGift(inv, id) {
   return { inventory: out, gift };
 }
 export const toolName = type => ({ extraMoves: t('tool.extraMoves'), rocket: t('tool.rocket'), hint: t('tool.hint'), wand: t('tool.wand'), hammer: t('tool.rocket') })[type] ?? type;
+
+/**
+ * launch-28: neue Sterne-Regeln einmalig auf den alten Spielstand anwenden – ohne etwas zu löschen.
+ *  1. Kapitel, die nach der alten Regel (18★ je Kapitel) schon offen waren, bleiben offen
+ *     (progress.openChapters), obwohl die Schranken jetzt strenger sind.
+ *  2. Neubewertung: Level mit neuen (strengeren) Zug-Schwellen bekommen min(alte Sterne,
+ *     Sterne für die gespeicherten besten Züge). Jedes gelöste Level hat mindestens 1★
+ *     (alte 0★-Einträge mit 3+ Hilfsmitteln werden 1★). Kein Level verliert „gelöst“.
+ *  3. Der alte Abenteuer-Vorrat (Zähler aus Testphasen) wird geleert; er ist jetzt der
+ *     Gold-Geschenk-Vorrat. Vergebene Geschenk-ids bleiben, offene alte Geschenke fallen weg.
+ * PROGRESS_EPOCH ist launch-28, damit die Cloud den alten Stand nicht per Max-Merge zurückbringt.
+ * Ein Merker verhindert Wiederholungen. Rückgabe {progress, inventory, migrated}.
+ */
+export const RULES28 = 'launch-28';
+export const RULES28_KEY = 'squish-campaign-rules28';
+/** Neue Zug-Schwellen (launch-28) der nachgeschärften Level: id → [three, two]. Erzeugt von tools/campaign/apply28.mjs. */
+export const REGRADE28 = Object.freeze({"12":[5,8],"13":[6,9],"16":[5,7],"21":[5,8],"23":[8,12],"24":[6,8],"26":[6,9],"29":[10,12],"30":[16,17],"36":[7,11],"38":[10,13],"39":[14,17],"48":[10,14],"60":[18,21],"66":[12,17],"68":[12,15],"71":[16,22],"77":[14,17],"80":[19,21],"81":[17,23],"86":[12,16],"92":[11,13],"96":[13,23],"98":[10,14]});
+export function migrateRules28Once(progress, inv, storage = globalThis.localStorage, { tag = RULES28, thresholds = REGRADE28 } = {}) {
+  let done = null;
+  try { done = storage?.getItem(RULES28_KEY); } catch {}
+  if (!tag || done === tag) return { progress, inventory: inv, migrated: false };
+  const oldTotal = totalStars(progress);
+  const open = new Set(progress.openChapters || []);
+  for (let k = 2; k <= 100; k++) {
+    const n = chapterStart(k);
+    if (progress.levels[String(n - 1)] && oldTotal >= STARS_PER_CHAPTER_GATE * (k - 1)) open.add(k);
+  }
+  const levels = {};
+  for (const [id, r] of Object.entries(progress.levels || {})) {
+    let stars = Math.max(0, Math.min(3, r?.stars | 0));
+    const th = thresholds[id];
+    if (th && Number.isInteger(r?.moves)) stars = Math.min(stars, r.moves <= th[0] ? 3 : r.moves <= th[1] ? 2 : 1);
+    levels[id] = { ...r, stars: Math.max(1, stars) };
+  }
+  const p = { ...progress, levels, updatedAt: Date.now() };
+  if (open.size) p.openChapters = [...open].sort((a, b) => a - b);
+  const out = { ...emptyInventory(), gifts: [...(inv?.gifts || [])], pending: (inv?.pending || []).filter(g => g && String(g.id).startsWith(GIFT_PREFIX + '-') && ADVENTURE_TOOLS.includes(g.type)), at: inv?.at || 0 };
+  saveProgress(p, storage);
+  saveInventory(out, storage, false);
+  try { storage?.setItem(RULES28_KEY, tag); } catch {}
+  return { progress: p, inventory: out, migrated: true };
+}
+

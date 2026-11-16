@@ -1,17 +1,15 @@
-/* Hilfsmittel (launch-12): Werkzeugleiste mit 4 Kacheln, Comic-Effekte, Zahlen-Auswahl. */
-/* Leiste: je zwei Kacheln links und rechts der (schmaleren) Vorschau – passt ab 375 px. */
-.aw .is-campaign .preview {left:29%;width:42%;}
-.aw .campaign-tool {width:12.6%;border-radius:15px;gap:.2cqw;}
+/* Hilfsmittel (launch-12): Werkzeugleiste, Comic-Effekte, Zahlen-Auswahl. */
+/* launch-28: nur noch zwei Kacheln (+3 Züge links, Rakete rechts) neben der Vorschau – passt ab 375 px. */
+.aw .is-campaign .preview {left:22%;width:56%;}
+.aw .campaign-tool {width:16.5%;border-radius:15px;gap:.2cqw;}
 .aw .campaign-tool small {font-size:clamp(8px,2.35cqw,11.5px);}
 .aw .campaign-tool .ct-ico {width:70%;height:50%;}
 .aw .campaign-tool .ct-plus {font-size:clamp(16px,5.4cqw,26px);}
 .aw .campaign-tool b {top:-2cqw;right:-1.4cqw;min-width:5.6cqw;height:5.6cqw;padding:0 1.1cqw;font-size:clamp(10px,3cqw,14px);line-height:calc(5.6cqw - 4px);}
 /* Hinweise im Abenteuer über der Werkzeugleiste statt dahinter */
 .aw .is-campaign .gesture-note {top:auto;bottom:calc(100% - 157cqw + 8px);z-index:5;max-width:92%;line-height:1.25;}
-#tool-extra {left:1.5%;}
-#tool-hint {left:15%;}
-#tool-rocket {right:15%;left:auto;}
-#tool-wand {right:1.5%;left:auto;}
+#tool-extra {left:2.5%;}
+#tool-rocket {right:2.5%;left:auto;}
 .campaign-tool.is-busy .ct-ico {animation:tfx-think .7s ease-in-out infinite alternate;}
 @keyframes tfx-think {to {transform:scale(1.12) rotate(-6deg);}}
 
