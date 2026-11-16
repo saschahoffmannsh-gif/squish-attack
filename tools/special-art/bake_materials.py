@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Build tileable squish materials and clean symbol decals from the concept.
 
-Outputs (1024, sharp, sRGB):
+Outputs (1024, sharp, sRGB, seamless where tiled):
   ice-albedo, stone-albedo, black-albedo  — tileable, wrap all sides
   ice-decal, lock-decal, bomb-decal, joker-decal — RGBA, symbol only
-  band — tileable horizontal metal strip (U wraps, V is across the band)
+  band — tileable brushed-metal strip (U along the strap, V across it)
 """
 from __future__ import annotations
 
@@ -26,209 +26,128 @@ BODIES = {
 }
 
 
-# --- noise ------------------------------------------------------------
-def _hash2(i, j):
-    n = np.sin(i * 127.1 + j * 311.7) * 43758.5453
-    return n - np.floor(n)
-
-
-def value_noise(h, w, period, seed=0.0):
-    gy, gx = int(np.ceil(h / period)) + 2, int(np.ceil(w / period)) + 2
-    rng = np.random.RandomState(int(seed * 1000 + period) & 0xFFFFFFFF)
-    grid = rng.rand(gy, gx)
-    ys = np.arange(h)[:, None] / period
-    xs = np.arange(w)[None, :] / period
+# --- seamless noise ---------------------------------------------------
+def periodic_value_noise(size, cells, seed):
+    rng = np.random.RandomState(int(seed) & 0xFFFFFFFF)
+    grid = rng.rand(cells, cells).astype(np.float32)
+    ys = np.arange(size) * (cells / size)
+    xs = np.arange(size) * (cells / size)
     y0 = np.floor(ys).astype(int)
     x0 = np.floor(xs).astype(int)
-    fy = ys - y0
-    fx = xs - x0
-    # fade
+    fy = (ys - y0)[:, None]
+    fx = (xs - x0)[None, :]
     fy = fy * fy * (3 - 2 * fy)
     fx = fx * fx * (3 - 2 * fx)
-    n00 = grid[y0, x0]
-    n10 = grid[y0 + 1, x0]
-    n01 = grid[y0, x0 + 1]
-    n11 = grid[y0 + 1, x0 + 1]
+    y0m, y1m = y0 % cells, (y0 + 1) % cells
+    x0m, x1m = x0 % cells, (x0 + 1) % cells
+    n00 = grid[y0m][:, x0m]
+    n10 = grid[y1m][:, x0m]
+    n01 = grid[y0m][:, x1m]
+    n11 = grid[y1m][:, x1m]
     return n00 * (1 - fy) * (1 - fx) + n10 * fy * (1 - fx) + n01 * (1 - fy) * fx + n11 * fy * fx
 
 
-def fbm(h, w, periods, amps=None, seed=1.0):
-    amps = amps or [0.5 ** i for i in range(len(periods))]
-    acc = np.zeros((h, w), np.float32)
+def fbm_seamless(size, cell_list, amps=None, seed=1):
+    amps = amps or [0.5 ** i for i in range(len(cell_list))]
+    acc = np.zeros((size, size), np.float32)
     s = 0.0
-    for p, a in zip(periods, amps):
-        acc += a * value_noise(h, w, p, seed + p).astype(np.float32)
+    for i, (cells, a) in enumerate(zip(cell_list, amps)):
+        acc += a * periodic_value_noise(size, max(2, int(cells)), seed + i * 17)
         s += a
     return acc / max(s, 1e-6)
 
 
-def make_seamless_from_patch(patch: np.ndarray, size: int) -> np.ndarray:
-    """Tile a photo patch to `size` and blend opposite edges so it wraps."""
-    if patch.dtype != np.uint8:
-        patch = np.clip(patch, 0, 255).astype(np.uint8)
-    img = Image.fromarray(patch)
-    # scale so the patch covers a bit more than half, then tile
-    side = max(patch.shape[0], patch.shape[1])
-    tiled = Image.new("RGB", (size * 2, size * 2))
-    src = img.resize((size, size), Image.Resampling.LANCZOS)
-    for y in (0, size):
-        for x in (0, size):
-            tiled.paste(src, (x, y))
-    arr = np.array(tiled, np.float32)
-    # roll-blend to hide seams (classic offset + gradient cross)
-    rolled = np.roll(np.roll(arr, size // 2, 0), size // 2, 1)
-    yy, xx = np.ogrid[: arr.shape[0], : arr.shape[1]]
-    # distance to the mid seams of the rolled image (where original edges sit)
-    cy, cx = arr.shape[0] // 2, arr.shape[1] // 2
-    wy = 1.0 - np.clip(np.abs(yy - cy) / (size * 0.22), 0, 1)
-    wx = 1.0 - np.clip(np.abs(xx - cx) / (size * 0.22), 0, 1)
-    w = np.maximum(wx, wy)[..., None]
-    w = w * w * (3 - 2 * w)
-    mix = arr * (1 - w) + rolled * w
-    # take the centre square after the roll (now seamless)
-    y0, x0 = size // 2, size // 2
-    out = mix[y0 : y0 + size, x0 : x0 + size]
-    return np.clip(out, 0, 255).astype(np.uint8)
-
-
-def crop_body(arr, box, pad=8):
-    x0, y0, x1, y1 = box
-    return arr[y0:y1, x0:x1].copy()
-
-
 # --- materials --------------------------------------------------------
 def ice_albedo(src: np.ndarray) -> Image.Image:
-    x0, y0, x1, y1 = BODIES["ice"]
-    tile = src[y0:y1, x0:x1].astype(np.float32)
-    h, w, _ = tile.shape
-    # Smooth inner ice (not the snowflake, not the frosty rim).
-    yy, xx = np.ogrid[:h, :w]
-    cy, cx = h * 0.49, w * 0.50
-    r = np.sqrt(((xx - cx) / (w * 0.34)) ** 2 + ((yy - cy) / (h * 0.34)) ** 2)
-    # rounded-rect interior, inset from the rim
-    rx = np.maximum(0.0, np.abs((xx + 0.5) / w * 2 - 1) - 0.55)
-    ry = np.maximum(0.0, np.abs((yy + 0.5) / h * 2 - 1) - 0.55)
-    rim = np.sqrt(rx * rx + ry * ry)
-    inner = (r > 1.08) & (rim < 0.16)
-    samples = tile[inner]
-    if samples.size < 100:
-        samples = tile[(r > 1.1) & (r < 1.4)]
-    mid = np.median(samples, axis=0)
-    lo = np.percentile(samples, 20, axis=0)
-    hi = np.percentile(samples, 85, axis=0)
-    n1 = fbm(SIZE, SIZE, [96, 48, 24, 12, 6], [1, 0.55, 0.3, 0.16, 0.08], 2.1)
-    n2 = fbm(SIZE, SIZE, [40, 16, 8], [1, 0.45, 0.2], 7.7)
-    spark = (fbm(SIZE, SIZE, [7, 3], [1, 0.5], 11.0) > 0.82).astype(np.float32)
-    t = n1[..., None]
+    """Smooth translucent icy blue with sparse wispy frost — no dense speckles."""
+    n_broad = fbm_seamless(SIZE, [8, 16, 32], [1.0, 0.45, 0.2], 21)
+    n_wisp = fbm_seamless(SIZE, [12, 24, 48], [1.0, 0.5, 0.22], 44)
+    n_fine = fbm_seamless(SIZE, [64, 128], [1.0, 0.4], 77)
+    # Concept inner ice ~ (80, 140, 195), lighter veins ~ (140, 185, 225)
+    lo = np.array([72, 128, 186], np.float32)
+    mid = np.array([96, 158, 210], np.float32)
+    hi = np.array([150, 198, 230], np.float32)
+    frost = np.array([220, 238, 250], np.float32)
+    t = n_broad[..., None]
     base = lo * (1 - t) + mid * t
-    base = base + (hi - mid) * np.clip((n1 - 0.62) / 0.35, 0, 1)[..., None]
-    frost = np.array([230, 244, 252], np.float32)
-    crust = np.clip((n2 - 0.58) / 0.28, 0, 1)[..., None]
-    base = base * (1 - crust * 0.28) + frost * crust * 0.85 + base * crust * 0.15
-    base = base + spark[..., None] * 22
-    # very slight photo grain from a tiny inner patch, colour-matched
-    py0, py1 = int(h * 0.62), int(h * 0.74)
-    px0, px1 = int(w * 0.14), int(w * 0.28)
-    patch = tile[py0:py1, px0:px1]
-    photo = make_seamless_from_patch(patch, SIZE).astype(np.float32)
-    photo = photo * (mid / (np.median(photo.reshape(-1, 3), axis=0) + 1e-3))
-    mix = 0.78 * base + 0.22 * photo
-    img = Image.fromarray(np.clip(mix, 0, 255).astype(np.uint8), "RGB")
-    return ImageEnhance.Color(img).enhance(1.05)
+    base = base + (hi - mid) * np.clip((n_broad - 0.58) / 0.35, 0, 1)[..., None] * 0.55
+    # sparse, larger frost wisps — not salt-and-pepper
+    wisp = np.clip((n_wisp - 0.62) / 0.22, 0, 1)
+    wisp = wisp * wisp * (3 - 2 * wisp)
+    base = base * (1 - wisp[..., None] * 0.35) + frost * wisp[..., None] * 0.7 + base * wisp[..., None] * 0.3
+    # tiny sparkle, very sparse
+    spark = (n_fine > 0.88).astype(np.float32) * np.clip((n_wisp - 0.5) * 2, 0, 1)
+    base = base + spark[..., None] * 18
+    img = Image.fromarray(np.clip(base, 0, 255).astype(np.uint8), "RGB")
+    return ImageEnhance.Color(img).enhance(1.06)
 
 
 def stone_albedo(src: np.ndarray) -> Image.Image:
-    x0, y0, x1, y1 = BODIES["bound"]
-    tile = src[y0:y1, x0:x1].astype(np.float32)
-    h, w, _ = tile.shape
-    corners = [
-        tile[int(h * 0.07) : int(h * 0.20), int(w * 0.10) : int(w * 0.28)],
-        tile[int(h * 0.07) : int(h * 0.20), int(w * 0.72) : int(w * 0.90)],
-        tile[int(h * 0.80) : int(h * 0.93), int(w * 0.10) : int(w * 0.28)],
-        tile[int(h * 0.80) : int(h * 0.93), int(w * 0.72) : int(w * 0.90)],
-    ]
-    # drop any leftover gold/blue pixels
-    clean = []
-    for p in corners:
-        r, g, b = p[:, :, 0], p[:, :, 1], p[:, :, 2]
-        ok = ~((b > r + 12) | ((r > g + 10) & (r > b + 16)))
-        if ok.any():
-            clean.append(p[ok])
-        # also keep the patch itself if mostly stone
-        if ok.mean() > 0.85:
-            q = p.copy()
-            q[~ok] = np.median(p[ok], axis=0)
-            clean_patch = q
-        else:
-            clean_patch = None
-        corners_ok = clean
-    samples = np.concatenate(clean, axis=0) if clean else tile.reshape(-1, 3)
-    mid = np.median(samples, axis=0)
-    lo = np.percentile(samples, 15, axis=0)
-    hi = np.percentile(samples, 88, axis=0)
-    # stitch cleaned corner patches for photo grain
-    def prep(p):
-        r, g, b = p[:, :, 0], p[:, :, 1], p[:, :, 2]
-        ok = ~((b > r + 12) | ((r > g + 10) & (r > b + 16)))
-        q = p.copy()
-        q[~ok] = mid
-        return np.array(Image.fromarray(q.astype(np.uint8)).resize((160, 120)))
-    ph = np.concatenate([np.concatenate([prep(corners[0]), prep(corners[1])], 1),
-                         np.concatenate([prep(corners[2]), prep(corners[3])], 1)], 0)
-    photo = make_seamless_from_patch(ph, SIZE).astype(np.float32)
-    photo = photo * (mid / (np.median(photo.reshape(-1, 3), axis=0) + 1e-3))
-    n1 = fbm(SIZE, SIZE, [96, 48, 24, 12, 6], [1, 0.55, 0.3, 0.18, 0.1], 3.3)
-    pits = fbm(SIZE, SIZE, [16, 8, 4], [1, 0.5, 0.3], 9.2)
-    t = n1[..., None]
-    base = lo * (1 - t) + mid * t
-    base = base + (hi - mid) * np.clip((n1 - 0.65) / 0.35, 0, 1)[..., None]
-    pore = np.clip((0.36 - pits) / 0.2, 0, 1)[..., None]
-    base = base * (1 - pore * 0.28)
-    mix = 0.40 * base + 0.60 * photo
-    return Image.fromarray(np.clip(mix, 0, 255).astype(np.uint8), "RGB")
+    """Fine, non-repeating granite — subtle cool grey, no quilted patches."""
+    # Colour from the concept top-face stone (lit mid-grey, cool).
+    mid = np.array([152, 154, 162], np.float32)
+    # Very fine grain + barely-there broad variation so one tile never shows a repeat.
+    n_fine = fbm_seamless(SIZE, [16, 32, 64, 128, 256], [1.0, 0.7, 0.45, 0.28, 0.16], 31)
+    n_micro = fbm_seamless(SIZE, [128, 256], [1.0, 0.6], 92)
+    n_broad = fbm_seamless(SIZE, [6, 12], [1.0, 0.4], 15)
+    base = mid + (n_fine[..., None] - 0.5) * 16.0
+    base = base + (n_broad[..., None] - 0.5) * 6.0
+    # granite mineral flecks: a few lighter mica, a few darker pores
+    mica = np.clip((n_micro - 0.74) / 0.12, 0, 1)
+    pore = np.clip((0.28 - n_micro) / 0.12, 0, 1)
+    base = base + mica[..., None] * np.array([18, 18, 16], np.float32)
+    base = base - pore[..., None] * np.array([20, 20, 18], np.float32)
+    # slight cool/warm fleck
+    cool = (fbm_seamless(SIZE, [48, 96], [1.0, 0.4], 61) - 0.5)[..., None]
+    base = base + cool * np.array([-1, 0, 3], np.float32)
+    return Image.fromarray(np.clip(base, 0, 255).astype(np.uint8), "RGB")
 
 
 def black_albedo(src: np.ndarray) -> Image.Image:
-    # Mostly procedural glossy black — photo rivets/big sweeps would tile badly.
-    n1 = fbm(SIZE, SIZE, [80, 40, 20, 10], [1, 0.5, 0.25, 0.12], 4.4)
-    n2 = fbm(SIZE, SIZE, [24, 10], [1, 0.4], 14.0)
-    lo = np.array([10, 11, 14], np.float32)
-    mid = np.array([24, 26, 30], np.float32)
-    hi = np.array([44, 46, 52], np.float32)
-    t = n1[..., None]
-    base = lo * (1 - t) + mid * t
-    base = base + (hi - mid) * np.clip((n1 - 0.72) / 0.28, 0, 1)[..., None] * 0.45
-    # faint anisotropic streaks (glossy metal)
+    """Glossy black gel: deep black with soft dark reflections, no blotchy tiles."""
+    n_broad = fbm_seamless(SIZE, [5, 10, 20], [1.0, 0.5, 0.2], 41)
+    n_sheen = fbm_seamless(SIZE, [8, 16], [1.0, 0.4], 18)
     yy, xx = np.ogrid[:SIZE, :SIZE]
-    streak = np.sin((xx * 0.035 + n2 * 8) ) * 0.5 + 0.5
-    base = base + (streak[..., None] - 0.5) * 6
+    # soft anisotropic reflection streaks (like brushed/glossy black plastic)
+    streak = np.sin(xx * (2 * np.pi * 3 / SIZE) + n_sheen * 2.2) * 0.5 + 0.5
+    lo = np.array([10, 11, 14], np.float32)
+    mid = np.array([22, 24, 30], np.float32)
+    hi = np.array([48, 50, 58], np.float32)
+    t = n_broad
+    base = lo * (1 - t[..., None]) + mid * t[..., None]
+    base = base + (hi - mid) * np.clip((n_broad - 0.62) / 0.30, 0, 1)[..., None] * 0.7
+    base = base + (streak[..., None] - 0.5) * 8
+    # a slightly lifted mid so the gel isn't crushed to pure black
+    base = base * 0.92 + mid * 0.08
     return Image.fromarray(np.clip(base, 0, 255).astype(np.uint8), "RGB")
 
 
 def metal_band(src: np.ndarray) -> Image.Image:
-    x0, y0, x1, y1 = BODIES["bound"]
-    tile = src[y0:y1, x0:x1]
-    h, w, _ = tile.shape
-    by = int(h * 0.50)
-    bh = max(10, int(h * 0.07))
-    left = tile[by - bh : by + bh, int(w * 0.02) : int(w * 0.18)]
-    right = tile[by - bh : by + bh, int(w * 0.82) : int(w * 0.98)]
-    strip = np.concatenate([left, right], axis=1)
-    ribbon = Image.fromarray(strip).resize((SIZE, 256), Image.Resampling.LANCZOS)
-    arr = np.array(ribbon, np.float32)
-    fade = 64
-    wgt = np.linspace(0, 1, fade, dtype=np.float32)[None, :, None]
-    left_e, right_e = arr[:, :fade], arr[:, -fade:]
-    blended = right_e * (1 - wgt) + left_e * wgt
-    arr[:, :fade] = blended
-    arr[:, -fade:] = blended
-    v = np.linspace(-1, 1, arr.shape[0], dtype=np.float32)
-    edge = np.clip((np.abs(v) - 0.55) / 0.45, 0, 1)
-    dark = np.array([64, 68, 74], np.float32)
-    arr = arr * (1 - edge[:, None, None] * 0.4) + dark * (edge[:, None, None] * 0.3)
-    hi = np.exp(-((v + 0.25) ** 2) / 0.05)[:, None, None]
-    arr = arr + hi * 36
-    return Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8), "RGB")
+    """Even brushed steel — highlight/shadow are added in the shader."""
+    h, w = 256, SIZE
+    yy = np.linspace(-1, 1, h, dtype=np.float32)
+    cells_u = 16
+    rng = np.random.RandomState(19)
+    grain_l = rng.rand(h, cells_u).astype(np.float32)
+    u = np.arange(w) * (cells_u / w)
+    u0 = np.floor(u).astype(int)
+    fu = u - u0
+    fu = fu * fu * (3 - 2 * fu)
+    g = grain_l[:, u0 % cells_u] * (1 - fu) + grain_l[:, (u0 + 1) % cells_u] * fu
+    fine = rng.rand(h, cells_u * 4).astype(np.float32)
+    u2 = np.arange(w) * (cells_u * 4 / w)
+    u20 = np.floor(u2).astype(int)
+    fu2 = u2 - u20
+    fu2 = fu2 * fu2 * (3 - 2 * fu2)
+    g2 = fine[:, u20 % (cells_u * 4)] * (1 - fu2) + fine[:, (u20 + 1) % (cells_u * 4)] * fu2
+    g = g * 0.55 + g2 * 0.45
+    mid = np.array([138, 142, 152], np.float32)
+    lo = np.array([78, 80, 88], np.float32)
+    edge = np.clip((np.abs(yy) - 0.70) / 0.30, 0, 1)
+    base = mid + (g[..., None] - 0.5) * 28
+    base = base * (1 - edge[:, None, None] * 0.35) + lo * edge[:, None, None] * 0.5
+    return Image.fromarray(np.clip(base, 0, 255).astype(np.uint8), "RGB")
+
 
 
 # --- decals -----------------------------------------------------------
@@ -255,6 +174,22 @@ def place_decal(tile: Image.Image, margin=0.10) -> Image.Image:
     return canvas.resize((DECAL, DECAL), Image.Resampling.LANCZOS)
 
 
+def place_decal_at(tile: Image.Image, cx, cy, half) -> Image.Image:
+    """Square crop of side 2*half centred on (cx, cy), resized to DECAL."""
+    arr = np.array(tile)
+    h, w = arr.shape[:2]
+    x0, y0 = int(round(cx - half)), int(round(cy - half))
+    x1, y1 = int(round(cx + half)), int(round(cy + half))
+    side = max(x1 - x0, y1 - y0)
+    canvas = Image.new("RGBA", (side, side), (0, 0, 0, 0))
+    sx0, sy0 = max(0, x0), max(0, y0)
+    sx1, sy1 = min(w, x0 + side), min(h, y0 + side)
+    dx, dy = sx0 - x0, sy0 - y0
+    piece = Image.fromarray(arr[sy0:sy1, sx0:sx1])
+    canvas.paste(piece, (dx, dy), piece)
+    return canvas.resize((DECAL, DECAL), Image.Resampling.LANCZOS)
+
+
 def snowflake_decal(src: np.ndarray) -> Image.Image:
     x0, y0, x1, y1 = BODIES["ice"]
     tile = src[y0:y1, x0:x1].astype(np.float32)
@@ -272,12 +207,21 @@ def snowflake_decal(src: np.ndarray) -> Image.Image:
     solid = (rel > 2.0) & (r < 0.92)
     aimg = Image.fromarray((np.clip(np.maximum(alpha, solid.astype(np.float32)), 0, 1) * 255).astype(np.uint8))
     aimg = aimg.filter(ImageFilter.MaxFilter(5)).filter(ImageFilter.MinFilter(3))
-    # fill the flake hub
     hub = (np.sqrt(((xx - cx) / (w * 0.045)) ** 2 + ((yy - cy) / (h * 0.045)) ** 2) < 1).astype(np.uint8) * 255
     a = np.maximum(np.array(aimg), hub)
-    a = np.array(Image.fromarray(a).filter(ImageFilter.GaussianBlur(radius=0.7)), np.float32) / 255.0
+    # tighten: drop scattered frost crumbs around the flake
+    a = np.array(Image.fromarray(a).filter(ImageFilter.MinFilter(5)).filter(ImageFilter.MaxFilter(3)))
+    a = np.array(Image.fromarray(a).filter(ImageFilter.GaussianBlur(radius=0.55)), np.float32) / 255.0
     a = np.where(r > 1.02, 0, a)
-    return place_decal(_rgba(tile, a), margin=0.08)
+    # drop isolated frost crumbs (low-alpha specks away from the arms)
+    solidish = a > 0.35
+    near = np.array(Image.fromarray((solidish.astype(np.uint8)*255)).filter(ImageFilter.MaxFilter(7)), np.float32)/255.0
+    a = np.where((a < 0.4) & (near < 0.5), 0, a)
+    # slight contrast lift so the embossed edges stay crisp
+    rgb = tile.copy()
+    rgb = 255 - (255 - rgb) * 0.92
+    rgb = rgb * 0.96 + np.array([200, 230, 245], np.float32) * 0.04
+    return place_decal(_rgba(rgb, a), margin=0.10)
 
 
 def lock_decal(src: np.ndarray, gold=False) -> Image.Image:
@@ -288,13 +232,7 @@ def lock_decal(src: np.ndarray, gold=False) -> Image.Image:
     luma = r * 0.3 + g * 0.59 + bch * 0.11
     yy, xx = np.ogrid[:h, :w]
     cx, cy = w * 0.50, h * 0.50
-    # Face (blue + gold frame + dark keyhole), slightly below geometric centre.
     fx, fy = cx, h * 0.54
-    face = (np.abs(xx - fx) < w * 0.195) & (np.abs(yy - fy) < h * 0.195)
-    # rounded-square falloff for the face
-    qx = (np.abs(xx - fx) - w * 0.13) / (w * 0.002 + 1)
-    qy = (np.abs(yy - fy) - h * 0.13) / (h * 0.002 + 1)
-    # simpler: colour inside a slightly generous rounded box
     dx = np.maximum(0, np.abs(xx - fx) - w * 0.135)
     dy = np.maximum(0, np.abs(yy - fy) - h * 0.135)
     face_r = np.sqrt(dx * dx + dy * dy) / (w * 0.055)
@@ -304,31 +242,36 @@ def lock_decal(src: np.ndarray, gold=False) -> Image.Image:
     keyhole = (luma < 55) & (np.abs(xx - fx) < w * 0.075) & (np.abs(yy - fy) < h * 0.11)
     face_keep = face_m & (blue | goldm | keyhole | ((luma > 40) & (face_r < 0.85)))
 
-    # Shackle: two legs + a circular arch, silver only, hole punched out.
-    # Legs sit on top of the gold frame.
+    # Shackle: two legs + a full circular arch, hole punched out.
     leg_x = w * 0.145
-    leg_w = w * 0.055
-    leg_top, leg_bot = h * 0.25, h * 0.51
-    legs = (((np.abs(xx - (cx - leg_x)) < leg_w) | (np.abs(xx - (cx + leg_x)) < leg_w))
-            & (yy > leg_top) & (yy < leg_bot))
-    arch_cx, arch_cy = cx, h * 0.30
-    ro, ri = w * 0.198, w * 0.122
+    leg_w = w * 0.058
+    leg_top, leg_bot = h * 0.24, h * 0.52
+    legs = (
+        ((np.abs(xx - (cx - leg_x)) < leg_w) | (np.abs(xx - (cx + leg_x)) < leg_w))
+        & (yy > leg_top)
+        & (yy < leg_bot)
+    )
+    arch_cx, arch_cy = cx, h * 0.295
+    ro, ri = w * 0.205, w * 0.118
     da = np.sqrt((xx - arch_cx) ** 2 + (yy - arch_cy) ** 2)
-    arch = (da < ro) & (da > ri) & (yy < arch_cy + h * 0.04)
-    silver = (luma > 105) & (np.abs(r - g) < 32) & (np.abs(g - bch) < 36)
-    shackle = (legs | arch) & (silver | (luma > 80))
-    # punch the hole inside the arch (stone must show through)
+    arch = (da < ro) & (da > ri) & (yy < arch_cy + h * 0.05)
+    # accept silver or slightly darker metal so the arch doesn't break
+    metal = (np.abs(r - g) < 40) & (np.abs(g - bch) < 44) & (luma > 70) & (~blue) & (~goldm)
+    shackle = (legs | arch) & (metal | (luma > 70))
     hole = (da < ri * 1.02) & (yy < arch_cy + h * 0.02)
     shackle = shackle & (~hole)
 
     mask = face_keep | shackle
+    # close small gaps in the arch
     aimg = Image.fromarray((mask.astype(np.uint8) * 255))
     aimg = aimg.filter(ImageFilter.MaxFilter(3)).filter(ImageFilter.MinFilter(3))
-    alpha = np.array(aimg.filter(ImageFilter.GaussianBlur(radius=0.6)), np.float32) / 255.0
+    alpha = np.array(aimg.filter(ImageFilter.GaussianBlur(radius=0.45)), np.float32) / 255.0
     alpha = np.where(hole, 0, alpha)
-    # discard anything far from the lock
+    # keep only the intended shackle ring, the legs, and the face — no outer halo
+    shackle_ok = ((da <= ro * 1.03) & (da >= ri * 0.96) & (yy < arch_cy + h * 0.06)) | legs | face_m
+    alpha = np.where(shackle_ok, alpha, 0)
     dist = np.sqrt(((xx - cx) / (w * 0.26)) ** 2 + ((yy - (cy - h * 0.04)) / (h * 0.34)) ** 2)
-    alpha = np.where(dist > 1.12, 0, alpha)
+    alpha = np.where(dist > 1.08, 0, alpha)
 
     rgb = tile.copy()
     if gold:
@@ -341,54 +284,92 @@ def lock_decal(src: np.ndarray, gold=False) -> Image.Image:
             / 255.0
         )
         rgb = rgb * (1 - mix[..., None]) + goldc * mix[..., None]
-    return place_decal(_rgba(rgb, alpha), margin=0.08)
+    return place_decal(_rgba(rgb, alpha), margin=0.10)
 
 
 def bomb_decal(src: np.ndarray) -> Image.Image:
+    """Bomb + fuse + full spark, centred on the sphere so the spark is not cropped."""
     x0, y0, x1, y1 = BODIES["bomb"]
     tile = src[y0:y1, x0:x1].astype(np.float32)
     h, w, _ = tile.shape
     r, g, bch = tile[:, :, 0], tile[:, :, 1], tile[:, :, 2]
     luma = r * 0.3 + g * 0.59 + bch * 0.11
     yy, xx = np.ogrid[:h, :w]
-    # Sphere (the cartoon bomb), slightly right and down of centre.
     cx, cy, rad = w * 0.495, h * 0.575, w * 0.255
     d = np.sqrt((xx - cx) ** 2 + (yy - cy) ** 2)
     sphere = d < rad * 1.04
-    # Fuse / cap on the upper-right of the sphere.
-    fuse = (yy < cy - rad * 0.25) & (yy > cy - rad * 0.95) & (xx > cx) & (xx < cx + rad * 1.15) & (luma > 35) & (d < rad * 1.55)
-    # Spark: warm / very bright, upper-right, keep isolated rays.
+    # Fuse / cap on the upper-right of the sphere (brown).
+    fuse = (
+        (yy < cy - rad * 0.20)
+        & (yy > cy - rad * 1.05)
+        & (xx > cx - rad * 0.05)
+        & (xx < cx + rad * 1.20)
+        & (d > rad * 0.55)
+        & (d < rad * 1.60)
+        & (r > 40)
+        & (g > 22)
+        & (r + g > bch + 10)
+        & (~((luma < 40) & (r < 60)))
+    )
+    # Spark: warm / very bright, upper-right. Keep isolated rays, drop the black rim hook.
     warm = (r > g + 6) & (r > 70)
-    bright = luma > 150
-    spark_zone = (xx > w * 0.50) & (yy < h * 0.52)
-    spark = (warm | bright) & spark_zone & (~sphere)
-    # Soft-grow the spark only (rays), not the black body.
+    bright = luma > 140
+    spark_zone = (xx > w * 0.48) & (yy < h * 0.55) & (d > rad * 0.85)
+    spark = (warm | bright) & spark_zone
     spark_a = np.array(
-        Image.fromarray((spark.astype(np.uint8) * 255)).filter(ImageFilter.MaxFilter(5)).filter(ImageFilter.GaussianBlur(radius=0.9))
+        Image.fromarray((spark.astype(np.uint8) * 255))
+        .filter(ImageFilter.MaxFilter(5))
+        .filter(ImageFilter.GaussianBlur(radius=0.8))
     ).astype(np.float32) / 255.0
-    # drop dark glossy body caught around the rays
-    spark_a = spark_a * np.clip((np.maximum(luma, (r - bch)) - 28.0) / 36.0, 0, 1)
-    # Four rivets on the glossy body — include as part of the top symbol.
-    rivets = [
-        (0.22, 0.30, 0.055),
-        (0.155, 0.50, 0.048),
-        (0.22, 0.80, 0.050),
-        (0.80, 0.80, 0.050),
-        (0.84, 0.52, 0.048),
-    ]
-    riv = np.zeros((h, w), np.float32)
-    for ux, uy, ur in rivets:
-        rd = np.sqrt((xx - ux * w) ** 2 + (yy - uy * h) ** 2)
-        riv = np.maximum(riv, np.clip((ur * w - rd) / 1.5 + 0.7, 0, 1))
+    # only keep warm/bright spark, never the dark glossy hook
+    spark_keep = np.clip((np.maximum(luma, (r - bch * 0.4)) - 40.0) / 40.0, 0, 1)
+    spark_a = spark_a * spark_keep
+    # soft warm glow around the spark (not the black tile)
+    glow = (
+        np.array(
+            Image.fromarray(((spark_a > 0.2).astype(np.uint8) * 255)).filter(ImageFilter.GaussianBlur(radius=7))
+        ).astype(np.float32)
+        / 255.0
+    )
+    glow = glow * np.clip((r * 1.2 + g * 0.4 - bch * 0.3 - 20) / 80.0, 0, 1)
 
     sphere_a = np.array(
-        Image.fromarray((sphere.astype(np.uint8) * 255)).filter(ImageFilter.MaxFilter(3)).filter(ImageFilter.GaussianBlur(radius=0.6))
+        Image.fromarray((sphere.astype(np.uint8) * 255)).filter(ImageFilter.MaxFilter(3)).filter(ImageFilter.GaussianBlur(radius=0.55))
     ).astype(np.float32) / 255.0
     fuse_a = np.array(
-        Image.fromarray((fuse.astype(np.uint8) * 255)).filter(ImageFilter.MaxFilter(3)).filter(ImageFilter.GaussianBlur(radius=0.6))
+        Image.fromarray((fuse.astype(np.uint8) * 255)).filter(ImageFilter.MaxFilter(3)).filter(ImageFilter.GaussianBlur(radius=0.55))
     ).astype(np.float32) / 255.0
-    alpha = np.clip(np.maximum.reduce([sphere_a, fuse_a, spark_a]), 0, 1)
-    return place_decal(_rgba(tile, alpha), margin=0.10)
+
+    alpha = np.clip(np.maximum.reduce([sphere_a, fuse_a, spark_a, glow * 0.65]), 0, 1)
+    # hard reject dark non-warm pixels outside the sphere (kills the cropped black hook)
+    outside = d > rad * 1.02
+    dark = (luma < 70) & (r < 90) & (r < g + 25)
+    alpha = np.where(outside & dark, 0, alpha)
+    # also drop any leftover dark rim near the top-right canvas edge
+    hook = (xx > w * 0.70) & (yy < h * 0.42) & (luma < 100) & (r < 120) & (~warm) & (spark_a < 0.55)
+    alpha = np.where(hook, 0, alpha)
+    # any dark sliver beyond the spark disc
+    hook2 = (xx > cx + rad * 1.35) & (yy < cy - rad * 0.45) & (luma < 90) & (r < 110)
+    alpha = np.where(hook2, 0, alpha)
+
+    # drop grey/black rim fragments; keep warm orange spark rays and brown fuse
+    warmish = (r > g + 8) & (r > 55)
+    brown = (r > 40) & (g > 22) & (r + g > bch + 10) & (r > bch)
+    keep = (~outside) | warmish | brown | (glow > 0.35)
+    alpha = np.where(keep, alpha, 0)
+
+    rgba = _rgba(tile, alpha)
+    # Centre on the SPHERE, extra margin so the spark is fully inside.
+    half = rad * 1.88
+    img = place_decal_at(rgba, cx, cy, half)
+    # Final hook wipe on the canvas: grey slivers at the far right only.
+    arr = np.array(img)
+    H, W = arr.shape[:2]
+    rr, gg, bb, aa = arr[:,:,0].astype(np.float32), arr[:,:,1].astype(np.float32), arr[:,:,2].astype(np.float32), arr[:,:,3]
+    warm2 = (rr > gg + 8) & (rr > 55)
+    far = (np.arange(W)[None, :] > int(W * 0.90)) & (np.arange(H)[:, None] < int(H * 0.42))
+    arr[:,:,3] = np.where(far & (~warm2), 0, aa)
+    return Image.fromarray(arr)
 
 
 def main():
@@ -411,7 +392,6 @@ def main():
             img.save(dest, "WEBP", lossless=True, quality=100, method=4)
         else:
             img.save(dest, "WEBP", quality=92, method=4)
-        # preview on navy / checker
         if img.mode == "RGBA":
             bg = Image.new("RGBA", img.size, (7, 16, 36, 255))
             bg.alpha_composite(img)
