@@ -1,6 +1,6 @@
 # App-Hülle (iOS, Capacitor): Plan
 
-Stand: 16.11.2026, launch-19. Dieser Plan ist nur vorbereitet, noch nichts davon ist live.
+Stand: 16.11.2026, launch-19. **Umgesetzt im Branch `app-shell` (Ordner `app/`), Bauanleitung: [app-build.md](app-build.md).** Live ist davon nichts; die Web-Version bleibt unverändert.
 Ziel ist das Spiel als iPhone-App im Hochformat, das komplett offline läuft. Echtes Geld gibt es
 nur in der App: Werbung über AdMob, später In-App-Käufe über StoreKit.
 

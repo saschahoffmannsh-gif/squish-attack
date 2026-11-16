@@ -42,6 +42,7 @@ async function boot() {
     ads.registerNativeAds(createAdMobAdapter({ AdMob, ids: APP_CONFIG.admob, testing: APP_CONFIG.admob.testing, ready, log }));
     // Einstellungen → „Werbe-Einwilligung ändern“ kann das aufrufen (Pflicht, wenn UMP es verlangt).
     status.showPrivacyOptions = () => AdMob.showPrivacyOptionsForm().catch(e => log('privacy options', e));
+    ready.then(s => { if (s.privacyOptions) addPrivacyButton(status.showPrivacyOptions); }).catch(() => {});
   }
 
   const NativePurchases = plugin('NativePurchases');
@@ -55,6 +56,17 @@ async function boot() {
     //   await SquishApp.testPurchase('rocket-1')   → StoreKit-Kaufdialog, Ergebnis {ok, items, transactionId}
     status.testPurchase = id => shop.purchase(id, { config: { ...shop.SHOP_CONFIG, enabled: true } });
   }
+}
+
+// Einstellungen: „Werbe-Einwilligung ändern“ (Google UMP verlangt den Einstieg, wenn privacyOptions REQUIRED ist).
+function addPrivacyButton(onClick) {
+  const build = document.getElementById('settings-build');
+  if (!build || document.getElementById('ad-privacy')) return;
+  const b = document.createElement('button');
+  b.type = 'button'; b.id = 'ad-privacy'; b.className = 'setting-toggle setting-stats';
+  const label = document.createElement('span'); label.className = 'setting-label'; label.textContent = 'Werbe-Einwilligung ändern';
+  b.append(label); b.addEventListener('click', () => void onClick());
+  build.before(b);
 }
 
 boot().catch(e => { status.errors.push(String(e?.message || e)); log('boot', e); });
