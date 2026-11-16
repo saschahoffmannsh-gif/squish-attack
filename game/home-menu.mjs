@@ -1,8 +1,8 @@
 // Startbildschirm und Modus-Menüs im Herbst-Design (reines DOM, kein 3D).
 // Ersetzt das frühere 3D-Glastisch-Menü (world-menu.mjs) mit derselben
 // Schnittstelle, die game.mjs und start-menu.mjs erwarten.
-import {ICONS,TILE_ICONS,leafSvg} from './aw-icons.mjs?v=launch-18';
-import {BUILD} from './flags.mjs?v=launch-18';
+import {ICONS,TILE_ICONS,leafSvg} from './aw-icons.mjs?v=launch-19';
+import {BUILD} from './flags.mjs?v=launch-19';
 
 const LEAF_COLORS=['#f07a1c','#e8541a','#c9301c','#f2a01e','#d94a17','#b8321a','#ffb030'];
 const fmt=n=>Number(n||0).toLocaleString('de-DE');

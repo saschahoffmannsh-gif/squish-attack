@@ -6,7 +6,7 @@
 // Die Abzeichen folgen der Verformung des Körpers (gleiche Formel wie die Zahl).
 import {THREE,PARAMETERS} from '../squish/squish-graphics.js?v=play-sharp-1';
 import {pillowTopHeight} from './original-gel-models.js?v=menu-1';
-import {INK,setComicValue,setComicLabel} from './comic-style.mjs?v=launch-18';
+import {INK,setComicValue,setComicLabel} from './comic-style.mjs?v=launch-19';
 
 const ICE=[new THREE.Color('#f6f8fc'),new THREE.Color('#c5d0de')];
 const STEEL=[new THREE.Color('#9aa3ad'),new THREE.Color('#4a535c')];
