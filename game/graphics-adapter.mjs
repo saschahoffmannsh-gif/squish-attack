@@ -5,13 +5,14 @@ import {installPressureWave} from './pressure-wave.mjs?v=soft-gel-1';
 import {applyGelSoftness,softWobblePower,wobbleDecayFactor} from './gel-softness.mjs?v=launch-21';
 import {applyNeonGlassLighting} from './gel-lighting.mjs?v=menu-1';
 import {createCrispLabelFactory} from './crisp-labels.mjs?v=launch-21';
-import {applyComic,comicBodyMaterial,setComicValue} from './comic-style.mjs?v=squish-art-3';
+import {applyComic,comicBodyMaterial,setComicValue} from './comic-style.mjs?v=squish-art-5';
 import {installCleanScreen} from './clean-screen.mjs?v=launch-21';
-import {applySpecial,setSpecialRuntime} from './special-squish.mjs?v=squish-art-3';
+import {applySpecial,setSpecialRuntime,deformSpecial} from './special-squish.mjs?v=squish-art-5';
 import {createFusion} from './fusion.mjs?v=launch-21';
 import {flags} from './flags.mjs?v=launch-21';
 import {createSquishGraphics,THREE,PARAMETERS} from '../squish/squish-graphics.js?v=play-sharp-1';
-import {buildSquishy,createLabel,bindGelOptics,initializeMotion,updateSquishy,PARAMETERS as HUD_PARAMETERS} from './original-gel-models.js?v=menu-1';
+import {buildSquishy,createLabel,bindGelOptics,initializeMotion,updateSquishy as updateSquishyCore,PARAMETERS as HUD_PARAMETERS} from './original-gel-models.js?v=menu-1';
+function updateSquishy(s,...args){updateSquishyCore(s,...args);deformSpecial(s);}
 
 // Values 1–8 keep the accepted palette; later values repeat it explicitly.
 function ensureColor(value) {

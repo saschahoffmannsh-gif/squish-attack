@@ -1,82 +1,186 @@
-// squish-art: Eis, Schloss, Bombe und Joker als ein nahtloser Squish.
-//  Der Körper behält Silhouette, Kantenradius, Tiefe, Schatten und Kontur
-//  der normalen Squishes. Das Material liegt als undurchsichtige Textur auf
-//  dem ganzen Gel (XZ-UV), inklusive der Seiten – kein Aufkleber, kein
-//  quadratischer Hintergrund. Die Zahl bleibt versteckt. Keine Idle-Animation.
-import {THREE} from '../squish/squish-graphics.js?v=play-sharp-1';
-import {applyComic,LIGHT} from './comic-style.mjs?v=squish-art-3';
+// squish-art: Sonder-Squishes sind das komplette Konzept-Bild.
+//  Kein Gel-Glanz, keine Comic-Kontur, keine Seitenleiste und kein
+//  zusätzliches Shading. Die ganze Konzept-Kachel (Rand, Fase, Seite,
+//  Schattierung) liegt als unbeleuchtete Sprite-Karte auf dem Footprint;
+//  nur der weiche Kontakt-Schatten des Steins bleibt. Die Karte wird
+//  mit derselben squash/sway-Deformation wie der Gel-Körper verformt.
+import {THREE,PARAMETERS} from '../squish/squish-graphics.js?v=play-sharp-1';
+import {applyComic} from './comic-style.mjs?v=squish-art-5';
 
-const ART='squish-art-3';
+const ART='squish-art-5';
 const URLS={
   ice:new URL(`./assets/specials/ice.webp?v=${ART}`,import.meta.url).href,
   bound:new URL(`./assets/specials/bound.webp?v=${ART}`,import.meta.url).href,
   bomb:new URL(`./assets/specials/bomb.webp?v=${ART}`,import.meta.url).href,
   joker:new URL(`./assets/specials/joker.webp?v=${ART}`,import.meta.url).href,
 };
+// Fraction of the texture that is padding around the painted stone (bake_sprite.py).
+const PAD={ice:.06543,bound:.06641,bomb:.06641,joker:.06641};
+const SEGMENTS=24;
+// Slightly larger than gel.width so the painted rim fills the visual slot of a
+// normal squish (which also carries a dark comic outline).
+const FOOT=PARAMETERS.gel.width*1.03;
 
 const textures=new Map();
 function tex(kind){
   let t=textures.get(kind);if(t)return t;
   t=new THREE.TextureLoader().load(URLS[kind]);
   t.colorSpace=THREE.SRGBColorSpace;
-  t.flipY=false; // Gel-UV: +Z liegt vorn; die Textur-Oberseite soll nach hinten (oben auf dem Brett).
   t.generateMipmaps=true;
   t.minFilter=THREE.LinearMipmapLinearFilter;
   t.magFilter=THREE.LinearFilter;
-  t.anisotropy=8;
+  t.anisotropy=16;
+  t.premultiplyAlpha=false;
   textures.set(kind,t);return t;
 }
 tex('ice');tex('bound');tex('bomb');tex('joker');
 
-const bodyVert=`varying vec3 vN;varying vec3 vP;varying vec2 vUv;
-void main(){vP=position;vUv=uv;vN=normalize(mat3(modelMatrix)*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
-// Cel-ähnliche Modellierung der Form, Albedo kommt aus der Konzept-Textur.
-const bodyFrag=`uniform sampler2D uMap;uniform vec3 uL;uniform float uSpot;varying vec3 vN;varying vec3 vP;varying vec2 vUv;
-float aastep(float e,float x){float w=max(fwidth(x),1e-4)*.75;return smoothstep(e-w,e+w,x);}
+const cardVert=`varying vec2 vUv;
+void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
+const cardFrag=`uniform sampler2D uMap;varying vec2 vUv;
 void main(){
-  float nl=length(vN);vec3 N=nl>1e-5?vN/nl:vec3(0.,1.,0.);
-  vec3 tex=texture2D(uMap,vUv).rgb;
-  float d=dot(N,normalize(uL))*.5+.5;
-  float lit=mix(.62,1.,aastep(.42,d));
-  float top=smoothstep(-.05,.95,N.y);
-  vec3 c=tex*mix(.7,1.,top)*lit;
-  vec2 q=vP.xz*vec2(1.05,1.15);
-  float g=length((q-vec2(-.45,-.4))*vec2(1.,1.6)),g2=length(q-vec2(-.16,-.55));
-  float spot=max(1.-aastep(.16*uSpot,g),1.-aastep(.06*uSpot,g2))*aastep(.45,N.y);
-  gl_FragColor=vec4(c,1.);
-  #include <tonemapping_fragment>
-  gl_FragColor.rgb=mix(gl_FragColor.rgb,vec3(1.),spot*.55);
+  vec4 t=texture2D(uMap,vUv);
+  if(t.a<0.04)discard;
+  gl_FragColor=t;
   #include <colorspace_fragment>
 }`;
 
-function specialBodyMaterial(kind){
-  const mat=new THREE.ShaderMaterial({
-    uniforms:{uMap:{value:tex(kind)},uL:{value:LIGHT.clone()},uSpot:{value:.85}},
-    vertexShader:bodyVert,fragmentShader:bodyFrag,
+function cardMaterial(kind){
+  const m=new THREE.ShaderMaterial({
+    uniforms:{uMap:{value:tex(kind)}},
+    vertexShader:cardVert,fragmentShader:cardFrag,
+    transparent:true,depthWrite:true,toneMapped:false,side:THREE.DoubleSide,
   });
-  mat.toneMapped=false;
-  mat.userData.special=kind;
-  return mat;
+  m.userData.special=kind;
+  return m;
+}
+
+function cameraFacingQuat(){
+  const c=PARAMETERS.camera,p=c.position,t=c.target||[0,.1,0];
+  const normal=new THREE.Vector3(p[0]-t[0],p[1]-t[1],p[2]-t[2]).normalize();
+  return new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,1),normal);
+}
+
+function makeCardGeometry(kind){
+  const pad=PAD[kind]??PAD.bound;
+  const span=FOOT/(1-2*pad);
+  const geo=new THREE.PlaneGeometry(span,span,SEGMENTS,SEGMENTS);
+  const q=cameraFacingQuat();
+  const lift=PARAMETERS.gel.height*.52;
+  const pos=geo.attributes.position;
+  const v=new THREE.Vector3();
+  for(let i=0;i<pos.count;i++){
+    v.set(pos.getX(i),pos.getY(i),pos.getZ(i)).applyQuaternion(q);
+    v.y+=lift;
+    pos.setXYZ(i,v.x,v.y,v.z);
+  }
+  pos.needsUpdate=true;
+  geo.computeVertexNormals();
+  geo.computeBoundingSphere();
+  return geo;
+}
+
+function deformGeometry(geometry,rest,pose){
+  if(!pose||!rest)return;
+  const out=geometry.attributes.position.array;
+  const squash=pose.squash||0,sway=pose.sway||0,swayZ=pose.swayZ||0;
+  const p=1-squash,h=PARAMETERS.gel.height,spread=PARAMETERS.motion.spreadFactor;
+  for(let i=0;i<rest.length;i+=3){
+    const x=rest[i],y=rest[i+1],z=rest[i+2];
+    const a=Math.pow(Math.max(0,y)/h,1.7);
+    const d=1+squash*a*spread;
+    out[i]=x*d+sway*a;
+    out[i+1]=y*p;
+    out[i+2]=z*d+swayZ*a;
+  }
+  geometry.attributes.position.needsUpdate=true;
+}
+
+export function deformSpecial(s){
+  const mesh=s.specialDecor;if(!mesh||!s.deformation)return;
+  deformGeometry(mesh.geometry,mesh.userData.rest,s.deformation);
 }
 
 function outlineOf(s){return s.body?.children?.find(o=>o.name==='Comic_outline')||null;}
 
-function setBody(s,kind){
-  const body=s.body;if(!body)return;
-  const prev=body.material;
-  if(prev?.userData?.special===kind)return;
-  body.material=specialBodyMaterial(kind);
-  if(prev&&prev!==body.material){
-    // Comic-Material nicht zerstören, wenn wir es später wieder brauchen? applyComic legt ein neues an.
-    // Spezial-Material entsorgen; Comic ebenfalls, applyComic erzeugt es neu.
-    const old=prev;setTimeout(()=>old.dispose(),0);
+function setGelPass(s,hide){
+  const body=s.body;
+  if(body){
+    if(body.material){body.material.colorWrite=!hide;body.material.depthWrite=!hide;}
+    // Keep the pillow as a shadow-only stand-in so the soft drop shadow matches.
+    // The pillow silhouette must not paint a second shadow halo around the art.
+    body.castShadow=!hide;
   }
-  const o=outlineOf(s);if(o)o.visible=true;
+  const o=outlineOf(s);if(o)o.visible=!hide;
+  if(s.bubbles)s.bubbles.visible=!hide;
+}
+
+function disposeDecor(mesh){
+  if(!mesh)return;
+  const sh=mesh.userData?.shadow;
+  if(sh){sh.parent?.remove(sh);sh.geometry?.dispose?.();sh.material?.dispose?.();}
+  mesh.parent?.remove(mesh);
+  mesh.geometry?.dispose?.();
+  mesh.material?.dispose?.();
+}
+
+const shadowVert=`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
+const shadowFrag=`varying vec2 vUv;
+void main(){
+  vec2 q=abs(vUv*2.-1.)-vec2(.22);
+  float e=length(max(q,0.))+min(max(q.x,q.y),0.)-.46;
+  float core=1.-smoothstep(-.02,.12,e);
+  float pen=1.-smoothstep(-.04,.36,e);
+  gl_FragColor=vec4(0.,0.,0.,.42*core+.16*pen);
+}`;
+function makeShadow(){
+  const geo=new THREE.PlaneGeometry(FOOT*1.22,FOOT*1.18,1,1);
+  geo.rotateX(-Math.PI/2);
+  geo.translate(0,.03,FOOT*0.04);
+  const mat=new THREE.ShaderMaterial({
+    vertexShader:shadowVert,fragmentShader:shadowFrag,
+    transparent:true,depthWrite:false,toneMapped:false,side:THREE.DoubleSide,
+  });
+  const mesh=new THREE.Mesh(geo,mat);
+  mesh.name='Special_shadow';
+  mesh.castShadow=false;mesh.receiveShadow=false;
+  mesh.renderOrder=1;mesh.frustumCulled=false;
+  mesh.raycast=()=>{};
+  return mesh;
+}
+
+function attachCard(s,kind){
+  const prev=s.specialDecor;
+  if(prev?.userData?.special===kind){
+    setGelPass(s,true);
+    return;
+  }
+  if(prev)disposeDecor(prev);
+  const geometry=makeCardGeometry(kind);
+  const mesh=new THREE.Mesh(geometry,cardMaterial(kind));
+  mesh.name='Special_card';
+  mesh.castShadow=false;
+  mesh.receiveShadow=false;
+  mesh.renderOrder=3;
+  mesh.frustumCulled=false;
+  mesh.userData.special=kind;
+  mesh.userData.rest=geometry.attributes.position.array.slice();
+  mesh.userData.squish=s;
+  mesh.onBeforeRender=function(){
+    const host=this.userData.squish;
+    if(host?.deformation)deformGeometry(this.geometry,this.userData.rest,host.deformation);
+  };
+  const shadow=makeShadow();
+  s.group.add(mesh);
+  s.group.add(shadow);
+  mesh.userData.shadow=shadow;
+  s.specialDecor=mesh;
+  setGelPass(s,true);
 }
 
 function restoreBody(s){
-  const body=s.body;if(!body)return;
-  if(body.material?.userData)body.material.userData.special=null;
+  if(s.specialDecor){disposeDecor(s.specialDecor);s.specialDecor=null;}
+  setGelPass(s,false);
   applyComic(s,s.value);
   const o=outlineOf(s);if(o)o.visible=true;
 }
@@ -84,9 +188,6 @@ function restoreBody(s){
 let runtime={job:null,reduced:()=>false};
 export function setSpecialRuntime(r){runtime={job:r.job||null,reduced:r.reduced||(()=>false)};}
 
-function disposeDecor(mesh){
-  if(!mesh)return;mesh.parent?.remove(mesh);mesh.geometry?.dispose?.();mesh.material?.dispose?.();
-}
 function cancelFree(s){
   const j=s.userData?.freeJob;if(!j)return;s.userData.freeJob=null;j.cancel?.();
 }
@@ -96,7 +197,6 @@ function finishFree(s){
   if(s.label){s.label.visible=true;if(s.label.material&&s.label.material.opacity!=null)s.label.material.opacity=1;}
 }
 
-/** Kurzes Einblenden der normalen Zahl, wenn ein Joker/Spezialstein zum normalen Squish wird. */
 function popFree(s){
   cancelFree(s);
   if(!runtime.job||runtime.reduced()||s.group?.visible===false){finishFree(s);return;}
@@ -127,16 +227,16 @@ function labelOf(s,kind){
 export function applySpecial(s,kind,{freed=false}={}){
   const prev=s.special||null;
   if(prev!==kind){
-    // Alte Decal-Ebene (frühere Version) entfernen, falls noch vorhanden.
-    if(s.specialDecor){disposeDecor(s.specialDecor);s.specialDecor=null;}
     cancelFree(s);
-    if(kind)setBody(s,kind);
+    if(kind)attachCard(s,kind);
     else popFree(s);
     s.special=kind;
   }else if(kind){
-    setBody(s,kind);
+    attachCard(s,kind);
+  }else{
+    setGelPass(s,false);
   }
   labelOf(s,kind);
-  const o=outlineOf(s);if(o)o.visible=true;
+  if(kind)setGelPass(s,true);
   return prev!==kind;
 }

@@ -6,7 +6,7 @@ import {fileURLToPath, pathToFileURL} from 'node:url';
 import puppeteer from '/workspace/squish-e2e/campaign/node_modules/puppeteer-core/lib/puppeteer/puppeteer-core.js';
 
 const ROOT = resolve(fileURLToPath(new URL('../..', import.meta.url)));
-const OUT = process.env.OUT || '/workspace/squish-art-preview/v2';
+const OUT = process.env.OUT || '/workspace/squish-art-preview/v3';
 const PORT = Number(process.env.PORT || 8891);
 const IPHONE = {width:390, height:844, deviceScaleFactor:3, isMobile:true, hasTouch:true};
 const UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1';
@@ -134,15 +134,28 @@ await page.evaluate(() => {
   ]);
   const n = document.getElementById('note'); if (n) { n.hidden = true; n.textContent = ''; }
 });
-await sleep(2000);
-const shotDemo = join(OUT, '03-frozen-vs-freed.png');
+await sleep(2400);
+await page.evaluate(() => {
+  const tiles = window.SquishGame?.graphics?.tiles || [];
+  for (const s of tiles) {
+    s.amplitude = 0;
+    if (s.press) {
+      s.press.compression = 0; s.press.velocity = 0;
+      s.press.swipeX = 0; s.press.swipeZ = 0; s.press.swipeVX = 0; s.press.swipeVZ = 0;
+    }
+    if (s.deformation) s.deformation = {sway:0, swayZ:0, squash:0};
+    s.forceUpdate = true;
+  }
+});
+await sleep(400);
+const shotDemo = join(OUT, '05-row-with-normal.png');
 await page.screenshot({path:shotDemo, type:'png'});
 console.log('wrote', shotDemo);
 
 const rowCells = await page.evaluate(() => {
   const host = document.getElementById('graphics').getBoundingClientRect();
   const pts = [];
-  for (const [r, cols] of [[1, [0, 1, 2]], [2, [0, 1, 2]]]) {
+  for (const [r, cols] of [[1, [0, 1, 2, 3]]]) {
     for (const c of cols) {
       const p = window.SquishGame.cellPoint(r, c);
       pts.push({r, c, x:p.x, y:p.y});
