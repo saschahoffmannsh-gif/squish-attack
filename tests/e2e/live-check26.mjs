@@ -149,8 +149,8 @@ const ENDLESS_SAVE = { version: 1, board: [[1,2,null,3,null],[null,null,null,nul
     const res = await page.evaluate(() => ({ title: document.getElementById('campaign-result-title')?.textContent, stars: document.querySelectorAll('#campaign-result-stars .is-earned').length, msg: document.getElementById('campaign-result-message')?.textContent }));
     ok(`L${n} gewonnen, 3 Sterne`, /geschafft|Perfekt/.test(res.title) && res.stars === 3, JSON.stringify(res));
     if (n === 3) {
-      const gifts = await page.evaluate(() => ({ pending: (window.SquishGame.campaign.inventory?.pending || []).length, gift: window.SquishGame.campaign.gift?.active, vis: !document.getElementById('campaign-gift')?.hidden }));
-      ok('L3: keine Geschenke (auch nicht als offenes Paket)', gifts.pending === 0 && !gifts.gift && !gifts.vis, JSON.stringify(gifts));
+      const gifts = await page.evaluate(() => ({ pending: (window.SquishGame.campaign.inventory?.pending || []).length, gift: window.SquishGame.campaign.gift?.active, hidden: !!document.getElementById('campaign-result-gift')?.hidden }));
+      ok('L3: keine Geschenke (auch nicht als offenes Paket)', gifts.pending === 0 && !gifts.gift && gifts.hidden, JSON.stringify(gifts));
     }
     if (n === 5) ok('L5: Freischalt-Hinweis im Ergebnis', /Endlos und 2 Spieler/.test(res.msg), res.msg);
   }
@@ -480,10 +480,12 @@ function overflowHits() {
   await h.idle(); await sleep(400);
   const retry = await page.evaluate(() => ({ available: window.SquishGame.campaign.available, used: window.SquishGame.campaign.toolsUsed, capHidden: document.getElementById('campaign-tool-cap')?.hidden }));
   ok('Nochmal: alle Hilfsmittel wieder 1×, Deckel aus', retry.available?.extraMoves === 1 && retry.available?.hint === 1 && retry.available?.rocket === 1 && retry.available?.wand === 1 && (retry.used || []).length === 0 && retry.capHidden, JSON.stringify(retry));
-  await page.click('#campaign-menu').catch(async () => { await page.evaluate(() => document.getElementById('campaign-menu')?.click()); });
+  await page.click('#pause');
+  await page.waitForFunction(() => { const v = document.getElementById('veil'); return v && !v.hidden; }, { timeout: 8000 });
+  await page.click('#to-menu');
   await sleep(800); await h.goHome(); await h.waitBtn('endless');
-  // Einstellungen: Werbefrei-Knopf nur in der App
-  await page.click('[data-open-settings]');
+  // Einstellungen: Werbefrei-Knopf nur in der App (nicht das deaktivierte Title-Icon)
+  await page.click('#home-settings');
   await page.waitForFunction(() => !document.getElementById('settings-screen')?.hidden, { timeout: 8000 });
   const adFreeUi = await page.evaluate(() => ({ buyHidden: document.getElementById('adfree-buy')?.hidden, descHidden: document.getElementById('adfree-desc')?.hidden, ownedHidden: document.getElementById('adfree-owned')?.hidden }));
   ok('Web: kein Werbefrei-Kauf in den Einstellungen', adFreeUi.buyHidden && adFreeUi.descHidden && adFreeUi.ownedHidden, JSON.stringify(adFreeUi));
