@@ -9,6 +9,8 @@
 //   inv    = Werkzeug-Vorrat {extraMoves, rocket, hint, wand, gifts:[ids], pending:[{id,type}]}.
 //   invAt  = Zeitpunkt der letzten Vorrats-Änderung (ms). Neuerer Vorrat gewinnt,
 //            vergebene Geschenk-ids werden vereinigt (nichts wird doppelt verschenkt).
+//   einv   = (optional, App-Hülle) eigener Endlos-Werkzeug-Vorrat {rocket, wand}, einvAt = Zeitpunkt (ms).
+//            Neuerer gewinnt. Fehlt das Feld (ältere Clients), bleibt der gespeicherte Endlos-Vorrat erhalten.
 // Freischaltungen werden nicht extra gespeichert: sie folgen aus den geschafften Leveln
 // (Vereinigung der Level = Vereinigung der Freischaltungen).
 
@@ -19,6 +21,7 @@ export const MAX_TOOL_COUNT = 999;
 export const MAX_GIFTS = 64;
 export const MAX_PENDING = 16;
 export const WIRE_TOOL_TYPES = Object.freeze(['extraMoves', 'rocket', 'hint', 'wand']);
+export const ENDLESS_TOOL_TYPES = Object.freeze(['rocket', 'wand']);
 const GIFT_ID_RE = /^[a-z]+-\d{1,4}$/;
 
 const int = (x, lo, hi) => (Number.isSafeInteger(x) && x >= lo && x <= hi ? x : null);
@@ -47,6 +50,13 @@ function normInv(raw) {
   return out;
 }
 
+function normEinv(raw) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const out = {};
+  for (const t of ENDLESS_TOOL_TYPES) out[t] = int(raw[t], 0, MAX_TOOL_COUNT) ?? 0;
+  return out;
+}
+
 /**
  * Prüft und säubert ein Wire-Objekt. Unbekannte Felder fallen weg, kaputte Level werden
  * übersprungen. Gibt null zurück, wenn es gar kein Fortschritt ist.
@@ -69,7 +79,10 @@ export function normalizeWire(raw, now = Date.now()) {
   }
   const inv = normInv(raw.inv);
   const invAt = inv ? Math.min(int(raw.invAt, 0, Number.MAX_SAFE_INTEGER) ?? 0, now + 5 * 60 * 1000) : 0;
-  return { v: PROGRESS_WIRE_VERSION, epoch: epochOf(raw.epoch), levels, inv, invAt };
+  const out = { v: PROGRESS_WIRE_VERSION, epoch: epochOf(raw.epoch), levels, inv, invAt };
+  const einv = normEinv(raw.einv);
+  if (einv) { out.einv = einv; out.einvAt = Math.min(int(raw.einvAt, 0, Number.MAX_SAFE_INTEGER) ?? 0, now + 5 * 60 * 1000); }
+  return out;
 }
 
 const better = (a, b) => !b || a.s > b.s || (a.s === b.s && a.m < b.m);
@@ -102,7 +115,14 @@ export function mergeWire(a, b) {
   if (a.epoch === b.epoch) levels = mergeLevels(a.levels, b.levels);
   else levels = { ...(a.epoch > b.epoch ? a.levels : b.levels) };
   const { inv, invAt } = mergeInv(a.inv, a.invAt, b.inv, b.invAt);
-  return { v: PROGRESS_WIRE_VERSION, epoch: Math.max(a.epoch, b.epoch), levels, inv, invAt };
+  const out = { v: PROGRESS_WIRE_VERSION, epoch: Math.max(a.epoch, b.epoch), levels, inv, invAt };
+  // Endlos-Vorrat: neuerer gewinnt; fehlt er auf einer Seite, bleibt der andere.
+  if (a.einv || b.einv) {
+    const useB = b.einv && (!a.einv || (b.einvAt || 0) > (a.einvAt || 0));
+    const w = useB ? b : a;
+    out.einv = { ...w.einv }; out.einvAt = w.einvAt || 0;
+  }
+  return out;
 }
 
 /** Stabile Darstellung (sortierte Level-Schlüssel) zum Vergleichen „hat sich etwas geändert?“. */
@@ -110,5 +130,6 @@ export function wireKey(w) {
   if (!w) return '';
   const levels = Object.keys(w.levels).sort((x, y) => x - y).map(k => `${k}:${w.levels[k].s}:${w.levels[k].m}`).join(',');
   const inv = w.inv ? [...WIRE_TOOL_TYPES.map(t => w.inv[t]), [...w.inv.gifts].sort().join('+'), w.inv.pending.map(g => g.id + '=' + g.type).join('+'), w.invAt].join('|') : '-';
-  return `${w.epoch}#${levels}#${inv}`;
+  const e = w.einv ? `#e:${ENDLESS_TOOL_TYPES.map(t => w.einv[t]).join('|')}|${w.einvAt || 0}` : '';
+  return `${w.epoch}#${levels}#${inv}${e}`;
 }

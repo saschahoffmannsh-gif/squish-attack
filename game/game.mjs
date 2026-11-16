@@ -26,6 +26,7 @@ import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-19';
 import {createAdUI} from './ad-ui.mjs?v=launch-19';
 import {hasNativeAds,showInterstitial} from './native-ads.mjs?v=launch-19';
 import {createAdPacing} from './ad-pacing.mjs?v=launch-19';
+import {ENDLESS_TOOLS,endlessToolName,loadEndlessInv,saveEndlessInv,changeEndlessInv,createEndlessToolBar} from './endless-tool.mjs?v=launch-19';
 import {createStatsUI} from './stats-ui.mjs?v=launch-19';
 import * as ToolLog from './tool-log.mjs?v=launch-19';
 import {createProgressSync} from './progress-sync.mjs?v=launch-19';
@@ -165,9 +166,13 @@ if(Camp.CAMPAIGN_RESET){const r=Camp.resetCampaignOnce(campaignProgress,inventor
 if(Camp.STARS_RESET){const s=Camp.resetChangedStarsOnce(campaignProgress);campaignProgress=s.progress;}
 // launch-19: Abenteuer-Fortschritt + Vorrat zusätzlich in der Cloud sichern (anonym, gleicher Geräte-Token).
 // Offline zuerst: lokal bleibt die Wahrheit, der Abgleich läuft still im Hintergrund (progress-sync.mjs).
+// App: eigener Endlos-Werkzeug-Vorrat (endless-tool.mjs), mit in der Cloud gesichert (Feld einv).
+let endlessInv=loadEndlessInv(),endlessArmed=null;
 const progressSync=createProgressSync({fetch:apiFetch,epoch:epochOf(Camp.STARS_RESET),hasToken:hasSaveToken,
-  getLocal:()=>({progress:campaignProgress,inventory}),
-  setLocal:(p,inv)=>{campaignProgress=p;Camp.saveProgress(p);if(inv!==inventory){inventory=inv;Camp.saveInventory(inv,undefined,false);}try{renderCampaign();void worldMenu.refresh?.();}catch{}}});
+  getLocal:()=>({progress:campaignProgress,inventory,endless:endlessInv.at?endlessInv:null}),
+  setLocal:(p,inv,einv)=>{campaignProgress=p;Camp.saveProgress(p);if(inv!==inventory){inventory=inv;Camp.saveInventory(inv,undefined,false);}
+    if(einv&&einv!==endlessInv){endlessInv={rocket:einv.rocket|0,wand:einv.wand|0,at:einv.at||0};saveEndlessInv(endlessInv);try{renderEndlessTools();}catch{}}
+    try{renderCampaign();void worldMenu.refresh?.();}catch{}}});
 const cloudSync=()=>{if(!labMode)progressSync.schedule();};
 progressSync.attach(window);
 const BUILD_LABEL='launch-19';
@@ -233,15 +238,86 @@ async function playInterstitial(placement){
   try{await showInterstitial({placement});}finally{adShowing=false;sound.resume();}
 }
 /** Endlos: nach einem fertigen Zug (Animationen durch, kein Game Over, kein Zug in der Warteschlange).
- *  Belohnung = 1 Werkzeug für den Abenteuer-Vorrat (reihum). Die Endlos-Runde selbst bleibt unverändert und gewertet. */
+ *  Belohnung = 1 Endlos-Werkzeug (reihum Rakete/Zauberstab) im eigenen Endlos-Vorrat. */
 function maybeEndlessOffer(){
   const due=adPacing.endlessMove();
   if(!due||!hasNativeAds()||!adsEnabled()||adUI.isOpen||paused||busy||campaignMode||duelMode)return;
   adPacing.endlessOffered();
-  const type=adPacing.peekEndlessReward(Camp.TOOL_TYPES);
+  const type=adPacing.peekEndlessReward(ENDLESS_TOOLS);
   adFollow={then:null,where:'endless'};
-  adUI.open(type,{placement:'endless',title:'Werkzeug fürs Abenteuer',
-    desc:`Landet in deinem Abenteuer-Vorrat`,foot:'Freiwillig. Deine Endlos-Runde läuft unverändert weiter.'});
+  adUI.open(type,{placement:'endless',title:'Werkzeug für Endlos',
+    desc:type==='rocket'?'Sprengt einen Stein weg – jederzeit in Endlos':'Gibt einem Stein eine neue Zahl – jederzeit in Endlos',
+    foot:'Freiwillig. Landet in deinem Endlos-Vorrat, nicht im Abenteuer.'});
+}
+// ---------- Endlos-Werkzeuge (App): Rakete und Zauberstab direkt in der Endlos-Runde ----------
+const endlessBar=createEndlessToolBar({onClick:tool=>{
+  if(!endlessToolUsable()||!(endlessInv[tool]>0))return;
+  endlessArmed=endlessArmed===tool?null:tool;wandPicker?.close();wandPicker=null;renderEndlessTools();
+  if(endlessArmed)showNote(tool==='rocket'?'Tippe auf einen Stein: die Rakete sprengt ihn weg':'Tippe auf einen Stein: er bekommt eine neue Zahl',2600);else note.hidden=true;
+}});
+function endlessToolUsable(){return started&&!booting&&!campaignMode&&!duelMode&&!paused&&!busy&&!worldMenu.active&&!adUI.isOpen;}
+function renderEndlessTools(){
+  const visible=started&&!booting&&!campaignMode&&!duelMode&&!paused&&!worldMenu.active;
+  if(!visible||!(endlessInv[endlessArmed]>0))endlessArmed=null;
+  endlessBar.render({inv:endlessInv,visible,armed:endlessArmed});
+}
+setInterval(()=>{if(endlessInv.rocket||endlessInv.wand||endlessArmed)renderEndlessTools();},400);
+function spendEndless(tool){endlessInv=changeEndlessInv(endlessInv,tool,-1);saveEndlessInv(endlessInv);cloudSync();endlessArmed=null;renderEndlessTools();}
+/** Zauberstab in Endlos: 1 … Obergrenze der aktuellen Stein-Spanne (spawnProfile), nie über die Spanne hinaus. */
+function endlessWandChoices(value){
+  const cap=Math.max(3,spawnProfile(moves,Math.max(1,peak)).ceiling);
+  return Array.from({length:cap},(_,i)=>i+1).filter(v=>v!==value);
+}
+async function endlessRocketAt(tileId){
+  const cell=cellOf(tileId);
+  if(!cell||endlessArmed!=='rocket'||!(endlessInv.rocket>0)||busy)return false;
+  spendEndless('rocket');note.hidden=true;
+  const turn=generation;busy=true;
+  try{
+    const target=cellPoint(cell[0],cell[1]);
+    const r=endlessBar.button('rocket').getBoundingClientRect();
+    sound.play('launch');
+    await toolFx.rocket({x:r.left+r.width/2||innerWidth*.15,y:r.top+r.height/2||innerHeight*.9},target,target.size);
+    if(turn!==generation)return true;
+    visual.popTile?.(tileId);
+    toolFx.boom(target,target.size);sound.play('boom');haptics.pulse('big');
+    if(!reduceMotion.matches)for(const [dr,dc] of [[0,1],[0,-1],[1,0],[-1,0]]){
+      const n=board[cell[0]+dr]?.[cell[1]+dc];if(n)visual.scheduleWobble?.(n.id,.42,.06);
+    }
+    board=board.map(row=>row.slice());board[cell[0]][cell[1]]=null;
+    renderBoard();saveState();
+  }finally{if(turn===generation){busy=false;renderEndlessTools();}}
+  return true;
+}
+function endlessWandAt(tileId){
+  const cell=cellOf(tileId);
+  if(!cell||endlessArmed!=='wand'||busy)return;
+  const tile=board[cell[0]][cell[1]],at=cellPoint(cell[0],cell[1]),turn=generation;
+  const choices=endlessWandChoices(tile.value);
+  wandPicker?.close();note.hidden=true;
+  wandPicker=toolFx.picker({anchor:at,choices,current:tile.value,colors:v=>comicColors(v).hex,
+    onPick:v=>{wandPicker=null;if(turn===generation)void applyEndlessWand(tileId,v);},
+    onCancel:()=>{wandPicker=null;endlessArmed=null;renderEndlessTools();}});
+}
+async function applyEndlessWand(tileId,value){
+  const cell=cellOf(tileId);
+  if(!cell||busy||!(endlessInv.wand>0)||!endlessWandChoices(board[cell[0]][cell[1]].value).includes(value))return false;
+  spendEndless('wand');
+  const turn=generation;busy=true;
+  try{
+    const at=cellPoint(cell[0],cell[1]);
+    board=board.map(row=>row.slice());board[cell[0]][cell[1]]={...board[cell[0]][cell[1]],value};
+    renderBoard();
+    toolFx.sparkle(at,at.size);sound.play('magic');haptics.pulse('merge');
+    if(!reduceMotion.matches){graphics.wobble(tileId,.55);await wait(320);}
+    if(turn!==generation)return true;
+    await resolveMerges(turn,{streak:true});
+    if(turn!==generation)return true;
+    peak=Math.max(peak,...board.flat().filter(Boolean).map(t=>t.value));
+    bestTile=Math.max(bestTile,peak);renderBest();saveState();
+  }finally{if(turn===generation){busy=false;renderEndlessTools();}}
+  if(turn===generation&&isGameOver(board))showDialog(true);
+  return true;
 }
 let adFollow=null,lastAd=null;
 function openAd(type,{then=null,where='tool'}={}){
@@ -251,11 +327,11 @@ function openAd(type,{then=null,where='tool'}={}){
 }
 function grantByAd(type){
   const f=adFollow;adFollow=null;
-  if(f?.where==='endless'){   // Endlos-Angebot: 1 Werkzeug in den Abenteuer-Vorrat, Endlos-Brett bleibt unberührt
-    adPacing.takeEndlessReward(Camp.TOOL_TYPES);
-    inventory=Camp.addToStock(inventory,{[type]:1});Camp.saveInventory(inventory);cloudSync();
-    logTool('ad',type,{where:'endless'});lastAd={type,where:'endless'};
-    void worldMenu.refresh?.();showNote(`+1 ${Camp.toolName(type)} für dein Abenteuer`,2600);return;
+  if(f?.where==='endless'){   // Endlos-Angebot: 1 Werkzeug in den Endlos-Vorrat (Abenteuer-Vorrat bleibt unberührt)
+    adPacing.takeEndlessReward(ENDLESS_TOOLS);
+    endlessInv=changeEndlessInv(endlessInv,type,1);saveEndlessInv(endlessInv);cloudSync();
+    logTool('ad-endless',type,{where:'endless'});lastAd={type,where:'endless'};
+    renderEndlessTools();showNote(`+1 ${endlessToolName(type)} · unten links antippen zum Einsetzen`,2600);return;
   }
   inventory=Camp.addToStock(inventory,{[type]:1});Camp.saveInventory(inventory);cloudSync();
   logTool('ad',type,logCtx(f?.where||'tool'));lastAd={type,where:f?.where||'tool'};
@@ -576,7 +652,7 @@ async function backToMenu(){
   campaignUI.hideResult();confetti.stop();
   if(campaignMode)leaveCampaign();
   else{saveState({now:true});hasSavedGame=board.flat().some(Boolean);}
-  generation++;pendingMove=null;releaseGesture();disarmTools();busy=false;adPacing.endlessPause();
+  generation++;pendingMove=null;releaseGesture();disarmTools();busy=false;adPacing.endlessPause();endlessArmed=null;
   paused=false;veil.hidden=true;gameElement.classList.remove('is-paused');
   pauseButton.textContent='Ⅱ';pauseButton.setAttribute('aria-pressed','false');pauseButton.setAttribute('aria-label','Spiel pausieren');
   started=false;mergeEffects.clear();visual.clear();needsEntry=true;note.hidden=true;
@@ -782,7 +858,7 @@ async function enterGame() {
   if(score!==entryScore){peak=Math.max(peak,...board.flat().filter(Boolean).map(tile=>tile.value));saveState();}
   } finally {
   if (turn === generation) {
-  busy = false;
+  busy = false;renderEndlessTools();
   gameElement.classList.remove('is-entering');
   if (!campaignMode && isGameOver(board)) showDialog(true);
   }
@@ -910,7 +986,7 @@ function showNote(message, duration = 2200) {
 
 function showDialog(over) {
   if(duelMode&&over)return;
-  paused = true;native.keepAwake(false);adPacing.endlessPause();
+  paused = true;native.keepAwake(false);adPacing.endlessPause();endlessArmed=null;wandPicker?.close();wandPicker=null;renderEndlessTools();
   if (over) haptics.event('gameover');
   sound.pause();
   phoneMotion.reset();
@@ -933,7 +1009,7 @@ function showDialog(over) {
 
 function resume() {
   if(duelFinished)return;
-  paused = false;native.keepAwake(true);
+  paused = false;native.keepAwake(true);renderEndlessTools();
   sound.resume();sound.unlock();
   phoneMotion.reset();
   gameElement.classList.remove('is-paused');
@@ -1228,6 +1304,10 @@ function releaseGesture() {
 }
 playfield.addEventListener('pointerdown',event=> {
   if(hintBusy&&campaignMode)return;
+  if(endlessArmed&&!campaignMode&&!duelMode&&started&&!busy&&!paused&&event.isPrimary){
+    const id=visual.pick(event);
+    if(id!=null){event.preventDefault();if(endlessArmed==='rocket')void endlessRocketAt(id);else endlessWandAt(id);return;}
+  }
   if(armedTool&&campaignMode&&started&&!busy&&!paused&&event.isPrimary){
     const id=visual.pick(event);
     if(id!=null){event.preventDefault();if(armedTool==='rocket')void rocketAt(id);else wandAt(id);return;}
@@ -1289,7 +1369,7 @@ window.addEventListener('pagehide', event => {
 window.addEventListener('online', () => void flushPending());
 // Read-only inspection for integration checks; game state still belongs here.
 window.SquishGame={graphics,move,restart,get state(){return {board,queue,score,best,bestTile,moves,peak,busy,paused,booting,started,hasSavedGame,duelMode,duelRevision};},get effects(){return mergeEffects.stats;},get sound(){return sound.stats;},get menu(){return worldMenu.stats;},get fusion(){return visual.fusion?.stats||null;},
-  get appAds(){return {pacing:adPacing,native:hasNativeAds(),adOpen:adUI.isOpen,adType:adUI.type,showing:adShowing,lastAd};},
+  get appAds(){return {pacing:adPacing,native:hasNativeAds(),adOpen:adUI.isOpen,adType:adUI.type,showing:adShowing,lastAd,endless:{...endlessInv},armed:endlessArmed,rocketAt:endlessRocketAt,wand:applyEndlessWand,wandChoices:endlessWandChoices};},
   get campaign(){return {mode:campaignMode,lab:labMode,bombMs:camp?Camp.nextBombMs(camp.run):null,bombClock:!!camp?.run.bombClock,exploded:camp?.run.exploded??0,specials:camp?camp.run.board.flatMap((row,r)=>row.map((t,c)=>t&&Camp.specialOf(t)?{kind:Camp.specialOf(t),r,c,value:t.value,id:t.id}:null)).filter(Boolean):[],bombBadges:[...bombBadges.values()].map(e=>e.textContent),level:camp?.n??null,status:camp?.run.status??null,moves:camp?.run.moves??0,movesLeft:camp?Camp.movesLeft(camp.run):null,
     toolsUsed:camp?.run.toolsUsed.slice()??[],progress:campaignProgress,inventory,sync:progressSync.stats,shopOpen:shopUI.isOpen,shopStats:shopUI.stats,gift:{active:giftFx.active,phase:giftFx.phase,...giftFx.stats},lastPurchase,adOpen:adUI.isOpen,adType:adUI.type,adStats:adUI.stats,lastAd,statsOpen:statsUI.isOpen,statsStats:{opens:statsUI.stats.opens,exports:statsUI.stats.exports,resets:statsUI.stats.resets,lastExportMode:statsUI.stats.lastExportMode},toolLog:{attempts:toolLog.attempts.length,events:toolLog.events.length,current:logAttempt?{...logAttempt}:null,summary:ToolLog.summarize(toolLog)},freeTools:camp?.free?{...camp.free}:null,available:camp?availableTools():null,levelsLoaded:!!levels,resultOpen:campaignUI.resultOpen,armedTool,hintBusy,lastHint,toolFx:toolFx.stats,celebrating,timeline:campaignUI.timeline.slice()};},
   // Screen point of a board cell (for input tests).

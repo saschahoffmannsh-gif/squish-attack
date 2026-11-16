@@ -13,23 +13,24 @@ export const SYNC_DEBOUNCE_MS = 4000;
 export const SYNC_REFRESH_MS = 24 * 60 * 60 * 1000;
 
 /** Lokalen Stand (campaign.mjs-Format) ins Wire-Format bringen. */
-export function toWire(progress, inventory, epoch) {
+export function toWire(progress, inventory, epoch, endless = null) {
   const levels = {};
   for (const [k, r] of Object.entries(progress?.levels || {})) {
     if (r && r.stars >= 1) levels[k] = { s: r.stars | 0, m: Math.max(1, r.moves | 0) };
   }
   const inv = inventory ? { extraMoves: inventory.extraMoves, rocket: inventory.rocket, hint: inventory.hint, wand: inventory.wand,
     gifts: inventory.gifts || [], pending: inventory.pending || [] } : null;
-  return normalizeWire({ v: PROGRESS_WIRE_VERSION, epoch, levels, inv, invAt: inventory?.at || 0 });
+  const einv = endless ? { rocket: endless.rocket, wand: endless.wand } : undefined;
+  return normalizeWire({ v: PROGRESS_WIRE_VERSION, epoch, levels, inv, invAt: inventory?.at || 0, einv, einvAt: endless?.at || 0 });
 }
 
 /**
  * Zusammengeführten Server-Stand in den lokalen übernehmen. Gibt {progress, inventory, changed}
  * zurück. Level anderer Epochen (vor dem letzten Sterne-Reset) werden ignoriert.
  */
-export function applyWire(local, inventory, wire, epoch, now = Date.now()) {
+export function applyWire(local, inventory, wire, epoch, now = Date.now(), endless = null) {
   const w = normalizeWire(wire, now);
-  if (!w) return { progress: local, inventory, changed: false };
+  if (!w) return { progress: local, inventory, endless, changed: false };
   let changed = false;
   const levels = { ...local.levels };
   if (w.epoch === epoch) {
@@ -47,7 +48,13 @@ export function applyWire(local, inventory, wire, epoch, now = Date.now()) {
     if (merged.invAt > 0) inv.at = merged.invAt; else delete inv.at;
     changed = true;
   }
-  return { progress, inventory: inv, changed };
+  // Endlos-Vorrat (App): neuerer Stand gewinnt
+  let einv = endless;
+  if (w.einv && (!endless || (w.einvAt || 0) > (endless.at || 0))) {
+    const next = { ...w.einv, at: w.einvAt || 0 };
+    if (!endless || ['rocket', 'wand'].some(t => next[t] !== endless[t]) || next.at !== endless.at) { einv = next; changed = true; }
+  }
+  return { progress, inventory: inv, endless: einv, changed };
 }
 
 function readState(storage) {
@@ -58,8 +65,8 @@ function writeState(storage, s) { try { storage?.setItem(SYNC_STATE_KEY, JSON.st
 
 /**
  * @param {object} o
- * @param {() => {progress, inventory}} o.getLocal
- * @param {(progress, inventory) => void} o.setLocal   speichert lokal (Vorrat mit touch=false) und rendert neu
+ * @param {() => {progress, inventory, endless?}} o.getLocal   endless = Endlos-Vorrat {rocket, wand, at} (App)
+ * @param {(progress, inventory, endless) => void} o.setLocal   speichert lokal (Vorrat mit touch=false) und rendert neu
  * @param {(path, opts) => Promise<Response>} o.fetch    apiFetch
  * @param {number} o.epoch
  * @param {() => boolean} [o.hasToken]
@@ -70,13 +77,13 @@ export function createProgressSync({ getLocal, setLocal, fetch: apiFetch, epoch,
   let timer = 0, running = null, again = false;
   const stats = { sent: 0, ok: 0, failed: 0, skipped: 0, applied: 0, last: null };
 
-  function current() { const { progress, inventory } = getLocal(); return toWire(progress, inventory, epoch); }
+  function current() { const { progress, inventory, endless } = getLocal(); return toWire(progress, inventory, epoch, endless); }
 
   /** Muss gesendet werden? Geändert seit dem letzten Abgleich, oder lange nicht abgeglichen. */
   function due(force = false) {
     const w = current();
     const st = readState(storage);
-    const empty = !Object.keys(w.levels).length && !(w.inv && (w.invAt || w.inv.gifts.length));
+    const empty = !Object.keys(w.levels).length && !(w.inv && (w.invAt || w.inv.gifts.length)) && !w.einvAt;
     if (force) return w;
     if (st.key === wireKey(w) && now() - (st.at || 0) < SYNC_REFRESH_MS) return null;
     // Leerer Stand ohne Token-Vorgeschichte: es gibt nichts zu sichern und nichts wiederherzustellen.
@@ -96,10 +103,10 @@ export function createProgressSync({ getLocal, setLocal, fetch: apiFetch, epoch,
       if (r.status === 429) { stats.failed++; schedule(60000); return false; }
       if (!r.ok) throw new Error('HTTP ' + r.status);
       const body = await r.json();
-      const { progress, inventory } = getLocal();
-      const res = applyWire(progress, inventory, body?.progress, epoch, now());
-      if (res.changed) { stats.applied++; setLocal(res.progress, res.inventory); }
-      writeState(storage, { key: wireKey(toWire(res.progress, res.inventory, epoch)), at: now() });
+      const { progress, inventory, endless = null } = getLocal();
+      const res = applyWire(progress, inventory, body?.progress, epoch, now(), endless);
+      if (res.changed) { stats.applied++; setLocal(res.progress, res.inventory, res.endless); }
+      writeState(storage, { key: wireKey(toWire(res.progress, res.inventory, epoch, res.endless)), at: now() });
       stats.ok++; stats.last = now();
       return true;
     } catch {

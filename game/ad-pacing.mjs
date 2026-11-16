@@ -2,8 +2,8 @@
 // - Abenteuer: nach jedem 10. gewonnenen Level ist eine Zwischenwerbung fällig. Sie wird erst
 //   beim Start des nächsten Levels gezeigt (nie mitten in einem Level, nie über dem Sterne-Dialog).
 // - Endlos: nach je 10 Minuten aktiver Spielzeit gibt es ein freiwilliges Angebot
-//   (Belohnungsclip → 1 Werkzeug für den Abenteuer-Vorrat, reihum Extra-Züge/Rakete/Tipp/Zauberstab),
-//   direkt nach einem Zug, wenn alles ruhig ist. Die Endlos-Runde selbst bleibt unverändert und gewertet.
+//   (Belohnungsclip → 1 Werkzeug für den eigenen Endlos-Vorrat, reihum Rakete/Zauberstab),
+//   direkt nach einem Zug, wenn alles ruhig ist.
 //   Lange Pausen zwischen zwei Zügen zählen nur bis MAX_GAP_MS (Pause/Menü/Hintergrund zählt nicht).
 export const AD_PACING = Object.freeze({
   interstitialEvery: 10,          // jedes 10. gewonnene Abenteuer-Level

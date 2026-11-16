@@ -34,16 +34,16 @@ export function startAttempt(log, level, { limit = null, t = now() } = {}) {
 }
 /**
  * Ereignis: kind 'ad' (Dummy-Werbung angesehen → +1), 'gift' (Level-Geschenk eingesammelt → +1)
- * oder 'use' (Hilfsmittel eingesetzt). source: 'ad' | 'gift' bei Gutschriften, null beim Einsatz.
+ * oder 'use' (Hilfsmittel eingesetzt). source: 'ad' | 'ad-endless' (Endlos-Angebot, App) | 'gift' bei Gutschriften, null beim Einsatz.
  * ctx = {move, movesLeft, progress:[{type,current,target}]}. Ausgang wird beim Versuchsende nachgetragen.
  */
 export function logEvent(log, attemptId, kind, tool, ctx = {}, t = now()) {
-  if (!TYPES.includes(tool) || !['ad', 'gift', 'use'].includes(kind)) return null;
+  if (!TYPES.includes(tool) || !['ad', 'ad-endless', 'gift', 'use'].includes(kind)) return null;
   const a = openAttempt(log, attemptId);
   const e = { id: ++log.seq, t, kind, source: kind === 'use' ? null : kind, tool, level: ctx.giftLevel ?? a?.level ?? ctx.level ?? null, giftId: ctx.giftId ?? null, attempt: a?.attempt ?? null, attemptId: a?.id ?? null,
     move: ctx.move ?? null, movesLeft: ctx.movesLeft ?? null, progress: ctx.progress ?? null, outcome: a?.outcome ?? null, where: ctx.where ?? null };
   log.events.push(e);
-  if (a) { if (kind === 'ad') a.ads++; else if (kind === 'gift') a.gifts = (a.gifts | 0) + 1; else a.tools.push(tool); }
+  if (a) { if (kind === 'ad' || kind === 'ad-endless') a.ads++; else if (kind === 'gift') a.gifts = (a.gifts | 0) + 1; else a.tools.push(tool); }
   return e;
 }
 /** Versuch beenden: outcome 'won' | 'lost' | 'quit'; trägt den Ausgang an allen Ereignissen des Versuchs nach. */
@@ -79,7 +79,7 @@ export function summarize(log) {
   }
   for (const e of log.events) {
     if (e.level == null) continue;
-    const s = get(e.level), key = e.kind === 'ad' ? 'ads' : e.kind === 'gift' ? 'gifts' : 'use';
+    const s = get(e.level), key = e.kind === 'ad' || e.kind === 'ad-endless' ? 'ads' : e.kind === 'gift' ? 'gifts' : 'use';
     s[key][e.tool]++; total[key][e.tool]++;
   }
   return { levels: [...levels.entries()].sort((a, b) => a[0] - b[0]).map(([level, s]) => ({ level, ...s })), total };
