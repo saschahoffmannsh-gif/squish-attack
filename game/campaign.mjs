@@ -3,6 +3,7 @@
 // Dieses Modul ist reine Logik (kein DOM). Es wird von der UI, dem Solver,
 // dem Generator und den Tests gemeinsam benutzt, damit alle exakt gleich zählen.
 import { SIZE, insertTile, settle, isGameOver, tickBombs, BOMB_MS, BOMB_UNIT_MS } from './game-logic.mjs?v=launch-22';
+import { t, fmtNum } from './i18n.mjs?v=launch-23';
 
 export const DIRECTIONS = ['left', 'right', 'up', 'down'];
 export const QUEUE_PREVIEW = 3;
@@ -355,35 +356,35 @@ export function replaySolution(level, log) {
 /** Sehr kurzer Zieltext für die Ziel-Karte, wenn drei Ziele gleichzeitig gelten (passt auf 375 px). */
 export function goalShort(goal) {
   switch (goal.type) {
-    case 'tile': return `${goal.value}er bauen`;
-    case 'make': return `${goal.count}× ${goal.value}er+`;
-    case 'score': return `${goal.points.toLocaleString('de-DE')} Punkte`;
-    case 'clear': return `${goal.tiles} Steine lösen`;
-    case 'street': return goal.count === 1 ? '1 Straße' : `${goal.count} Straßen`;
-    case 'combo': return `Kette ${goal.chain}`;
-    case 'empty': return `≤ ${goal.max} Steine`;
-    case 'long': return goal.count === 1 ? `Straße aus ${LONG_STREET}` : `${goal.count}× Straße aus ${LONG_STREET}`;
-    case 'purge': return `${goal.tiles}× die ${goal.value}`;
-    case 'fuse': return goal.shape === 't' ? `${goal.size}er als T` : `${goal.size}er-Fusion`;
+    case 'tile': return t('goalShort.tile', { value: goal.value });
+    case 'make': return t('goalShort.make', { count: goal.count, value: goal.value });
+    case 'score': return t('goalShort.score', { points: fmtNum(goal.points) });
+    case 'clear': return t('goalShort.clear', { tiles: goal.tiles });
+    case 'street': return goal.count === 1 ? t('goalShort.street.one') : t('goalShort.street.other', { count: goal.count });
+    case 'combo': return t('goalShort.combo', { chain: goal.chain });
+    case 'empty': return t('goalShort.empty', { max: goal.max });
+    case 'long': return goal.count === 1 ? t('goalShort.long.one', { n: LONG_STREET }) : t('goalShort.long.other', { count: goal.count, n: LONG_STREET });
+    case 'purge': return t('goalShort.purge', { tiles: goal.tiles, value: goal.value });
+    case 'fuse': return goal.shape === 't' ? t('goalShort.fuseT', { size: goal.size }) : t('goalShort.fuse', { size: goal.size });
   }
   return '';
 }
-/** Kurzer deutscher Zieltext für die UI. */
+/** Kurzer Zieltext für die UI (folgt der eingestellten Sprache). */
 export function goalText(goal) {
   switch (goal.type) {
-    case 'tile': return `Erzeuge einen ${goal.value}er`;
-    case 'make': return `Erzeuge ${goal.count}× einen ${goal.value}er oder höher`;
-    case 'score': return `Erreiche ${goal.points.toLocaleString('de-DE')} Punkte`;
-    case 'clear': return `Löse ${goal.tiles} Steine auf`;
-    case 'street': return goal.count === 1 ? 'Bilde eine Straße' : `Bilde ${goal.count} Straßen`;
-    case 'combo': return `Kettenreaktion: ${goal.chain} Fusionen in einem Zug`;
-    case 'empty': return `Höchstens ${goal.max} Steine übrig`;
-    case 'long': return goal.count === 1 ? `Bilde eine Straße aus ${LONG_STREET} Steinen` : `Bilde ${goal.count} Straßen aus ${LONG_STREET} Steinen`;
-    case 'purge': return `Löse ${goal.tiles}× die ${goal.value} auf`;
+    case 'tile': return t('goal.tile', { value: goal.value });
+    case 'make': return t('goal.make', { count: goal.count, value: goal.value });
+    case 'score': return t('goal.score', { points: fmtNum(goal.points) });
+    case 'clear': return t('goal.clear', { tiles: goal.tiles });
+    case 'street': return goal.count === 1 ? t('goal.street.one') : t('goal.street.other', { count: goal.count });
+    case 'combo': return t('goal.combo', { chain: goal.chain });
+    case 'empty': return t('goal.empty', { max: goal.max });
+    case 'long': return goal.count === 1 ? t('goal.long.one', { n: LONG_STREET }) : t('goal.long.other', { count: goal.count, n: LONG_STREET });
+    case 'purge': return t('goal.purge', { tiles: goal.tiles, value: goal.value });
     case 'fuse':
-      if (goal.shape === 't') return `Verschmelze ${goal.size} gleiche in T-Form`;
-      if (goal.size === 5) return 'Verschmelze 5 gleiche Squishes';
-      return `Verschmelze ${goal.size} gleiche Squishes`;
+      if (goal.shape === 't') return t('goal.fuseT', { size: goal.size });
+      if (goal.size === 5) return t('goal.fuse5');
+      return t('goal.fuse', { size: goal.size });
   }
   return '';
 }
@@ -745,4 +746,4 @@ export function collectGift(inv, id) {
   out.pending.splice(i, 1);
   return { inventory: out, gift };
 }
-export const toolName = type => ({ extraMoves: '+3 Züge', rocket: 'Rakete', hint: 'Hinweis', wand: 'Zauberstab', hammer: 'Rakete' })[type] ?? type;
+export const toolName = type => ({ extraMoves: t('tool.extraMoves'), rocket: t('tool.rocket'), hint: t('tool.hint'), wand: t('tool.wand'), hammer: t('tool.rocket') })[type] ?? type;
