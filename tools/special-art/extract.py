@@ -17,7 +17,7 @@ BODIES = {
     "bound": (456, 170, 822, 536),
     "bomb": (858, 170, 1224, 536),
 }
-PAD = 28
+PAD = 14
 RADIUS_RATIO = 0.22
 SIZE = 1024
 

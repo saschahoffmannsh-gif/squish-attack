@@ -11,7 +11,7 @@ import {comicColors,setComicValue} from './comic-style.mjs?v=launch-21';
 const ICE=[new THREE.Color('#c5ebff'),new THREE.Color('#2f74b0')];
 const STONE=[new THREE.Color('#c5c3be'),new THREE.Color('#5a5854')];
 const BLACK=[new THREE.Color('#2a2a30'),new THREE.Color('#08080c')];
-const ART='squish-art-1';
+const ART='squish-art-2';
 const URLS={
   ice:new URL(`./assets/specials/ice.webp?v=${ART}`,import.meta.url).href,
   bound:new URL(`./assets/specials/bound.webp?v=${ART}`,import.meta.url).href,
@@ -33,7 +33,7 @@ function tex(kind){
 tex('ice');tex('bound');tex('bomb');
 
 // Gel width is 1.86; this square sits on the top face without falling off the pillow.
-const SPAN=1.52,Z=0,LIFT=.028;
+const SPAN=1.66,Z=0,LIFT=.016;
 function badgeGeometry(lift){
   const g=new THREE.PlaneGeometry(SPAN,SPAN,20,20),p=g.attributes.position;
   for(let i=0;i<p.count;i++){const x=p.getX(i),z=-p.getY(i)+Z;p.setXYZ(i,x,pillowTopHeight(x,z)+lift,z);}
