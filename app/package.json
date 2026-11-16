@@ -9,7 +9,7 @@
     "sync": "node scripts/build-web.mjs && npx cap sync ios",
     "open": "npx cap open ios",
     "test": "node --test test/*.test.mjs",
-    "assets": "node scripts/make-assets.mjs"
+    "assets": "python3 scripts/make-assets.py"
   },
   "dependencies": {
     "@capacitor-community/admob": "^8.3.2",
