@@ -4,7 +4,7 @@ import { nextSpawn, spawnProfile } from './balance.mjs';
 import {canContinueRun} from './run-availability.mjs?v=launch-23';
 import { createMergeEffects } from './merge-effects.mjs?v=launch-23';
 import { createGameGraphics } from './graphics-adapter.mjs?v=launch-23';
-import { installDeviceMotion } from './device-motion.mjs';
+import { installDeviceMotion } from './device-motion.mjs?v=launch-23';
 import { createGameSound } from './sound.mjs?v=launch-23';
 import { installSettings } from './settings.mjs?v=woodland-menu-1';
 import { createDuelClient } from './duel-client.mjs?v=launch-23';

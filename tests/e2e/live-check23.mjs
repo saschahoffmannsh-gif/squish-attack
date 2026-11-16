@@ -189,7 +189,7 @@ const ENDLESS_SAVE = { version: 1, board: [[1,2,null,3,null],[null,null,null,nul
     sound: localStorage.getItem('squish-sound-v1'),
     seen: localStorage.getItem('squish-modes-unlock-seen'),
   }));
-  ok('Reset: Abenteuer-Fortschritt leer, Merker launch-23, Sync-Merker weg', after.tag === 'launch-23' && Object.keys(after.prog?.levels || { x: 1 }).length === 0 && after.sync == null, JSON.stringify({ tag: after.tag, levels: after.prog?.levels, sync: after.sync }));
+  ok('Reset: Abenteuer-Fortschritt leer, Merker launch-22, Sync-Merker weg', after.tag === 'launch-22' && Object.keys(after.prog?.levels || { x: 1 }).length === 0 && after.sync == null, JSON.stringify({ tag: after.tag, levels: after.prog?.levels, sync: after.sync }));
   ok('Reset: Abenteuer-Vorrat und Geschenke leer', (after.inv?.hint | 0) === 0 && (after.inv?.wand | 0) === 0 && (after.inv?.gifts || []).length === 0 && (after.inv?.pending || []).length === 0, JSON.stringify(after.inv));
   ok('Reset: Endlos-Spielstand und Einstellungen bleiben', after.save?.score === 990 && after.save?.moves === 33 && after.sound === 'keep-me', JSON.stringify({ score: after.save?.score, moves: after.save?.moves, sound: after.sound }));
   const lk = await h.locks();
@@ -206,7 +206,7 @@ const ENDLESS_SAVE = { version: 1, board: [[1,2,null,3,null],[null,null,null,nul
     'squish-campaign-tools-reset': 'launch-13',
     'squish-campaign-progress-reset': 'launch-14',
     'squish-campaign-stars-reset': 'launch-18',
-    'squish-campaign-tutorial-reset': 'launch-23',
+    'squish-campaign-tutorial-reset': 'launch-22',
     'squish-modes-unlock-seen': '1',
   }); const h = H(page);
   await h.waitBtn('endless');
