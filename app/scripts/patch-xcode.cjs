@@ -1,5 +1,5 @@
 // Einmalig nach `npx cap add ios` (schon erledigt, liegt im Repo): passt das Xcode-Projekt an.
-// Nur iPhone, Sprachen de/en, InfoPlist.strings, Privacy Manifest, StoreKit-Testdatei.
+// Nur iPhone, Sprachen de/en, InfoPlist.strings, Privacy Manifest, StoreKit-Testdatei, Game-Center-Entitlement.
 // Mehrfach ausführbar (idempotent). Aufruf: node scripts/patch-xcode.cjs
 const fs = require('fs');
 const path = require('path');
@@ -41,6 +41,13 @@ if (!hasFile('PrivacyInfo.xcprivacy')) {
   proj.addToPbxBuildFileSection(f); proj.addToPbxResourcesBuildPhase(f);
 }
 if (!hasFile('Squish.storekit')) proj.addFile('Squish.storekit', appGroup, { lastKnownFileType: 'text' });
+if (!hasFile('App.entitlements')) {
+  proj.addFile('App.entitlements', appGroup, { lastKnownFileType: 'text.plist.entitlements' });
+}
+for (const k of Object.keys(cfgs)) {
+  const s = cfgs[k].buildSettings; if (!s || !s.PRODUCT_BUNDLE_IDENTIFIER) continue;
+  s.CODE_SIGN_ENTITLEMENTS = 'App/App.entitlements';
+}
 
 let out = proj.writeSync()
   .replace(/ (explicitFileType|fileEncoding) = undefined;/g, '')

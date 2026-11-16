@@ -12,6 +12,7 @@
     "assets": "python3 scripts/make-assets.py"
   },
   "dependencies": {
+    "@bavrk/capacitor-game-center": "^0.1.0",
     "@capacitor-community/admob": "^8.3.2",
     "@capacitor-community/keep-awake": "^8.0.1",
     "@capacitor/app": "^8.1.2",

@@ -7,13 +7,14 @@ import { APP_CONFIG } from './app-config.mjs?v=__BUILD__';
 import { restoreToken, persistToken } from './token-keychain.mjs?v=__BUILD__';
 import { setupConsent, createAdMobAdapter } from './admob-adapter.mjs?v=__BUILD__';
 import { createStoreKitAdapter, createAdFreeAdapter } from './store-adapter.mjs?v=__BUILD__';
+import { createGameCenterAdapter } from './game-center-adapter.mjs?v=__BUILD__';
 
 const BUILD = '__BUILD__';
 const cap = globalThis.Capacitor;
 const isNative = !!cap?.isNativePlatform?.();
 const plugin = name => (isNative && cap.isPluginAvailable?.(name)) ? (cap.Plugins?.[name] || cap.registerPlugin(name)) : null;
 const log = (what, e) => console.warn('[app]', what, e?.message || e || '');
-const status = { build: BUILD, native: isNative, token: null, ads: null, store: null, adFree: null, errors: [] };
+const status = { build: BUILD, native: isNative, token: null, ads: null, store: null, adFree: null, gameCenter: null, errors: [] };
 globalThis.SquishApp = status;
 
 async function boot() {
@@ -30,10 +31,11 @@ async function boot() {
   setTimeout(persist, 3000); setTimeout(persist, 30000);
   plugin('App')?.addListener?.('pause', () => void persist());
 
-  const [ads, shop, adFreeMod] = await Promise.all([
+  const [ads, shop, adFreeMod, gcMod] = await Promise.all([
     import(`../native-ads.mjs?v=${BUILD}`),
     import(`../shop.mjs?v=${BUILD}`),
     import(`../ad-free.mjs?v=${BUILD}`),
+    import(`../game-center.mjs?v=${BUILD}`),
   ]);
 
   const AdMob = plugin('AdMob');
@@ -75,6 +77,20 @@ async function boot() {
     adFree.loadPrice()
       .then(() => adFreeMod.emitAdFreeChange())
       .catch(e => log('adfree price', e));
+  }
+
+  // Game Center: leise anmelden, Spiel läuft auch ohne Anmeldung weiter.
+  const GameCenter = plugin('GameCenter');
+  if (GameCenter) {
+    const gc = createGameCenterAdapter({ GameCenter, log });
+    gcMod.registerGameCenter(gc);
+    status.gameCenter = () => ({ signedIn: gc.isSignedIn(), available: true });
+    const sync = () => { try { void gcMod.syncGameCenter(); } catch (e) { log('gc sync', e); } };
+    gc.onSignedIn(on => { if (on) sync(); });
+    void gc.signIn().then(r => {
+      status.gameCenterSignedIn = !!r?.signedIn;
+      if (r?.signedIn) sync();
+    });
   }
 }
 
