@@ -8,8 +8,8 @@ import {createCrispLabelFactory} from './crisp-labels.mjs?v=launch-19';
 import {applyComic,comicBodyMaterial,setComicValue} from './comic-style.mjs?v=launch-19';
 import {installCleanScreen} from './clean-screen.mjs?v=launch-19';
 import {applySpecial,setSpecialRuntime} from './special-squish.mjs?v=launch-19';
-import {createFusion} from './fusion.mjs?v=launch-19';
-import {flags} from './flags.mjs?v=launch-19';
+import {createFusion} from './fusion.mjs?v=launch-20a';
+import {flags} from './flags.mjs?v=launch-20a';
 import {createSquishGraphics,THREE,PARAMETERS} from '../squish/squish-graphics.js?v=play-sharp-1';
 import {buildSquishy,createLabel,bindGelOptics,initializeMotion,updateSquishy,PARAMETERS as HUD_PARAMETERS} from './original-gel-models.js?v=menu-1';
 

@@ -7,7 +7,7 @@
 // The torn skin is animated on the GPU from a tiny per-shard state texture.
 import {pillowTopHeight} from './original-gel-models.js?v=menu-1';
 import {createHost,capsuleIndex} from './fusion-core.mjs?v=fuse-3';
-import {flags} from './flags.mjs?v=launch-19';
+import {flags} from './flags.mjs?v=launch-20a';
 import {comicOutline,comicColors,toonUniforms,comicBurstTexture,comicSparkTexture,comicRingTexture} from './comic-style.mjs?v=launch-19';
 
 export function createFusion({internals:I,graphics}){
