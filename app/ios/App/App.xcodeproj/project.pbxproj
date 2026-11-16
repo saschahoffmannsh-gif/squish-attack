@@ -36,7 +36,6 @@
 		A802DE0C3CDE432CB8530DB9 /* InfoPlist.strings */ = {isa = PBXFileReference; name = en; path = "en.lproj/InfoPlist.strings"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = text.plist.strings; includeInIndex = 0; };
 		899093E8A2EF4B9FBE889FCF /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; name = "PrivacyInfo.xcprivacy"; path = "PrivacyInfo.xcprivacy"; sourceTree = "<group>"; lastKnownFileType = text.xml; includeInIndex = 0; };
 		916F7D7225AC4F80B0405707 /* Squish.storekit */ = {isa = PBXFileReference; name = "Squish.storekit"; path = "Squish.storekit"; sourceTree = "<group>"; fileEncoding = 4; lastKnownFileType = text; includeInIndex = 0; };
-		FA5DD0F43FB040D4898B02C0 /* App.entitlements */ = {isa = PBXFileReference; name = "App.entitlements"; path = "App.entitlements"; sourceTree = "<group>"; lastKnownFileType = text.plist.entitlements; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,7 +82,6 @@
 				FCC071DA26ED4803ADD0C5CE /* InfoPlist.strings */,
 				899093E8A2EF4B9FBE889FCF /* PrivacyInfo.xcprivacy */,
 				916F7D7225AC4F80B0405707 /* Squish.storekit */,
-				FA5DD0F43FB040D4898B02C0 /* App.entitlements */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -341,7 +339,6 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
-				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 			};
 			name = Debug;
 		};
@@ -367,7 +364,6 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
-				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 			};
 			name = Release;
 		};

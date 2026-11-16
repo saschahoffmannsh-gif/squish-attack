@@ -51,16 +51,6 @@ test('Squish.storekit enthält die Shop-Verbrauchsgüter plus Werbefrei als Nich
   assert.equal(adFree.type, 'NonConsumable');
   assert.equal(adFree.displayPrice, '2.99');
 });
-test('Game Center: Entitlement, CODE_SIGN_ENTITLEMENTS, Plugin in Package.swift', () => {
-  const ent = read('ios/App/App/App.entitlements');
-  assert.match(ent, /<key>com.apple.developer.game-center<\/key>\s*<true\/>/);
-  const x = read('ios/App/App.xcodeproj/project.pbxproj');
-  assert.equal((x.match(/CODE_SIGN_ENTITLEMENTS = App\/App.entitlements;/g) || []).length, 2);
-  assert.match(x, /App\.entitlements/);
-  const spm = read('ios/App/CapApp-SPM/Package.swift');
-  assert.match(spm, /BavrkCapacitorGameCenter/);
-  assert.match(read('package.json'), /@bavrk\/capacitor-game-center/);
-});
 test('App-Icon und Startbild: alle Dateien vorhanden', () => {
   const icon = JSON.parse(read('ios/App/App/Assets.xcassets/AppIcon.appiconset/Contents.json'));
   for (const i of icon.images) if (i.filename) assert.ok(existsSync(join(APP, 'ios/App/App/Assets.xcassets/AppIcon.appiconset', i.filename)), i.filename);

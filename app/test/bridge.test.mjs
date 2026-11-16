@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import { restoreToken, persistToken } from '../src/token-keychain.mjs';
 import { setupConsent, createAdMobAdapter, EVENTS } from '../src/admob-adapter.mjs';
 import { createStoreKitAdapter, createAdFreeAdapter } from '../src/store-adapter.mjs';
-import { createGameCenterAdapter } from '../src/game-center-adapter.mjs';
 import { APP_CONFIG, storeProductId, shopIdFromProductId } from '../src/app-config.mjs';
 
 const T1 = 'a'.repeat(64), T2 = 'b'.repeat(64), KEY = 'squish-save-token-v1';
@@ -198,46 +197,4 @@ test('Werbefrei: Nicht-Verbrauch-Kauf, Restore, lokales Entitlement', async () =
     storage: mem(), log() {},
   });
   assert.equal((await cancel.purchase()).reason, 'cancelled');
-});
-
-test('Game Center: Anmeldung darf nicht werfen; Ablehnen lässt signedIn falsch', async () => {
-  const calls = [];
-  const GC = {
-    async signIn() { calls.push('signIn'); return { signedIn: false, error: 'canceled' }; },
-    async submitScore(o) { calls.push(['score', o]); },
-    async reportAchievements(o) { calls.push(['unlock', o]); },
-    async show(o) { calls.push(['show', o]); },
-    async addListener() { return { remove: async () => {} }; },
-  };
-  const a = createGameCenterAdapter({ GameCenter: GC, log() {} });
-  const r = await a.signIn();
-  assert.equal(r.signedIn, false);
-  assert.equal(a.isSignedIn(), false);
-  await a.submitScore('squish.lb.endless', 1000);
-  await a.reportAchievements(['squish.ach.tutorial']);
-  assert.ok(!calls.some(c => Array.isArray(c) && c[0] === 'score'), 'kein Score ohne Anmeldung');
-  assert.ok(!calls.some(c => Array.isArray(c) && c[0] === 'unlock'), 'kein Erfolg ohne Anmeldung');
-
-  const ok = {
-    async signIn() { return { signedIn: true }; },
-    async submitScore(o) { calls.push(['score', o]); },
-    async reportAchievements(o) { calls.push(['unlock', o]); },
-    async show() {},
-    async addListener() { return { remove: async () => {} }; },
-  };
-  const b = createGameCenterAdapter({ GameCenter: ok, log() {} });
-  assert.equal((await b.signIn()).signedIn, true);
-  await b.submitScore('squish.lb.endless', 42);
-  await b.reportAchievements(['squish.ach.tutorial']);
-  assert.deepEqual(calls.find(c => Array.isArray(c) && c[0] === 'score')[1], { leaderboard: 'squish.lb.endless', value: 42 });
-});
-test('Game Center: signIn-Fehler blockiert nicht', async () => {
-  const a = createGameCenterAdapter({
-    GameCenter: { signIn: async () => { throw new Error('no gc'); }, addListener: async () => ({}) },
-    log() {},
-  });
-  const r = await a.signIn();
-  assert.equal(r.signedIn, false);
-  assert.match(r.error, /no gc/);
-  assert.equal(a.isSignedIn(), false);
 });

@@ -104,15 +104,6 @@ keine Werbung. Endlos-Angebot und Endlos-Vorrat (einv, lokal + Cloud) bleiben nu
 und sind unverändert. Ohne Adapter passiert im Browser nichts Sichtbares. Werbefrei
 unterdrückt Clips und beide Werbeformen.
 
-### 3.1a Game Center (nur iOS-App)
-
-Plugin `@bavrk/capacitor-game-center`. Leise Anmeldung beim Start, Spiel läuft
-auch ohne Anmeldung. Eine Endlos-Bestenliste (`squish.lb.endless`) und 16 Erfolge
-(Tutorial, Kapitel 1–10, erste 5er-Fusion, erste Straße, perfektes Kapitel,
-Endlos 1.000 / 5.000). IDs, Texte, Punkte und die Schritte in App Store Connect:
-`docs/game-center.md`. Brücke: `window.SquishNative.gameCenter`. Im Web No-Op.
-
-
 ### 3.2 In-App-Käufe (StoreKit), später
 
 Plugin: z. B. `@capgo/native-purchases` oder RevenueCat (`@revenuecat/purchases-capacitor`).

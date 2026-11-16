@@ -33,7 +33,6 @@ import * as ToolLog from './tool-log.mjs?v=launch-26';
 import {createProgressSync} from './progress-sync.mjs?v=launch-26';
 import {epochOf} from './progress-merge.mjs?v=launch-26';
 import {isAdFree,canOfferAdFree,canRestoreAdFree,purchaseAdFree,restoreAdFree,adFreePriceLabel,onAdFreeChange} from './ad-free.mjs?v=launch-26';
-import {setGameCenterSources,syncGameCenter,noteLevelWon,noteFiveMerge,noteStreet,noteEndlessGameOver,canShowGameCenter,showGameCenter,onGameCenterChange} from './game-center.mjs?v=launch-26';
 import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-26';
 const playfield = document.getElementById('playfield');
 const gameElement = document.querySelector('.game');
@@ -191,7 +190,7 @@ let endlessInv=loadEndlessInv(),endlessArmed=null;
 const progressSync=createProgressSync({fetch:apiFetch,epoch:epochOf(Camp.PROGRESS_EPOCH),hasToken:hasSaveToken,
   getLocal:()=>({progress:campaignProgress,inventory,endless:endlessInv.at?endlessInv:null}),
   setLocal:(p,inv,einv)=>{campaignProgress=p;Camp.saveProgress(p);if(inv!==inventory){inventory=inv;Camp.saveInventory(inv,undefined,false);}
-    if(einv&&einv!==endlessInv){endlessInv={rocket:einv.rocket|0,wand:einv.wand|0,at:einv.at||0};saveEndlessInv(endlessInv);try{renderEndlessTools();}catch{}};try{void syncGameCenter({progress:campaignProgress,bestEndless:endlessHighScore()});}catch{}
+    if(einv&&einv!==endlessInv){endlessInv={rocket:einv.rocket|0,wand:einv.wand|0,at:einv.at||0};saveEndlessInv(endlessInv);try{renderEndlessTools();}catch{}}
     try{renderCampaign();void worldMenu.refresh?.();}catch{}}});
 const cloudSync=()=>{if(!labMode)progressSync.schedule();};
 progressSync.attach(window);
@@ -431,35 +430,7 @@ function installAdFreeSettings(){
   onAdFreeChange(refreshAdFreeSettings);
   refreshAdFreeSettings();
 }
-function endlessHighScore(){
-  if(!campaignMode&&!duelMode)return best;
-  try{
-    const s=JSON.parse(localStorage.getItem(storageKey));
-    return Math.max(0,Number.isSafeInteger(s?.best)?s.best:0);
-  }catch{return 0;}
-}
-function refreshGameCenterSettings(){
-  const b=document.getElementById('game-center-open');
-  const d=document.getElementById('game-center-desc');
-  const show=canShowGameCenter();
-  if(b){
-    b.hidden=!show;
-    b.setAttribute('aria-label',t('settings.gameCenterAria'));
-  }
-  if(d)d.hidden=!show;
-}
-function installGameCenterSettings(){
-  const b=document.getElementById('game-center-open');
-  if(!b||b.dataset.ready)return;
-  b.dataset.ready='1';
-  b.addEventListener('click',()=>{void showGameCenter('dashboard');});
-  document.querySelectorAll('[data-open-settings]').forEach(el=>el.addEventListener('click',refreshGameCenterSettings));
-  onLangChange(refreshGameCenterSettings);
-  onGameCenterChange(refreshGameCenterSettings);
-  refreshGameCenterSettings();
-}
-
-installAdFreeSettings();installGameCenterSettings();setGameCenterSources({progress:()=>campaignProgress,bestEndless:endlessHighScore});
+installAdFreeSettings();
 const statsUI=createStatsUI({getLog:()=>toolLog,build:BUILD_LABEL,sound,onReset:()=>{
   toolLog=ToolLog.emptyLog();logAttempt=null;
   if(campaignMode&&camp&&camp.run.status==='playing')logAttempt=ToolLog.startAttempt(toolLog,camp.n,{limit:camp.run.level.moves});
@@ -603,7 +574,7 @@ async function finishLevel(){
   endLogAttempt(won?'won':'lost',{moves:r.moves,stars:won?Camp.starsOfRun(r):0,lostReason:r.lostReason});
   if(won){
     stars=Camp.starsOfRun(r);
-    if(!labMode){campaignProgress=Camp.recordResult(campaignProgress,camp.level.id,{stars,moves:r.moves});Camp.saveProgress(campaignProgress);cloudSync();adPacing.levelWon();noteLevelWon(campaignProgress);}
+    if(!labMode){campaignProgress=Camp.recordResult(campaignProgress,camp.level.id,{stars,moves:r.moves});Camp.saveProgress(campaignProgress);cloudSync();adPacing.levelWon();}
     if(!labMode&&Camp.TOOL_STOCK&&Camp.TOOL_GIFTS){const g=Camp.queueGifts(inventory,campaignProgress);inventory=g.inventory;Camp.saveInventory(inventory);cloudSync();}
     sound.play('record');haptics.pulse('big');
     if(!reduceMotion.matches)visual.celebrateHud?.('queue-0',.3);
@@ -1134,7 +1105,6 @@ function showNote(message, duration = 2200) {
 
 function showDialog(over) {
   if(duelMode&&over)return;
-  if(over&&!campaignMode&&!duelMode)noteEndlessGameOver(score,endlessHighScore());
   paused = true;native.keepAwake(false);adPacing.endlessPause();endlessArmed=null;wandPicker?.close();wandPicker=null;renderEndlessTools();
   if (over) haptics.event('gameover');
   sound.pause();
@@ -1211,8 +1181,6 @@ async function applyMerge(pass,turn,combo,hold=new Set()) {
   freedNow=new Set(freedCells.map(([r,c])=>board[r][c]?.id).filter(id=>id!=null));
   if(freedCells.length){haptics.pulse('merge');for(const [r,c] of freedCells){const t=board[r][c];if(t&&!reduceMotion.matches)visual.scheduleWobble?.(t.id,.55,.06);}}
   const lead=pass.groups.reduce((a,b)=>b.cells.length>a.cells.length?b:a);
-  if(upgraded.length)noteFiveMerge();
-  if(pass.groups.some(g=>g.street))noteStreet();
   sound.play(lead.street?'flow':'merge',lead.cells.length,{combo,pan:(lead.target[1]-2)*.13});
   if(!campaignMode)bestTile=Math.max(bestTile,...board.flat().filter(Boolean).map(t=>t.value));
   const rewards=pass.groups.map((group,index)=>({...group,position:location(...group.target),sources:sources[index],combo}));
