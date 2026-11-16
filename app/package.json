@@ -1,0 +1,30 @@
+{
+  "name": "squish-attack-app",
+  "private": true,
+  "version": "1.0.0",
+  "description": "iOS-App-Hülle (Capacitor) für Squish Attack. Das Spiel selbst liegt unverändert in ../game.",
+  "type": "module",
+  "scripts": {
+    "build:web": "node scripts/build-web.mjs",
+    "sync": "node scripts/build-web.mjs && npx cap sync ios",
+    "open": "npx cap open ios",
+    "test": "node --test test/*.test.mjs",
+    "assets": "node scripts/make-assets.mjs"
+  },
+  "dependencies": {
+    "@capacitor-community/admob": "^8.3.2",
+    "@capacitor-community/keep-awake": "^8.0.1",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.6.2",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/ios": "^8.6.2",
+    "@capacitor/share": "^8.0.3",
+    "@capacitor/splash-screen": "^8.0.2",
+    "@capacitor/status-bar": "^8.0.4",
+    "@capgo/native-purchases": "^8.9.16",
+    "capacitor-secure-storage-plugin": "^0.14.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.6.2"
+  }
+}
