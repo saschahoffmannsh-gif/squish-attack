@@ -74,7 +74,7 @@ export { BOMB_MS };
 /** Solver/Hinweis/Simulation: so viel Bomben-Zeit vergeht pro Zug (Modell eines zügigen Spielers). */
 export const BOMB_MS_PER_MOVE = BOMB_UNIT_MS;
 /** Art eines Steins: 'ice' | 'bomb' | 'bound' | null. */
-export const specialOf = t => (!t ? null : t.bound ? 'bound' : t.ice ? 'ice' : t.bomb != null ? 'bomb' : null);
+export const specialOf = t => (!t ? null : t.bound ? 'bound' : t.ice ? 'ice' : t.bomb != null ? 'bomb' : t.joker ? 'joker' : null);
 function placeSpecials(level, board, ctx) {
   const sp = level.specials;
   if (!sp) return;

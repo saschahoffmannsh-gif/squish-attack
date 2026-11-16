@@ -119,6 +119,12 @@ export function comicLabelMaterial(material,{width=.5,height=.7,thickness=.03,fa
 export function applyComic(s,value=s.value,{fused=false}={}){
   const body=s.body;if(!body)return;
   const current=body.material;
+  if(current?.userData?.special){
+    if(!body.children.some(o=>o.name==='Comic_outline'))body.add(comicOutline(body.geometry));
+    else for(const o of body.children)if(o.name==='Comic_outline'&&o.geometry!==body.geometry)o.geometry=body.geometry;
+    if(s.bubbles)s.bubbles.visible=false;
+    return;
+  }
   if(current?.userData?.comic){
     const info=current.userData.comic;if(info.value!==value)setComicValue(current,value);
     if(!info.fused&&!info.boxed&&body.geometry?.attributes?.position){fitBox(current.uniforms.uBox.value,body.geometry);info.boxed=true;}

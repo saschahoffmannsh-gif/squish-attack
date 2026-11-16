@@ -1,4 +1,5 @@
 import {THREE,PARAMETERS as P} from '../squish/squish-graphics.js?v=play-sharp-1';
+import {specialFloorColor} from './special-squish.mjs?v=squish-art-10';
 
 // A small shared mesh is enough for the softened glass image. The actual
 // Squish bodies, numerals, and their materials stay in the original renderer.
@@ -106,7 +107,8 @@ export function createGlassReflections(light,{capacity=29}={}){
   return {mesh,spill,
     update(owners){
       let count=0;
-      for(const {group,value,deformation} of owners){
+      for(const owner of owners){
+        const {group,value,deformation}=owner;
         const progress=group.userData.entryProgress;
         if(!group.visible||(progress!==undefined&&progress<1)||
           group.scale.x<=0||group.scale.y<=0||group.scale.z<=0)continue;
@@ -116,7 +118,7 @@ export function createGlassReflections(light,{capacity=29}={}){
         spillPose.copy(group.spillMatrix||group.matrixWorld);
         spillPose.elements[13]=P.board.floor+.006;
         spill.setMatrixAt(count,spillPose);
-        color.set(P.colors[value]||P.colors[(value-1)%8+1]||P.colors[1]);
+        if(!specialFloorColor(owner,color))color.set(P.colors[value]||P.colors[(value-1)%8+1]||P.colors[1]);
         colors.setXYZ(count,color.r,color.g,color.b);
         poses.setXYZ(count,deformation?.sway||0,deformation?.swayZ||0,deformation?.squash||0);
         count++;

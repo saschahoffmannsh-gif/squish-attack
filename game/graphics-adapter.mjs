@@ -3,15 +3,16 @@ import {configureRenderQuality} from './render-quality.mjs?v=launch-24';
 import {enqueueRippleImpulse} from './merge-ripple.mjs?v=swarm-fx-3';
 import {installPressureWave} from './pressure-wave.mjs?v=soft-gel-1';
 import {applyGelSoftness,softWobblePower,wobbleDecayFactor} from './gel-softness.mjs?v=launch-24';
-import {applyNeonGlassLighting} from './gel-lighting.mjs?v=menu-1';
+import {applyNeonGlassLighting} from './gel-lighting.mjs?v=launch-24';
 import {createCrispLabelFactory} from './crisp-labels.mjs?v=launch-24';
-import {applyComic,comicBodyMaterial,setComicValue} from './comic-style.mjs?v=launch-22';
+import {applyComic,comicBodyMaterial,setComicValue} from './comic-style.mjs?v=launch-24';
 import {installCleanScreen} from './clean-screen.mjs?v=launch-24';
-import {applySpecial,setSpecialRuntime} from './special-squish.mjs?v=launch-24';
+import {applySpecial,setSpecialRuntime,deformSpecial} from './special-squish.mjs?v=launch-24';
 import {createFusion} from './fusion.mjs?v=launch-24';
 import {flags} from './flags.mjs?v=launch-24';
 import {createSquishGraphics,THREE,PARAMETERS} from '../squish/squish-graphics.js?v=play-sharp-1';
-import {buildSquishy,createLabel,bindGelOptics,initializeMotion,updateSquishy,PARAMETERS as HUD_PARAMETERS} from './original-gel-models.js?v=menu-1';
+import {buildSquishy,createLabel,bindGelOptics,initializeMotion,updateSquishy as updateSquishyCore,PARAMETERS as HUD_PARAMETERS} from './original-gel-models.js?v=menu-1';
+function updateSquishy(s,...args){updateSquishyCore(s,...args);deformSpecial(s);}
 
 // Values 1–8 keep the accepted palette; later values repeat it explicitly.
 function ensureColor(value) {

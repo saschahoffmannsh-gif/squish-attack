@@ -1,4 +1,5 @@
 import {THREE,PARAMETERS as P} from '../squish/squish-graphics.js?v=play-sharp-1';
+import {specialFloorColor} from './special-squish.mjs?v=squish-art-10';
 
 // Optical controls only: the accepted silhouette, foot, dimple, bubbles,
 // number geometry, camera and deformation parameters are never changed here.
@@ -105,7 +106,7 @@ export function createGroundLight({capacity=33,worldBoard=false}={}){
         position.set(group.position.x,P.board.floor+.012,group.position.z);
         const ground=group.groundScale||group.scale;scale.set(2.7*ground.x,2.7*ground.z,1);
         matrix.compose(position,rotation,scale);mesh.setMatrixAt(count,matrix);
-        color.set(P.colors[tile.value]||P.colors[(tile.value-1)%8+1]||P.colors[1]);
+        if(!specialFloorColor(tile,color))color.set(P.colors[tile.value]||P.colors[(tile.value-1)%8+1]||P.colors[1]);
         colors.setXYZ(count,color.r,color.g,color.b);count++;
       }
       mesh.count=count;mesh.instanceMatrix.needsUpdate=true;colors.needsUpdate=true;mesh.visible=false;

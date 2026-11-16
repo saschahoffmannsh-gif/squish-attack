@@ -812,7 +812,7 @@ function graphicsTiles(incoming) {
   return board.flatMap((line,row)=>line.flatMap((tile,col)=> {
     if(!tile)return [];
     // launch-17: besondere Squishes (Eis, Schloss, Bombe) – Zahl immer sichtbar.
-    const data={id:tile.id,value:Math.max(1,tile.value),row,col,special:tile.bound?'bound':tile.ice?'ice':tile.bomb!=null?'bomb':null};
+    const data={id:tile.id,value:Math.max(1,tile.value),row,col,special:tile.bound?'bound':tile.ice?'ice':tile.bomb!=null?'bomb':tile.joker?'joker':null};
     if(freedNow.has(tile.id))data.freed=true;   // launch-17: gerade befreit → Abzeichen poppt weg
     if(incoming?.id===tile.id) {
       const pitch=graphics.parameters.board.pitch;
