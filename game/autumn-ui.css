@@ -217,8 +217,15 @@ html.is-boot-splash .brand-splash {background:transparent;}
 .aw .setting-description:empty {display:none;}
 .aw .settings-build {margin:12px 0 0;font:500 11px/1 var(--aw-text);letter-spacing:.06em;color:#ffffff59;}
 
-/* Levelauswahl */
-.aw .campaign-panel {width:min(100%,370px);}
+/* Levelauswahl: Goldrahmen füllt den sichtbaren Bereich, Kapitel scrollen innen
+   (sonst läuft die Liste unter dem Rahmen raus: overflow:visible + Flex auf iPhone).
+   Überstehendes Titelband und der Schließen-Knopf bleiben sichtbar. */
+.aw .campaign-screen {overflow:hidden;overscroll-behavior:none;}
+.aw .campaign-panel {display:flex;flex-direction:column;flex:1 1 auto;min-height:0;max-height:100%;
+  width:min(100%,370px);margin:0 auto;overflow:visible;}
+.aw .campaign-panel h2,.aw .campaign-panel .campaign-total,.aw .campaign-panel .campaign-lock-note {flex:none;}
+.aw #campaign-chapters {flex:1 1 auto;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;border-radius:16px;scrollbar-width:thin;}
 .aw .campaign-panel .campaign-total {margin:0 0 6px !important;font:400 26px/1.1 var(--aw-display) !important;color:var(--aw-gold);text-shadow:0 2px 0 #7a3e06,0 0 12px #ffb84d55;}
 .aw .campaign-chapter {margin:12px 0 4px;}
 .aw .campaign-chapter h3 {margin:0 4px 8px;font:400 18px/1.2 var(--aw-display);color:#fff;letter-spacing:.02em;}
@@ -289,6 +296,12 @@ html.is-boot-splash .brand-splash {background:transparent;}
 .aw-result-stats b {margin-top:4px;font:400 24px/1 var(--aw-display);letter-spacing:.02em;color:#fff;}
 .aw-result-actions {display:flex;flex-direction:column;gap:12px;}
 .aw-result-actions .aw-btn[hidden] {display:none;}
+/* „+3 Züge (Werbung)“: in den Dialog passen, nur ein Plus (Icon aus, Plus im Text). */
+.aw .campaign-result #campaign-extra {box-sizing:border-box;width:100%;max-width:100%;min-width:0;overflow:hidden;
+  gap:8px;padding-left:14px;padding-right:14px;font-size:26px;min-height:64px;}
+.aw .campaign-result #campaign-extra .aw-ico {display:none;}
+.aw .campaign-result #campaign-extra .aw-label {min-width:0;margin-right:0;}
+.aw .campaign-result #campaign-extra .aw-label>span {white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .aw-result-actions .aw-pair {display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .aw-result-actions .aw-pair.is-single {grid-template-columns:1fr;}
 /* Sterne */

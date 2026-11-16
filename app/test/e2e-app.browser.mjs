@@ -102,7 +102,7 @@ try {
     check('App: UMP vor ATT, Test-Modus', JSON.stringify(a.calls.filter(c => ['admob-init', 'consent', 'consent-form', 'att'].includes(c))) === JSON.stringify(['admob-init', 'consent', 'consent-form', 'att']), a.calls.join(','));
     check('App: Werbe-Adapter und StoreKit angemeldet, native Haptik', a.native && a.app.store === 'storekit' && a.hapt, JSON.stringify(a.app.ads));
     check('App: is-native-app, Splash ausgeblendet, Viewport ohne Zoom', /is-native-app/.test(a.cls) && a.calls.includes('splash-hide') && /user-scalable=no/.test(a.vp));
-    const price = await page.evaluate(async () => (await import('../game/shop.mjs?v=launch-19')).productById('rocket-3').priceLabel);
+    const price = await page.evaluate(async () => (await import('../game/shop.mjs?v=launch-21')).productById('rocket-3').priceLabel);
     check('App: StoreKit-Preise im Shop', price === '1,09 €', String(price));
     const buy = await page.evaluate(() => window.SquishApp.testPurchase('rocket-3'));
     check('App: Testkauf über StoreKit-Adapter', buy.ok && !buy.test && buy.transactionId === 'tx-1' && buy.items.rocket === 3, JSON.stringify(buy));
