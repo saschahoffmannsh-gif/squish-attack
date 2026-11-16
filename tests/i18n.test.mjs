@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test, describe } from 'node:test';
-import { LANGS, LANG_KEY, detectLang, loadLang, saveLang, t, setLang, getLang, hasKey, fmtNum } from '../game/i18n.mjs?v=launch-23';
-import { STRINGS } from '../game/locales.mjs?v=launch-23';
+import { LANGS, LANG_KEY, detectLang, loadLang, saveLang, t, setLang, getLang, hasKey, fmtNum } from '../game/i18n.mjs?v=launch-24';
+import { STRINGS } from '../game/locales.mjs?v=launch-24';
 import * as Camp from '../game/campaign.mjs';
 
 test('Sprachen de und en, Schlüssel vollständig', () => {
@@ -92,19 +92,22 @@ test('toolName und goalText folgen der Sprache', () => {
   assert.match(Camp.goalText({ type: 'street', count: 1 }), /straight/i);
 });
 
-test('Sprachwahl überlebt den Tutorial-Reset (Epoche 22)', () => {
+test('Sprachwahl überlebt den Tutorial-Reset (Epoche 24, auch nach Merker launch-22)', () => {
   const mem = new Map([
     ['squish-campaign-v1', JSON.stringify({ version: 1, updatedAt: 1, levels: { 1: { stars: 3, moves: 5, at: 1 } } })],
     ['squish-campaign-tools-v1', JSON.stringify({ version: 3, extraMoves: 1, rocket: 0, hint: 0, wand: 0, gifts: [], pending: [] })],
+    ['squish-campaign-tutorial-reset', 'launch-22'],
     [LANG_KEY, 'en'],
     ['shift3-play-v1', '{"score":9}'],
   ]);
   const storage = { getItem: k => mem.has(k) ? mem.get(k) : null, setItem: (k, v) => mem.set(k, v), removeItem: k => mem.delete(k) };
   const prog = Camp.loadProgress(storage);
   const inv = Camp.loadInventory(storage);
-  Camp.resetAdventureForTutorialsOnce(prog, inv, storage);
+  const r = Camp.resetAdventureForTutorialsOnce(prog, inv, storage);
+  assert.equal(r.reset, true);
   assert.equal(storage.getItem(LANG_KEY), 'en');
   assert.equal(storage.getItem('shift3-play-v1'), '{"score":9}');
+  assert.equal(storage.getItem('squish-campaign-tutorial-reset'), Camp.TUTORIAL_RESET);
 });
 
 test('fmtNum folgt der Locale', () => {

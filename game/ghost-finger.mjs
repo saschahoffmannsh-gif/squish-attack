@@ -1,60 +1,92 @@
-// launch-22: Geisterfinger für die Tutorial-Level. Reines DOM + CSS-Transform,
+// launch-24: Geisterfinger für die Tutorial-Level. Reines DOM + CSS-Transform,
 // damit die 3D-Szene in Ruhe bei 0 fps bleiben kann. Koordinaten = Client-Pixel.
-const FINGER_SVG = `<svg viewBox="0 0 64 64" aria-hidden="true">
+// Silhouette in Navy/Gold, Wisch über die ganze Reihe/Spalte, Druck + Abheben + Spur.
+const FINGER_SVG = `<svg viewBox="0 0 80 96" aria-hidden="true">
   <defs>
-    <linearGradient id="gf-skin" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffe0c2"/>
-      <stop offset=".55" stop-color="#f0b58a"/>
-      <stop offset="1" stop-color="#d48958"/>
-    </linearGradient>
-    <filter id="gf-glow" x="-40%" y="-40%" width="180%" height="180%">
-      <feGaussianBlur stdDeviation="1.6" result="b"/>
-      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    <filter id="gf24-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2.4" result="blur"/>
+      <feFlood flood-color="#ffffff" flood-opacity="0.9" result="glow"/>
+      <feComposite in="glow" in2="blur" operator="in" result="soft"/>
+      <feMerge><feMergeNode in="soft"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
   </defs>
-  <g filter="url(#gf-glow)" fill="url(#gf-skin)" stroke="#1a1440" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round">
-    <path d="M28.5 8.5c2.4 0 4.2 2 4.2 4.6V28l.2 1.2c.6-1.4 2-2.3 3.6-2.3 2.3 0 4 1.8 4 4.1v6.2c.5-1 1.6-1.8 3-1.8 2.2 0 3.8 1.8 3.8 4v7.4c.5-.8 1.6-1.4 2.9-1.4 2.1 0 3.6 1.7 3.6 3.8V50c0 6.4-4.6 11-11.4 11H29.2C20.4 61 15 55.2 15 47.2V33.6c0-2.6 1.8-4.6 4.2-4.6 1.4 0 2.6.6 3.3 1.6V13.1c0-2.6 1.9-4.6 4.3-4.6z"/>
+  <g filter="url(#gf24-glow)" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M38 6.5c6 0 10.2 4.4 10.2 10.4v26.2c1.7-2.4 4.6-3.8 7.8-3.8 5.2 0 9 4 9 9v4.6c1.5-1.7 4-2.8 6.8-2.8 5 0 8.6 3.8 8.6 8.6V76c0 12.6-9.2 21.5-23.2 21.5H33.2C20.4 97.5 12 89 12 76.4V50.6c0-5.2 3.8-9.2 9-9.2 2.6 0 4.9 1.1 6.5 2.8V16.9c0-6 4.2-10.4 10.5-10.4z" fill="none" stroke="#14163e" stroke-width="6.2"/>
+    <path d="M38 6.5c6 0 10.2 4.4 10.2 10.4v26.2c1.7-2.4 4.6-3.8 7.8-3.8 5.2 0 9 4 9 9v4.6c1.5-1.7 4-2.8 6.8-2.8 5 0 8.6 3.8 8.6 8.6V76c0 12.6-9.2 21.5-23.2 21.5H33.2C20.4 97.5 12 89 12 76.4V50.6c0-5.2 3.8-9.2 9-9.2 2.6 0 4.9 1.1 6.5 2.8V16.9c0-6 4.2-10.4 10.5-10.4z" fill="#1a1548" fill-opacity=".7" stroke="#ffd25a" stroke-width="2.3"/>
+    <path d="M35.5 15c2.4-3.2 6.4-4.6 9.4-3.8" fill="none" stroke="#ffffff" stroke-opacity=".6" stroke-width="2"/>
+    <path d="M31 56.5c3.4 6.2 8.6 9.6 15.6 10.2" fill="none" stroke="#ffd25a" stroke-opacity=".45" stroke-width="1.6"/>
   </g>
-  <path d="M23.8 16.5c1.2-2.4 3.2-3.6 5.2-3.4" fill="none" stroke="#fff4e4" stroke-width="2" stroke-linecap="round" opacity=".85"/>
+</svg>`;
+
+const ARROW_SVG = `<svg viewBox="0 0 160 28" aria-hidden="true">
+  <path d="M8 14 H118" fill="none" stroke="#ffd25a" stroke-width="3.2" stroke-linecap="round"/>
+  <path d="M110 5 L152 14 L110 23 Z" fill="#ffd25a" stroke="#14163e" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M8 14 H118" fill="none" stroke="#ffffff" stroke-opacity=".35" stroke-width="1.2" stroke-linecap="round"/>
 </svg>`;
 
 export function createGhostFinger({ page = document, reduceMotion } = {}) {
   const el = page.createElement('div');
-  el.className = 'ghost-finger';
+  el.className = 'ghost-hint';
   el.hidden = true;
   el.setAttribute('aria-hidden', 'true');
-  el.innerHTML = FINGER_SVG;
-  // Over the board, under dialogs (campaign-result is z-index 40).
+  el.innerHTML = `
+    <div class="ghost-lane"></div>
+    <span class="ghost-trail"></span>
+    <span class="ghost-trail"></span>
+    <span class="ghost-trail"></span>
+    <div class="ghost-hand">${FINGER_SVG}</div>
+    <div class="ghost-arrow">${ARROW_SVG}</div>`;
   page.body.append(el);
+  const laneEl = el.querySelector('.ghost-lane');
+  const hand = el.querySelector('.ghost-hand');
+  const arrow = el.querySelector('.ghost-arrow');
+  const trails = [...el.querySelectorAll('.ghost-trail')];
   let shown = null, resizeTimer = 0;
 
   function place(lane, reduced) {
     if (!lane?.length) { hide(); return; }
-    const a = lane[0], b = lane[1] || a;
+    const a = lane[0], z = lane[lane.length - 1] || a;
     const size = a.size || 48;
-    const stepx = b.x - a.x, stepy = b.y - a.y;
-    const len = Math.hypot(stepx, stepy) || 1;
-    const ux = stepx / len, uy = stepy / len;
-    // Start just off the entry edge, swipe a bit more than one cell in.
-    const x0 = a.x - ux * size * 1.15, y0 = a.y - uy * size * 1.15;
-    const x1 = a.x + ux * size * 1.05, y1 = a.y + uy * size * 1.05;
-    const rot = Math.atan2(uy, ux) * 180 / Math.PI + 90; // fingertip leads the swipe
-    const w = Math.max(56, size * 1.15);
-    el.style.width = `${w}px`;
-    el.style.height = `${w}px`;
-    el.style.setProperty('--rot', `${rot}deg`);
-    el.style.setProperty('--dx', `${x1 - x0}px`);
-    el.style.setProperty('--dy', `${y1 - y0}px`);
-    if (reduced) {
-      el.style.left = `${(x0 + x1) / 2 - w / 2}px`;
-      el.style.top = `${(y0 + y1) / 2 - w / 2}px`;
-    } else {
-      el.style.left = `${x0 - w / 2}px`;
-      el.style.top = `${y0 - w / 2}px`;
+    const dx = z.x - a.x, dy = z.y - a.y;
+    const dist = Math.hypot(dx, dy) || 1;
+    const ux = dx / dist, uy = dy / dist;
+    const rot = Math.atan2(uy, ux) * 180 / Math.PI;
+    const midX = (a.x + z.x) / 2, midY = (a.y + z.y) / 2;
+    const laneLen = dist + size * 1.08;
+    const laneH = Math.max(28, size * 0.9);
+    laneEl.style.width = `${laneLen}px`;
+    laneEl.style.height = `${laneH}px`;
+    laneEl.style.left = `${midX}px`;
+    laneEl.style.top = `${midY}px`;
+    laneEl.style.transform = `translate(-50%,-50%) rotate(${rot}deg)`;
+
+    arrow.style.width = `${Math.max(96, dist * 0.72)}px`;
+    arrow.style.left = `${midX}px`;
+    arrow.style.top = `${midY}px`;
+    arrow.style.transform = `translate(-50%,-50%) rotate(${rot}deg)`;
+
+    const w = Math.max(66, size * 1.28);
+    const tip = w * 0.36;
+    const startX = reduced ? midX : a.x;
+    const startY = reduced ? midY : a.y;
+    // Fingerspitze liegt auf dem Startpunkt, der Rest der Hand folgt der Wischrichtung.
+    const hx = startX - w / 2 - ux * tip;
+    const hy = startY - w / 2 - uy * tip;
+    hand.style.width = `${w}px`;
+    hand.style.height = `${w}px`;
+    hand.style.left = `${hx}px`;
+    hand.style.top = `${hy}px`;
+    el.style.setProperty('--dx', reduced ? '0px' : `${z.x - a.x}px`);
+    el.style.setProperty('--dy', reduced ? '0px' : `${z.y - a.y}px`);
+    el.style.setProperty('--rot', `${rot + 90}deg`);
+
+    for (const tr of trails) {
+      tr.style.left = `${startX - 10}px`;
+      tr.style.top = `${startY - 10}px`;
     }
+
     el.classList.toggle('is-static', !!reduced);
     el.hidden = false;
-    // Restart the CSS loop if we re-show after a wrong move.
     el.classList.remove('is-on');
     void el.offsetWidth;
     el.classList.add('is-on');
@@ -62,8 +94,7 @@ export function createGhostFinger({ page = document, reduceMotion } = {}) {
   }
 
   function show(lane, { reduced } = {}) {
-    const red = reduced ?? !!reduceMotion?.matches;
-    place(lane, red);
+    place(lane, reduced ?? !!reduceMotion?.matches);
   }
   function hide() {
     shown = null;

@@ -2,9 +2,9 @@
 // Gefüllt nur durch das Endlos-Werbeangebot (reihum Rakete/Zauberstab), nutzbar nur in Endlos-Runden.
 // Lokal zuerst (localStorage), Cloud-Abgleich über /progress (Feld einv/einvAt, progress-merge.mjs).
 // Im Browser ohne Werbe-Adapter bleibt der Vorrat leer und die Knöpfe unsichtbar.
-import { TOOL_ICONS } from './tool-icons.mjs?v=launch-23';
-import { t, onLangChange } from './i18n.mjs?v=launch-23';
-import { toolName } from './campaign.mjs?v=launch-23';
+import { TOOL_ICONS } from './tool-icons.mjs?v=launch-24';
+import { t, onLangChange } from './i18n.mjs?v=launch-24';
+import { toolName } from './campaign.mjs?v=launch-24';
 
 export const ENDLESS_TOOLS = Object.freeze(['rocket', 'wand']);
 export const endlessToolName = type => toolName(type);

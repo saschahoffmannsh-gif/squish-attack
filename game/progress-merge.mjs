@@ -4,7 +4,7 @@
 //
 // Wire-Format v1:
 //   { v: 1, epoch: 18, levels: { "12": { s: 3, m: 17 } }, inv: {...} | null, invAt: 1700000000000 }
-//   epoch  = Nummer des letzten Fortschritts-Resets (launch-22 → 22). Höhere Epoche ersetzt Level und Abenteuer-Vorrat.
+//   epoch  = Nummer des letzten Fortschritts-Resets (launch-24 → 24). Höhere Epoche ersetzt Level und Abenteuer-Vorrat.
 //   levels = pro Level die besten Sterne (1–3) und die wenigsten Züge dafür.
 //   inv    = Werkzeug-Vorrat {extraMoves, rocket, hint, wand, gifts:[ids], pending:[{id,type}]}.
 //   invAt  = Zeitpunkt der letzten Vorrats-Änderung (ms). Neuerer Vorrat gewinnt,

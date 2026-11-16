@@ -2,8 +2,8 @@
 // Ein Level = feste Startaufstellung + feste Steinfolge + Ziele + Zuglimit.
 // Dieses Modul ist reine Logik (kein DOM). Es wird von der UI, dem Solver,
 // dem Generator und den Tests gemeinsam benutzt, damit alle exakt gleich zählen.
-import { SIZE, insertTile, settle, isGameOver, tickBombs, BOMB_MS, BOMB_UNIT_MS } from './game-logic.mjs?v=launch-23';
-import { t, fmtNum } from './i18n.mjs?v=launch-23';
+import { SIZE, insertTile, settle, isGameOver, tickBombs, BOMB_MS, BOMB_UNIT_MS } from './game-logic.mjs?v=launch-24';
+import { t, fmtNum } from './i18n.mjs?v=launch-24';
 
 export const DIRECTIONS = ['left', 'right', 'up', 'down'];
 export const QUEUE_PREVIEW = 3;
@@ -713,13 +713,14 @@ export function resetChangedStarsOnce(progress, storage = globalThis.localStorag
   return { progress: p, reset: true };
 }
 /**
- * launch-22: Abenteuer einmalig komplett zurücksetzen (Sterne, Freischaltungen, Vorrat, Geschenke,
+ * launch-24: Abenteuer einmalig komplett zurücksetzen (Sterne, Freischaltungen, Vorrat, Geschenke,
  * Tutorial-Merker). Endlos-Spielstand, Endlos-Rekord und Endlos-Vorrat bleiben unberührt.
- * Epoche PROGRESS_EPOCH, damit die Cloud den alten Stand nicht zurückbringt.
- * Ein Merker verhindert Wiederholungen. Rückgabe {progress, inventory, reset}.
+ * Sprache und Einstellungen ebenfalls. Geräte mit Merker launch-22 setzen erneut zurück,
+ * weil der Merker jetzt launch-24 ist. Epoche PROGRESS_EPOCH, damit die Cloud den alten
+ * Stand nicht zurückbringt. Ein Merker verhindert Wiederholungen. Rückgabe {progress, inventory, reset}.
  */
-export const PROGRESS_EPOCH = 'launch-22';
-export const TUTORIAL_RESET = 'launch-22';
+export const PROGRESS_EPOCH = 'launch-24';
+export const TUTORIAL_RESET = 'launch-24';
 export const TUTORIAL_RESET_KEY = 'squish-campaign-tutorial-reset';
 export const MODES_UNLOCK_SEEN_KEY = 'squish-modes-unlock-seen';
 export function resetAdventureForTutorialsOnce(progress, inv, storage = globalThis.localStorage, {

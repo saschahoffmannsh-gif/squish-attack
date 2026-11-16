@@ -1,8 +1,8 @@
 // Werkzeug-Statistik (launch-13, Testphase): Übersicht aus dem lokalen Protokoll, Export, Zurücksetzen.
-import { TOOL_ICONS } from './tool-icons.mjs?v=launch-23';
-import { toolName } from './campaign.mjs?v=launch-23';
-import { summarize, exportLog } from './tool-log.mjs?v=launch-23';
-import { t } from './i18n.mjs?v=launch-23';
+import { TOOL_ICONS } from './tool-icons.mjs?v=launch-24';
+import { toolName } from './campaign.mjs?v=launch-24';
+import { summarize, exportLog } from './tool-log.mjs?v=launch-24';
+import { t } from './i18n.mjs?v=launch-24';
 
 const TYPES = ['extraMoves', 'hint', 'rocket', 'wand'];
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };

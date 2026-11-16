@@ -116,12 +116,12 @@ test('launch-22: Level 6–10 unverändert (leichter Einstieg nach den Tutorials
   }
 });
 
-test('launch-22: Level 1–5 sind Tutorials – genau 3/4/T/5-Fusion und Straße, 1 Zug, ohne Kette', () => {
+test('launch-24: Level 1–5 sind Tutorials – genau 3/4/T/5-Fusion und Straße, 1 Zug, ohne Kette; L2, L3 und L5 von oben oder unten', () => {
   const expect = [
-    { size: 3, shape: undefined, sol: 'h' },
-    { size: 4, shape: 'line', sol: 'h' },
-    { size: 4, shape: 't', sol: 'f' },
-    { size: 5, shape: undefined, sol: 'h' },
+    { size: 3, shape: undefined, sol: 'h', dir: 'right' },
+    { size: 4, shape: 'line', sol: 'r', dir: 'down' },
+    { size: 4, shape: 't', sol: 'm', dir: 'up' },
+    { size: 5, shape: undefined, sol: 'h', dir: 'right' },
   ];
   for (let i = 0; i < 4; i++) {
     const lv = L100[i], g = lv.goals[0], e = expect[i];
@@ -133,6 +133,7 @@ test('launch-22: Level 1–5 sind Tutorials – genau 3/4/T/5-Fusion und Straße
     assert.equal(g.size, e.size);
     assert.equal(g.shape, e.shape);
     assert.equal(lv.solution, e.sol);
+    assert.equal(decodeMove(lv.solution).direction, e.dir);
     assert.ok(lv.tip && lv.tip.length > 10);
     const r = replaySolution(lv, lv.solution);
     assert.ok(r.ok && r.stars === 3, `Level ${lv.id}`);
@@ -144,12 +145,15 @@ test('launch-22: Level 1–5 sind Tutorials – genau 3/4/T/5-Fusion und Straße
   assert.equal(lv.kind, 'tutorial');
   assert.equal(lv.goals[0].type, 'street');
   assert.equal(lv.goals[0].count, 1);
-  assert.equal(lv.solution, 'c');
+  assert.equal(lv.solution, 'r');
+  assert.equal(decodeMove(lv.solution).direction, 'down');
   const r = replaySolution(lv, lv.solution);
   assert.ok(r.ok && r.stars === 3);
   assert.equal(r.run.streets, 1);
   assert.equal(r.run.bestCombo, 1);
   assert.ok(L100.slice(0, 5).every(l => !l.tool && !l.specials));
+  const dirs = L100.slice(0, 5).map(l => decodeMove(l.solution).direction);
+  assert.ok(dirs.filter(d => d === 'up' || d === 'down').length >= 2);
 });
 
 test('launch-15: Werkzeug-Spitzen genau laut Plan, Bosse 50 und 100 sind Werkzeug-Spitzen, 1–14 ohne', () => {

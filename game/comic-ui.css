@@ -15,7 +15,7 @@
 
 /* ---------- Pillen-Knöpfe ---------- */
 .aw-btn {--ring:2px 0 0 var(--ts),-2px 0 0 var(--ts),0 2px 0 var(--ts),0 -2px 0 var(--ts),1.5px 1.5px 0 var(--ts),-1.5px 1.5px 0 var(--ts),1.5px -1.5px 0 var(--ts),-1.5px -1.5px 0 var(--ts),0 3.5px 0 var(--ts),0 4px 5px #0006;
-  gap:14px;min-height:70px;padding:4px 24px 12px;border:3px solid var(--o);color:#fffbea;
+  gap:8px;min-height:70px;padding:4px 14px 12px;border:3px solid var(--o);color:#fffbea;
   background:linear-gradient(180deg,var(--t) 0%,var(--b) 100%);
   box-shadow:inset 0 2px 0 #ffffff80,inset 0 -6px 0 var(--lip),inset 0 -8px 0 var(--rim),0 0 20px color-mix(in srgb,var(--g) 50%,transparent),0 6px 10px #00000073;
   font:700 32px/1 var(--aw-comic);letter-spacing:.005em;text-shadow:var(--ring);}
@@ -25,19 +25,19 @@
   box-shadow:inset 0 2px 0 #ffffff80,inset 0 -3px 0 var(--lip),inset 0 -5px 0 var(--rim),0 0 12px color-mix(in srgb,var(--g) 36%,transparent),0 2px 5px #0007;}
 .aw-btn:disabled,.aw-btn.is-dim {filter:saturate(.4) brightness(.78);}
 .aw-btn .aw-ico {width:auto;height:auto;margin:0 0 0 2px;border-radius:0;background:none;box-shadow:none;}
-.aw-btn .aw-ico svg {width:40px;height:40px;color:#fffbea;overflow:visible;
+.aw-btn .aw-ico svg {width:34px;height:34px;color:#fffbea;overflow:visible;
   filter:drop-shadow(1.6px 0 0 var(--ts)) drop-shadow(-1.6px 0 0 var(--ts)) drop-shadow(0 1.6px 0 var(--ts)) drop-shadow(0 -1.6px 0 var(--ts)) drop-shadow(0 2px 0 var(--ts));}
-.aw-btn .aw-label {margin-right:8px;}
+.aw-btn .aw-label {margin-right:4px;flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;}
 .aw-btn .aw-label small {font:700 12px/1.1 var(--aw-comic);text-shadow:0 1px 0 var(--ts),0 0 3px var(--ts);}
-.aw-btn.aw-big {min-height:88px;font-size:39px;padding-bottom:13px;gap:16px;}
-.aw-btn.aw-big .aw-ico svg {width:54px;height:54px;}
-.aw-btn .aw-label>span {white-space:nowrap;}
-#home-play-level {font-size:33px;}
-.aw-btn.aw-big::before {left:28px;top:6px;width:26px;height:6px;}
+.aw-btn.aw-big {min-height:76px;font-size:30px;padding-bottom:12px;gap:8px;}
+.aw-btn.aw-big .aw-ico svg {width:40px;height:40px;}
+.aw-btn .aw-label>span {white-space:nowrap;overflow:visible;max-width:100%;}
+#home-play-level {font-size:26px;}
+.aw-btn.aw-big::before {left:22px;top:6px;width:22px;height:6px;}
 .aw-screen > .aw-btn:not(.aw-big):not(.aw-small) {width:90%;align-self:center;}
-.aw-btn.aw-small {width:min(100%,190px);min-height:50px;font-size:21px;padding:4px 18px 9px;}
-.aw-btn.aw-small .aw-ico svg {width:20px;height:20px;}
-.aw-btn.aw-small .aw-label {margin-right:14px;}
+.aw-btn.aw-small {width:min(100%,220px);min-height:50px;font-size:18px;padding:4px 12px 9px;gap:6px;}
+.aw-btn.aw-small .aw-ico svg {width:18px;height:18px;}
+.aw-btn.aw-small .aw-label {margin-right:4px;}
 .aw-btn.aw-small::before {left:16px;width:14px;height:4px;}
 .aw-pair .aw-btn {font-size:22px;min-height:56px;padding:4px 10px 10px;gap:6px;}
 .aw-pair .aw-btn .aw-ico svg {width:22px;height:22px;}
@@ -71,7 +71,7 @@
 .setting-lang-picks .aw-lang-btn.is-on,.setting-lang-picks .aw-lang-btn[aria-pressed="true"] {
   background:linear-gradient(180deg,#ffe27a,#e8a61a);color:#14163e;}
 .aw-btn .aw-label {min-width:0;}
-.aw-btn .aw-label>span {white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+.aw-btn .aw-label>span {white-space:nowrap;overflow:visible;max-width:100%;}
 @media (max-width:380px) {
   .aw-lang {height:34px;}
   .aw-lang-btn {min-width:30px;padding:0 8px;font-size:13px;}
@@ -258,9 +258,10 @@ html.aw .veil .dialog .menu-button:active:not(:disabled) {transform:translateY(3
   .aw-logo-wrap {width:min(70vw,290px);margin-top:2px;}
   .aw-home[data-screen="campaign"] .aw-logo-wrap,.aw-home[data-screen="endless"] .aw-logo-wrap,.aw-home[data-screen="rules"] .aw-logo-wrap {width:min(42vw,170px);margin-top:0;}
   .aw-screen {gap:11px;padding:6px 0 20px;}
-  .aw-btn {min-height:56px;font-size:24px;}
-  .aw-btn.aw-big {min-height:66px;font-size:29px;}
-  .aw-btn.aw-big .aw-ico svg {width:36px;height:36px;}
+  .aw-btn {min-height:56px;font-size:22px;}
+  .aw-btn.aw-big {min-height:62px;font-size:24px;gap:6px;}
+  .aw-btn.aw-big .aw-ico svg {width:30px;height:30px;}
+  #home-play-level {font-size:22px;}
   .aw-btn .aw-ico svg {width:28px;height:28px;}
   .aw-btn.aw-small {min-height:46px;font-size:19px;}
   .aw-tiles {margin-top:4px;gap:14px;}

@@ -1,8 +1,9 @@
 // Kampagne: DOM-Teile (Ziel-Anzeige, Züge, Hilfsmittel, Ergebnis-Dialog, Levelauswahl).
 // Reine Darstellung; Spiellogik und Speichern liegen in game.mjs / campaign.mjs.
-import {TOOL_ICONS,GIFT_SVG} from './tool-icons.mjs?v=launch-23';
-import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-23';
-import {goalProgress,goalText,goalShort,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName} from './campaign.mjs?v=launch-23';
+import {TOOL_ICONS,GIFT_SVG} from './tool-icons.mjs?v=launch-24';
+import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-24';
+import {fitLabelsSoon} from './fit-labels.mjs?v=launch-24';
+import {goalProgress,goalText,goalShort,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName} from './campaign.mjs?v=launch-24';
 
 const $=id=>document.getElementById(id);
 export const TOOL_ARTICLE=new Proxy({},{get:(_,k)=>t('tool.'+k)});
@@ -121,7 +122,7 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
     });
     void rStars.offsetWidth;
     if(won)rStars.classList.add('is-playing');
-    result.hidden=false;mark('dialog');
+    result.hidden=false;mark('dialog');fitLabelsSoon(result);
     if(won&&!stars)mark('nostars');
     (won&&canNext?bNext:!bExtra.hidden?bExtra:bRetry).focus({preventScroll:true,focusVisible:false});
   }
