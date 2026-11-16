@@ -4,6 +4,7 @@
 import {ICONS,TILE_ICONS,leafSvg} from './aw-icons.mjs?v=launch-23';
 import {BUILD} from './flags.mjs?v=launch-23';
 import {t, fmtNum, onLangChange} from './i18n.mjs?v=launch-23';
+import {fitLabelsSoon} from './fit-labels.mjs?v=launch-24';
 
 const LEAF_COLORS=['#f07a1c','#e8541a','#c9301c','#f2a01e','#d94a17','#b8321a','#ffb030'];
 const fmt=n=>fmtNum(n);
@@ -212,6 +213,7 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
     screenEl.classList.toggle('no-anim',!animate);
     screenEl.replaceChildren(...items);
     if(statusEl)screenEl.append(statusEl);
+    fitLabelsSoon(root);
   }
   async function go(name){
     if(busy)return;busy=true;say('');

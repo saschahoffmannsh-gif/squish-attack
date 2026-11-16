@@ -297,11 +297,11 @@ html.is-boot-splash .brand-splash {background:transparent;}
 .aw-result-actions {display:flex;flex-direction:column;gap:12px;}
 .aw-result-actions .aw-btn[hidden] {display:none;}
 /* „+3 Züge (Werbung)“: in den Dialog passen, nur ein Plus (Icon aus, Plus im Text). */
-.aw .campaign-result #campaign-extra {box-sizing:border-box;width:100%;max-width:100%;min-width:0;overflow:hidden;
-  gap:8px;padding-left:14px;padding-right:14px;font-size:26px;min-height:64px;}
+.aw .campaign-result #campaign-extra {box-sizing:border-box;width:100%;max-width:100%;min-width:0;
+  gap:6px;padding-left:12px;padding-right:12px;font-size:22px;min-height:64px;}
 .aw .campaign-result #campaign-extra .aw-ico {display:none;}
 .aw .campaign-result #campaign-extra .aw-label {min-width:0;margin-right:0;}
-.aw .campaign-result #campaign-extra .aw-label>span {white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.aw .campaign-result #campaign-extra .aw-label>span {white-space:nowrap;overflow:visible;max-width:100%;}
 .aw-result-actions .aw-pair {display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .aw-result-actions .aw-pair.is-single {grid-template-columns:1fr;}
 /* Sterne */
