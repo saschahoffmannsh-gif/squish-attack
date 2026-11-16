@@ -98,7 +98,6 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
     const tiles=page.createElement('div');tiles.className='aw-tiles';
     tiles.append(
       tile({label:'Levels',icon:'star',action:()=>{tap();hooks.setMode?.('campaign');hooks.campaign?.openSelect?.();}}),
-      tile({label:'Bestenliste',icon:'trophy',action:()=>{tap();hooks.leaderboard?.();}}),
       tile({label:'Regeln',icon:'cap',action:()=>{tap();void go('rules');}}));
     return [
       button({label:'Abenteuer',icon:'play',color:'aw-green',size:'aw-big',
@@ -157,7 +156,6 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
     }});
     const fresh=button({label:'Neues Spiel',icon:can?'plus':'play',color:can?'aw-orange':'aw-green',size:can?'':'aw-big',action:()=>{tap('move');hooks.gesture?.();void play(true);}});
     items.push(...(can?[cont,fresh]:[fresh,cont]));
-    items.push(button({label:'Bestenliste',icon:'bars',color:'aw-blue',action:()=>{tap();hooks.leaderboard?.();}}));
     items.push(button({label:'Zurück',icon:'back',color:'aw-slate',size:'aw-small',action:()=>{tap();void go('home');}}));
     return items;
   }

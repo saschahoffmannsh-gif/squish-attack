@@ -10,7 +10,6 @@
 // Optional: apiUrl overrides the full function URL (e.g. a local `supabase functions serve`).
 //
 // Current values: dedicated project tzkgqwvldlfbswdvyqgy ("squish-attack", eu-central-1).
-// The leaderboard is read from {supabaseUrl}/rest/v1/sq_leaderboard with anonKey.
 window.SQ_CONFIG = {
   supabaseUrl: "https://tzkgqwvldlfbswdvyqgy.supabase.co",
   anonKey: "sb_publishable__QxVxDRmON69TfkaOoPniw_GuAfFXr8",
