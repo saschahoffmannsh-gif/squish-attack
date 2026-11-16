@@ -9,7 +9,7 @@ const execFileP=promisify(execFile);
 import puppeteer from '/workspace/squish-e2e/campaign/node_modules/puppeteer-core/lib/puppeteer/puppeteer-core.js';
 
 const ROOT = resolve(fileURLToPath(new URL('../..', import.meta.url)));
-const OUT = process.env.OUT || '/workspace/squish-art-preview/v5';
+const OUT = process.env.OUT || '/workspace/squish-art-preview/v6';
 const PORT = Number(process.env.PORT || 8891);
 const IPHONE = {width:390, height:844, deviceScaleFactor:3, isMobile:true, hasTouch:true};
 const UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1';
