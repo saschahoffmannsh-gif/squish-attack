@@ -566,3 +566,19 @@ Alle 100 Level in `levels/levels-001-100.json` neu gebaut (Plan `tools/campaign/
 - **Abwechslung:** Startbretter mit hohen Werten, fast fertigen Straßen oder schon liegendem 5er; mehrteilige Aufgaben (2–3 Ziele im selben Zugfenster) ab Level 11, später in rund der Hälfte der Level.
 - **Keine besonderen Squishes im Abenteuer:** Eis, Schloss und Bombe gibt es vorerst nur auf der Testseite (Regeln → „Neue Squishes testen“).
 - **Sterne:** Fortschritt ab Level 11 wird einmalig zurückgesetzt (`squish-campaign-stars-reset` = `launch-18`), Level 1–10 bleiben.
+
+
+## Cloud-Sicherung des Fortschritts (launch-19)
+
+- Lokal bleibt die Wahrheit (`squish-campaign-v1`, `squish-campaign-tools-v1`). `game/progress-sync.mjs`
+  schickt den Stand nach Änderungen (gebündelt nach 4 s), beim Start (nur wenn nötig), wenn die
+  Verbindung zurückkommt und beim Verlassen an `PUT /progress`. Der Server führt zusammen und schickt
+  das Ergebnis zurück, das lokal übernommen wird.
+- Regeln (`game/progress-merge.mjs`, identische Kopie in der Edge Function): pro Level max. Sterne,
+  bei Gleichstand weniger Züge; Vereinigung der Level (= Vereinigung der Freischaltungen); eine höhere
+  Epoche (`STARS_RESET`, z. B. launch-18 → 18) ersetzt die Level, damit ein Sterne-Reset nicht von der
+  Cloud rückgängig gemacht wird. Vorrat: der neuere (`at`) gewinnt, vergebene Geschenk-ids werden vereinigt.
+- Einmalige Resets setzen den Vorrats-Zeitstempel nicht (ein frisches Gerät überschreibt die Cloud nicht).
+- Offline / Fehler: nichts blockiert, keine Meldung, nächster Anlass versucht es wieder.
+- Identität: anonymer Geräte-Token wie bei Spielstand und Bestenliste. App: Token im Schlüsselbund,
+  später optional Game Center / Sign in with Apple (`sq_progress.account_id`), siehe `app-shell.md`.
