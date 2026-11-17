@@ -41,7 +41,7 @@ if (only === 'all' || only === 'ex') for (const lang of ['de', 'en']) {
   const { ctx, page } = await newPage({ 'squish-campaign-v1': prog(12), 'squish-explain-seen-v1': SEEN }, lang);
   await page.evaluate(async () => {
     const src = [...document.querySelectorAll('script[type=module]')].map(s => s.src).find(Boolean);
-    const url = new URL('explain.mjs?v=launch-30', src || location.href).href;
+    const url = new URL('explain.mjs?v=launch-31', src || location.href).href;
     const m = await import(url); window.__ex = m.createExplainer({}); window.__ex.register('endless', m.ENDLESS_TOPIC, { after: 'gates' });
   });
   for (const topic of Object.keys(FRAMES)) {

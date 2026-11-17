@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test, describe } from 'node:test';
-import { LANGS, LANG_KEY, detectLang, loadLang, saveLang, t, setLang, getLang, hasKey, fmtNum } from '../game/i18n.mjs?v=launch-30';
-import { STRINGS } from '../game/locales.mjs?v=launch-30';
+import { LANGS, LANG_KEY, detectLang, loadLang, saveLang, t, setLang, getLang, hasKey, fmtNum } from '../game/i18n.mjs?v=launch-31';
+import { STRINGS } from '../game/locales.mjs?v=launch-31';
 import * as Camp from '../game/campaign.mjs';
 
 test('Sprachen de und en, Schlüssel vollständig', () => {
