@@ -127,3 +127,196 @@
 .aw-ex-lead {margin:0;font:700 14px/1.15 var(--aw-comic);color:#fff;text-align:center;text-shadow:0 1.5px 0 #141328;}
 .aw-chip.is-gold {background:linear-gradient(180deg,#fff0a0,#ffc21f 60%,#d98c00);color:#3a2405;border-color:#5a3a00;}
 .aw-chip.is-gold i {color:#3a2405;}
+
+/* ===== launch-29: animierte Mini-Szenen (eine Zeile Text, kein Listen-Text) ===== */
+.ex-stage {--T:3.6s;position:relative;width:100%;height:clamp(196px,31vh,236px);flex:none;overflow:hidden;border-radius:20px;border:3px solid #0b0a16;
+  background:radial-gradient(70% 80% at 50% 58%,#4a4996 0%,#2c2b66 55%,#1d1c45 100%);box-shadow:inset 0 3px 0 #ffffff1c,inset 0 -10px 24px #0004,0 3px 0 #0b0a16;}
+.ex-stage::before {content:"";position:absolute;inset:0;pointer-events:none;opacity:.55;
+  background:radial-gradient(circle at 14% 22%,#ffffff26 0 2px,#0000 3px),radial-gradient(circle at 82% 16%,#ffffff22 0 2px,#0000 3px),radial-gradient(circle at 70% 82%,#ffffff1c 0 1.5px,#0000 2.5px),radial-gradient(circle at 24% 78%,#ffffff1c 0 1.5px,#0000 2.5px);}
+.ex-stage::after {content:"";position:absolute;left:10%;right:10%;bottom:9%;height:14px;border-radius:50%;background:#0003;filter:blur(3px);}
+.ex-stage .sx {position:absolute;left:50%;top:50%;margin:0;translate:calc(-50% + var(--x)) calc(-50% + var(--y));
+  animation-duration:var(--T);animation-iteration-count:infinite;animation-delay:var(--d,0s);animation-timing-function:ease-in-out;}
+.ex-stage .ex-tile {--s:54px;}
+.ex-stage .ex-tile.is-sm {--s:50px;}
+.ex-stage .ex-tile.is-res {--s:66px;}
+.ex-stage .ex-tile.is-res.is-big {--s:76px;}
+.sx-cell {width:58px;height:58px;box-sizing:border-box;border-radius:28%;border:2.5px dashed #ffffff22;background:#00000026;}
+.sx-cell.is-sm {width:54px;height:54px;}
+.sx-cell.is-slot {width:42px;height:42px;border-style:solid;border-color:#0b0a16;background:#1d1c45;box-shadow:inset 0 2px 0 #0006;}
+.sx-slot {opacity:.9;filter:grayscale(1) brightness(.28) drop-shadow(0 0 0 #000) !important;}
+
+.ex-say {margin:2px 4px 0;text-align:center;font:700 clamp(19px,5.6vw,22px)/1.15 var(--aw-comic);color:#fff;letter-spacing:.1px;
+  text-shadow:1.5px 0 0 #141328,-1.5px 0 0 #141328,0 1.5px 0 #141328,0 -1.5px 0 #141328,0 3px 0 #141328;text-wrap:balance;}
+.ex-sr {position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;}
+
+/* Bausteine */
+.sx-bubble {padding:3px 11px 5px;border-radius:99px;border:2.5px solid #0b0a16;background:linear-gradient(180deg,#d4ff7a,#8fe03a 60%,#4fa818);
+  color:#fff;font:700 22px/1 var(--aw-comic);text-shadow:1.4px 0 0 #1f4d00,-1.4px 0 0 #1f4d00,0 1.4px 0 #1f4d00,0 -1.4px 0 #1f4d00,0 2.5px 0 #1f4d00;box-shadow:inset 0 2px 0 #ffffffa0,0 3px 0 #0b0a16;white-space:nowrap;}
+.sx-bubble.is-gold {background:linear-gradient(180deg,#fff3a0,#ffc21f 60%,#d98c00);text-shadow:1.4px 0 0 #6a3304,-1.4px 0 0 #6a3304,0 1.4px 0 #6a3304,0 -1.4px 0 #6a3304,0 2.5px 0 #6a3304;font-size:26px;}
+.sx-word {font:700 25px/1 var(--aw-comic);color:#ffd25a;letter-spacing:.5px;rotate:-6deg;white-space:nowrap;
+  text-shadow:2px 0 0 #6a1a04,-2px 0 0 #6a1a04,0 2px 0 #6a1a04,0 -2px 0 #6a1a04,2px 2px 0 #6a1a04,-2px 2px 0 #6a1a04,0 4px 0 #6a1a04;}
+.sx-burst {width:118px;height:118px;border-radius:50%;opacity:0;
+  background:conic-gradient(from 0deg,#ffd25a 0 8deg,#0000 8deg 22deg,#ffd25a 22deg 30deg,#0000 30deg 45deg,#ffd25a 45deg 53deg,#0000 53deg 67deg,#ffd25a 67deg 75deg,#0000 75deg 90deg,#ffd25a 90deg 98deg,#0000 98deg 112deg,#ffd25a 112deg 120deg,#0000 120deg 135deg,#ffd25a 135deg 143deg,#0000 143deg 157deg,#ffd25a 157deg 165deg,#0000 165deg 180deg,#ffd25a 180deg 188deg,#0000 188deg 202deg,#ffd25a 202deg 210deg,#0000 210deg 225deg,#ffd25a 225deg 233deg,#0000 233deg 247deg,#ffd25a 247deg 255deg,#0000 255deg 270deg,#ffd25a 270deg 278deg,#0000 278deg 292deg,#ffd25a 292deg 300deg,#0000 300deg 315deg,#ffd25a 315deg 323deg,#0000 323deg 337deg,#ffd25a 337deg 345deg,#0000 345deg);
+  -webkit-mask:radial-gradient(circle,#000 30%,#0000 70%);mask:radial-gradient(circle,#000 30%,#0000 70%);}
+.sx-burst.is-big {width:170px;height:170px;}
+.sx-spark {width:24px;height:24px;opacity:0;}
+.sx-spark svg,.sx-ico svg,.sx-star svg {width:100%;height:100%;display:block;}
+.sx-star {width:44px;height:44px;filter:drop-shadow(0 3px 0 #0b0a16aa);}
+.sx-ico {width:48px;height:48px;filter:drop-shadow(0 3px 0 #0007);}
+.sx-ico.is-gold svg,.sx-plus3.is-gold {filter:sepia(1) saturate(4) hue-rotate(-12deg) brightness(1.15) drop-shadow(0 0 6px #ffd25a);}
+.sx-plus3 {padding:6px 11px 8px;border-radius:14px;border:2.5px solid #0b0a16;background:linear-gradient(180deg,#5a59a0,#3a3970 60%,#22214a);
+  font:700 28px/1 var(--aw-comic);color:#c4f75a;text-shadow:1.6px 0 0 #0a3600,-1.6px 0 0 #0a3600,0 1.6px 0 #0a3600,0 -1.6px 0 #0a3600,0 3px 0 #0a3600;box-shadow:inset 0 2px 0 #ffffff55,0 3px 0 #0b0a16;}
+.sx-plus3.is-gold {background:linear-gradient(180deg,#fff3a0,#ffc21f 60%,#d98c00);color:#fff;filter:drop-shadow(0 0 8px #ffd25a);text-shadow:1.6px 0 0 #7a4a00,-1.6px 0 0 #7a4a00,0 1.6px 0 #7a4a00,0 -1.6px 0 #7a4a00,0 3px 0 #7a4a00;}
+
+/* Verschmelzen / 5er / Straße: zusammenrutschen → Squish poppt */
+.ex-stage .sx-slide {animation-name:sx-slide;}
+@keyframes sx-slide {
+  0%,8% {translate:calc(-50% + var(--x)) calc(-50% + var(--y));scale:1;opacity:1;}
+  14% {translate:calc(-50% + var(--x)) calc(-50% + var(--y) - 7px);scale:.94 1.08;}
+  20%,26% {translate:calc(-50% + var(--x)) calc(-50% + var(--y));scale:1.08 .92;}
+  38% {translate:calc(-50% + var(--mx)) calc(-50% + var(--my));scale:1.12 .82;opacity:1;}
+  42%,88% {translate:calc(-50% + var(--mx)) calc(-50% + var(--my));scale:.3;opacity:0;}
+  89% {translate:calc(-50% + var(--x)) calc(-50% + var(--y));scale:.5;opacity:0;}
+  100% {translate:calc(-50% + var(--x)) calc(-50% + var(--y));scale:1;opacity:1;}}
+.ex-stage .sx-pop {animation-name:sx-pop;opacity:0;}
+@keyframes sx-pop {0%,39% {scale:0;opacity:0;rotate:0deg;} 46% {scale:1.4;opacity:1;rotate:-8deg;} 52% {scale:.88;rotate:4deg;} 58% {scale:1.08;rotate:0deg;} 63%,84% {scale:1;opacity:1;} 90%,100% {scale:.2;opacity:0;}}
+.ex-stage .sx-burst {animation-name:sx-burst;animation-timing-function:ease-out;}
+@keyframes sx-burst {0%,38% {scale:.2;opacity:0;rotate:0deg;} 44% {scale:1;opacity:1;} 66% {scale:1.25;opacity:0;rotate:40deg;} 100% {opacity:0;}}
+.ex-stage .sx-pop-spark {animation-name:sx-spark;animation-timing-function:ease-out;}
+@keyframes sx-spark {0%,41% {translate:calc(-50% + var(--x)) calc(-50% + var(--y));opacity:0;scale:.3;}
+  46% {opacity:1;scale:1.1;} 64%,100% {translate:calc(-50% + var(--x) + var(--dx)) calc(-50% + var(--y) + var(--dy));opacity:0;scale:.6;rotate:90deg;}}
+.ex-stage .sx-rise {animation-name:sx-rise;opacity:0;}
+@keyframes sx-rise {0%,45% {opacity:0;scale:.3;translate:calc(-50% + var(--x)) calc(-50% + var(--y) + 26px);}
+  52% {opacity:1;scale:1.25;translate:calc(-50% + var(--x)) calc(-50% + var(--y));} 58%,80% {opacity:1;scale:1;translate:calc(-50% + var(--x)) calc(-50% + var(--y) - 6px);}
+  88%,100% {opacity:0;scale:.8;translate:calc(-50% + var(--x)) calc(-50% + var(--y) - 22px);}}
+.ex-stage .sx-word-pop {animation-name:sx-word;opacity:0;}
+@keyframes sx-word {0%,40% {opacity:0;scale:.2;} 45% {opacity:1;scale:1.3;} 50%,74% {opacity:1;scale:1;} 82%,100% {opacity:0;scale:1.1;}}
+.sx-merge5 .sx-word {color:#fff3a0;font-size:30px;}
+
+/* Hilfsmittel & Sterne: Rakete sprengt, Stern fällt – dann +3, noch ein Stern fällt */
+.ex-stage.sx-tools {--T:5.4s;}
+.ex-stage .sx-rocket {animation-name:sx-rocket;rotate:48deg;}
+@keyframes sx-rocket {0%,4% {translate:calc(-50% + var(--x)) calc(-50% + var(--y));opacity:1;scale:1;} 18% {translate:-50% calc(-50% + var(--y) - 2px);opacity:1;scale:1.05;} 20%,100% {translate:-50% calc(-50% + var(--y));opacity:0;scale:.4;}}
+.ex-stage .sx-boomfx {width:92px;height:92px;opacity:0;animation-name:sx-boom;animation-timing-function:ease-out;
+  background:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 2 58 30 86 14 70 40 98 50 70 60 86 86 58 70 50 98 42 70 14 86 30 60 2 50 30 40 14 14 42 30z' fill='%23ff5a2a' stroke='%231b1030' stroke-width='3.5' stroke-linejoin='round'/%3E%3Cpath d='M50 18 55 38 74 28 63 45 82 50 63 55 74 72 55 62 50 82 45 62 26 72 37 55 18 50 37 45 26 28 45 38z' fill='%23ffd84a' stroke='%231b1030' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E");}
+@keyframes sx-boom {0%,18% {opacity:0;scale:.2;rotate:0deg;} 21% {opacity:1;scale:1.15;} 30% {opacity:0;scale:1.5;rotate:25deg;} 100% {opacity:0;}}
+.ex-stage .sx-blasted {animation-name:sx-blasted;}
+@keyframes sx-blasted {0%,19% {opacity:1;scale:1;} 22%,92% {opacity:0;scale:.2;} 100% {opacity:1;scale:1;}}
+.ex-stage .sx-plus3-pop {animation-name:sx-plus3;opacity:0;}
+@keyframes sx-plus3 {0%,50% {opacity:0;scale:.2;translate:-50% calc(-50% + var(--y) + 30px);} 56% {opacity:1;scale:1.3;translate:-50% calc(-50% + var(--y));} 62%,84% {opacity:1;scale:1;} 92%,100% {opacity:0;scale:.6;}}
+.ex-stage .sx-s1,.ex-stage .sx-s2,.ex-stage .sx-s3 {animation-name:sx-star-stay;}
+.ex-stage .sx-s3 {animation-name:sx-fall1;}
+.ex-stage .sx-s2 {animation-name:sx-fall2;}
+@keyframes sx-star-stay {0%,100% {scale:1;} 26% {scale:.9;} 30% {scale:1.06;} 66% {scale:.9;} 70% {scale:1.06;}}
+@keyframes sx-fall1 {0%,24% {translate:calc(-50% + var(--x)) calc(-50% + var(--y));rotate:0deg;opacity:1;filter:none;}
+  28% {translate:calc(-50% + var(--x) + 4px) calc(-50% + var(--y) - 10px);rotate:-18deg;} 44% {translate:calc(-50% + var(--x) + 44px) calc(-50% + var(--y) + 170px);rotate:220deg;opacity:1;}
+  45%,94% {opacity:0;translate:calc(-50% + var(--x)) calc(-50% + var(--y));} 100% {opacity:1;rotate:0deg;translate:calc(-50% + var(--x)) calc(-50% + var(--y));}}
+@keyframes sx-fall2 {0%,62% {translate:calc(-50% + var(--x)) calc(-50% + var(--y));rotate:0deg;opacity:1;}
+  66% {translate:calc(-50% + var(--x) - 4px) calc(-50% + var(--y) - 10px);rotate:18deg;} 82% {translate:calc(-50% + var(--x) - 40px) calc(-50% + var(--y) + 170px);rotate:-220deg;opacity:1;}
+  83%,94% {opacity:0;translate:calc(-50% + var(--x)) calc(-50% + var(--y));} 100% {opacity:1;rotate:0deg;translate:calc(-50% + var(--x)) calc(-50% + var(--y));}}
+.sx-tools .sx-star {filter:drop-shadow(0 3px 0 #0b0a16aa);}
+
+/* Gold-Geschenk: wackelt, platzt, Gold fliegt raus, Sterne glänzen weiter */
+.ex-stage.sx-gifts {--T:4.6s;background:radial-gradient(70% 80% at 50% 62%,#6b5a2a 0%,#3a3270 50%,#1d1c45 100%);}
+.ex-stage .sx-rays {--x:0px;--y:22px;width:250px;height:250px;opacity:0;animation-name:sx-rays;animation-timing-function:linear;
+  background:repeating-conic-gradient(#ffe27a55 0 10deg,#0000 10deg 22deg);-webkit-mask:radial-gradient(circle,#000 20%,#0000 66%);mask:radial-gradient(circle,#000 20%,#0000 66%);}
+@keyframes sx-rays {0%,30% {opacity:0;rotate:0deg;scale:.4;} 38% {opacity:1;scale:1;} 85% {opacity:1;rotate:70deg;} 95%,100% {opacity:0;rotate:80deg;}}
+.ex-stage .sx-giftbox {width:96px;height:96px;animation-name:sx-gift;filter:drop-shadow(0 0 14px #ffd25a) drop-shadow(0 4px 0 #0007);}
+.sx-giftbox svg {width:100%;height:100%;display:block;}
+@keyframes sx-gift {0% {scale:1;rotate:0deg;opacity:1;} 6% {rotate:-9deg;} 12% {rotate:9deg;} 18% {rotate:-11deg;scale:1.04;} 24% {rotate:11deg;scale:1.08;} 30% {rotate:0deg;scale:1.25 .85;opacity:1;} 35% {scale:1.5;opacity:0;} 36%,90% {opacity:0;scale:.3;} 100% {opacity:1;scale:1;}}
+.ex-stage .sx-gift-spark {animation-name:sx-gspark;animation-timing-function:ease-out;}
+@keyframes sx-gspark {0%,33% {translate:calc(-50% + var(--x)) calc(-50% + var(--y));opacity:0;scale:.3;} 38% {opacity:1;scale:1.2;} 60%,100% {translate:calc(-50% + var(--x) + var(--dx)) calc(-50% + var(--y) + var(--dy));opacity:0;scale:.5;rotate:120deg;}}
+.ex-stage .sx-goldfly {animation-name:sx-goldfly;opacity:0;}
+@keyframes sx-goldfly {0%,33% {opacity:0;scale:.2;translate:calc(-50% + var(--x)) calc(-50% + var(--y));}
+  44% {opacity:1;scale:1.35;translate:calc(-50% + var(--x) + var(--mx) * .6) calc(-50% + var(--y) - 26px);}
+  52%,86% {opacity:1;scale:1.1;translate:calc(-50% + var(--x) + var(--mx)) calc(-50% + var(--y) + var(--my) - 18px);}
+  60%,78% {scale:1.18;} 94%,100% {opacity:0;scale:.5;translate:calc(-50% + var(--x) + var(--mx)) calc(-50% + var(--y) + var(--my) - 18px);}}
+.ex-stage .sx-goldfly.sx-ico {width:56px;height:56px;rotate:48deg;}
+.ex-stage .sx-shine {animation-name:sx-shine;}
+@keyframes sx-shine {0%,46% {scale:1;filter:drop-shadow(0 3px 0 #0b0a16aa);} 54% {scale:1.28;filter:drop-shadow(0 0 12px #fff3a0) drop-shadow(0 3px 0 #0b0a16aa);} 62%,100% {scale:1;filter:drop-shadow(0 3px 0 #0b0a16aa);}}
+
+/* Kapitel-Sterne: Sterne fliegen ins Schloss, Schloss springt auf */
+.ex-stage.sx-gates {--T:4.6s;}
+.sx-lvchip {display:flex;flex-direction:column;align-items:center;gap:1px;width:56px;padding:3px 0 4px;border-radius:12px;border:2.5px solid #0b0a16;background:linear-gradient(180deg,#45447e,#2b2a54);box-shadow:inset 0 2px 0 #ffffff33,0 3px 0 #0b0a16;}
+.sx-lvchip b {font:700 17px/1 var(--aw-comic);color:#fff;text-shadow:0 1.5px 0 #141328;}
+.sx-lvchip i {font:700 11px/1 var(--aw-comic);font-style:normal;letter-spacing:1px;color:#ffd25a;text-shadow:0 1px 0 #6a3304;}
+.ex-stage .sx-lvl {animation-name:sx-lvl;}
+@keyframes sx-lvl {0%,100% {scale:1;} 6% {scale:1.12;} 12% {scale:1;}}
+.ex-stage .sx-flystar {width:30px;height:30px;animation-name:sx-flystar;opacity:0;}
+@keyframes sx-flystar {0%,2% {opacity:0;scale:.3;translate:calc(-50% + var(--x)) calc(-50% + var(--y));}
+  6% {opacity:1;scale:1.2;} 26% {opacity:1;scale:.9;translate:calc(-50% + var(--mx)) calc(-50% + var(--my));rotate:200deg;} 28%,100% {opacity:0;scale:.2;translate:calc(-50% + var(--mx)) calc(-50% + var(--my));}}
+.ex-stage .sx-lock {width:96px;height:108px;animation-name:sx-lock;filter:drop-shadow(0 4px 0 #0b0a16aa);}
+@keyframes sx-lock {0%,24% {scale:1;rotate:0deg;} 27% {scale:1.08 .94;rotate:-5deg;} 31% {rotate:5deg;} 35% {scale:1.08 .94;rotate:-4deg;} 39% {rotate:4deg;} 43% {scale:1.1 .9;rotate:0deg;} 48% {scale:1;} 54%,84% {scale:1.12;filter:drop-shadow(0 0 14px #ffd25a) drop-shadow(0 4px 0 #0b0a16aa);} 92%,100% {scale:1;}}
+.sx-lock .sx-shackle {animation:sx-shackle var(--T) ease-in-out infinite;transform-box:fill-box;transform-origin:100% 100%;}
+@keyframes sx-shackle {0%,48% {transform:none;} 54% {transform:translateY(-15px);} 58%,86% {transform:translateY(-12px);} 94%,100% {transform:none;}}
+.sx-lock.is-shut .sx-shackle {animation:none;}
+.ex-stage .sx-lock.is-shut {animation-name:sx-lock-no;}
+@keyframes sx-lock-no {0%,44% {rotate:0deg;} 48% {rotate:-8deg;} 52% {rotate:8deg;} 56% {rotate:-5deg;} 60%,100% {rotate:0deg;}}
+.sx-count {padding:3px 12px 5px;border-radius:99px;border:2.5px solid #0b0a16;background:#141328;color:#ffd25a;font:700 21px/1 var(--aw-comic);box-shadow:0 3px 0 #0b0a16;white-space:nowrap;}
+.sx-count i {font-style:normal;margin-left:3px;}
+.ex-stage .sx-lock-spark {animation-name:sx-lspark;animation-timing-function:ease-out;}
+@keyframes sx-lspark {0%,50% {translate:calc(-50% + var(--x)) calc(-50% + var(--y));opacity:0;scale:.3;} 55% {opacity:1;scale:1.2;} 74%,100% {translate:calc(-50% + var(--x) + var(--dx)) calc(-50% + var(--y) + var(--dy));opacity:0;scale:.5;}}
+.sx-gates.is-shut .sx-lock-spark {display:none;}
+
+/* Werbung: Clip läuft → Hilfe springt raus → „Werbefrei“-Stempel */
+.ex-stage.sx-ads {--T:5s;}
+.ex-stage .sx-tv {width:148px;height:104px;box-sizing:border-box;border-radius:18px;border:3px solid #0b0a16;background:linear-gradient(180deg,#5a59a0,#3a3970);
+  box-shadow:inset 0 2px 0 #ffffff55,0 4px 0 #0b0a16;animation-name:sx-tv;overflow:hidden;}
+.sx-tv::before {content:"";position:absolute;inset:7px 7px 16px;border-radius:10px;border:2px solid #0b0a16;background:radial-gradient(circle at 40% 35%,#6ff0e2,#1fc9bd 60%,#0e8a84);}
+.sx-tv-ad {position:absolute;left:50%;top:38%;translate:-50% -50%;padding:2px 8px 3px;border-radius:8px;border:2px solid #0b0a16;background:#ffe36a;color:#3a2405;font:700 18px/1 var(--aw-comic);}
+.sx-tv-bar {position:absolute;left:9px;right:9px;bottom:6px;height:6px;border-radius:9px;background:#0b0a16;overflow:hidden;}
+.sx-tv-bar::after {content:"";position:absolute;inset:0;background:#9df25a;transform-origin:0 50%;animation:sx-bar var(--T) linear infinite;}
+@keyframes sx-bar {0% {transform:scaleX(0);} 36%,100% {transform:scaleX(1);}}
+@keyframes sx-tv {0%,36% {scale:1;filter:none;} 40% {scale:1.08 .94;} 44% {scale:1;} 60% {filter:none;} 64%,92% {filter:saturate(.25) brightness(.6);} 100% {filter:none;}}
+.ex-stage .sx-adreward {animation-name:sx-adrew;opacity:0;}
+.ex-stage .sx-adreward.sx-ico {rotate:48deg;width:58px;height:58px;}
+.ex-stage .sx-adreward.is-late {animation-name:sx-adrew2;}
+@keyframes sx-adrew {0%,37% {opacity:0;scale:.2;translate:calc(-50% + var(--x)) calc(-50% + var(--y));} 46% {opacity:1;scale:1.3;translate:calc(-50% + var(--x) + var(--mx) * .6) calc(-50% + var(--y) - 40px);} 54%,90% {opacity:1;scale:1;translate:calc(-50% + var(--x) + var(--mx)) calc(-50% + var(--y) + var(--my));} 96%,100% {opacity:0;}}
+@keyframes sx-adrew2 {0%,41% {opacity:0;scale:.2;translate:calc(-50% + var(--x)) calc(-50% + var(--y));} 50% {opacity:1;scale:1.3;translate:calc(-50% + var(--x) + var(--mx) * .6) calc(-50% + var(--y) - 10px);} 58%,90% {opacity:1;scale:1;translate:calc(-50% + var(--x) + var(--mx)) calc(-50% + var(--y) + var(--my));} 96%,100% {opacity:0;}}
+.sx-stamp {padding:7px 16px 9px;border-radius:14px;border:3px solid #0b0a16;background:linear-gradient(180deg,#fff3a0,#ffc21f 60%,#d98c00);color:#3a2405;
+  font:700 24px/1 var(--aw-comic);text-shadow:0 1.5px 0 #fff3b0;box-shadow:inset 0 2px 0 #ffffffb0,0 4px 0 #0b0a16,0 0 18px #ffd25a99;white-space:nowrap;opacity:0;rotate:-12deg;}
+.ex-stage .sx-stamp {animation-name:sx-stamp;animation-timing-function:cubic-bezier(.3,1.5,.5,1);}
+@keyframes sx-stamp {0%,60% {opacity:0;scale:2.6;} 66% {opacity:1;scale:.92;} 70%,90% {opacity:1;scale:1;} 96%,100% {opacity:0;scale:1;}}
+
+/* Endlos: Rekord-Squish klettert über 10 bzw. 20 → Werkzeug fliegt in den Vorrat */
+.ex-stage.sx-endless {--T:5.6s;}
+.ex-stage .sx-e1,.ex-stage .sx-e2,.ex-stage .sx-e3,.ex-stage .sx-e4 {--s:56px;opacity:0;}
+.ex-stage .sx-e1 {animation-name:sx-e1;} .ex-stage .sx-e2 {animation-name:sx-e2;} .ex-stage .sx-e3 {animation-name:sx-e3;} .ex-stage .sx-e4 {animation-name:sx-e4;}
+@keyframes sx-e1 {0%,18% {opacity:1;scale:1;} 22% {opacity:0;scale:1.3;} 100% {opacity:0;}}
+@keyframes sx-e2 {0%,20% {opacity:0;scale:.3;} 25% {opacity:1;scale:1.35;} 30%,46% {opacity:1;scale:1;} 50%,100% {opacity:0;scale:.6;}}
+@keyframes sx-e3 {0%,48% {opacity:0;scale:.6;} 52%,66% {opacity:1;scale:1;} 70% {opacity:0;scale:1.3;} 100% {opacity:0;}}
+@keyframes sx-e4 {0%,68% {opacity:0;scale:.3;} 73% {opacity:1;scale:1.35;} 78%,94% {opacity:1;scale:1;} 99%,100% {opacity:0;}}
+.ex-stage .sx-eburst {animation-name:sx-eburst;animation-timing-function:ease-out;}
+@keyframes sx-eburst {0%,20% {opacity:0;scale:.2;} 25% {opacity:1;scale:1;} 38% {opacity:0;scale:1.25;rotate:30deg;} 68% {opacity:0;scale:.2;rotate:0deg;} 73% {opacity:1;scale:1;} 86%,100% {opacity:0;scale:1.25;rotate:30deg;}}
+.ex-stage .sx-flag1,.ex-stage .sx-flag2 {opacity:0;}
+.ex-stage .sx-flag1 {animation-name:sx-flag1;} .ex-stage .sx-flag2 {animation-name:sx-flag2;}
+@keyframes sx-flag1 {0%,22% {opacity:0;scale:.2;} 27% {opacity:1;scale:1.3;} 32%,44% {opacity:1;scale:1;} 48%,100% {opacity:0;}}
+@keyframes sx-flag2 {0%,70% {opacity:0;scale:.2;} 75% {opacity:1;scale:1.3;} 80%,92% {opacity:1;scale:1;} 96%,100% {opacity:0;}}
+.sx-tray {width:112px;height:60px;box-sizing:border-box;border-radius:16px;border:3px solid #0b0a16;background:linear-gradient(180deg,#45447e,#2b2a54);box-shadow:inset 0 2px 0 #ffffff33,0 3px 0 #0b0a16;}
+.ex-stage .sx-etool1,.ex-stage .sx-etool2 {width:38px;height:38px;opacity:0;}
+.ex-stage .sx-etool1 {animation-name:sx-et1;rotate:48deg;} .ex-stage .sx-etool2 {animation-name:sx-et2;}
+@keyframes sx-et1 {0%,26% {opacity:0;scale:.3;translate:calc(-50% + var(--x)) calc(-50% + var(--y));} 32% {opacity:1;scale:1.3;translate:calc(-50% + var(--x) - 40px) calc(-50% + var(--y) - 40px);}
+  44%,94% {opacity:1;scale:1;translate:calc(-50% + var(--mx)) calc(-50% + var(--my));} 99%,100% {opacity:0;translate:calc(-50% + var(--mx)) calc(-50% + var(--my));}}
+@keyframes sx-et2 {0%,74% {opacity:0;scale:.3;translate:calc(-50% + var(--x)) calc(-50% + var(--y));} 80% {opacity:1;scale:1.3;translate:calc(-50% + var(--x) - 30px) calc(-50% + var(--y) - 40px);}
+  90%,94% {opacity:1;scale:1;translate:calc(-50% + var(--mx)) calc(-50% + var(--my));} 99%,100% {opacity:0;translate:calc(-50% + var(--mx)) calc(-50% + var(--my));}}
+
+/* Weniger Bewegung: Szene steht auf dem Ergebnis-Bild */
+@media (prefers-reduced-motion:reduce) {
+  .ex-stage {--freeze:calc(var(--T) * -.6);}
+  .ex-stage .sx,.ex-stage .sx *,.sx-tv-bar::after {animation-play-state:paused !important;animation-delay:var(--freeze) !important;}
+}
+
+/* launch-29: Gold-Geschenk-Kachel im Ergebnis – Bild statt Satz */
+.aw .campaign-result #campaign-result-gift.is-gold {position:relative;gap:6px;padding:4px 18px 6px 8px;font-size:20px;color:#3a2405;text-shadow:0 1.5px 0 #fff3b0;}
+#campaign-result-gift .gift-box {display:grid;width:40px;height:40px;flex:none;}
+#campaign-result-gift .gift-box svg {width:40px;height:40px;margin:-4px 0 0;}
+#campaign-result-gift .gift-what {display:grid;place-items:center;min-width:34px;height:32px;padding:0 6px 2px;box-sizing:border-box;border-radius:11px;border:2.5px solid #5a3a00;
+  background:#fff8d6;color:#2f8a12;font:700 20px/1 var(--aw-comic);text-shadow:none;box-shadow:inset 0 -3px 0 #f2d27a;}
+#campaign-result-gift .gift-what.is-ico {padding:0;width:36px;}
+#campaign-result-gift .gift-what.is-ico svg {width:28px;height:28px;margin:0;animation:none;filter:none;}
+#campaign-result-gift .gift-open {padding-left:2px;}
+#campaign-result-gift .gift-n {position:absolute;top:-9px;right:-9px;min-width:26px;height:26px;padding:0 4px;box-sizing:border-box;border-radius:99px;border:2.5px solid #0b0a16;
+  background:linear-gradient(180deg,#ff7a66,#e0372a);color:#fff;font:700 15px/21px var(--aw-comic);text-align:center;text-shadow:0 1px 0 #6a0a05;box-shadow:0 2px 0 #0b0a16;}
+.aw-goldbadge {display:table;margin:-2px auto 6px;padding:3px 11px 4px;border-radius:99px;border:2px solid #5a3a00;background:linear-gradient(180deg,#fff0a0,#ffc21f 60%,#d98c00);
+  color:#3a2405;font:700 13.5px/1.1 var(--aw-comic);box-shadow:inset 0 1.5px 0 #ffffffb0,0 2px 0 #0b0a16,0 0 10px #ffcf4d88;rotate:-2deg;}
+.aw-goldbadge[hidden] {display:none;}

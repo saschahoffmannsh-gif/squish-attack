@@ -24,6 +24,8 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
   for(const b of [rocketBtn]){const ico=b.querySelector('[data-icon]');if(ico&&!ico.firstChild)ico.innerHTML=TOOL_ICONS[ico.dataset.icon];}
   const result=$('campaign-result'),rKicker=$('campaign-result-kicker'),rTitle=$('campaign-result-title'),rStars=$('campaign-result-stars');
   const rMessage=$('campaign-result-message'),rGift=$('campaign-result-gift');
+  // launch-29: kleines Gold-Abzeichen statt Satz, wenn Gold eingesetzt wurde (sternneutral)
+  const rGold=document.createElement('span');rGold.className='aw-goldbadge';rGold.id='campaign-result-goldbadge';rGold.hidden=true;rMessage.before(rGold);
   const bNext=$('campaign-next'),bExtra=$('campaign-extra'),bRetry=$('campaign-retry'),bMenu=$('campaign-menu');
   const rMoves=$('campaign-result-moves'),rStarCount=$('campaign-result-starcount'),rPair=$('campaign-result-pair'),rClose=$('campaign-result-close');
   const setLabel=(b,t)=>{const l=b.querySelector('.aw-label>span');if(l)l.textContent=t;else b.textContent=t;};
@@ -106,13 +108,14 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
     rMoves.textContent=won?String(moves):`${moves}/${limit}`;
     rStarCount.textContent=won?`${stars} / 3`:'–';
     rMessage.textContent=won
-      ?(toolsUsed?(toolsUsed===1?t('result.toolCap',{n:toolsUsed,max:toolStarCap(toolsUsed)}):t('result.toolCapMany',{n:toolsUsed})):stars<3?t('result.betterStars'):giftsUsed?t('result.goldSolved'):t('result.bestSolved'))
+      ?(toolsUsed?(toolsUsed===1?t('result.toolCap',{n:toolsUsed,max:toolStarCap(toolsUsed)}):t('result.toolCapMany',{n:toolsUsed})):stars<3?t('result.betterStars'):t('result.bestSolved'))
       :(lostReason==='board-full'?t('result.boardFull'):t('result.goalOpen'))+(extraOffer&&lostReason==='moves'?t('result.extraOffer'):t('result.tryAgain'))
         +(toolLevel&&toolLevel!=='extraMoves'?t('result.hardTip',{tool:toolName(toolLevel)}):'');
     if(won&&tutorialTool)rMessage.textContent=t('result.tutorialTool').trim();   // launch-28: Tutorial-Level mit Hilfsmittel
     if(won&&unlockModes)rMessage.textContent+=t('lock.resultBonus');
     if(won&&!canNext&&nextLock)rMessage.textContent+=' '+lockText(nextLock);
     else if(won&&!canNext)rMessage.textContent+=t('result.allDone');
+    rGold.hidden=!(won&&giftsUsed>0);rGold.textContent=t('result.goldBadge');rGold.setAttribute('aria-label',t('result.goldSolved'));
     setGifts(gifts);
     bNext.hidden=!won;bNext.disabled=!canNext;
     setLabel(bNext,canNext?t('result.next'):nextLock?t('result.locked'):t('result.done'));
@@ -142,15 +145,18 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
   }
   function hideResult(){result.hidden=true;starTimers.forEach(clearTimeout);starTimers=[];rStars.classList.remove('is-playing');}
   // Offene Geschenke als antippbarer Knopf (Geschenk-Hinweis bleibt): öffnet die Blase.
+  // launch-29: Geschenk-Kachel nur Bild + Inhalt + „Öffnen“ (+ Anzahl) – kein Satz.
   function setGifts(gifts=[]){
     rGift.hidden=!gifts.length;rGift.classList.add('is-gold');
     rGift.innerHTML='';
     if(!gifts.length)return;
-    const ico=document.createElement('span');ico.innerHTML=GIFT_SVG;
-    const label=document.createElement('span');label.textContent=t(gifts.length>1?'result.giftOpenMore':'result.giftOpen',{tool:toolName(gifts[0].type)});
-    rGift.append(ico.firstChild,label);
+    const ico=document.createElement('span');ico.className='gift-box';ico.innerHTML=GIFT_SVG;
+    const what=document.createElement('span');what.className='gift-what';
+    if(gifts[0].type==='extraMoves')what.textContent='+3';else{what.classList.add('is-ico');what.innerHTML=TOOL_ICONS[gifts[0].type]||'';}
+    const label=document.createElement('span');label.className='gift-open';label.textContent=t('result.giftOpenShort');
+    rGift.append(ico,what,label);
     if(gifts.length>1){const n=document.createElement('b');n.className='gift-n';n.textContent=String(gifts.length);rGift.append(n);}
-    rGift.setAttribute('aria-label',t('result.giftAria',{n:gifts.length}));
+    rGift.setAttribute('aria-label',t('result.giftAria',{n:gifts.length})+': '+gifts.map(g=>toolName(g.type)).join(', '));
   }
   rGift.addEventListener('click',()=>onGift?.());
   bNext.addEventListener('click',()=>onNext?.());

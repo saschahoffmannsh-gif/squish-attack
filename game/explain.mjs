@@ -1,4 +1,4 @@
-// launch-28: Erklär-Fenster mit Bild und kurzem Text (Comic-Stil, Fredoka, Navy/Gold).
+// launch-28: Erklär-Fenster (Comic-Stil, Fredoka, Navy/Gold). launch-29: animierte Mini-Szenen + eine Zeile.
 // Jedes Thema erscheint einmal von selbst, sobald es wichtig wird (showOnce), und lässt sich
 // jederzeit unter „Regeln“ nachlesen (topics()). Reine Darstellung, keine Spiellogik.
 // Die Regeln in den Bildern entsprechen game-logic.mjs:
@@ -14,7 +14,6 @@ const PALETTE = { 1: ['#5cc2ff', '#1f7ff0', '#0d3f9e'], 2: ['#ff7a66', '#e8291f'
   4: ['#ffb04a', '#ff7a0c', '#b8460a'], 5: ['#b57cff', '#8a3cf0', '#5418a8'], 6: ['#ffe36b', '#ffc21f', '#c98a06'],
   7: ['#ff8cc6', '#f0459e', '#a8186a'], 8: ['#6ff0e2', '#1fc9bd', '#0e8a84'] };
 const CLOSE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>';
-const ARROW = '<svg viewBox="0 0 32 24" aria-hidden="true"><path d="M2 9h17V3l11 9-11 9v-6H2z" fill="#ffd25a" stroke="#0b0a16" stroke-width="2.2" stroke-linejoin="round"/></svg>';
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 
 /** Ein Mini-Squish (gleiche Farben wie im Spiel). */
@@ -26,86 +25,93 @@ export function miniTile(v, { gold = false, ghost = false, cls = '' } = {}) {
   s.append(el('b', '', String(v)));
   return s;
 }
-function line(values, result, { mark = null, note = '' } = {}) {
-  const r = el('div', 'ex-line');
-  const g = el('span', 'ex-group');
-  values.forEach((v, i) => g.append(miniTile(v, { cls: mark?.includes(i) ? 'is-mark' : '' })));
-  const a = el('span', 'ex-arrow'); a.innerHTML = ARROW;
-  const out = el('span', 'ex-result'); out.append(miniTile(result, { cls: 'is-pop' }));
-  r.append(g, a, out);
-  if (note) r.append(el('small', 'ex-note', note));
-  return r;
-}
-/** Kleines Gitter (rows: Arrays mit Zahl/null) → Ergebnis. */
-function shape(rows, result, note = '') {
-  const r = el('div', 'ex-line ex-shape-line');
-  const g = el('span', 'ex-grid'); g.style.setProperty('--cols', String(rows[0].length));
-  for (const row of rows) for (const v of row) g.append(miniTile(v));
-  const a = el('span', 'ex-arrow'); a.innerHTML = ARROW;
-  const out = el('span', 'ex-result'); out.append(miniTile(result, { cls: 'is-pop' }));
-  r.append(g, a, out);
-  if (note) r.append(el('small', 'ex-note', note));
-  return r;
-}
-const stars = n => { const s = el('span', 'ex-stars'); for (let i = 0; i < 3; i++) s.append(el('i', i < n ? 'is-on' : '', '★')); return s; };
-function starRow(label, n, cls = '') { const r = el('div', 'ex-starrow ' + cls); r.append(el('span', 'ex-starlabel', label), stars(n)); return r; }
-function toolChip(type, label, { gold = false } = {}) {
-  const c = el('span', 'ex-tool' + (gold ? ' is-gold' : ''));
-  const i = el('span', 'ex-tool-ico'); if (type === 'extraMoves') i.append(el('b', 'ex-plus', '+3')); else i.innerHTML = TOOL_ICONS[type] || '';
-  c.append(i, el('small', '', label)); return c;
-}
+// launch-29: Mini-Szenen statt Listen. Jede Szene ist eine kleine, sich wiederholende Animation im
+// echten Squish-Look; dazu genau eine kurze Zeile. Die vollständige Regel steht unsichtbar für
+// Screenreader im Fenster (ex-sr). Positionen: --x/--y relativ zur Bühnenmitte, Ziel --mx/--my.
+const STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="exsg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3a0"/><stop offset=".55" stop-color="#ffc21f"/><stop offset="1" stop-color="#e08a00"/></linearGradient></defs><path d="M12 1.8 14.82 8.92 22.46 9.4 16.57 14.28 18.47 21.7 12 17.6 5.53 21.7 7.43 14.28 1.54 9.4 9.18 8.92Z" fill="url(#exsg)" stroke="#6a3304" stroke-width="1.6" stroke-linejoin="round"/><ellipse cx="8.6" cy="9.4" rx="1.4" ry=".85" fill="#fff" opacity=".9" transform="rotate(-25 8.6 9.4)"/></svg>';
+const LOCK = '<svg viewBox="0 0 64 72" aria-hidden="true" style="overflow:visible"><g stroke="#1b1030" stroke-width="3.4" stroke-linejoin="round"><path class="sx-shackle" d="M16 34V22a16 16 0 0 1 32 0v12" fill="none" stroke-linecap="round" stroke-width="7"/><path class="sx-shackle" d="M16 34V22a16 16 0 0 1 32 0v12" fill="none" stroke="#c9ced9" stroke-linecap="round" stroke-width="3"/><rect x="6" y="32" width="52" height="36" rx="9" fill="#ffc21f"/><path d="M10 37h44" stroke="#fff3a0" stroke-width="3" opacity=".9"/><circle cx="32" cy="48" r="5" fill="#6a3304" stroke="none"/><path d="M30 50h4l1.5 9h-7z" fill="#6a3304" stroke="none"/></g></svg>';
+const RAYS = () => el('span', 'sx sx-rays');
+const put = (node, x, y, cls = '', more = {}) => {
+  node.classList.add('sx', ...cls.split(' ').filter(Boolean));
+  node.style.setProperty('--x', x + 'px'); node.style.setProperty('--y', y + 'px');
+  for (const [k, v] of Object.entries(more)) node.style.setProperty('--' + k, typeof v === 'number' ? v + 'px' : v);
+  return node;
+};
+const tile = (v, x, y, cls = '', more = {}) => put(miniTile(v, { gold: more.gold }), x, y, cls, more);
+const star = (x, y, cls = '', more = {}) => { const s = el('span'); s.innerHTML = STAR; return put(s, x, y, 'sx-star ' + cls, more); };
+const icon = (svg, x, y, cls = '', more = {}) => { const s = el('span'); s.innerHTML = svg || ''; return put(s, x, y, 'sx-ico ' + cls, more); };
+const bubble = (text, x, y, cls = '', more = {}) => put(el('b', 'sx-bubble', text), x, y, cls, more);
+const word = (text, x, y, cls = '', more = {}) => put(el('b', 'sx-word', text), x, y, cls, more);
+const burst = (x, y, cls = '') => put(el('span', 'sx-burst'), x, y, cls);
+const sparks = (x, y, cls = '', n = 6, r = 46) => Array.from({ length: n }, (_, i) => { const a = i / n * Math.PI * 2 - Math.PI / 2;
+  const s = el('span'); s.innerHTML = SPARK; return put(s, x, y, 'sx-spark ' + cls, { dx: Math.round(Math.cos(a) * r), dy: Math.round(Math.sin(a) * r) }); });
+const SPARK = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1 12 8 19 10 12 12 10 19 8 12 1 10 8 8z" fill="#fff6a8" stroke="#1b1030" stroke-width="1.4" stroke-linejoin="round"/></svg>';
+function stage(kind, ...kids) { const s = el('div', 'ex-stage sx-' + kind); s.setAttribute('aria-hidden', 'true'); s.append(...kids.flat()); return s; }
+const plus3 = (x, y, cls = '', more = {}) => put(el('b', 'sx-plus3', '+3'), x, y, cls, more);
 
-/** Themen. pic(ctx) baut das Bild, lines(ctx) die Textzeilen. */
+/** Reihe gleicher/folgender Squishes rutscht zusammen → neuer Squish poppt auf. Leere Spielfeld-Zellen dahinter. */
+function mergeScene(kind, values, result, gain, { big = false } = {}) {
+  const n = values.length, gap = n > 4 ? 58 : 64, x0 = -gap * (n - 1) / 2, cy = 18;
+  const pos = values.map((_, i) => [x0 + gap * i, cy]);
+  const cells = pos.map(([x, y]) => put(el('span', 'sx-cell' + (n > 4 ? ' is-sm' : '')), x, y));
+  const tiles = values.map((v, i) => tile(v, pos[i][0], pos[i][1], 'sx-slide' + (n > 4 ? ' is-sm' : ''), { mx: 0, my: cy }));
+  return stage(kind, cells, burst(0, cy, big ? 'is-big' : ''), tiles, tile(result, 0, cy, 'sx-pop is-res' + (big ? ' is-big' : '')),
+    sparks(0, cy, 'sx-pop-spark', big ? 10 : 7, big ? 76 : 60), bubble(gain, big ? 64 : 56, cy - 34, 'sx-rise' + (big ? ' is-gold' : '')), word('SQUISH!', -34, -66, 'sx-word-pop'));
+}
+const lvChip = (n, x, y) => { const c = el('span', 'sx-lvchip'); c.append(el('b', '', String(n)), el('i', '', '★★★')); return put(c, x, y, 'sx-lvl'); };
+const SCENES = {
+  merge: () => mergeScene('merge', [2, 2, 2], 3, '+1'),
+  merge5: () => mergeScene('merge5', [1, 1, 1, 1, 1], 3, '+2', { big: true }),
+  street: () => mergeScene('street', [1, 2, 3, 4], 5, '+1'),
+  tools: () => stage('tools',
+    [-48, 0, 48].map(x => star(x, -56, 'sx-slot')), [-48, 0, 48].map((x, i) => star(x, -56, 'sx-s' + (i + 1))),
+    [-62, 0, 62].map(x => put(el('span', 'sx-cell'), x, 36)),
+    tile(4, -62, 36), tile(7, 0, 36, 'sx-blasted'), tile(4, 62, 36),
+    icon(TOOL_ICONS.rocket, -170, 36, 'sx-rocket'), put(el('span', 'sx-boomfx'), 0, 36), plus3(0, 36, 'sx-plus3-pop')),
+  gifts: () => { const g = el('span'); g.innerHTML = GIFT_SVG;
+    return stage('gifts', RAYS(), [-44, 0, 44].map((x, i) => star(x, -58, 'sx-shine', { d: i * .12 + 's' })),
+      put(g, 0, 22, 'sx-giftbox'), sparks(0, 22, 'sx-gift-spark', 8, 64),
+      icon(TOOL_ICONS.rocket, 0, 22, 'sx-goldfly is-gold', { mx: -78, my: 4 }), plus3(0, 22, 'sx-goldfly is-gold', { mx: 78, my: 4 })); },
+  gates: ctx => { const shut = ctx?.need && (ctx.have ?? 0) < ctx.need;
+    const need = ctx?.need || starGate(2), lock = icon(LOCK, 58, -8, 'sx-lock' + (shut ? ' is-shut' : ''));
+    const count = put(el('b', 'sx-count', shut ? `${ctx.have ?? 0}/${need}` : String(need)), 58, 54, '');
+    count.append(el('i', '', '★'));
+    const ys = [-52, 0, 52];
+    const flyers = ys.map((y, i) => star(-96, y - 4, 'sx-flystar', { mx: 58, my: 0, d: i * .3 + 's' }));
+    return stage('gates' + (shut ? ' is-shut' : ''), ys.map((y, i) => lvChip(i + 1, -110, y)), flyers, lock, count, sparks(58, -8, 'sx-lock-spark', 8, 64)); },
+  ads: () => { const tv = el('span'); tv.append(el('b', 'sx-tv-ad', 'AD'), el('i', 'sx-tv-bar'));
+    return stage('ads', put(tv, -58, 6, 'sx-tv'), icon(TOOL_ICONS.rocket, -58, 6, 'sx-adreward', { mx: 160, my: -30 }),
+      plus3(-58, 6, 'sx-adreward is-late', { mx: 160, my: 38 }), put(el('b', 'sx-stamp', t('ex.ads.price')), -52, 4, '')); },
+};
+/** Endlos-Werkzeuge (nur App-Hülle registriert das Thema). */
+export const ENDLESS_TOPIC = {
+  icon: () => miniTile(10, { gold: true }), title: () => t('ex.endless.title'),
+  scene: () => stage('endless', burst(48, -6, 'sx-eburst'),
+    tile(9, 48, -6, 'sx-e1'), tile(10, 48, -6, 'sx-e2'), tile(19, 48, -6, 'sx-e3'), tile(20, 48, -6, 'sx-e4'),
+    bubble('10!', 48, -58, 'sx-flag1 is-gold'), bubble('20!', 48, -58, 'sx-flag2 is-gold'),
+    put(el('span', 'sx-tray'), -90, 52, ''), put(el('span', 'sx-cell is-slot'), -114, 52), put(el('span', 'sx-cell is-slot'), -66, 52),
+    icon(TOOL_ICONS.rocket, 48, -6, 'sx-etool1', { mx: -114, my: 52 }), icon(TOOL_ICONS.wand, 48, -6, 'sx-etool2', { mx: -66, my: 52 })),
+  line: () => t('ex.endless.line'), sr: () => [t('ex.endless.l1'), t('ex.endless.l2'), t('ex.endless.l3')],
+};
+
+/** Themen: scene(ctx) baut die Mini-Szene, line(ctx) die eine kurze Zeile, sr(ctx) den Volltext für Screenreader. */
 const TOPICS = {
-  merge: {
-    icon: () => miniTile(3), title: () => t('ex.merge.title'),
-    pic: () => [line([2, 2, 2], 3, { note: t('ex.merge.n3') }), line([2, 2, 2, 2], 3, { note: t('ex.merge.n4') }), shape([[2, 2, 2], [null, 2, null]], 3, t('ex.merge.nT'))],
-    lines: () => [t('ex.merge.l1'), t('ex.merge.l2'), t('ex.merge.l3')],
-  },
-  merge5: {
-    icon: () => miniTile(5), title: () => t('ex.merge5.title'),
-    pic: () => [line([1, 1, 1, 1, 1], 3, { note: t('ex.merge5.n5') }), shape([[3, 3, 3], [3, null, null], [3, null, null]], 5, t('ex.merge5.nL'))],
-    lines: () => [t('ex.merge5.l1'), t('ex.merge5.l2')],
-  },
-  street: {
-    icon: () => miniTile(4), title: () => t('ex.street.title'),
-    pic: () => [line([1, 2, 3], 3, { note: t('ex.street.n3') }), line([4, 3, 2], 4, { note: t('ex.street.n3b') }), line([1, 2, 3, 4], 5, { note: t('ex.street.n4') }), line([1, 2, 3, 4, 5], 6, { note: t('ex.street.n5') })],
-    lines: () => [t('ex.street.l1'), t('ex.street.l2'), t('ex.street.l3')],
-  },
-  tools: {
-    icon: () => { const s = el('span', 'ex-ico'); s.innerHTML = TOOL_ICONS.rocket || ''; return s; }, title: () => t('ex.tools.title'),
-    pic: () => { const box = el('div', 'ex-tools');
-      const top = el('div', 'ex-toolrow'); top.append(toolChip('extraMoves', t('ex.tools.extra')), toolChip('rocket', t('ex.tools.rocket'))); box.append(top);
-      box.append(starRow(t('ex.tools.s0'), 3), starRow(t('ex.tools.s1'), 2), starRow(t('ex.tools.s2'), 1));
-      return [box]; },
-    lines: () => [t('ex.tools.l1'), t('ex.tools.l2'), t('ex.tools.l3')],
-  },
-  gifts: {
-    icon: () => { const s = el('span', 'ex-ico is-gold'); s.innerHTML = GIFT_SVG; return s; }, title: () => t('ex.gifts.title'),
-    pic: () => { const box = el('div', 'ex-gifts');
-      const g = el('span', 'ex-giftbox'); g.innerHTML = GIFT_SVG;
-      const row = el('div', 'ex-toolrow'); row.append(toolChip('rocket', t('ex.gifts.rocket'), { gold: true }), toolChip('extraMoves', t('ex.gifts.extra'), { gold: true }));
-      const lv = el('div', 'ex-chips'); for (const [n] of LEVEL_GIFTS) lv.append(el('span', 'ex-chip is-gold', String(n)));
-      box.append(g, row, starRow(t('ex.gifts.stars'), 3, 'is-gold'), lv); return [box]; },
-    lines: () => [t('ex.gifts.l1', { levels: LEVEL_GIFTS.map(([n]) => n).join(', ') }), t('ex.gifts.l2'), t('ex.gifts.l3')],
-  },
-  gates: {
-    icon: () => el('span', 'ex-ico ex-ico-star', '★'), title: () => t('ex.gates.title'),
-    pic: ctx => { const box = el('div', 'ex-chips ex-gates');
-      for (let k = 2; k <= 10; k++) { const c = el('span', 'ex-chip' + (ctx?.chapter === k ? ' is-now' : ''));
-        c.append(el('small', '', t('ex.gates.chapter', { n: k })), el('b', '', `${starGate(k)} ★`)); box.append(c); }
-      return [box]; },
-    lines: ctx => [t('ex.gates.l1', { size: CHAPTER_SIZE }), ctx?.need ? t('ex.gates.now', { chapter: ctx.chapter, need: ctx.need, have: ctx.have ?? 0 }) : t('ex.gates.l2'), t('ex.gates.l3')],
-  },
-  ads: {
-    icon: () => el('span', 'ex-ico ex-ico-ad', 'AD'), title: () => t('ex.ads.title'),
-    pic: () => { const box = el('div', 'ex-ads');
-      const a = el('span', 'ex-adcard'); a.append(el('b', '', 'AD'), el('small', '', t('ex.ads.clip')));
-      const p = el('span', 'ex-arrow'); p.innerHTML = ARROW;
-      const f = el('span', 'ex-adcard is-free'); f.append(el('b', '', t('ex.ads.price')), el('small', '', t('ex.ads.free')));
-      box.append(a, p, f); return [box]; },
-    lines: () => [t('ex.ads.l1'), t('ex.ads.l2'), t('ex.ads.l3')],
-  },
+  merge: { icon: () => miniTile(3), title: () => t('ex.merge.title'), scene: SCENES.merge, line: () => t('ex.merge.line'),
+    sr: () => [t('ex.merge.l1'), t('ex.merge.l2'), t('ex.merge.l3')] },
+  merge5: { icon: () => miniTile(5), title: () => t('ex.merge5.title'), scene: SCENES.merge5, line: () => t('ex.merge5.line'),
+    sr: () => [t('ex.merge5.l1'), t('ex.merge5.l2')] },
+  street: { icon: () => miniTile(4), title: () => t('ex.street.title'), scene: SCENES.street, line: () => t('ex.street.line'),
+    sr: () => [t('ex.street.l1'), t('ex.street.l2'), t('ex.street.l3')] },
+  tools: { icon: () => { const s = el('span', 'ex-ico'); s.innerHTML = TOOL_ICONS.rocket || ''; return s; }, title: () => t('ex.tools.title'),
+    scene: SCENES.tools, line: () => t('ex.tools.line'), sr: () => [t('ex.tools.l1'), t('ex.tools.l2'), t('ex.tools.l3')] },
+  gifts: { icon: () => { const s = el('span', 'ex-ico is-gold'); s.innerHTML = GIFT_SVG; return s; }, title: () => t('ex.gifts.title'),
+    scene: SCENES.gifts, line: () => t('ex.gifts.line'),
+    sr: () => [t('ex.gifts.l1', { levels: LEVEL_GIFTS.map(([n]) => n).join(', ') }), t('ex.gifts.l2'), t('ex.gifts.l3')] },
+  gates: { icon: () => el('span', 'ex-ico ex-ico-star', '★'), title: () => t('ex.gates.title'), scene: SCENES.gates,
+    line: ctx => ctx?.need && (ctx.have ?? 0) < ctx.need ? t('ex.gates.lineNow', { chapter: ctx.chapter, n: ctx.need - (ctx.have ?? 0) }) : t('ex.gates.line'),
+    sr: ctx => [t('ex.gates.l1', { size: CHAPTER_SIZE }), ctx?.need ? t('ex.gates.now', { chapter: ctx.chapter, need: ctx.need, have: ctx.have ?? 0 }) : t('ex.gates.l2'), t('ex.gates.l3')] },
+  ads: { icon: () => el('span', 'ex-ico ex-ico-ad', 'AD'), title: () => t('ex.ads.title'), scene: SCENES.ads, line: () => t('ex.ads.line'),
+    sr: () => [t('ex.ads.l1'), t('ex.ads.l2'), t('ex.ads.l3')] },
 };
 export const TOPIC_ORDER = ['merge', 'merge5', 'street', 'tools', 'gifts', 'gates', 'ads'];
 
@@ -125,8 +131,17 @@ export function createExplainer({ sound, haptics, storage = globalThis.localStor
     const head = el('div', 'ex-head'); const ico = el('span', 'ex-head-ico'); ico.append(d.icon());
     const title = el('h2', 'ex-title', d.title(ctx)); title.id = 'ex-title';
     head.append(ico, title);
-    const pic = el('div', 'ex-pic'); pic.append(...d.pic(ctx));
-    const body = el('ul', 'ex-lines'); for (const l of d.lines(ctx)) body.append(el('li', '', l));
+    // launch-29: Szene + eine Zeile; ältere Themen mit pic/lines (Liste) werden weiter unterstützt.
+    let pic, body;
+    if (d.scene) {
+      pic = d.scene(ctx);
+      body = el('p', 'ex-say', d.line(ctx)); body.id = 'ex-say';
+      const sr = el('div', 'ex-sr'); sr.id = 'ex-sr'; for (const l of d.sr?.(ctx) || []) sr.append(el('p', '', l)); body.append(sr);
+      panel.setAttribute('aria-describedby', 'ex-say');
+    } else {
+      pic = el('div', 'ex-pic'); pic.append(...d.pic(ctx));
+      body = el('ul', 'ex-lines'); for (const l of d.lines(ctx)) body.append(el('li', '', l));
+    }
     const ok = el('button', 'ex-ok'); ok.type = 'button'; ok.id = 'explain-ok'; ok.textContent = t('ex.ok');
     ok.addEventListener('click', () => api.close());
     panel.append(close, head, pic, body, ok);
@@ -144,7 +159,7 @@ export function createExplainer({ sound, haptics, storage = globalThis.localStor
     get isOpen() { return !!veil; },
     get topic() { return current; },
     seen: topic => readSeen().includes(topic),
-    /** Weitere Themen (z. B. Endlos-Werkzeuge der App). def: {icon, title, pic, lines}. */
+    /** Weitere Themen (z. B. Endlos-Werkzeuge der App). def: {icon, title, scene, line, sr} oder alt {icon, title, pic, lines}. */
     register(topic, d, { after = null } = {}) { extra.set(topic, d); if (!order.includes(topic)) { const i = after ? order.indexOf(after) : -1; if (i >= 0) order.splice(i + 1, 0, topic); else order.push(topic); } },
     topics: () => order.filter(k => def(k)).map(k => ({ topic: k, title: def(k).title(), icon: def(k).icon })),
     /** Fenster zeigen; Promise löst beim Schließen auf. */
