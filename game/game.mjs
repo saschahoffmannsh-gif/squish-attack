@@ -22,6 +22,7 @@ import {createShopUI} from './shop-ui.mjs?v=launch-30';
 import {createGiftFx} from './gift-fx.mjs?v=launch-30';
 import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-30';
 import {createAdUI} from './ad-ui.mjs?v=launch-30';
+import {isOffline} from './native-ads.mjs?v=launch-30';
 import {createStatsUI} from './stats-ui.mjs?v=launch-30';
 import * as ToolLog from './tool-log.mjs?v=launch-30';
 import {createProgressSync} from './progress-sync.mjs?v=launch-30';
@@ -277,14 +278,19 @@ const adUI=createAdUI({sound,haptics,onWatch:type=>{
   lastAd={type,where:f?.where||'tool'};
   logTool('ad',type,logCtx(f?.where||'tool'));
   if(f?.then)f.then();else renderCampaign();
-},onClose:()=>{const f=adFollow;adFollow=null;f?.cancel?.();renderCampaign();}});
+},onClose:()=>{const f=adFollow;adFollow=null;f?.cancel?.();renderCampaign();},onUnavailable:()=>helpUnavailable('noAd')});
 const adPacing=createAdPacing({isAdFree});
 // launch-28: bebilderte Erklär-Fenster (Regeln, Hilfsmittel, Gold-Geschenke, Kapitel, Werbung).
 const explainer=createExplainer({sound,haptics});
 let adFollow=null,lastAd=null;
 /** Belohnungsclip vor dem Einsatz. Werbefrei oder kein Abenteuer → sofort true. Abbruch → false. */
+/** launch-31: Hilfe braucht einen Clip, aber keiner ist zu haben (offline / kein Clip geladen) → gesperrt, kurzer Hinweis.
+ *  Werbefrei, Gold-Geschenke und die freie Tutorial-Hilfe brauchen keinen Clip und bleiben nutzbar. */
+function helpUnavailable(why='offline'){showNote(t(why==='offline'?'tool.offline':'tool.noAd'),2800);haptics.pulse?.('tap');}
+const helpOffline=()=>toolAdRequired()&&isOffline();
 function requestToolAd(type,where='tool'){
   if(!toolAdRequired())return Promise.resolve(true);
+  if(isOffline()){helpUnavailable('offline');return Promise.resolve(false);}
   if(adUI.isOpen)return Promise.resolve(false);
   return explainer.showOnce('ads').then(()=>new Promise(resolve=>{
     let done=false;
@@ -370,11 +376,13 @@ async function openGift(){
   void worldMenu.refresh?.();
   return true;
 }
+// launch-31: Verbindung weg/da → Hilfe-Knöpfe neu zeichnen (Sperr-Abzeichen).
+for(const ev of ['online','offline'])addEventListener(ev,()=>{try{if(campaignMode&&camp)renderCampaign();}catch{}});
 function renderCampaign(){
   if(!campaignMode||!camp)return;
   campaignUI.renderHud(camp.run,camp.n,labMode?labHudLabel():null);   // launch-28: Test-Titel nur im Testmodus
   const tutor=tutorialToolPending();
-  campaignUI.renderTools(goldBlocked()?{extraMoves:0,rocket:0}:goldNow(),{needsAd:toolAdRequired(),canExtra:camp.run.status==='playing',armed:armedTool,locked:camp.run.status!=='playing',
+  campaignUI.renderTools(goldBlocked()?{extraMoves:0,rocket:0}:goldNow(),{needsAd:toolAdRequired(),offline:helpOffline(),canExtra:camp.run.status==='playing',armed:armedTool,locked:camp.run.status!=='playing',
     toolsUsed:camp.run.toolsUsed.length,giftsUsed:camp.run.giftsUsed?.length|0,freeTry:tutor||null});
   for(const ty of Camp.ADVENTURE_TOOLS)campaignUI.toolButton(ty)?.classList.toggle('is-tutor',tutor);
 }
@@ -542,6 +550,7 @@ function toggleTool(type){
   if(type!=null&&type!=='rocket')return;
   const on=type!=null&&armedTool!==type;
   if(on&&(camp.run.status!=='playing'||busy))return;
+  if(on&&helpOffline()&&!hasGold(type)&&!tutorialToolPending()){helpUnavailable('offline');return;}   // launch-31: gar nicht erst scharf
   armedTool=on?type:null;renderCampaign();
   if(on)showNote(t(hasGold('rocket')?'tool.note.rocketGold':'tool.note.rocket'),0);else if(!tutorialToolPending())note.hidden=true;else showNote(t('note.tutorialTool'),0);
 }

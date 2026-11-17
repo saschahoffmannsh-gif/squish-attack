@@ -10,7 +10,7 @@ const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls)
 const CLOSE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>';
 const PLAY_SVG = '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="20" fill="#ff5a4e" stroke="#0b0a16" stroke-width="3"/><path d="M19 15v18l15-9z" fill="#fff" stroke="#0b0a16" stroke-width="2.4" stroke-linejoin="round"/></svg>';
 
-export function createAdUI({ onWatch, onClose, sound, haptics } = {}) {
+export function createAdUI({ onWatch, onClose, onUnavailable, sound, haptics } = {}) {
   let veil = null, lastFocus = null, current = null;
   const stats = { opens: 0, watched: 0, lastType: null };
   function render(type) {
@@ -44,9 +44,9 @@ export function createAdUI({ onWatch, onClose, sound, haptics } = {}) {
     api.close({ silent: true });
     // App: echter Clip über den nativen Adapter; Werkzeug nur, wenn er zu Ende geschaut wurde.
     const res = await showRewarded({ placement: 'tool', tool: type });
-    // launch-31: keine Werbung zu haben (offline/Ladefehler) → Hilfe trotzdem, still. Abbruch durch den Spieler → keine.
-    if (!res.ok && !res.unavailable) return;
-    if (res.ok) stats.watched++; else stats.unavailable = (stats.unavailable || 0) + 1;
+    // launch-31: kein Clip zu haben (offline/Ladefehler) → Hilfe gesperrt, kurzer Hinweis. Abbruch → ebenfalls keine Hilfe.
+    if (!res.ok) { if (res.unavailable) { stats.unavailable = (stats.unavailable || 0) + 1; onUnavailable?.(type); } onClose?.(); return; }
+    stats.watched++;
     sound?.play?.('gift'); haptics?.pulse?.('merge');
     await onWatch?.(type);
   }

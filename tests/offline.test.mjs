@@ -30,7 +30,7 @@ test('Start blockiert nie auf dem Netz: Build-Check ohne festen alten Tag, keine
   assert.ok(/searchParams\.has\('t'\)/.test(sw), 'build.txt?t=… geht unverändert durchs Netz');
 });
 
-test('Werbung offline: still übersprungen – Belohnungsclip „nicht verfügbar“ (Hilfe gibt es trotzdem), Zwischenwerbung entfällt', async () => {
+test('Werbung offline: Zwischenwerbung still übersprungen, Belohnungsclip „nicht verfügbar“ (Hilfe bleibt dann gesperrt)', async () => {
   const na = await import('../game/native-ads.mjs');
   const nav = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
   let calls = 0;
@@ -50,4 +50,15 @@ test('Werbung offline: still übersprungen – Belohnungsclip „nicht verfügba
     na.registerNativeAds(null);
     if (nav) Object.defineProperty(globalThis, 'navigator', nav); else delete globalThis.navigator;
   }
+});
+
+test('launch-31: Hilfe ohne Clip gesperrt – kurzer Hinweis DE/EN, Werbefrei/Gold/Tutorial bleiben frei', async () => {
+  const { STRINGS } = await import('../game/locales.mjs');
+  assert.equal(STRINGS['tool.offline'].de, 'Keine Verbindung – Hilfe gerade nicht verfügbar');
+  assert.ok(STRINGS['tool.offline'].en && STRINGS['tool.noAd'].de && STRINGS['tool.noAd'].en && STRINGS['tool.offlineAria'].en);
+  const src = readFileSync(new URL('../game/game.mjs', import.meta.url), 'utf8');
+  const req = src.slice(src.indexOf('function requestToolAd'), src.indexOf('function requestToolAd') + 260);
+  assert.ok(req.indexOf('if(!toolAdRequired())return Promise.resolve(true);') < req.indexOf("if(isOffline()){helpUnavailable('offline');return Promise.resolve(false);}"), 'Werbefrei zuerst frei, sonst offline gesperrt');
+  const ui = readFileSync(new URL('../game/ad-ui.mjs', import.meta.url), 'utf8');
+  assert.ok(/if \(!res\.ok\) \{ if \(res\.unavailable\)[^}]*onUnavailable\?\.\(type\); \} onClose\?\.\(\); return; \}/.test(ui), 'kein Clip → keine Hilfe, Hinweis');
 });

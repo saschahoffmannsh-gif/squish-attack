@@ -373,6 +373,9 @@ export const STRINGS = {
 
   "tool.note.rocketGold": { de: "Goldene Rakete: tippe auf einen Squish – kostet keine Sterne", en: "Golden rocket: tap a Squish – it costs no stars" },
   "tool.goldAria": { de: "{label}: {n}× Gold-Geschenk – ohne Werbung, kostet keine Sterne", en: "{label}: {n}× gold gift – no ad, costs no stars" },
+  "tool.offline": { de: "Keine Verbindung – Hilfe gerade nicht verfügbar", en: "No connection – help isn't available right now" },
+  "tool.noAd": { de: "Gerade kein Clip da – Hilfe kurz nicht verfügbar", en: "No clip right now – help isn't available just now" },
+  "tool.offlineAria": { de: "{label} – ohne Verbindung gerade nicht verfügbar", en: "{label} – not available without a connection" },
   "tool.adAria": { de: "{label} – Werbung ansehen und einsetzen (zählt als Hilfe)", en: "{label} – watch an ad and use it (counts as help)" },
   "tool.freeAria": { de: "{label} einsetzen (zählt als Hilfe)", en: "Use {label} (counts as help)" },
   "tool.freeTryAria": { de: "{label} – im Tutorial gratis ausprobieren", en: "{label} – try it for free in the tutorial" },

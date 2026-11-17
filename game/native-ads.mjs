@@ -15,8 +15,8 @@ export const nativeAdsName = () => adapter?.name || null;
 /** Kein Netz laut Browser/WebView (navigator.onLine). Dann gibt es keine Werbung – sie wird still übersprungen. */
 export const isOffline = (nav = globalThis.navigator) => nav?.onLine === false;
 /** Belohnungsclip. → {ok, dummy?, unavailable?}. Ohne Adapter sofort ok (Testphase).
- *  unavailable = keine Werbung zu haben (offline, nicht geladen, Zeitüberschreitung) – das Spiel gibt die Hilfe
- *  dann trotzdem (launch-31: offline voll spielbar). Abbruch durch den Spieler = {ok:false} ohne unavailable. */
+ *  unavailable = kein Clip zu haben (offline, nicht geladen, Zeitüberschreitung) – die Hilfe bleibt dann gesperrt
+ *  (launch-31, kurzer Hinweis „Keine Verbindung“). Abbruch durch den Spieler = {ok:false} ohne unavailable. */
 export async function showRewarded(opts = {}) {
   if (!adapter) return { ok: true, dummy: true };
   if (isOffline()) return { ok: false, unavailable: true };
