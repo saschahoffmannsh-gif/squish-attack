@@ -380,7 +380,11 @@
     <script src="config.js?v=launch-30"></script>
     <script>
     (function(){
-      var BUILD='launch-25';
+      // Build dieser Seite = Tag an config.js direkt davor (pflegt sich selbst; vorher fest 'launch-25' → ein
+      // unnötiger Neustart je Sitzung). Ohne Netz schlägt der Abruf still fehl, das Spiel startet normal.
+      var cfg=document.querySelector('script[src^="config.js"]');
+      var BUILD=cfg?(cfg.getAttribute('src').split('?v=')[1]||''):'';
+      if(!BUILD)return;
       var key='squish-build-reload';
       fetch('build.txt?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.text();}).then(function(v){
         v=(v||'').trim();
