@@ -347,5 +347,5 @@ in der App liegen.
 - **Werbefrei 4,99 €** (vorher 2,99 €): StoreKit-Testdatei, Doku, Spieltexte. In App Store Connect
   die Preisstufe für 4,99 € wählen.
 - **Endlos-Zwischenwerbung alle 15 Minuten** (vorher 10).
-- **Sterne:** Hilfen kosten keine Sterne mehr; Sterne kommen von den übrigen Zügen (siehe
+- **Sterne:** Sterne kommen von den übrigen Zügen (übrig = Limit − Züge − Raketen, jede Rakete zählt als 1 Zug, +3 zählt nie; siehe
   `docs/sterne-launch32.md` im Haupt-Repo).
