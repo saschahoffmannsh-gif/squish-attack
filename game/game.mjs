@@ -538,7 +538,7 @@ async function finishLevel(){
   if(turn!==generation||!campaignMode){confetti.stop();return;}
   paused=true;releaseGesture();phoneMotion.reset();
   const count=levelList().length,nextLock=n<count&&!labMode?Camp.lockReason(campaignProgress,n+1):null;
-  campaignUI.showResult({n,won,stars,moves:r.moves,limit:Camp.moveLimit(r),base:r.level.moves,lostReason:r.lostReason,toolLevel:r.level.tool||null,
+  campaignUI.showResult({n,won,stars,moves:r.moves,limit:Camp.moveLimit(r),base:r.level.moves,left:Camp.starMovesLeft(r),lostReason:r.lostReason,toolLevel:r.level.tool||null,
     canNext:won&&n<count&&!nextLock,nextLock,gifts:Camp.TOOL_GIFTS&&!labMode?inventory.pending.slice():gifts,extraAvailable:1,extraGold:inventory.extraMoves|0,extraAd:toolAdRequired()&&!hasGold('extraMoves'),toolsUsed:r.toolsUsed.length,giftsUsed:r.giftsUsed?.length|0,tutorialTool:won&&!!camp.tutorialDone,
     unlockModes:won&&!labMode&&n===Camp.MODES_UNLOCK_LEVEL&&Camp.modesUnlocked(campaignProgress)});
   renderCampaign();

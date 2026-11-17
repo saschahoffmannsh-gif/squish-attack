@@ -3,7 +3,7 @@
 import {TOOL_ICONS,GIFT_SVG} from './tool-icons.mjs?v=launch-32';
 import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-32';
 import {fitLabelsSoon} from './fit-labels.mjs?v=launch-32';
-import {goalProgress,goalText,goalShort,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName,starsFor} from './campaign.mjs?v=launch-32';
+import {goalProgress,goalText,goalShort,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName,starsFor,starMovesUsed} from './campaign.mjs?v=launch-32';
 
 const $=id=>document.getElementById(id);
 export const TOOL_ARTICLE=new Proxy({},{get:(_,k)=>t('tool.'+k)});
@@ -60,10 +60,10 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
     box.classList.toggle('is-low',left<=2);
     movesEl.setAttribute('aria-label',t('campaign.movesAria',{n:left}));
     // launch-32: Sterne-Leiste unter den Zügen – so viele Sterne gibt es, wenn der nächste Zug das Level löst.
-    // Sie hängt nur an den übrigen Zügen (Hilfen kosten keine Sterne, +3-Züge zählen nicht als übrig).
+    // Sie hängt nur an den übrigen Zügen (jede Rakete zählt als ein Zug, +3-Züge zählen nicht als übrig).
     let meter=box.querySelector('.campaign-starmeter');
     if(!meter){meter=document.createElement('i');meter.className='campaign-starmeter';for(let i=0;i<3;i++)meter.append(document.createElement('b'));box.append(meter);}
-    const can=run.status==='won'?null:starsFor(run.level,run.moves+1,true);
+    const can=run.status==='won'?null:starsFor(run.level,starMovesUsed(run)+1,true);
     meter.hidden=can==null;
     if(can!=null){meter.dataset.stars=String(can);[...meter.children].forEach((b,i)=>b.classList.toggle('is-on',i<can));meter.setAttribute('aria-label',t('campaign.starsLeftAria',{n:can}));meter.setAttribute('role','img');}
   }
@@ -101,16 +101,16 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
   rocketBtn.addEventListener('click',()=>onTool?.('rocket'));
 
   // ---------- Ergebnis ----------
-  function showResult({n,won,stars,moves,limit,base=null,lostReason,canNext,nextLock,gifts=[],extraAvailable=0,extraGold=0,extraAd=false,toolsUsed=0,giftsUsed=0,toolLevel=null,unlockModes=false,tutorialTool=false}){
+  function showResult({n,won,stars,moves,limit,base=null,left:leftIn=null,lostReason,canNext,nextLock,gifts=[],extraAvailable=0,extraGold=0,extraAd=false,toolsUsed=0,giftsUsed=0,toolLevel=null,unlockModes=false,tutorialTool=false}){
     const extraOffer=extraAvailable>0;
     result.dataset.outcome=won?'won':'lost';
-    lastResult={n,won,stars,moves,limit,base,lostReason,canNext,nextLock,gifts,extraAvailable,extraGold,extraAd,toolsUsed,giftsUsed,toolLevel,unlockModes,tutorialTool};
+    lastResult={n,won,stars,moves,limit,base,left:leftIn,lostReason,canNext,nextLock,gifts,extraAvailable,extraGold,extraAd,toolsUsed,giftsUsed,toolLevel,unlockModes,tutorialTool};
     rKicker.textContent=t('campaign.levelLabel',{n});
     rTitle.textContent=won?(stars===3?t('result.perfect'):t('result.clear')):lostReason==='board-full'?t('result.full'):t('result.noMoves');
     rStars.hidden=!won;rStars.setAttribute('aria-label',t('campaign.starsOf',{n:stars,max:3}));
     rStars.dataset.stars=String(won?stars:0);
     // launch-32: im Sieg die übrigen Züge (Grundlage der Sterne, ohne +3-Züge), sonst Züge/Limit
-    const left=Math.max(0,(base??limit)-moves);
+    const left=leftIn??Math.max(0,(base??limit)-moves);
     rMoves.textContent=won?String(left):`${moves}/${limit}`;
     {const lab=rMoves.closest('span')?.querySelector('[data-i18n]');if(lab){lab.dataset.i18n=won?'result.statsMoves':'campaign.movesLabel';lab.textContent=t(lab.dataset.i18n);}}
     rMoves.setAttribute('aria-label',won?t('result.leftAria',{n:left}):`${moves}/${limit}`);

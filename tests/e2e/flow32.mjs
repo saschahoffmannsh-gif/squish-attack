@@ -59,10 +59,10 @@ const goldInv = JSON.stringify({ version: 3, extraMoves: 0, rocket: 1, hint: 0, 
   ok('L6: Gold nicht verbraucht, 1 Hilfe gezählt, kein Clip', c.gold.rocket === 1 && c.toolsUsed.length === 1 && !c.giftsUsed.length && !c.adStats?.opens, JSON.stringify({ g: c.gold, t: c.toolsUsed, ad: c.adStats }));
   await P.play('ata');
   await P.page.waitForFunction(() => window.SquishGame.campaign.resultOpen, { timeout: 20000 }); await sleep(2500);
-  c = await P.C(); ok('L6: 3★ trotz Hilfe (3 Züge, 3★ ab 2 übrig)', c.progress.levels['6']?.stars === 3, JSON.stringify(c.progress.levels['6']));
+  c = await P.C(); ok('L6: 3★ trotz Rakete (3 Züge + 1 Rakete, 3★ ab 2 übrig)', c.progress.levels['6']?.stars === 3, JSON.stringify(c.progress.levels['6']));
   const res = await P.page.evaluate(() => ({ left: document.getElementById('campaign-result-moves').textContent, label: document.querySelector('#campaign-result-stats [data-i18n]').textContent,
     msg: document.getElementById('campaign-result-message').textContent, stars: document.getElementById('campaign-result-stars').dataset.stars }));
-  ok('Ergebnis: ÜBRIG 3 (6 − 3 Züge) statt Züge', res.left === '3' && (lang === 'de' ? res.label === 'ÜBRIG' : res.label === 'LEFT'), JSON.stringify(res));
+  ok('Ergebnis: ÜBRIG 2 (6 − 3 Züge − 1 Rakete) statt Züge', res.left === '2' && (lang === 'de' ? res.label === 'ÜBRIG' : res.label === 'LEFT'), JSON.stringify(res));
   ok('Ergebnis: Tutorial-Satz „Hilfe ist okay“', lang === 'de' ? /Hilfe ist okay/.test(res.msg) : /Helping is fine/.test(res.msg), res.msg);
   if (shots) await P.page.screenshot({ path: OUT + '03-ergebnis-sterne-uebrig-' + lang + '.png' });
   // ---------- 2. L7: Gold-Rakete → „Hilfe gratis, ohne Werbung“ ----------

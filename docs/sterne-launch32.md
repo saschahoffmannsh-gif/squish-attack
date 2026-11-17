@@ -105,3 +105,11 @@ Negativ = so viele Züge über dem Limit (nur mit +3) sind noch erlaubt. Erzeugt
 | 98 | 17 | ≥ 7 | ≥ 3 |  |
 | 99 | 12 | ≥ 0 | ≥ -3 | +3 |
 | 100 | 39 | ≥ 0 | ≥ -3 | +3 |
+
+## Nachtrag (Entscheidung Sascha): Rakete zählt als ein Zug
+
+Für die Sterne gilt jetzt: **übrig = Limit − Züge − Raketen**. Jede Rakete (Clip, Werbefrei, Gold,
+Tutorial) zählt wie ein Zug; „+3“ bringt weiterhin nie übrige Züge dazu. Damit bringen unbegrenzte
+Raketen kein ★★★ mehr. Die Schwellen oben bleiben unverändert. Die Raketen-Level 35/55/75/95 sind
+mit ihrer Raketen-Lösung (toolMin + 1 Rakete ≤ Limit) weiter mit 3★ lösbar.
+Code: `rocketsUsed`, `starMovesUsed`, `starMovesLeft`, `starsOfRun` in `game/campaign.mjs`.
