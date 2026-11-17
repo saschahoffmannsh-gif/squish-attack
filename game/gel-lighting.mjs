@@ -1,5 +1,5 @@
 import {THREE,PARAMETERS as P} from '../squish/squish-graphics.js?v=play-sharp-1';
-import {specialFloorColor} from './special-squish.mjs?v=launch-31';
+import {specialFloorColor} from './special-squish.mjs?v=launch-32';
 
 // Optical controls only: the accepted silhouette, foot, dimple, bubbles,
 // number geometry, camera and deformation parameters are never changed here.
