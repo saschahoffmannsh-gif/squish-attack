@@ -59,7 +59,7 @@ test('UI-Code enthält keine fest verdrahteten deutschen Spieltexte', () => {
 });
 
 test('data-i18n-Schlüssel in index.html existieren', async () => {
-  const { STRINGS } = await import('../game/locales.mjs?v=launch-28');
+  const { STRINGS } = await import('../game/locales.mjs?v=launch-29');
   const html = readFileSync(join(root, 'game/index.html'), 'utf8');
   const keys = [...html.matchAll(/data-i18n(?:-[a-z]+)?="([^"]+)"/g)].map(m => m[1]);
   assert.ok(keys.length > 30, 'zu wenige data-i18n-Attribute');
