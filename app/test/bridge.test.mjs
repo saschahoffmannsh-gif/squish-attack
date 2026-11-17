@@ -88,13 +88,13 @@ test('Belohnung nur bei vollständig angesehenem Clip; Test-IDs', async () => {
   const B = admobMock({ reward: false });
   assert.deepEqual(await createAdMobAdapter({ AdMob: B, ids: APP_CONFIG.admob }).showRewarded(), { ok: false });
   const C = admobMock({ failLoad: true });
-  assert.deepEqual(await createAdMobAdapter({ AdMob: C, ids: APP_CONFIG.admob }).showRewarded(), { ok: false });
+  assert.deepEqual(await createAdMobAdapter({ AdMob: C, ids: APP_CONFIG.admob }).showRewarded(), { ok: false, unavailable: true }, 'nicht geladen = nicht verfügbar');
 });
 test('Keine Werbung ohne Einwilligung (canRequestAds=false); nie zwei gleichzeitig', async () => {
   const A = admobMock();
   const no = createAdMobAdapter({ AdMob: A, ids: APP_CONFIG.admob, ready: Promise.resolve({ canRequestAds: false }) });
-  assert.deepEqual(await no.showRewarded(), { ok: false });
-  assert.deepEqual(await no.showInterstitial(), { ok: false });
+  assert.deepEqual(await no.showRewarded(), { ok: false, unavailable: true });
+  assert.deepEqual(await no.showInterstitial(), { ok: false, unavailable: true });
   assert.equal(A.calls.length, 0);
   const ad = createAdMobAdapter({ AdMob: admobMock(), ids: APP_CONFIG.admob });
   const [a, b] = await Promise.all([ad.showInterstitial(), ad.showRewarded()]);
@@ -107,6 +107,27 @@ test('Zwischenwerbung wartet, bis sie geschlossen ist', async () => {
   const r = await createAdMobAdapter({ AdMob: A, ids: APP_CONFIG.admob }).showInterstitial();
   assert.equal(r.ok, true); assert.equal(closed, true);
   assert.equal(A.calls.find(c => c[0] === 'prepareInterstitial')[1].adId, 'ca-app-pub-3940256099942544/4411468910');
+});
+
+test('launch-31 offline: nie hängen – Einwilligung/Laden mit Zeitlimit, ohne Netz gar kein Aufruf', async () => {
+  const never = new Promise(() => {});
+  const A = admobMock(); A.prepareRewardVideoAd = () => never; A.prepareInterstitial = () => never;
+  const ad = createAdMobAdapter({ AdMob: A, ids: APP_CONFIG.admob, loadTimeoutMs: 60 });
+  let t0 = Date.now();
+  assert.deepEqual(await ad.showRewarded(), { ok: false, unavailable: true });
+  assert.deepEqual(await ad.showInterstitial(), { ok: false, unavailable: true });
+  assert.ok(Date.now() - t0 < 1000, 'Zeitlimit greift');
+  const B = admobMock();
+  t0 = Date.now();
+  assert.deepEqual(await createAdMobAdapter({ AdMob: B, ids: APP_CONFIG.admob, ready: never, readyTimeoutMs: 60 }).showInterstitial(), { ok: false, unavailable: true });
+  assert.ok(Date.now() - t0 < 1000); assert.equal(B.calls.length, 0, 'ohne Einwilligung nichts geladen');
+  const nav = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+  try {
+    Object.defineProperty(globalThis, 'navigator', { value: { onLine: false }, configurable: true });
+    const C = admobMock();
+    assert.deepEqual(await createAdMobAdapter({ AdMob: C, ids: APP_CONFIG.admob }).showRewarded(), { ok: false, unavailable: true });
+    assert.equal(C.calls.length, 0, 'offline: kein SDK-Aufruf');
+  } finally { if (nav) Object.defineProperty(globalThis, 'navigator', nav); else delete globalThis.navigator; }
 });
 
 // ---------- StoreKit ----------

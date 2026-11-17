@@ -42,9 +42,15 @@ export async function setupConsent(AdMob, { askTracking = true, testing = true, 
  * @param ready   Promise<{canRequestAds}> aus setupConsent
  * @param hooks   {onStart, onEnd} – z. B. Spiel-Ton aus/an (das Spiel macht das zusätzlich selbst)
  */
-export function createAdMobAdapter({ AdMob, ids, testing = true, ready = Promise.resolve({ canRequestAds: true }), dismissTimeoutMs = 120000, log = () => {} } = {}) {
+const limit = (p, ms, what) => Promise.race([Promise.resolve(p), new Promise((_, rej) => setTimeout(() => rej(new Error(what + ' timeout')), ms))]);
+const offline = () => globalThis.navigator?.onLine === false;
+// launch-31: nie auf dem Netz hängen bleiben. Ohne Netz, ohne Einwilligung in readyTimeoutMs oder ohne geladenen
+// Clip in loadTimeoutMs → {ok:false, unavailable:true}; das Spiel überspringt die Werbung dann still.
+export function createAdMobAdapter({ AdMob, ids, testing = true, ready = Promise.resolve({ canRequestAds: true }), dismissTimeoutMs = 120000,
+  readyTimeoutMs = 3000, loadTimeoutMs = 8000, log = () => {} } = {}) {
   let showing = false;
-  const canShow = async () => { try { return !!(await ready)?.canRequestAds; } catch { return false; } };
+  const canShow = async () => { if (offline()) return false; try { return !!(await limit(ready, readyTimeoutMs, 'consent'))?.canRequestAds; } catch { return false; } };
+  const NA = { ok: false, unavailable: true };
   return {
     name: 'admob',
     get showing() { return showing; },
@@ -52,27 +58,29 @@ export function createAdMobAdapter({ AdMob, ids, testing = true, ready = Promise
       if (showing) return { ok: false };
       showing = true;   // sofort, damit nie zwei Clips gleichzeitig laufen
       try {
-        if (!(await canShow())) return { ok: false };
-        await AdMob.prepareRewardVideoAd({ adId: ids.rewardedId, isTesting: !!testing });
+        if (!(await canShow())) return NA;
+        try { await limit(AdMob.prepareRewardVideoAd({ adId: ids.rewardedId, isTesting: !!testing }), loadTimeoutMs, 'rewarded load'); }
+        catch (e) { log('rewarded load ' + placement, e); return NA; }
         const closed = onceEvent(AdMob, EVENTS.rewardDismissed, dismissTimeoutMs);
         let reward = null;
         try { reward = await AdMob.showRewardVideoAd(); } catch (e) { log('rewarded ' + placement, e); }
         if (reward) await closed;   // erst weiter, wenn der Clip zu ist
         return { ok: !!reward };
-      } catch (e) { log('rewarded load ' + placement, e); return { ok: false }; }
+      } catch (e) { log('rewarded ' + placement, e); return NA; }
       finally { showing = false; }
     },
     async showInterstitial({ placement = 'level' } = {}) {
       if (showing) return { ok: false };
       showing = true;   // sofort, damit nie zwei Clips gleichzeitig laufen
       try {
-        if (!(await canShow())) return { ok: false };
-        await AdMob.prepareInterstitial({ adId: ids.interstitialId, isTesting: !!testing });
+        if (!(await canShow())) return NA;
+        try { await limit(AdMob.prepareInterstitial({ adId: ids.interstitialId, isTesting: !!testing }), loadTimeoutMs, 'interstitial load'); }
+        catch (e) { log('interstitial load ' + placement, e); return NA; }
         const closed = onceEvent(AdMob, EVENTS.interstitialDismissed, dismissTimeoutMs);
         await AdMob.showInterstitial();
         await closed;
         return { ok: true };
-      } catch (e) { log('interstitial ' + placement, e); return { ok: false }; }
+      } catch (e) { log('interstitial ' + placement, e); return NA; }
       finally { showing = false; }
     },
   };

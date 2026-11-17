@@ -318,3 +318,14 @@ in der App liegen.
 - Endlos-Spielstand (`shift3-play-v1`) und Rekord bleiben unverändert.
 - Die Endlos-Werbung alle 10 Minuten ist eine normale Zwischenwerbung ohne Belohnung; Werbefrei entfernt sie.
 - Abenteuer-Zwischenwerbung alle 10 gewonnenen Level.
+
+## launch-31: Offline
+
+- Die App lädt alle Dateien aus dem Paket (Schriften lokal, kein Fremdcode), der Start wartet nur auf den
+  Schlüsselbund (max. 1,5 s). Cloud-Abgleich läuft im Hintergrund mit 8-s-Zeitlimit und fällt still aus.
+- Werbung blockiert nie: ohne Netz (`navigator.onLine === false`) wird sie gar nicht angefragt, sonst gelten
+  Zeitlimits (Einwilligung 3 s, Laden 8 s). „Nicht verfügbar“ ≠ „abgebrochen“: Ist kein Clip zu haben, gibt es die
+  Hilfe trotzdem; bricht der Spieler einen Clip ab, nicht. Im Flugmodus öffnet sich kein Werbe-Dialog.
+- Fällige Zwischenwerbung vor einem Level entfällt offline; der Levelstart wartet höchstens das Zeitlimit.
+- Kein Service Worker in der App (nur im Web, `game/offline-sw.js`).
+- Test: `app/test/e2e-app-offline.browser.mjs` („Funkloch“: SDK hängt, „Flugmodus“: offline).

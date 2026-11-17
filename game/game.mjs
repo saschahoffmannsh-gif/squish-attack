@@ -23,7 +23,7 @@ import {createShopUI} from './shop-ui.mjs?v=launch-30';
 import {createGiftFx} from './gift-fx.mjs?v=launch-30';
 import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-30';
 import {createAdUI} from './ad-ui.mjs?v=launch-30';
-import {hasNativeAds,showInterstitial} from './native-ads.mjs?v=launch-30';
+import {hasNativeAds,showInterstitial,isOffline} from './native-ads.mjs?v=launch-30';
 import {createStatsUI} from './stats-ui.mjs?v=launch-30';
 import * as ToolLog from './tool-log.mjs?v=launch-30';
 import {createProgressSync} from './progress-sync.mjs?v=launch-30';
@@ -304,6 +304,8 @@ function maybeEndlessOffer(){
 /** Belohnungsclip vor dem Einsatz. Werbefrei oder kein Abenteuer → sofort true. Abbruch → false. */
 function requestToolAd(type,where='tool'){
   if(!toolAdRequired())return Promise.resolve(true);
+  // launch-31 (App): ohne Netz gibt es keine Werbung – Hilfe still ohne Clip, kein Dialog.
+  if(hasNativeAds()&&isOffline())return Promise.resolve(true);
   if(adUI.isOpen)return Promise.resolve(false);
   return explainer.showOnce('ads').then(()=>new Promise(resolve=>{
     let done=false;
