@@ -6,12 +6,13 @@
 // Braucht puppeteer-core und Google Chrome (wie die übrigen e2e-Skripte, nicht Teil von npm test).
 // Zwei lokale Server: Repo-Wurzel (Web) und app/www (App-Bundle), z. B. python3 -m http.server.
 import puppeteer from 'puppeteer-core';
-const IPHONE = { width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true };
 const IPHONE_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1';
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const launch = () => puppeteer.launch({ executablePath: process.env.CHROME || '/usr/bin/google-chrome', headless: 'new',
   args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--mute-audio'] });
-const [web = 'http://127.0.0.1:8731/game/', app = 'http://127.0.0.1:8732/index.html'] = process.argv.slice(2);
+const [web = 'http://127.0.0.1:8731/game/', app = 'http://127.0.0.1:8732/index.html', vp = '390x844'] = process.argv.slice(2);
+const [VW, VH] = vp.split('x').map(Number);
+const IPHONE = { width: VW, height: VH, deviceScaleFactor: 2, isMobile: true, hasTouch: true };
 let fails = 0; const check = (n, ok, info = '') => { console.log(`${ok ? 'OK  ' : 'FAIL'} ${n}${info ? ' · ' + info : ''}`); if (!ok) fails++; };
 const T = 'c'.repeat(64);
 

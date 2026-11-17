@@ -75,7 +75,12 @@ try {
     if (airplane) check('Flugmodus: Rakete und +3 mit Kein-Netz-Abzeichen', badge[0] === '1' && badge[1] === '1', JSON.stringify(badge));
     else check('Funkloch: kein Abzeichen (onLine = true, Clip wird versucht)', badge[0] === '' && badge[1] === '', JSON.stringify(badge));
     await page.click('#tool-rocket'); await sleep(500);
-    const dialog = !!(await page.$('#ad-watch'));
+    let dialog = !!(await page.$('#ad-watch'));
+    if (!airplane && !dialog && await page.evaluate(() => window.SquishGame.campaign.armedTool === 'rocket')) {
+      // Rakete wird zuerst scharf geschaltet, der Clip kommt beim Tipp aufs Ziel
+      const p0 = await page.evaluate(() => { const b = window.SquishGame.state.board; for (let r = 4; r >= 0; r--) for (let q = 0; q < 5; q++) if (b[r][q] && !b[r][q].bound) return window.SquishGame.cellPoint(r, q); });
+      await page.mouse.click(p0.x, p0.y); await sleep(600); dialog = !!(await page.$('#ad-watch'));
+    }
     if (airplane) check('Flugmodus: kein Werbe-Dialog', !dialog);
     else { check('Funkloch: Werbe-Dialog angeboten', dialog); if (dialog) await page.click('#ad-watch'); }
     const re = airplane ? /Keine Verbindung – Hilfe gerade nicht verfügbar/ : /Gerade kein Clip da – Hilfe kurz nicht verfügbar/;
@@ -83,8 +88,9 @@ try {
     const noted = await page.waitForFunction(r => { const n = document.getElementById('note'); return n && !n.hidden && new RegExp(r).test(n.textContent); }, { timeout: 12000, polling: 100 }, re.source).then(() => true, () => false);
     check(`${tag}: kurzer Hinweis „Hilfe nicht verfügbar“`, noted, (Date.now() - t2) + ' ms');
     await sleep(600);
-    const c = await page.evaluate(() => ({ used: window.SquishGame.campaign.toolsUsed.length, armed: window.SquishGame.campaign.armedTool || document.getElementById('tool-rocket')?.classList.contains('is-armed') || null, ad: !!document.getElementById('ad-watch'), status: window.SquishGame.campaign.status, busy: window.SquishGame.state.busy }));
-    check(`${tag}: keine Hilfe ohne Clip, Spiel läuft weiter`, !c.used && !c.armed && !c.ad && c.status === 'playing' && !c.busy, JSON.stringify(c));
+    const c = await page.evaluate(() => ({ used: window.SquishGame.campaign.toolsUsed.length, armed: window.SquishGame.campaign.armedTool || null, ad: !!document.getElementById('ad-watch'), status: window.SquishGame.campaign.status, busy: window.SquishGame.state.busy }));
+    // Funkloch: Rakete bleibt scharf wie nach einem Abbruch – jeder weitere Tipp fragt erneut einen Clip an.
+    check(`${tag}: keine Hilfe ohne Clip, Spiel läuft weiter`, !c.used && (!airplane || !c.armed) && !c.ad && c.status === 'playing' && !c.busy, JSON.stringify(c));
     const mv = await page.evaluate(() => window.SquishGame.state.moves);
     for (const [d, l] of [['left', 0], ['up', 1]]) { await page.evaluate((d, l) => window.SquishGame.move(d, l), d, l); await sleep(400); await page.waitForFunction(() => !window.SquishGame.state.busy, { timeout: 15000 }).catch(() => {}); }
     check(`${tag}: Züge laufen`, await page.evaluate(m => window.SquishGame.state.moves > m || window.SquishGame.campaign.status !== 'playing', mv));
