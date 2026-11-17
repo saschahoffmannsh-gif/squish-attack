@@ -1,12 +1,12 @@
 import test, { beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { setLang } from '../game/i18n.mjs?v=launch-29';
+import { setLang } from '../game/i18n.mjs?v=launch-30';
 beforeEach(() => setLang('de', { persist: false }));
 import {
   createLevelRun, applyLevelMove, starsFor, replaySolution, goalProgress, queueOf, movesLeft,
   validateLevel, encodeMove, decodeMove, recordResult, mergeProgress, emptyProgress, isUnlocked,
   nextLevel, totalStars, loadProgress, saveProgress, goalText, starThresholds, starsOfRun, addExtraMoves,
-  markToolUsed, moveLimit, lockReason, chapterOf, starGate, CHAPTER_SIZE, STARS_PER_CHAPTER_GATE,
+  markToolUsed, moveLimit, lockReason, chapterOf, starGate, CHAPTER_SIZE, STARS_PER_CHAPTER_GATE, CHAPTER_QUOTAS_28,
   toolStarCap, tileAt, migrateRules28Once,
   resetChangedStarsOnce, STARS_RESET, STARS_RESET_KEY,
   resetCurveStarsOnce, CURVE_STARS_RESET, CURVE_STARS_RESET_KEY, CURVE_STARS_RESET_IDS, PROGRESS_EPOCH,
@@ -185,11 +185,12 @@ test('Fortschritt: bestes Ergebnis bleibt, Zusammenführen, Speichern', () => {
 
 const withStars = list => list.reduce((p, stars, i) => (stars ? recordResult(p, i + 1, { stars, moves: 5, now: 1 }) : p), emptyProgress());
 
-test('Kapitel (launch-28): 10 Level, steigende Schranken 21/22/…/25★ je Kapitel', () => {
+test('Kapitel (launch-30): 10 Level, Schranke 24★ je Kapitel (kumuliert 24/48/…/216)', () => {
   assert.equal(CHAPTER_SIZE, 10); assert.equal(STARS_PER_CHAPTER_GATE, 18);   // historisch (bis launch-27)
   assert.deepEqual([1, 10, 11, 20, 21, 25, 100].map(chapterOf), [1, 1, 2, 2, 3, 3, 10]);
-  assert.deepEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(starGate), [0, 21, 43, 65, 88, 111, 135, 159, 184, 209]);
-  for (let k = 3; k <= 10; k++) assert.ok(starGate(k) / (k - 1) > starGate(k - 1) / Math.max(1, k - 2) - 1e-9, `Kapitel ${k}: Schnitt steigt`);
+  assert.deepEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(starGate), [0, 24, 48, 72, 96, 120, 144, 168, 192, 216]);
+  assert.deepEqual([...CHAPTER_QUOTAS_28], [21, 22, 22, 23, 23, 24, 24, 25, 25]);   // historisch
+  for (let k = 3; k <= 10; k++) assert.ok(starGate(k) / (k - 1) > starGate(k - 1) / Math.max(1, k - 2) - 1e-9, `Kapitel ${k}: Schnitt fällt nie`);
   for (let k = 2; k <= 10; k++) assert.ok(starGate(k) > 2 * (k - 1) * CHAPTER_SIZE, `Kapitel ${k}: überall 2★ reicht nicht`);
 });
 
@@ -201,16 +202,16 @@ test('Freischalten: der Reihe nach', () => {
   assert.equal(nextLevel(emptyProgress(), 25), 1);
 });
 
-test('Freischalten (launch-28): Sterne-Schranke am Kapitelanfang; offene Kapitel bleiben offen', () => {
-  const low = withStars(Array(10).fill(2));                 // 20★ < 21★: überall 2★ reicht nicht
-  assert.deepEqual(lockReason(low, 11), { reason: 'stars', need: 21, have: 20, chapter: 2 });
+test('Freischalten (launch-30): Sterne-Schranke am Kapitelanfang; offene Kapitel bleiben offen', () => {
+  const low = withStars([3, 3, 3, 2, 2, 2, 2, 2, 2, 2]);   // 23★ < 24★: überall 2★ reicht nicht
+  assert.deepEqual(lockReason(low, 11), { reason: 'stars', need: 24, have: 23, chapter: 2 });
   assert.equal(nextLevel(low, 25), 10);                     // alles geschafft, Kapitel 2 noch zu
-  const ok = withStars([3, 2, 2, 2, 2, 2, 2, 2, 2, 2]);     // 21★: mindestens ein Level ohne Hilfe
+  const ok = withStars([3, 3, 3, 3, 2, 2, 2, 2, 2, 2]);     // 24★: mindestens vier Level ohne Hilfe
   assert.ok(isUnlocked(ok, 11));
   assert.ok(!isUnlocked(ok, 12));                           // innerhalb des Kapitels weiter der Reihe nach
-  const ch3 = withStars([3, 3, 3, ...Array(17).fill(2)]);   // 43★
+  const ch3 = withStars([...Array(8).fill(3), ...Array(12).fill(2)]);   // 48★
   assert.ok(isUnlocked(ch3, 21));
-  const ch3low = withStars([...Array(10).fill(3), ...Array(10).fill(1)]); // 40★ < 43★
+  const ch3low = withStars([...Array(10).fill(3), ...Array(10).fill(1)]); // 40★ < 48★
   assert.equal(lockReason(ch3low, 21).reason, 'stars');
   assert.ok(isUnlocked(ch3low, 20));                        // gesperrt wird nur der Kapitelanfang
   // schon gespielt bzw. vor launch-28 offen (openChapters): keine neue Sperre
@@ -578,15 +579,17 @@ test('launch-15: Sterne-Schwellen für Werkzeug-Level', () => {
   assert.deepEqual(toolStars(5, 5, 'hint'), { three: 5, two: 5 });
 });
 
-test('launch-28: 100 Level = 10 Kapitel; Schranke 209★ bis Level 91 – überall 2★ reicht nicht mehr', () => {
+test('launch-30: 100 Level = 10 Kapitel; Schranke 216★ bis Level 91 – überall 2★ reicht nicht mehr', () => {
   assert.equal(chapterOf(100), 10);
   assert.equal(chapterOf(91), 10);
   assert.equal(chapterOf(90), 9);
-  assert.equal(starGate(10), 209);
+  assert.equal(starGate(10), 216);
   const p = emptyProgress();
   for (let n = 1; n <= 90; n++) p.levels[String(n)] = { stars: 2, moves: 5, at: 0 };
-  assert.deepEqual(lockReason(p, 91), { reason: 'stars', need: 209, have: 180, chapter: 10 });
-  for (let n = 1; n <= 29; n++) p.levels[String(n)].stars = 3;                          // 209★
+  assert.deepEqual(lockReason(p, 91), { reason: 'stars', need: 216, have: 180, chapter: 10 });
+  for (let n = 1; n <= 35; n++) p.levels[String(n)].stars = 3;                          // 215★
+  assert.equal(lockReason(p, 91).need, 216);
+  p.levels['36'].stars = 3;                                                              // 216★
   assert.equal(lockReason(p, 91), null);
   assert.equal(nextLevel(p, 100), 91);
 });
@@ -631,7 +634,6 @@ test('launch-27: nur Sterne der umgearbeiteten Level einmalig löschen, Rest und
 
 test('launch-28: Regel-Umstellung – Sterne neu bewertet (nie gelöscht, mind. 1★), offene Kapitel bleiben offen, alter Vorrat weg', () => {
   const st = new Map(); st.getItem = k => (st.has(k) ? st.get(k) : null); st.setItem = (k, v) => st.set(k, v);
-  assert.equal(PROGRESS_EPOCH, 'launch-28');
   const p0 = emptyProgress();
   for (let n = 1; n <= 30; n++) p0.levels[String(n)] = { stars: 2, moves: 9, at: 0 };   // 60★: alt Kapitel 2–4 offen (18/36/54)
   p0.levels['12'] = { stars: 3, moves: 6, at: 0 };                                      // neu: 3★ erst bei ≤ 5 Zügen
@@ -646,7 +648,7 @@ test('launch-28: Regel-Umstellung – Sterne neu bewertet (nie gelöscht, mind. 
   assert.equal(m.progress.levels['20'].stars, 1);                                       // 9 Züge > 2★-Schwelle 5 → 1★, nie 0
   assert.ok(Object.values(m.progress.levels).every(l => l.stars >= 1));
   assert.deepEqual([...m.progress.openChapters].sort((x, y) => x - y), [2, 3, 4]);
-  assert.equal(lockReason(m.progress, 31), null);                                       // trotz neuer Schranke (65★) offen
+  assert.equal(lockReason(m.progress, 31), null);                                       // trotz neuer Schranke offen
   assert.deepEqual({ ...goldStock(m.inventory) }, { extraMoves: 0, rocket: 0 });
   assert.equal(m.inventory.hint, 0); assert.equal(m.inventory.wand, 0);
   assert.deepEqual(m.inventory.gifts, ['level-3', 'gold-3']);
@@ -756,7 +758,6 @@ test('launch-24: Merker launch-22 löst noch einmal den Reset aus; Sprache, Eins
   assert.equal(loadInventory(st).wand, 0);
   assert.deepEqual(loadInventory(st).gifts, []);
   assert.equal(st.getItem(TUTORIAL_RESET_KEY), TUTORIAL_RESET);
-  assert.equal(TUTORIAL_RESET, 'launch-24');
   assert.equal(st.getItem('squish-lang-v1'), 'en');
   assert.equal(st.getItem('shift3-play-v1'), '{"score":900,"best":1200,"board":1}');
   assert.equal(st.getItem('squish-sound-v1'), 'x');
@@ -765,4 +766,36 @@ test('launch-24: Merker launch-22 löst noch einmal den Reset aus; Sprache, Eins
   assert.equal(modesUnlocked(r.progress), false);
   const again = resetAdventureForTutorialsOnce(loadP14(st), loadInventory(st), st);
   assert.equal(again.reset, false);
+});
+
+test('launch-30: Neustart für alle – Merker launch-24/29-Stand löst den Reset aus, Start bei Level 1 mit Tutorials', () => {
+  assert.equal(TUTORIAL_RESET, 'launch-30');
+  assert.equal(PROGRESS_EPOCH, 'launch-30');
+  const st = memStore();
+  const won = n => ({ version: 1, updatedAt: 5, openChapters: [2, 3], levels: Object.fromEntries(Array.from({ length: n }, (_, i) => [String(i + 1), { stars: 3, moves: 7, at: 1 }])) });
+  st.setItem(PK22, JSON.stringify(won(40)));
+  st.setItem(TUTORIAL_RESET_KEY, 'launch-24');
+  st.setItem('squish-explain-seen-v1', '["merge","merge5","street","tools","gifts","gates","tool-cost","gold-used"]');
+  st.setItem('squish-lang-v1', 'en');
+  st.setItem('shift3-play-v1', '{"score":900,"best":1200,"board":1}');
+  st.setItem('squish-sound-v1', 'x');
+  st.setItem(SYNC_STATE_KEY, '{"key":"old"}');
+  st.setItem(MODES_UNLOCK_SEEN_KEY, '1');
+  saveInventory({ ...emptyInventory(), rocket: 1, gifts: ['gold-3', 'gold-10'], pending: [{ id: 'gold-20', type: 'rocket' }], at: 99 }, st);
+  const r = resetAdventureForTutorialsOnce(loadP14(st), loadInventory(st), st);
+  assert.equal(r.reset, true);
+  assert.deepEqual(loadP14(st).levels, {});
+  assert.equal(loadP14(st).openChapters, undefined, 'Kapitel-Freischaltungen weg');
+  assert.equal(nextLevel(loadP14(st), 100), 1, 'Start bei Level 1');
+  assert.deepEqual(lockReason(loadP14(st), 2), { reason: 'previous' });
+  assert.deepEqual(loadInventory(st).gifts, []); assert.deepEqual(loadInventory(st).pending, []);
+  assert.equal(st.getItem('squish-explain-seen-v1'), null, 'Tutorial-Fenster kommen wieder');
+  assert.equal(st.getItem(SYNC_STATE_KEY), null);
+  assert.equal(st.getItem(MODES_UNLOCK_SEEN_KEY), null);
+  assert.equal(modesUnlocked(r.progress), false);
+  assert.equal(st.getItem('squish-lang-v1'), 'en');
+  assert.equal(st.getItem('shift3-play-v1'), '{"score":900,"best":1200,"board":1}');
+  assert.equal(st.getItem('squish-sound-v1'), 'x');
+  assert.equal(st.getItem(TUTORIAL_RESET_KEY), 'launch-30');
+  assert.equal(resetAdventureForTutorialsOnce(loadP14(st), loadInventory(st), st).reset, false, 'nur einmal');
 });

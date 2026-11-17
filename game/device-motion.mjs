@@ -1,4 +1,4 @@
-import { t } from './i18n.mjs?v=launch-29';
+import { t } from './i18n.mjs?v=launch-30';
 const vector = (value, axes) => value && axes.some(axis => Number.isFinite(value[axis]))
   ? axes.map(axis => Number.isFinite(value[axis]) ? value[axis] : 0) : null;
 

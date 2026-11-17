@@ -19,7 +19,7 @@ const T = 'c'.repeat(64);
 function seedProgress() {
   if (sessionStorage.getItem('seededP')) return; sessionStorage.setItem('seededP', '1');
   const levels = {}; for (let i = 1; i <= 6; i++) levels[i] = { stars: 3, moves: 3, at: 1 };
-  const s = { 'squish-campaign-v1': JSON.stringify({ version: 1, levels, updatedAt: 1 }), 'squish-campaign-tutorial-reset': 'launch-24', 'squish-campaign-curve-stars-reset': 'launch-27', 'squish-campaign-progress-reset': 'launch-14', 'squish-campaign-stars-reset': 'launch-18', 'squish-campaign-tools-reset': 'launch-13', 'squish-lang-v1': 'de' };
+  const s = { 'squish-campaign-v1': JSON.stringify({ version: 1, levels, updatedAt: 1 }), 'squish-campaign-tutorial-reset': 'launch-30', 'squish-campaign-curve-stars-reset': 'launch-27', 'squish-campaign-progress-reset': 'launch-14', 'squish-campaign-stars-reset': 'launch-18', 'squish-campaign-tools-reset': 'launch-13', 'squish-lang-v1': 'de' };
   for (const [k, v] of Object.entries(s)) localStorage.setItem(k, v);
 }
 function mockCapacitor(token) {

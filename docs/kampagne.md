@@ -671,3 +671,15 @@ Aktueller Stand im Spiel (Schalter in `campaign.mjs`):
   erscheint einmal (`squish-explain-seen-v1`) und ist unter Spielregeln nachlesbar.
 - **Tutorial Level 6** (bis es einmal gelöst ist): erst ein Hilfsmittel einsetzen (gratis, ohne Clip),
   Züge sind bis dahin gesperrt; das Ergebnis erklärt den 2★-Deckel. Jede Raketen-Wahl lässt das Level lösbar.
+
+## Kapitel-Hürden 24★ und Neustart (launch-30)
+
+- **Kapitel-Hürden** 24★ je Kapitel (80 %), kumuliert 24/48/72/96/120/144/168/192/216★ (`CHAPTER_QUOTAS`;
+  alt `CHAPTER_QUOTAS_28` = 21/43/65/88/111/135/159/184/209).
+- **Einmaliger Reset für alle** (`resetAdventureForTutorialsOnce`, Merker `squish-campaign-tutorial-reset = launch-30`):
+  wie launch-22/24 – Abenteuer-Fortschritt, Sterne, Freischaltungen (auch `openChapters`), Vorrat, Gold-Geschenke,
+  Sync-Merker und Modus-Freischalt-Hinweis werden geleert, zusätzlich die gesehenen Erklär-Fenster
+  (`squish-explain-seen-v1`), damit die Tutorials wieder kommen. Endlos-Spielstand, Rekord, Sprache, Ton,
+  Werbefrei und Statistik bleiben. Endlos und 2 Spieler sind wie nach launch-24 erst nach Level 5 wieder frei.
+- **Epoche `PROGRESS_EPOCH = launch-30`:** die Cloud ersetzt Level und Vorrat älterer Epochen, damit der alte Stand
+  nicht per Max-Merge zurückkommt. Backend-Zeilen werden nicht gelöscht; ältere Epochen werden nur ignoriert.
