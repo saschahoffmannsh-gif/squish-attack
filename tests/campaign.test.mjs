@@ -779,6 +779,7 @@ test('launch-30: Neustart für alle – Merker launch-24/29-Stand löst den Rese
   st.setItem('squish-lang-v1', 'en');
   st.setItem('shift3-play-v1', '{"score":900,"best":1200,"board":1}');
   st.setItem('squish-sound-v1', 'x');
+  st.setItem('squish-adfree-v1', '1');   // Werbefrei-Kauf (App)
   st.setItem(SYNC_STATE_KEY, '{"key":"old"}');
   st.setItem(MODES_UNLOCK_SEEN_KEY, '1');
   saveInventory({ ...emptyInventory(), rocket: 1, gifts: ['gold-3', 'gold-10'], pending: [{ id: 'gold-20', type: 'rocket' }], at: 99 }, st);
@@ -796,6 +797,7 @@ test('launch-30: Neustart für alle – Merker launch-24/29-Stand löst den Rese
   assert.equal(st.getItem('squish-lang-v1'), 'en');
   assert.equal(st.getItem('shift3-play-v1'), '{"score":900,"best":1200,"board":1}');
   assert.equal(st.getItem('squish-sound-v1'), 'x');
+  assert.equal(st.getItem('squish-adfree-v1'), '1', 'Werbefrei bleibt');
   assert.equal(st.getItem(TUTORIAL_RESET_KEY), 'launch-30');
   assert.equal(resetAdventureForTutorialsOnce(loadP14(st), loadInventory(st), st).reset, false, 'nur einmal');
 });
