@@ -7,7 +7,7 @@ import {
   validateLevel, encodeMove, decodeMove, recordResult, mergeProgress, emptyProgress, isUnlocked,
   nextLevel, totalStars, loadProgress, saveProgress, goalText, starThresholds, starsOfRun, addExtraMoves,
   markToolUsed, moveLimit, lockReason, chapterOf, starGate, CHAPTER_SIZE, STARS_PER_CHAPTER_GATE, CHAPTER_QUOTAS_28,
-  toolStarCap, tileAt, migrateRules28Once,
+  starNeeds, starMovesLeft, STAR_PLUS3_BAND, tileAt, migrateRules28Once,
   resetChangedStarsOnce, STARS_RESET, STARS_RESET_KEY,
   resetCurveStarsOnce, CURVE_STARS_RESET, CURVE_STARS_RESET_KEY, CURVE_STARS_RESET_IDS, PROGRESS_EPOCH,
 } from '../game/campaign.mjs';
@@ -67,24 +67,14 @@ test('Sterne: 3★ = Optimum + 1, 2★ = Mitte, 1★ = im Limit', () => {
   assert.equal(starsFor(lv, 3, false), 0);
 });
 
-test('launch-28: ohne Hilfe bis 3★, 1 Hilfe höchstens 2★, mehr als 1 Hilfe 1★ – gelöst nie 0★; Gold ist sternneutral', () => {
-  const lv = base({ moves: 6, stars: starThresholds(3, 6) });
-  assert.equal(toolStarCap(0), 3);
-  assert.equal(toolStarCap(1), 2);
-  assert.equal(toolStarCap(2), 1);
-  assert.equal(toolStarCap(3), 1);
-  assert.equal(toolStarCap(9), 1);
-  assert.equal(starsFor(lv, 3, true, { toolsUsed: 0 }), 3);
-  assert.equal(starsFor(lv, 3, true, { toolsUsed: 1 }), 2);
-  assert.equal(starsFor(lv, 5, true, { toolsUsed: 1 }), 2);
-  assert.equal(starsFor(lv, 6, true, { toolsUsed: 1 }), 1);
-  assert.equal(starsFor(lv, 6, true, { toolsUsed: 2 }), 1);
-  assert.equal(starsFor(lv, 3, true, { toolsUsed: 2 }), 1);
-  assert.equal(starsFor(lv, 3, true, { toolsUsed: 3 }), 1);
-  assert.equal(starsFor(lv, 3, true, { toolsUsed: 7 }), 1);
-  assert.equal(starsFor(lv, 3, false, { toolsUsed: 0 }), 0);
-  // +3 verschiebt die Zug-Schwellen mit: 1 Hilfe kann noch 2★ geben
-  assert.equal(starsFor(lv, 8, true, { toolsUsed: 1, extraMoves: 3 }), 2);
+test('launch-32: Sterne aus übrigen Zügen – Hilfen kosten keine Sterne, gelöst nie 0★', () => {
+  const lv = base({ moves: 6, stars: starThresholds(3, 6) });     // 3★ ≤ 4 Züge, 2★ ≤ 5
+  assert.deepEqual(starNeeds(lv), { three: 2, two: 1 });           // übrig: 3★ ab 2, 2★ ab 1
+  assert.deepEqual([3, 4, 5, 6].map(m => starsFor(lv, m)), [3, 3, 2, 1]);
+  assert.deepEqual([7, 9].map(m => starsFor(lv, m)), [1, 1]);     // über dem Limit (nur mit +3) → 1★
+  assert.equal(starsFor(lv, 3, false), 0);
+  // alte Aufrufe mit Hilfen-Zahl ändern nichts mehr
+  assert.equal(starsFor(lv, 3, true, { toolsUsed: 5, extraMoves: 3 }), 3);
   const gold = createLevelRun(base());
   markToolUsed(gold, 'rocket', { gift: true });
   applyLevelMove(gold, 'right', 0);
@@ -92,10 +82,18 @@ test('launch-28: ohne Hilfe bis 3★, 1 Hilfe höchstens 2★, mehr als 1 Hilfe 
   assert.deepEqual(gold.giftsUsed, ['rocket']); assert.deepEqual(gold.toolsUsed, []);
   assert.equal(starsOfRun(gold), 3);
   const run = createLevelRun(base());
-  markToolUsed(run, 'rocket');
+  markToolUsed(run, 'rocket'); markToolUsed(run, 'rocket');
   applyLevelMove(run, 'right', 0);
   assert.equal(run.status, 'won');
-  assert.equal(starsOfRun(run), 2);
+  assert.equal(starsOfRun(run), 3);                                 // 2 Hilfen (Clip/Werbefrei): weiter 3★
+  assert.equal(starMovesLeft(run), 2);
+});
+
+test('launch-32: Spitzen-Level ohne 2★-Stufe – 3★ im Limit, 2★ mit höchstens einem +3, sonst 1★', () => {
+  const lv = base({ moves: 5, stars: { three: 5, two: 5 } });
+  assert.equal(STAR_PLUS3_BAND, 3);
+  assert.deepEqual(starNeeds(lv), { three: 0, two: -3 });
+  assert.deepEqual([5, 6, 8, 9, 11].map(m => starsFor(lv, m)), [3, 2, 2, 1, 1]);
 });
 
 test('alt (launch-26): 0★-Eintrag wird gespeichert und schaltet das nächste Level (und Modi nach L5) frei', () => {
@@ -112,7 +110,7 @@ test('alt (launch-26): 0★-Eintrag wird gespeichert und schaltet das nächste L
   assert.equal(p.levels['1'].stars, 2);
 });
 
-test('+3 Züge (launch-28): beliebig oft, Folge läuft weiter, rettet eine Niederlage, 1 Hilfe = max. 2★', () => {
+test('+3 Züge (launch-28/32): beliebig oft, Folge läuft weiter, rettet eine Niederlage, Extra-Züge zählen nicht als übrig', () => {
   // Ziel braucht 2 Züge (zwei 1er von links in Reihe 0), Limit aber nur 1.
   const lv = base({ board: [[1, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E]],
     sequence: [1, 1, 2, 2], moves: 1, stars: { three: 1, two: 1 } });
@@ -125,7 +123,8 @@ test('+3 Züge (launch-28): beliebig oft, Folge läuft weiter, rettet eine Niede
   assert.deepEqual(queueOf(run), [1, 2, 2]);
   applyLevelMove(run, 'right', 0);
   assert.equal(run.status, 'won');
-  assert.equal(starsOfRun(run), 2);                    // Schwellen + 3 Züge, 1 Hilfe → 2★
+  assert.equal(starsOfRun(run), 2);                    // Spitze (three = two = Limit): 1 Zug über dem Limit → 2★
+  assert.equal(starMovesLeft(run), 0);                 // die 3 geschenkten Züge zählen nicht als übrig
   assert.equal(addExtraMoves(run, 3), 0);               // nach dem Sieg nicht mehr
   const run2 = createLevelRun({ ...lv, sequence: [1, 2] });
   assert.equal(addExtraMoves(run2, 3), 3);              // kein Reserve-Limit mehr: die Folge wiederholt sich
@@ -133,7 +132,7 @@ test('+3 Züge (launch-28): beliebig oft, Folge läuft weiter, rettet eine Niede
   assert.equal(moveLimit(run2), 7);
   assert.deepEqual(Array.from({ length: 5 }, (_, i) => tileAt(run2.level, i)), [1, 2, 1, 2, 1]);
   assert.equal(run2.toolsUsed.length, 2);
-  assert.equal(starsFor(run2.level, 2, true, { toolsUsed: 2, extraMoves: 6 }), 1);
+  assert.equal(starsFor(run2.level, 5, true), 1);       // mehr als ein +3 über dem Limit → 1★
 });
 
 test('Ziele: make, score, clear, street, combo', () => {
@@ -313,7 +312,7 @@ test('launch-28: Hilfsmittel unbegrenzt – keine Ladungen mehr, nur +3 Züge un
   const run = createLevelRun(base({ moves: 3 }));
   for (let i = 0; i < 4; i++) { run.board[0][0] ||= { value: 1 }; assert.ok(useRocket(run, 0, 0)); }
   assert.equal(run.toolsUsed.length, 4);                          // beliebig oft
-  assert.equal(starsFor(run.level, 1, true, { toolsUsed: run.toolsUsed.length }), 1);
+  assert.equal(starsFor(run.level, 1, true), 3);                  // launch-32: Hilfen kosten keine Sterne
 });
 
 test('Gold-Geschenke als offene Pakete: einreihen, einzeln einsammeln, gespeichert, nie doppelt', () => {
@@ -443,10 +442,6 @@ test('launch-13: Werkzeug-Protokoll – Versuche, Werbung, Einsatz mit Kontext, 
   st.setItem(TOOL_LOG_KEY, '{kaputt'); assert.equal(loadLog(st).events.length, 0);
 });
 
-test('launch-13/26: ein Hilfsmittel deckelt auf 2 Sterne, keines lässt 3★ zu', () => {
-  assert.equal(starsFor({ stars: { three: 3, two: 5 } }, 3, true, { toolsUsed: 1 }), 2);
-  assert.equal(starsFor({ stars: { three: 3, two: 5 } }, 3, true, { toolsUsed: 0 }), 3);
-});
 
 test('launch-14: Geschenk-Gutschriften im Protokoll mit Quelle „gift“, getrennt von Werbung', () => {
   const log = emptyLog();
@@ -554,17 +549,17 @@ test('launch-15: „höchstens N Steine“ – Stand = Steine auf dem Brett; Rak
   assert.ok(useRocket(run, 0, 4));
   assert.equal(run.status, 'won');
   assert.equal(run.moves, 0);
-  assert.equal(starsOfRun(run), 2);
+  assert.equal(starsOfRun(run), 3);   // launch-32: Rakete kostet keine Sterne
 });
 
-test('launch-16: Werkzeug-Spitzen – ohne Werkzeug 3★ möglich, mit Hilfsmittel höchstens 2★', () => {
+test('launch-16/32: Werkzeug-Spitzen – 3★ möglich, auch mit Hilfsmittel', () => {
   for (const tool of TOOL_KEYS) {
     const lv = base({ tool, sequence: [1, 2, 3, 4, 5, 6], stars: { three: 1, two: 2 } });
     validateLevel(lv);
     const r = replaySolution(lv, encodeMove('right', 0));
     assert.ok(r.ok);
     assert.equal(r.stars, 3, tool);
-    assert.equal(starsFor(lv, 1, true, { toolsUsed: 1 }), 2, tool);
+    assert.equal(starsFor(lv, 1, true, { toolsUsed: 1 }), 3, tool);
   }
   assert.throws(() => validateLevel(base({ tool: 'hammer' })));
   // +3-Level: 2★-Schwelle darf in den Extra-Zügen liegen, braucht aber Reserve-Steine

@@ -6,7 +6,7 @@ const mem = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.ge
 
 test('launch-28: Zwischenwerbung alle 10 gewonnenen Abenteuer-Level', () => {
   assert.equal(AD_PACING.interstitialEvery, 10);
-  assert.equal(AD_PACING.endlessOfferMs, 10 * 60 * 1000);
+  assert.equal(AD_PACING.endlessOfferMs, 15 * 60 * 1000);
   const s = mem();
   const p = createAdPacing({ storage: s });
   for (let i = 1; i <= 9; i++) {
@@ -21,21 +21,21 @@ test('launch-28: Zwischenwerbung alle 10 gewonnenen Abenteuer-Level', () => {
   assert.equal(p.levelWon(), true);
 });
 
-test('Endlos-Angebot nach 10 Minuten aktiver Spielzeit, Pausen zählen nicht', () => {
+test('Endlos-Angebot nach 15 Minuten aktiver Spielzeit (launch-32), Pausen zählen nicht', () => {
   let now = 1_000_000;
   const p = createAdPacing({ now: () => now, storage: mem() });
   const step = (ms) => { now += ms; return p.endlessMove(); };
   assert.equal(p.endlessMove(), false);
-  // Lange Sprünge zählen nur bis maxGapMs (30 s). 20 × 30 s = 10 min.
-  for (let i = 0; i < 19; i++) assert.equal(step(30_000), false, `step ${i}`);
+  // Lange Sprünge zählen nur bis maxGapMs (30 s). 30 × 30 s = 15 min.
+  for (let i = 0; i < 29; i++) assert.equal(step(30_000), false, `step ${i}`);
   assert.equal(step(30_000), true);
   p.endlessOffered();
   for (let i = 0; i < 5; i++) assert.equal(step(30_000), false); // 2,5 min auf der Uhr
   p.endlessPause();
   now += 20 * 60 * 1000; // Pause darf nicht zählen
   assert.equal(p.endlessMove(), false);
-  // noch 7,5 min bis zur nächsten Schwelle (15 × 30 s)
-  for (let i = 0; i < 14; i++) assert.equal(step(30_000), false, `rest ${i}`);
+  // noch 12,5 min bis zur nächsten Schwelle (25 × 30 s)
+  for (let i = 0; i < 24; i++) assert.equal(step(30_000), false, `rest ${i}`);
   assert.equal(step(30_000), true);
 });
 

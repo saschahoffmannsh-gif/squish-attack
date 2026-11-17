@@ -226,26 +226,23 @@ const campaignUI=createCampaignUI({
   reduceMotion,
 });
 onLangChange(()=>{if(labMode&&camp&&campaignMode)campaignUI.renderHud(camp.run,camp.n,labHudLabel());});
-// launch-28: Hilfsmittel (+3 Züge, Rakete) beliebig oft. Gold-Geschenke werden zuerst verbraucht (ohne Werbung,
-// sternneutral); sonst kostet jeder Einsatz Sterne (toolStarCap) und – ohne Werbefrei – vorher einen Belohnungsclip.
+// launch-28: Hilfsmittel (+3 Züge, Rakete) beliebig oft. Gold-Geschenke werden zuerst verbraucht (ohne Werbung).
+// launch-32: keine Hilfe kostet Sterne (Sterne = übrige Züge); ohne Werbefrei kommt vor jedem Einsatz ein Belohnungsclip.
 const goldNow=()=>Camp.goldStock(inventory);
-// launch-29: Reihenfolge der Bild-Lektionen: erst „eine Hilfe kostet einen Stern“, dann „Gold kostet keinen“.
+// launch-29/32: Reihenfolge der Bild-Lektionen: erst „Hilfe ist okay, Sterne kommen von übrigen Zügen“ (L6), dann „Gold = Hilfe ohne Werbung“.
 // Gold bleibt im Vorrat, bis die Stern-Lektion gesehen ist (Tutorial L6 oder erste normale Hilfe), und im Tutorial-Level selbst.
 // Bestand: wer L6 schon gelöst oder die launch-28-Erklärung gesehen hat, gilt als belehrt.
 const costLessonDone=()=>explainer.seen('tool-cost')||explainer.seen('tools')||!!campaignProgress?.levels?.['6'];
 const goldBlocked=()=>!!(campaignMode&&(camp?.tutorialRun||!costLessonDone()));
 const hasGold=type=>!goldBlocked()&&(inventory?.[type]|0)>0;
-function toolCapNote(run=camp?.run){
-  const n=run?.toolsUsed.length|0;if(!n)return '';
-  return t('note.toolCap',{n});
-}
-function announceToolCap(gold=false,type='rocket'){const msg=gold?t('note.goldUsed',{tool:Camp.toolName(type)}):toolCapNote();if(msg)showNote(msg,2800);}
+// launch-32: Hilfen kosten keine Sterne – nach einem Einsatz nur bei Gold ein kurzer Hinweis „ohne Werbung“.
+function announceToolCap(gold=false,type='rocket'){if(gold)showNote(t('note.goldUsed',{tool:Camp.toolName(type)}),2800);}
 /** Einsatz verbuchen: Gold aus dem Vorrat nehmen (falls Gold), protokollieren. ctx = Stand VOR dem Einsatz. */
 function commitTool(type,gold,ctx){
   if(gold){const g=Camp.spendGold(inventory,type);if(g){inventory=g;Camp.saveInventory(inventory);cloudSync();}}
   logTool('use',type,{...ctx,gold:!!gold});
 }
-/** launch-29: Bild-Lektionen. Nach der Tutorial-Hilfe: ein Stern fällt weg. Beim ersten Gold-Einsatz: kein Stern fällt. */
+/** launch-32: Bild-Lektionen. Nach der Tutorial-Hilfe: Sterne bleiben (übrige Züge zählen). Beim ersten Gold-Einsatz: gratis, ohne Werbung. */
 function toolLesson(type,{free=false,gold=false}={}){
   if(gold)return explainer.showOnceAs('gold-used','gifts',{used:type});
   if(free){explainer.mark('tool-cost');return explainer.show('tools',{used:type});}
@@ -503,10 +500,12 @@ async function finishLevel(){
   if(turn!==generation||!campaignMode){confetti.stop();return;}
   paused=true;releaseGesture();phoneMotion.reset();
   const count=levelList().length,nextLock=n<count&&!labMode?Camp.lockReason(campaignProgress,n+1):null;
-  campaignUI.showResult({n,won,stars,moves:r.moves,limit:Camp.moveLimit(r),lostReason:r.lostReason,toolLevel:r.level.tool||null,
+  campaignUI.showResult({n,won,stars,moves:r.moves,limit:Camp.moveLimit(r),base:r.level.moves,lostReason:r.lostReason,toolLevel:r.level.tool||null,
     canNext:won&&n<count&&!nextLock,nextLock,gifts:Camp.TOOL_GIFTS&&!labMode?inventory.pending.slice():gifts,extraAvailable:1,extraGold:inventory.extraMoves|0,extraAd:toolAdRequired()&&!hasGold('extraMoves'),toolsUsed:r.toolsUsed.length,giftsUsed:r.giftsUsed?.length|0,tutorialTool:won&&!!camp.tutorialDone,
     unlockModes:won&&!labMode&&n===Camp.MODES_UNLOCK_LEVEL&&Camp.modesUnlocked(campaignProgress)});
   renderCampaign();
+  // launch-32: Signal für die App-Hülle (z. B. ATT-Vorfrage erst nach dem ersten gelösten Level). Im Web ohne Zuhörer.
+  if(won&&!labMode){try{dispatchEvent(new CustomEvent('squish:level-won',{detail:{level:n,stars}}));}catch{}}
 }
 async function useExtraMoves(where='tool'){
   if(!campaignMode||!camp||busy)return;
@@ -525,7 +524,7 @@ async function useExtraMoves(where='tool'){
   queue=Camp.queueOf(r);renderQueue();
   if(campaignUI.resultOpen){campaignUI.hideResult();paused=false;}
   renderCampaign();haptics.pulse('merge');sound.play('record');
-  showNote(gold?t('note.goldUsed',{tool:Camp.toolName('extraMoves')}):t('note.extraUsed',{n:added})+' '+toolCapNote(),2800);
+  showNote(gold?t('note.goldUsed',{tool:Camp.toolName('extraMoves')}):t('note.extraUsed',{n:added}),2800);
   showTutorialFinger();
   await toolLesson('extraMoves',{free,gold});
 }

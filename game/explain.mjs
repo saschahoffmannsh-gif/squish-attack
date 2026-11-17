@@ -61,7 +61,8 @@ function mergeScene(kind, values, result, gain, { big = false } = {}) {
   return stage(kind, cells, burst(0, cy, big ? 'is-big' : ''), tiles, tile(from, fx, cy, 'sx-from is-mini'), arrow, tile(result, 0, cy, 'sx-pop is-res' + (big ? ' is-big' : '')),
     sparks(0, cy, 'sx-pop-spark', big ? 10 : 7, big ? 76 : 60), bubble(gain, big ? 64 : 56, cy - 34, 'sx-rise' + (big ? ' is-gold' : '')), word('SQUISH!', -34, -66, 'sx-word-pop'));
 }
-/** launch-29: Hilfe → Pfeil → 3 Sterne. Normal: der dritte Stern wird grau und fällt weg. Gold: alle Sterne bleiben und glänzen. */
+/** launch-32: Hilfe → Pfeil. Normal: alle 3 Sterne bleiben, darunter die übrigen Züge (daher kommen die Sterne).
+ *  Gold: Hilfe ohne Werbung – Clip-Fernseher wird durchgestrichen, Stempel „GRATIS“. */
 function helpScene(kind, used, gold) {
   const types = used ? [used] : ['rocket', 'extraMoves'], ys = types.length > 1 ? [-34, 34] : [0];
   const chips = types.map((ty, i) => { const c = el('span', 'sx-help' + (gold ? ' is-gold' : ''));
@@ -69,10 +70,16 @@ function helpScene(kind, used, gold) {
     if (gold) { const g = el('span', 'sx-help-gift'); g.innerHTML = GIFT_SVG; c.append(g); }
     return put(c, -108, ys[i], 'sx-help-tap'); });
   const arrow = put(el('span', 'sx-help-arrow'), -46, 0); arrow.innerHTML = ARROW;
-  const xs = [14, 66, 118];
-  return stage(kind + ' sx-help-' + (gold ? 'gold' : 'cost'), chips, arrow,
-    xs.map(x => star(x, 0, 'sx-slot')), xs.map((x, i) => star(x, 0, gold ? 'sx-keep' : i === 2 ? 'sx-lose' : 'sx-stay', { d: gold ? i * .1 + 's' : '0s' })),
-    gold ? sparks(66, 0, 'sx-keep-spark', 8, 70) : []);
+  if (gold) {
+    const tv = el('span', 'is-noad'); tv.append(el('b', 'sx-tv-ad', 'AD'), el('i', 'sx-noad-slash'));
+    return stage(kind + ' sx-help-gold', chips, arrow, put(tv, 60, -18, 'sx-tv'),
+      put(el('b', 'sx-stamp', t('tool.freeBadge')), 62, 50, 'sx-free-stamp'), sparks(60, -18, 'sx-keep-spark', 8, 74));
+  }
+  const xs = [14, 66, 118], sy = -18;
+  const mv = el('span'); mv.append(el('i', '', t('campaign.movesLabel')), el('b', '', '3'));
+  return stage(kind + ' sx-help-free', chips, arrow,
+    xs.map(x => star(x, sy, 'sx-slot')), xs.map((x, i) => star(x, sy, 'sx-keep', { d: i * .1 + 's' })),
+    put(mv, 66, 44, 'sx-moves'), sparks(66, sy, 'sx-keep-spark', 8, 70));
 }
 const lvChip = (n, x, y) => { const c = el('span', 'sx-lvchip'); c.append(el('b', '', String(n)), el('i', '', '★★★')); return put(c, x, y, 'sx-lvl'); };
 const SCENES = {

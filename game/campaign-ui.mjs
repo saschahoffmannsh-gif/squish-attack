@@ -3,7 +3,7 @@
 import {TOOL_ICONS,GIFT_SVG} from './tool-icons.mjs?v=launch-31';
 import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-31';
 import {fitLabelsSoon} from './fit-labels.mjs?v=launch-31';
-import {goalProgress,goalText,goalShort,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName,toolStarCap} from './campaign.mjs?v=launch-31';
+import {goalProgress,goalText,goalShort,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName,starsFor} from './campaign.mjs?v=launch-31';
 
 const $=id=>document.getElementById(id);
 export const TOOL_ARTICLE=new Proxy({},{get:(_,k)=>t('tool.'+k)});
@@ -56,20 +56,23 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
     }
     const left=Math.max(0,movesLeft(run));
     if(movesEl.textContent!==String(left))movesEl.textContent=String(left);
-    movesEl.closest('.campaign-moves').classList.toggle('is-low',left<=2);
+    const box=movesEl.closest('.campaign-moves');
+    box.classList.toggle('is-low',left<=2);
     movesEl.setAttribute('aria-label',t('campaign.movesAria',{n:left}));
+    // launch-32: Sterne-Leiste unter den Zügen – so viele Sterne gibt es, wenn der nächste Zug das Level löst.
+    // Sie hängt nur an den übrigen Zügen (Hilfen kosten keine Sterne, +3-Züge zählen nicht als übrig).
+    let meter=box.querySelector('.campaign-starmeter');
+    if(!meter){meter=document.createElement('i');meter.className='campaign-starmeter';for(let i=0;i<3;i++)meter.append(document.createElement('b'));box.append(meter);}
+    const can=run.status==='won'?null:starsFor(run.level,run.moves+1,true);
+    meter.hidden=can==null;
+    if(can!=null){meter.dataset.stars=String(can);[...meter.children].forEach((b,i)=>b.classList.toggle('is-on',i<can));meter.setAttribute('aria-label',t('campaign.starsLeftAria',{n:can}));meter.setAttribute('role','img');}
   }
-  // launch-28: Sterne-Hinweis über der Leiste. Hilfen deckeln (1 → max. 2★, mehr → 1★),
-  // Gold-Geschenke sind sternneutral.
+  // launch-32: Hilfen kosten keine Sterne mehr – kein Sterne-Deckel über der Leiste. Gold zeigt kurz „ohne Werbung“.
   function renderToolCap(toolsUsed=0,giftsUsed=0){
     if(!capEl)return;
-    const n=toolsUsed|0,g=giftsUsed|0;
-    if(n<=0&&g<=0){capEl.hidden=true;capEl.textContent='';delete capEl.dataset.cap;return;}
-    capEl.hidden=false;
-    if(n<=0){capEl.textContent=t('campaign.goldCap',{n:g});capEl.dataset.cap='gold';return;}
-    const max=toolStarCap(n);
-    capEl.textContent=n===1?t('campaign.toolCap',{n,max}):t('campaign.toolCapMany',{n,max});
-    capEl.dataset.cap=String(max);
+    const g=giftsUsed|0;
+    if(g<=0){capEl.hidden=true;capEl.textContent='';delete capEl.dataset.cap;return;}
+    capEl.hidden=false;capEl.textContent=t('campaign.goldCap',{n:g});capEl.dataset.cap='gold';
   }
   // gold = {extraMoves, rocket}: Gold-Geschenke (sternneutral, ohne Werbung). Sonst unbegrenzt;
   // needsAd: vor dem Einsatz kommt ein Belohnungsclip (kein Werbefrei).
@@ -98,18 +101,22 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
   rocketBtn.addEventListener('click',()=>onTool?.('rocket'));
 
   // ---------- Ergebnis ----------
-  function showResult({n,won,stars,moves,limit,lostReason,canNext,nextLock,gifts=[],extraAvailable=0,extraGold=0,extraAd=false,toolsUsed=0,giftsUsed=0,toolLevel=null,unlockModes=false,tutorialTool=false}){
+  function showResult({n,won,stars,moves,limit,base=null,lostReason,canNext,nextLock,gifts=[],extraAvailable=0,extraGold=0,extraAd=false,toolsUsed=0,giftsUsed=0,toolLevel=null,unlockModes=false,tutorialTool=false}){
     const extraOffer=extraAvailable>0;
     result.dataset.outcome=won?'won':'lost';
-    lastResult={n,won,stars,moves,limit,lostReason,canNext,nextLock,gifts,extraAvailable,extraGold,extraAd,toolsUsed,giftsUsed,toolLevel,unlockModes,tutorialTool};
+    lastResult={n,won,stars,moves,limit,base,lostReason,canNext,nextLock,gifts,extraAvailable,extraGold,extraAd,toolsUsed,giftsUsed,toolLevel,unlockModes,tutorialTool};
     rKicker.textContent=t('campaign.levelLabel',{n});
     rTitle.textContent=won?(stars===3?t('result.perfect'):t('result.clear')):lostReason==='board-full'?t('result.full'):t('result.noMoves');
     rStars.hidden=!won;rStars.setAttribute('aria-label',t('campaign.starsOf',{n:stars,max:3}));
     rStars.dataset.stars=String(won?stars:0);
-    rMoves.textContent=won?String(moves):`${moves}/${limit}`;
+    // launch-32: im Sieg die übrigen Züge (Grundlage der Sterne, ohne +3-Züge), sonst Züge/Limit
+    const left=Math.max(0,(base??limit)-moves);
+    rMoves.textContent=won?String(left):`${moves}/${limit}`;
+    {const lab=rMoves.closest('span')?.querySelector('[data-i18n]');if(lab){lab.dataset.i18n=won?'result.statsMoves':'campaign.movesLabel';lab.textContent=t(lab.dataset.i18n);}}
+    rMoves.setAttribute('aria-label',won?t('result.leftAria',{n:left}):`${moves}/${limit}`);
     rStarCount.textContent=won?`${stars} / 3`:'–';
     rMessage.textContent=won
-      ?(toolsUsed?(toolsUsed===1?t('result.toolCap',{n:toolsUsed,max:toolStarCap(toolsUsed)}):t('result.toolCapMany',{n:toolsUsed})):stars<3?t('result.betterStars'):t('result.bestSolved'))
+      ?(stars<3?t('result.betterStars'):t('result.bestSolved'))
       :(lostReason==='board-full'?t('result.boardFull'):t('result.goalOpen'))+(extraOffer&&lostReason==='moves'?t('result.extraOffer'):t('result.tryAgain'))
         +(toolLevel&&toolLevel!=='extraMoves'?t('result.hardTip',{tool:toolName(toolLevel)}):'');
     if(won&&tutorialTool)rMessage.textContent=t('result.tutorialTool').trim();   // launch-28: Tutorial-Level mit Hilfsmittel
