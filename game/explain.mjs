@@ -13,6 +13,7 @@ export const EXPLAIN_KEY = 'squish-explain-seen-v1';
 const PALETTE = { 1: ['#5cc2ff', '#1f7ff0', '#0d3f9e'], 2: ['#ff7a66', '#e8291f', '#a3101a'], 3: ['#9df25a', '#38b81c', '#1b7a10'],
   4: ['#ffb04a', '#ff7a0c', '#b8460a'], 5: ['#b57cff', '#8a3cf0', '#5418a8'], 6: ['#ffe36b', '#ffc21f', '#c98a06'],
   7: ['#ff8cc6', '#f0459e', '#a8186a'], 8: ['#6ff0e2', '#1fc9bd', '#0e8a84'] };
+const ARROW = '<svg viewBox="0 0 32 24" aria-hidden="true"><path d="M2 9h17V3l11 9-11 9v-6H2z" fill="#ffd25a" stroke="#0b0a16" stroke-width="2.2" stroke-linejoin="round"/></svg>';
 const CLOSE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>';
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 
@@ -55,13 +56,16 @@ function mergeScene(kind, values, result, gain, { big = false } = {}) {
   const pos = values.map((_, i) => [x0 + gap * i, cy]);
   const cells = pos.map(([x, y]) => put(el('span', 'sx-cell' + (n > 4 ? ' is-sm' : '')), x, y));
   const tiles = values.map((v, i) => tile(v, pos[i][0], pos[i][1], 'sx-slide' + (n > 4 ? ' is-sm' : ''), { mx: 0, my: cy }));
-  return stage(kind, cells, burst(0, cy, big ? 'is-big' : ''), tiles, tile(result, 0, cy, 'sx-pop is-res' + (big ? ' is-big' : '')),
+  // Nach dem Squish: kleiner Ausgangs-Squish + Pfeil links neben dem Ergebnis (z. B. 3 → 5), damit der Sprung sofort sichtbar ist.
+  const from = Math.max(...values), fx = big ? -96 : -88;
+  const arrow = put(el('span', 'sx-from-arrow'), fx + 40, cy); arrow.innerHTML = ARROW;
+  return stage(kind, cells, burst(0, cy, big ? 'is-big' : ''), tiles, tile(from, fx, cy, 'sx-from is-mini'), arrow, tile(result, 0, cy, 'sx-pop is-res' + (big ? ' is-big' : '')),
     sparks(0, cy, 'sx-pop-spark', big ? 10 : 7, big ? 76 : 60), bubble(gain, big ? 64 : 56, cy - 34, 'sx-rise' + (big ? ' is-gold' : '')), word('SQUISH!', -34, -66, 'sx-word-pop'));
 }
 const lvChip = (n, x, y) => { const c = el('span', 'sx-lvchip'); c.append(el('b', '', String(n)), el('i', '', '★★★')); return put(c, x, y, 'sx-lvl'); };
 const SCENES = {
   merge: () => mergeScene('merge', [2, 2, 2], 3, '+1'),
-  merge5: () => mergeScene('merge5', [1, 1, 1, 1, 1], 3, '+2', { big: true }),
+  merge5: () => mergeScene('merge5', [3, 3, 3, 3, 3], 5, '+2', { big: true }),
   street: () => mergeScene('street', [1, 2, 3, 4], 5, '+1'),
   tools: () => stage('tools',
     [-48, 0, 48].map(x => star(x, -56, 'sx-slot')), [-48, 0, 48].map((x, i) => star(x, -56, 'sx-s' + (i + 1))),

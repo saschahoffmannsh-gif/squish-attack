@@ -140,6 +140,10 @@
 .ex-stage .ex-tile.is-sm {--s:50px;}
 .ex-stage .ex-tile.is-res {--s:66px;}
 .ex-stage .ex-tile.is-res.is-big {--s:76px;}
+.ex-stage .ex-tile.is-mini {--s:38px;}
+.ex-stage .sx-from,.ex-stage .sx-from-arrow {animation-name:sx-from;opacity:0;}
+.sx-from-arrow {width:30px;height:23px;} .sx-from-arrow svg {width:100%;height:100%;display:block;filter:drop-shadow(0 2px 0 #0007);}
+@keyframes sx-from {0%,46% {opacity:0;scale:.4;} 54%,84% {opacity:1;scale:1;} 90%,100% {opacity:0;scale:.6;}}
 .sx-cell {width:58px;height:58px;box-sizing:border-box;border-radius:28%;border:2.5px dashed #ffffff22;background:#00000026;}
 .sx-cell.is-sm {width:54px;height:54px;}
 .sx-cell.is-slot {width:42px;height:42px;border-style:solid;border-color:#0b0a16;background:#1d1c45;box-shadow:inset 0 2px 0 #0006;}
