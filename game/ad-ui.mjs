@@ -50,8 +50,9 @@ export function createAdUI({ onWatch, onClose, onAdStart, onAdEnd, sound, haptic
     onAdStart?.();
     let res;
     try { res = await showRewarded({ placement, tool: type }); } finally { onAdEnd?.(); }
-    if (!res.ok) { onClose?.(); return; }
-    stats.watched++;
+    // launch-31: keine Werbung zu haben (offline/Ladefehler) → Hilfe trotzdem, still. Abbruch durch den Spieler → keine.
+    if (!res.ok && !res.unavailable) { onClose?.(); return; }
+    if (res.ok) stats.watched++; else stats.unavailable = (stats.unavailable || 0) + 1;
     sound?.play?.('gift'); haptics?.pulse?.('merge');
     await onWatch?.(type);
   }
