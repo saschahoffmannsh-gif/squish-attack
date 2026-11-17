@@ -2,8 +2,8 @@
 // Ein Level = feste Startaufstellung + feste Steinfolge + Ziele + Zuglimit.
 // Dieses Modul ist reine Logik (kein DOM). Es wird von der UI, dem Solver,
 // dem Generator und den Tests gemeinsam benutzt, damit alle exakt gleich zählen.
-import { SIZE, insertTile, settle, isGameOver, tickBombs, BOMB_MS, BOMB_UNIT_MS } from './game-logic.mjs?v=launch-31';
-import { t, fmtNum } from './i18n.mjs?v=launch-31';
+import { SIZE, insertTile, settle, isGameOver, tickBombs, BOMB_MS, BOMB_UNIT_MS } from './game-logic.mjs?v=launch-32';
+import { t, fmtNum } from './i18n.mjs?v=launch-32';
 
 export const DIRECTIONS = ['left', 'right', 'up', 'down'];
 export const QUEUE_PREVIEW = 3;
@@ -114,7 +114,7 @@ export function createLevelRun(level) {
     created: {},              // Wert -> Anzahl durch Fusion erzeugter Steine
     fuseMarks: [],            // launch-22: {size, line} je Fusion (kein Straßen-Eintrag)
     extraMoves: 0,            // durch Hilfsmittel gewonnene Züge
-    toolsUsed: [],            // eingesetzte Hilfsmittel (Typen) – kosten Sterne
+    toolsUsed: [],            // eingesetzte Hilfsmittel (Typen) – launch-32: sternneutral
     giftsUsed: [],            // launch-28: eingesetzte Gold-Geschenke (Typen) – sternneutral
     status: 'playing',        // 'playing' | 'won' | 'lost'
     lostReason: null,
@@ -140,7 +140,7 @@ export function queueOf(run, n = QUEUE_PREVIEW) {
   return out;
 }
 
-/** Ein Hilfsmittel als benutzt markieren (kostet Sterne, siehe toolStarCap). gift = Gold-Geschenk (sternneutral). */
+/** Ein Hilfsmittel als benutzt markieren (launch-32: sternneutral, nur fürs Protokoll). gift = Gold-Geschenk. */
 export function markToolUsed(run, type, { gift = false } = {}) {
   if (gift) (run.giftsUsed ??= []).push(type);
   else run.toolsUsed.push(type);
@@ -324,28 +324,30 @@ export function nextBombMs(run) {
 }
 
 /**
- * Sterne für einen Lauf. Schwellen stehen im Level (`stars.three`, `stars.two`):
- *   3★: Züge ≤ three   2★: Züge ≤ two   1★: gewonnen
- * launch-28 (Saschas Regel): Hilfen deckeln die Sterne, ein gelöstes Level hat immer mind. 1★.
- *   keine Hilfe → bis 3★   genau 1 Hilfe → höchstens 2★   mehr als 1 Hilfe → 1★
- * Gold-Geschenke zählen nicht als Hilfe. Durch „+3 Züge“ (normal oder Gold) gewonnene Züge
- * verschieben die Zug-Schwellen mit, damit die 3 Extra-Züge nicht zusätzlich Sterne kosten.
+ * launch-32 (Saschas Regel): Sterne kommen aus den **übrigen Zügen** am Ende, gemessen am ursprünglichen
+ * Zuglimit des Levels. Hilfen (Rakete, +3) kosten keine Sterne mehr – weder per Clip noch mit Werbefrei.
+ *   übrig = level.moves − gemachte Züge   (durch „+3“ gewonnene Züge zählen NIE als übrig:
+ *                                          wer über das Limit hinaus spielt, hat weniger als 0 übrig)
+ *   3★: übrig ≥ need.three   2★: übrig ≥ need.two   1★: sonst gelöst. Ein gelöstes Level hat immer mind. 1★.
+ * Die Schwellen kommen aus den kalibrierten Leveldaten (`stars.three`/`stars.two` = höchstens so viele Züge),
+ * damit 3★ weiter effizientes Spiel braucht (Optimum + 1 bzw. nach Spielermodell verschärft).
+ * Spitzen-Level ohne eigene 2★-Stufe (three = two = Limit): 3★ im Limit, 2★ mit höchstens 3 Zügen darüber
+ * (also mit einem „+3“), mehr → 1★.
  */
-export function toolStarCap(toolsUsed = 0) {
-  const n = toolsUsed | 0;
-  if (n <= 0) return 3;
-  if (n === 1) return 2;
-  return 1;
+export const STAR_PLUS3_BAND = 3;
+export function starNeeds(level) {
+  const L = level.moves, three = L - level.stars.three, two = L - level.stars.two;
+  return { three, two: two < three ? two : three - STAR_PLUS3_BAND };
 }
-export function starsFor(level, movesUsed, won = true, { toolsUsed = 0, extraMoves = 0 } = {}) {
+export function starsFor(level, movesUsed, won = true) {
   if (!won) return 0;
-  const x = Math.max(0, extraMoves | 0);
-  const stars = movesUsed <= level.stars.three + x ? 3 : movesUsed <= level.stars.two + x ? 2 : 1;
-  return Math.max(1, Math.min(stars, toolStarCap(toolsUsed)));
+  const left = level.moves - movesUsed, need = starNeeds(level);
+  return left >= need.three ? 3 : left >= need.two ? 2 : 1;
 }
-export const MAX_STARS_WITH_TOOLS = 2; // eine Hilfe; siehe toolStarCap
-/** Sterne für einen fertigen Lauf (berücksichtigt Hilfen; Gold-Geschenke sind sternneutral). */
-export const starsOfRun = run => starsFor(run.level, run.moves, run.status === 'won', { toolsUsed: run.toolsUsed.length, extraMoves: run.extraMoves });
+/** Übrige Züge für die Sterne (ohne „+3“-Züge, nie unter 0 angezeigt). */
+export const starMovesLeft = run => Math.max(0, run.level.moves - run.moves);
+/** Sterne für einen fertigen Lauf. Hilfen und Gold-Geschenke sind sternneutral; nur die Züge zählen. */
+export const starsOfRun = run => starsFor(run.level, run.moves, run.status === 'won');
 
 /**
  * Sterne-Schwellen für Werkzeug-Level (launch-15): Ergebnis ist ohnehin auf 2★ gedeckelt.
@@ -530,7 +532,7 @@ export function nextLevel(progress, count) {
 // launch-12: Rakete (ersetzt den Hammer) und +3 Züge.
 // launch-28: im Abenteuer nur noch Rakete und +3 Züge, beliebig oft (siehe ADVENTURE_TOOLS).
 //   Ohne Werbefrei kostet jeder Einsatz einen Belohnungsclip (game.mjs), mit Werbefrei ist er frei.
-//   Sterne: toolStarCap. Gold-Geschenke (Vorrat inv.extraMoves / inv.rocket) sind sternneutral.
+//   Sterne: launch-32 nur aus übrigen Zügen (starsFor). Gold-Geschenke (Vorrat inv.extraMoves / inv.rocket) brauchen keine Werbung.
 
 /** Rakete: entfernt einen Stein (kein Zug, keine Fusion). true, wenn etwas entfernt wurde. */
 export function useRocket(run, row, col, { gift = false } = {}) {

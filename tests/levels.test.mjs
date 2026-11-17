@@ -174,7 +174,7 @@ test('launch-15: Werkzeug-Spitzen genau laut Plan, Bosse 50 und 100 sind Werkzeu
   for (const l of L100.filter(l => l.tool && l.id % 10 === 5)) assert.ok(!L100[l.id].tool && L100[l.id].meta.role === 'relief', `nach ${l.id}`);
 });
 
-test('launch-16: Werkzeug-Spitzen – ohne Werkzeug lösbar, aber sehr eng; mit dem Schlüssel-Werkzeug deutlich leichter (2★-Deckel)', () => {
+test('launch-16: Werkzeug-Spitzen – ohne Werkzeug lösbar, aber sehr eng; mit dem Schlüssel-Werkzeug deutlich leichter (launch-32: Werkzeug kostet keine Sterne)', () => {
   for (const lv of L100.filter(l => l.tool)) {
     const id = `Level ${lv.id} (${lv.tool})`;
     // ohne Werkzeug: lösbar mit 3★. launch-28: das echte Optimum (Beam-Suche) ist oft viel kürzer als die alte
@@ -185,16 +185,16 @@ test('launch-16: Werkzeug-Spitzen – ohne Werkzeug lösbar, aber sehr eng; mit 
     const ts = lv.meta.toolSolution;
     if (lv.tool === 'extraMoves') {
       const r = replayWithTool(lv, ts, { extra: true });
-      assert.ok(r.ok, id); assert.equal(r.stars, 2, `${id}: mit Werkzeug höchstens 2★`);
+      assert.ok(r.ok, id); assert.ok(r.stars >= 2, `${id}: mit Werkzeug mind. 2★ (keine Sterne-Kosten)`);
     } else if (lv.tool === 'hint') {
       const h = findHint({ board: lv.board, goals: lv.goals, sequence: lv.sequence, index: 0, movesLeft: lv.moves, vec: lv.goals.map(() => 0) }, { want: 2, maxMs: 8000, now: () => 0 });
       assert.ok(h.found && h.moves.length >= 2, id);
       const r = replayWithTool(lv, lv.solution, { hint: true });
-      assert.ok(r.ok, id); assert.equal(r.stars, 2, `${id}: mit Hinweis höchstens 2★`);
+      assert.ok(r.ok, id); assert.ok(r.stars >= 2, `${id}: mit Hinweis mind. 2★`);
     } else {
       // Rakete/Zauberstab sparen Züge: Werkzeug-Optimum < Optimum ohne Werkzeug
       const r = replayWithTool(lv, ts);
-      assert.ok(r.ok, `${id}: ${r.reason ?? r.run.status}`); assert.equal(r.stars, 2, id);
+      assert.ok(r.ok, `${id}: ${r.reason ?? r.run.status}`); assert.equal(r.stars, 3, `${id}: Werkzeug spart Züge → 3★`);
       assert.ok(lv.meta.toolMin < lv.meta.minMoves, `${id}: Werkzeug spart Züge`);
     }
   }

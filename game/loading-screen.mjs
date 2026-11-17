@@ -1,7 +1,7 @@
-import {bindDocument, installLangPicker} from './i18n.mjs?v=launch-31';
+import {bindDocument, installLangPicker} from './i18n.mjs?v=launch-32';
 bindDocument();
 installLangPicker();
-import {installStartMenu} from './start-menu.mjs?v=launch-31';
+import {installStartMenu} from './start-menu.mjs?v=launch-32';
 installStartMenu();
-import {registerOfflineCache} from './sw-register.mjs?v=launch-31';
+import {registerOfflineCache} from './sw-register.mjs?v=launch-32';
 registerOfflineCache();

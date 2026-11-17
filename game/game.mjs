@@ -1,37 +1,37 @@
-import {apiFetch,hasSaveToken} from './api.mjs?v=launch-31';
-import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-31';
+import {apiFetch,hasSaveToken} from './api.mjs?v=launch-32';
+import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-32';
 import { nextSpawn, spawnProfile } from './balance.mjs';
-import {canContinueRun} from './run-availability.mjs?v=launch-31';
-import { createMergeEffects } from './merge-effects.mjs?v=launch-31';
-import { createGameGraphics } from './graphics-adapter.mjs?v=launch-31';
-import { installDeviceMotion } from './device-motion.mjs?v=launch-31';
-import { createGameSound } from './sound.mjs?v=launch-31';
+import {canContinueRun} from './run-availability.mjs?v=launch-32';
+import { createMergeEffects } from './merge-effects.mjs?v=launch-32';
+import { createGameGraphics } from './graphics-adapter.mjs?v=launch-32';
+import { installDeviceMotion } from './device-motion.mjs?v=launch-32';
+import { createGameSound } from './sound.mjs?v=launch-32';
 import { installSettings } from './settings.mjs?v=woodland-menu-1';
-import { createDuelClient } from './duel-client.mjs?v=launch-31';
+import { createDuelClient } from './duel-client.mjs?v=launch-32';
 import {installFullscreen} from './fullscreen.mjs?v=timed-duel-1';
-import {createHomeMenu} from './home-menu.mjs?v=launch-31';
-import {createConfetti} from './confetti.mjs?v=launch-31';
-import {createHaptics} from './haptics.mjs?v=launch-31';
-import * as native from './native.mjs?v=launch-31';
+import {createHomeMenu} from './home-menu.mjs?v=launch-32';
+import {createConfetti} from './confetti.mjs?v=launch-32';
+import {createHaptics} from './haptics.mjs?v=launch-32';
+import * as native from './native.mjs?v=launch-32';
 import {planMergeRipple} from './merge-ripple.mjs?v=swarm-fx-3';
-import * as Camp from './campaign.mjs?v=launch-31';
-import {createCampaignUI} from './campaign-ui.mjs?v=launch-31';
-import {createToolFx} from './tool-fx.mjs?v=launch-31';
-import {createGhostFinger} from './ghost-finger.mjs?v=launch-31';
-import * as Shop from './shop.mjs?v=launch-31';
-import {createShopUI} from './shop-ui.mjs?v=launch-31';
-import {createGiftFx} from './gift-fx.mjs?v=launch-31';
-import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-31';
-import {createAdUI} from './ad-ui.mjs?v=launch-31';
-import {hasNativeAds,showInterstitial,isOffline} from './native-ads.mjs?v=launch-31';
-import {createStatsUI} from './stats-ui.mjs?v=launch-31';
-import * as ToolLog from './tool-log.mjs?v=launch-31';
-import {createProgressSync} from './progress-sync.mjs?v=launch-31';
-import {epochOf} from './progress-merge.mjs?v=launch-31';
-import {createAdPacing} from './ad-pacing.mjs?v=launch-31';
-import {isAdFree,canOfferAdFree,canRestoreAdFree,purchaseAdFree,restoreAdFree,adFreePriceLabel,onAdFreeChange} from './ad-free.mjs?v=launch-31';
-import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-31';
-import {createExplainer} from './explain.mjs?v=launch-31';
+import * as Camp from './campaign.mjs?v=launch-32';
+import {createCampaignUI} from './campaign-ui.mjs?v=launch-32';
+import {createToolFx} from './tool-fx.mjs?v=launch-32';
+import {createGhostFinger} from './ghost-finger.mjs?v=launch-32';
+import * as Shop from './shop.mjs?v=launch-32';
+import {createShopUI} from './shop-ui.mjs?v=launch-32';
+import {createGiftFx} from './gift-fx.mjs?v=launch-32';
+import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-32';
+import {createAdUI} from './ad-ui.mjs?v=launch-32';
+import {hasNativeAds,showInterstitial,isOffline} from './native-ads.mjs?v=launch-32';
+import {createStatsUI} from './stats-ui.mjs?v=launch-32';
+import * as ToolLog from './tool-log.mjs?v=launch-32';
+import {createProgressSync} from './progress-sync.mjs?v=launch-32';
+import {epochOf} from './progress-merge.mjs?v=launch-32';
+import {createAdPacing} from './ad-pacing.mjs?v=launch-32';
+import {isAdFree,canOfferAdFree,canRestoreAdFree,purchaseAdFree,restoreAdFree,adFreePriceLabel,onAdFreeChange} from './ad-free.mjs?v=launch-32';
+import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-32';
+import {createExplainer} from './explain.mjs?v=launch-32';
 const playfield = document.getElementById('playfield');
 const gameElement = document.querySelector('.game');
 const visual = createGameGraphics(document.getElementById('graphics'));
@@ -146,9 +146,9 @@ const newTile = value => ({ id: nextId++, value });
 // in localStorage unangetastet: während der Kampagne wird nichts davon gespeichert,
 // beim Verlassen wird er wieder geladen.
 const MODE_KEY='squish-mode-v1';
-const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-31',import.meta.url);
+const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-32',import.meta.url);
 // launch-16: Test-Level für die neuen Squishes (Eis, Ketten, Bombe) – eigener kleiner Satz, kein Fortschritt/Protokoll.
-const LAB_URL=new URL('../levels/levels-lab.json?v=launch-31',import.meta.url);
+const LAB_URL=new URL('../levels/levels-lab.json?v=launch-32',import.meta.url);
 let labMode=false,labLevels=null,labLoading=null;
 function loadLab(){
   return labLoading||=fetch(LAB_URL,{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('lab '+r.status);return r.json();})
@@ -198,7 +198,7 @@ const progressSync=createProgressSync({fetch:apiFetch,epoch:epochOf(Camp.PROGRES
     try{renderCampaign();void worldMenu.refresh?.();}catch{}}});
 const cloudSync=()=>{if(!labMode)progressSync.schedule();};
 progressSync.attach(window);
-const BUILD_LABEL='launch-31';
+const BUILD_LABEL='launch-32';
 let toolLog=ToolLog.loadLog(),logAttempt=null;
 // Versuche, die beim letzten Mal offen blieben (Seite geschlossen), gelten als abgebrochen.
 if(toolLog.attempts.some(a=>!a.outcome)){for(const a of toolLog.attempts)if(!a.outcome)ToolLog.endAttempt(toolLog,a.id,{outcome:'quit',moves:a.moves});ToolLog.saveLog(toolLog);}
@@ -229,26 +229,23 @@ const campaignUI=createCampaignUI({
   reduceMotion,
 });
 onLangChange(()=>{if(labMode&&camp&&campaignMode)campaignUI.renderHud(camp.run,camp.n,labHudLabel());});
-// launch-28: Hilfsmittel (+3 Züge, Rakete) beliebig oft. Gold-Geschenke werden zuerst verbraucht (ohne Werbung,
-// sternneutral); sonst kostet jeder Einsatz Sterne (toolStarCap) und – ohne Werbefrei – vorher einen Belohnungsclip.
+// launch-28: Hilfsmittel (+3 Züge, Rakete) beliebig oft. Gold-Geschenke werden zuerst verbraucht (ohne Werbung).
+// launch-32: keine Hilfe kostet Sterne (Sterne = übrige Züge); ohne Werbefrei kommt vor jedem Einsatz ein Belohnungsclip.
 const goldNow=()=>Camp.goldStock(inventory);
-// launch-29: Reihenfolge der Bild-Lektionen: erst „eine Hilfe kostet einen Stern“, dann „Gold kostet keinen“.
+// launch-29/32: Reihenfolge der Bild-Lektionen: erst „Hilfe ist okay, Sterne kommen von übrigen Zügen“ (L6), dann „Gold = Hilfe ohne Werbung“.
 // Gold bleibt im Vorrat, bis die Stern-Lektion gesehen ist (Tutorial L6 oder erste normale Hilfe), und im Tutorial-Level selbst.
 // Bestand: wer L6 schon gelöst oder die launch-28-Erklärung gesehen hat, gilt als belehrt.
 const costLessonDone=()=>explainer.seen('tool-cost')||explainer.seen('tools')||!!campaignProgress?.levels?.['6'];
 const goldBlocked=()=>!!(campaignMode&&(camp?.tutorialRun||!costLessonDone()));
 const hasGold=type=>!goldBlocked()&&(inventory?.[type]|0)>0;
-function toolCapNote(run=camp?.run){
-  const n=run?.toolsUsed.length|0;if(!n)return '';
-  return t('note.toolCap',{n});
-}
-function announceToolCap(gold=false,type='rocket'){const msg=gold?t('note.goldUsed',{tool:Camp.toolName(type)}):toolCapNote();if(msg)showNote(msg,2800);}
+// launch-32: Hilfen kosten keine Sterne – nach einem Einsatz nur bei Gold ein kurzer Hinweis „ohne Werbung“.
+function announceToolCap(gold=false,type='rocket'){if(gold)showNote(t('note.goldUsed',{tool:Camp.toolName(type)}),2800);}
 /** Einsatz verbuchen: Gold aus dem Vorrat nehmen (falls Gold), protokollieren. ctx = Stand VOR dem Einsatz. */
 function commitTool(type,gold,ctx){
   if(gold){const g=Camp.spendGold(inventory,type);if(g){inventory=g;Camp.saveInventory(inventory);cloudSync();}}
   logTool('use',type,{...ctx,gold:!!gold});
 }
-/** launch-29: Bild-Lektionen. Nach der Tutorial-Hilfe: ein Stern fällt weg. Beim ersten Gold-Einsatz: kein Stern fällt. */
+/** launch-32: Bild-Lektionen. Nach der Tutorial-Hilfe: Sterne bleiben (übrige Züge zählen). Beim ersten Gold-Einsatz: gratis, ohne Werbung. */
 function toolLesson(type,{free=false,gold=false}={}){
   if(gold)return explainer.showOnceAs('gold-used','gifts',{used:type});
   if(free){explainer.mark('tool-cost');return explainer.show('tools',{used:type});}
@@ -541,10 +538,12 @@ async function finishLevel(){
   if(turn!==generation||!campaignMode){confetti.stop();return;}
   paused=true;releaseGesture();phoneMotion.reset();
   const count=levelList().length,nextLock=n<count&&!labMode?Camp.lockReason(campaignProgress,n+1):null;
-  campaignUI.showResult({n,won,stars,moves:r.moves,limit:Camp.moveLimit(r),lostReason:r.lostReason,toolLevel:r.level.tool||null,
+  campaignUI.showResult({n,won,stars,moves:r.moves,limit:Camp.moveLimit(r),base:r.level.moves,lostReason:r.lostReason,toolLevel:r.level.tool||null,
     canNext:won&&n<count&&!nextLock,nextLock,gifts:Camp.TOOL_GIFTS&&!labMode?inventory.pending.slice():gifts,extraAvailable:1,extraGold:inventory.extraMoves|0,extraAd:toolAdRequired()&&!hasGold('extraMoves'),toolsUsed:r.toolsUsed.length,giftsUsed:r.giftsUsed?.length|0,tutorialTool:won&&!!camp.tutorialDone,
     unlockModes:won&&!labMode&&n===Camp.MODES_UNLOCK_LEVEL&&Camp.modesUnlocked(campaignProgress)});
   renderCampaign();
+  // launch-32: Signal für die App-Hülle (z. B. ATT-Vorfrage erst nach dem ersten gelösten Level). Im Web ohne Zuhörer.
+  if(won&&!labMode){try{dispatchEvent(new CustomEvent('squish:level-won',{detail:{level:n,stars}}));}catch{}}
 }
 async function useExtraMoves(where='tool'){
   if(!campaignMode||!camp||busy)return;
@@ -563,7 +562,7 @@ async function useExtraMoves(where='tool'){
   queue=Camp.queueOf(r);renderQueue();
   if(campaignUI.resultOpen){campaignUI.hideResult();paused=false;}
   renderCampaign();haptics.pulse('merge');sound.play('record');
-  showNote(gold?t('note.goldUsed',{tool:Camp.toolName('extraMoves')}):t('note.extraUsed',{n:added})+' '+toolCapNote(),2800);
+  showNote(gold?t('note.goldUsed',{tool:Camp.toolName('extraMoves')}):t('note.extraUsed',{n:added}),2800);
   showTutorialFinger();
   await toolLesson('extraMoves',{free,gold});
 }

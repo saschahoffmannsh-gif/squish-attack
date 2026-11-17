@@ -683,3 +683,25 @@ Aktueller Stand im Spiel (Schalter in `campaign.mjs`):
   Werbefrei und Statistik bleiben. Endlos und 2 Spieler sind wie nach launch-24 erst nach Level 5 wieder frei.
 - **Epoche `PROGRESS_EPOCH = launch-30`:** die Cloud ersetzt Level und Vorrat älterer Epochen, damit der alte Stand
   nicht per Max-Merge zurückkommt. Backend-Zeilen werden nicht gelöscht; ältere Epochen werden nur ignoriert.
+
+## Sterne aus übrigen Zügen, Hilfen ohne Sterne-Kosten (launch-32)
+
+- **Sterne = übrige Züge am Ende**, gemessen am ursprünglichen Zuglimit (`starsFor`, `starNeeds` in `campaign.mjs`):
+  übrig = `level.moves − gemachte Züge`. Durch „+3“ gewonnene Züge zählen **nie** als übrig (wer über das Limit
+  hinaus spielt, hat weniger als 0 übrig) – „+3“ kann keine Sterne erzeugen.
+- **Schwellen je Level** aus den kalibrierten Daten (`stars.three`/`stars.two`, unverändert): 3★ ab `moves − three`
+  übrig (≈ Optimum + 1 bzw. nach Spielermodell verschärft), 2★ ab `moves − two`. Spitzen ohne eigene 2★-Stufe
+  (three = two = Limit, 18 Level: 15 25 35 45 49 50 55 59 65 69 75 79 84 85 89 95 99 100): 3★ im Limit, 2★ mit
+  höchstens 3 Zügen darüber (ein „+3“), sonst 1★ (`STAR_PLUS3_BAND`). Tabelle: `docs/sterne-launch32.md`.
+- **Hilfen (Rakete, +3) kosten keine Sterne** – weder per Clip noch mit Werbefrei. Clip-Pflicht ohne Werbefrei und
+  Offline-Sperre (launch-31) bleiben. Gold-Geschenke bleiben (Hilfe gratis, ohne Werbung).
+- **Bestand:** keine Neubewertung, kein Reset, keine neue Epoche. Gespeicherte Sterne bleiben (Max-Merge lokal und in
+  der Cloud); neue Läufe können nur verbessern. Niemand verliert Sterne.
+- **UI:** Sterne-Leiste (3 Mini-Sterne) unter „ZÜGE“ – so viele Sterne gibt es, wenn der nächste Zug löst. Ergebnis
+  zeigt „ÜBRIG n“ statt der Zugzahl; kein Sterne-Deckel-Hinweis mehr über der Werkzeugleiste.
+- **Lektionen:** L6 (Tutorial-Rakete gratis) → Bild „Hilfe → ★★★ bleiben, ZÜGE 3“; L7 (erste Gold-Rakete) → Bild
+  „Gold-Hilfe → Werbung durchgestrichen, GRATIS“. Regeln, Werbung-Erklärung, Tipp L6, DE/EN angepasst.
+- **Kapitel-Hürden** bleiben 24★ je Kapitel. Prüfung mit dem Spielermodell: `tools/campaign/stars32.mjs` (Modell bis
+  Limit + 3) und `tools/campaign/gates32.mjs` (alt/neu, mit/ohne +3, beste von 1/3/5 Versuchen).
+- **Werbefrei 4,99 €** (vorher 2,99 €). **Endlos-Zwischenwerbung alle 15 Minuten** aktiver Spielzeit (vorher 10).
+- Signal `squish:level-won` (CustomEvent auf `window`, `detail {level, stars}`) für die App-Hülle (ATT-Vorfrage).
