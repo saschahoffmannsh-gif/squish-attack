@@ -31,7 +31,6 @@ export function miniTile(v, { gold = false, ghost = false, cls = '' } = {}) {
 // Screenreader im Fenster (ex-sr). Positionen: --x/--y relativ zur Bühnenmitte, Ziel --mx/--my.
 const STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="exsg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3a0"/><stop offset=".55" stop-color="#ffc21f"/><stop offset="1" stop-color="#e08a00"/></linearGradient></defs><path d="M12 1.8 14.82 8.92 22.46 9.4 16.57 14.28 18.47 21.7 12 17.6 5.53 21.7 7.43 14.28 1.54 9.4 9.18 8.92Z" fill="url(#exsg)" stroke="#6a3304" stroke-width="1.6" stroke-linejoin="round"/><ellipse cx="8.6" cy="9.4" rx="1.4" ry=".85" fill="#fff" opacity=".9" transform="rotate(-25 8.6 9.4)"/></svg>';
 const LOCK = '<svg viewBox="0 0 64 72" aria-hidden="true" style="overflow:visible"><g stroke="#1b1030" stroke-width="3.4" stroke-linejoin="round"><path class="sx-shackle" d="M16 34V22a16 16 0 0 1 32 0v12" fill="none" stroke-linecap="round" stroke-width="7"/><path class="sx-shackle" d="M16 34V22a16 16 0 0 1 32 0v12" fill="none" stroke="#c9ced9" stroke-linecap="round" stroke-width="3"/><rect x="6" y="32" width="52" height="36" rx="9" fill="#ffc21f"/><path d="M10 37h44" stroke="#fff3a0" stroke-width="3" opacity=".9"/><circle cx="32" cy="48" r="5" fill="#6a3304" stroke="none"/><path d="M30 50h4l1.5 9h-7z" fill="#6a3304" stroke="none"/></g></svg>';
-const RAYS = () => el('span', 'sx sx-rays');
 const put = (node, x, y, cls = '', more = {}) => {
   node.classList.add('sx', ...cls.split(' ').filter(Boolean));
   node.style.setProperty('--x', x + 'px'); node.style.setProperty('--y', y + 'px');
@@ -62,20 +61,26 @@ function mergeScene(kind, values, result, gain, { big = false } = {}) {
   return stage(kind, cells, burst(0, cy, big ? 'is-big' : ''), tiles, tile(from, fx, cy, 'sx-from is-mini'), arrow, tile(result, 0, cy, 'sx-pop is-res' + (big ? ' is-big' : '')),
     sparks(0, cy, 'sx-pop-spark', big ? 10 : 7, big ? 76 : 60), bubble(gain, big ? 64 : 56, cy - 34, 'sx-rise' + (big ? ' is-gold' : '')), word('SQUISH!', -34, -66, 'sx-word-pop'));
 }
+/** launch-29: Hilfe → Pfeil → 3 Sterne. Normal: der dritte Stern wird grau und fällt weg. Gold: alle Sterne bleiben und glänzen. */
+function helpScene(kind, used, gold) {
+  const types = used ? [used] : ['rocket', 'extraMoves'], ys = types.length > 1 ? [-34, 34] : [0];
+  const chips = types.map((ty, i) => { const c = el('span', 'sx-help' + (gold ? ' is-gold' : ''));
+    if (ty === 'extraMoves') c.append(el('b', 'sx-help-plus', '+3')); else c.innerHTML = TOOL_ICONS.rocket || '';
+    if (gold) { const g = el('span', 'sx-help-gift'); g.innerHTML = GIFT_SVG; c.append(g); }
+    return put(c, -108, ys[i], 'sx-help-tap'); });
+  const arrow = put(el('span', 'sx-help-arrow'), -46, 0); arrow.innerHTML = ARROW;
+  const xs = [14, 66, 118];
+  return stage(kind + ' sx-help-' + (gold ? 'gold' : 'cost'), chips, arrow,
+    xs.map(x => star(x, 0, 'sx-slot')), xs.map((x, i) => star(x, 0, gold ? 'sx-keep' : i === 2 ? 'sx-lose' : 'sx-stay', { d: gold ? i * .1 + 's' : '0s' })),
+    gold ? sparks(66, 0, 'sx-keep-spark', 8, 70) : []);
+}
 const lvChip = (n, x, y) => { const c = el('span', 'sx-lvchip'); c.append(el('b', '', String(n)), el('i', '', '★★★')); return put(c, x, y, 'sx-lvl'); };
 const SCENES = {
   merge: () => mergeScene('merge', [2, 2, 2], 3, '+1'),
   merge5: () => mergeScene('merge5', [3, 3, 3, 3, 3], 5, '+2', { big: true }),
   street: () => mergeScene('street', [1, 2, 3, 4], 5, '+1'),
-  tools: () => stage('tools',
-    [-48, 0, 48].map(x => star(x, -56, 'sx-slot')), [-48, 0, 48].map((x, i) => star(x, -56, 'sx-s' + (i + 1))),
-    [-62, 0, 62].map(x => put(el('span', 'sx-cell'), x, 36)),
-    tile(4, -62, 36), tile(7, 0, 36, 'sx-blasted'), tile(4, 62, 36),
-    icon(TOOL_ICONS.rocket, -170, 36, 'sx-rocket'), put(el('span', 'sx-boomfx'), 0, 36), plus3(0, 36, 'sx-plus3-pop')),
-  gifts: () => { const g = el('span'); g.innerHTML = GIFT_SVG;
-    return stage('gifts', RAYS(), [-44, 0, 44].map((x, i) => star(x, -58, 'sx-shine', { d: i * .12 + 's' })),
-      put(g, 0, 22, 'sx-giftbox'), sparks(0, 22, 'sx-gift-spark', 8, 64),
-      icon(TOOL_ICONS.rocket, 0, 22, 'sx-goldfly is-gold', { mx: -78, my: 4 }), plus3(0, 22, 'sx-goldfly is-gold', { mx: 78, my: 4 })); },
+  tools: ctx => helpScene('tools', ctx?.used, false),
+  gifts: ctx => helpScene('gifts', ctx?.used, true),
   gates: ctx => { const shut = ctx?.need && (ctx.have ?? 0) < ctx.need;
     const need = ctx?.need || starGate(2), lock = icon(LOCK, 58, -8, 'sx-lock' + (shut ? ' is-shut' : ''));
     const count = put(el('b', 'sx-count', shut ? `${ctx.have ?? 0}/${need}` : String(need)), 58, 54, '');
@@ -96,9 +101,9 @@ const TOPICS = {
   street: { icon: () => miniTile(4), title: () => t('ex.street.title'), scene: SCENES.street, line: () => t('ex.street.line'),
     sr: () => [t('ex.street.l1'), t('ex.street.l2'), t('ex.street.l3')] },
   tools: { icon: () => { const s = el('span', 'ex-ico'); s.innerHTML = TOOL_ICONS.rocket || ''; return s; }, title: () => t('ex.tools.title'),
-    scene: SCENES.tools, line: () => t('ex.tools.line'), sr: () => [t('ex.tools.l1'), t('ex.tools.l2'), t('ex.tools.l3')] },
+    scene: SCENES.tools, line: ctx => t(ctx?.used ? 'ex.tools.lineNow' : 'ex.tools.line'), sr: () => [t('ex.tools.l1'), t('ex.tools.l2'), t('ex.tools.l3')] },
   gifts: { icon: () => { const s = el('span', 'ex-ico is-gold'); s.innerHTML = GIFT_SVG; return s; }, title: () => t('ex.gifts.title'),
-    scene: SCENES.gifts, line: () => t('ex.gifts.line'),
+    scene: SCENES.gifts, line: ctx => t(ctx?.used ? 'ex.gifts.lineNow' : 'ex.gifts.line'),
     sr: () => [t('ex.gifts.l1', { levels: LEVEL_GIFTS.map(([n]) => n).join(', ') }), t('ex.gifts.l2'), t('ex.gifts.l3')] },
   gates: { icon: () => el('span', 'ex-ico ex-ico-star', '★'), title: () => t('ex.gates.title'), scene: SCENES.gates,
     line: ctx => ctx?.need && (ctx.have ?? 0) < ctx.need ? t('ex.gates.lineNow', { chapter: ctx.chapter, n: ctx.need - (ctx.have ?? 0) }) : t('ex.gates.line'),
@@ -170,6 +175,9 @@ export function createExplainer({ sound, haptics, storage = globalThis.localStor
     },
     /** Nur beim ersten Mal. → Promise<boolean> (true = gezeigt). */
     async showOnce(topic, ctx = null) { if (api.seen(topic)) return false; await api.show(topic, ctx); return true; },
+    mark: key => markSeen(key),
+    /** Einmal je Schlüssel (z. B. Lektion „erstes Gold“), auch wenn das Thema schon unter „Regeln“ gesehen wurde. */
+    async showOnceAs(key, topic, ctx = null) { if (api.seen(key)) return false; markSeen(key); await api.show(topic, ctx); return true; },
     close({ silent = false } = {}) {
       if (!veil) return;
       document.removeEventListener('keydown', key, true);

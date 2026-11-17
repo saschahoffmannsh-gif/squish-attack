@@ -197,47 +197,37 @@
 @keyframes sx-word {0%,40% {opacity:0;scale:.2;} 45% {opacity:1;scale:1.3;} 50%,74% {opacity:1;scale:1;} 82%,100% {opacity:0;scale:1.1;}}
 .sx-merge5 .sx-word {color:#fff3a0;font-size:30px;}
 
-/* Hilfsmittel & Sterne: Rakete sprengt, Stern fällt – dann +3, noch ein Stern fällt */
-.ex-stage.sx-tools {--T:5.4s;}
-.ex-stage .sx-rocket {animation-name:sx-rocket;rotate:48deg;}
-@keyframes sx-rocket {0%,4% {translate:calc(-50% + var(--x)) calc(-50% + var(--y));opacity:1;scale:1;} 18% {translate:-50% calc(-50% + var(--y) - 2px);opacity:1;scale:1.05;} 20%,100% {translate:-50% calc(-50% + var(--y));opacity:0;scale:.4;}}
-.ex-stage .sx-boomfx {width:92px;height:92px;opacity:0;animation-name:sx-boom;animation-timing-function:ease-out;
-  background:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 2 58 30 86 14 70 40 98 50 70 60 86 86 58 70 50 98 42 70 14 86 30 60 2 50 30 40 14 14 42 30z' fill='%23ff5a2a' stroke='%231b1030' stroke-width='3.5' stroke-linejoin='round'/%3E%3Cpath d='M50 18 55 38 74 28 63 45 82 50 63 55 74 72 55 62 50 82 45 62 26 72 37 55 18 50 37 45 26 28 45 38z' fill='%23ffd84a' stroke='%231b1030' stroke-width='2.5' stroke-linejoin='round'/%3E%3C/svg%3E");}
-@keyframes sx-boom {0%,18% {opacity:0;scale:.2;rotate:0deg;} 21% {opacity:1;scale:1.15;} 30% {opacity:0;scale:1.5;rotate:25deg;} 100% {opacity:0;}}
-.ex-stage .sx-blasted {animation-name:sx-blasted;}
-@keyframes sx-blasted {0%,19% {opacity:1;scale:1;} 22%,92% {opacity:0;scale:.2;} 100% {opacity:1;scale:1;}}
-.ex-stage .sx-plus3-pop {animation-name:sx-plus3;opacity:0;}
-@keyframes sx-plus3 {0%,50% {opacity:0;scale:.2;translate:-50% calc(-50% + var(--y) + 30px);} 56% {opacity:1;scale:1.3;translate:-50% calc(-50% + var(--y));} 62%,84% {opacity:1;scale:1;} 92%,100% {opacity:0;scale:.6;}}
-.ex-stage .sx-s1,.ex-stage .sx-s2,.ex-stage .sx-s3 {animation-name:sx-star-stay;}
-.ex-stage .sx-s3 {animation-name:sx-fall1;}
-.ex-stage .sx-s2 {animation-name:sx-fall2;}
-@keyframes sx-star-stay {0%,100% {scale:1;} 26% {scale:.9;} 30% {scale:1.06;} 66% {scale:.9;} 70% {scale:1.06;}}
-@keyframes sx-fall1 {0%,24% {translate:calc(-50% + var(--x)) calc(-50% + var(--y));rotate:0deg;opacity:1;filter:none;}
-  28% {translate:calc(-50% + var(--x) + 4px) calc(-50% + var(--y) - 10px);rotate:-18deg;} 44% {translate:calc(-50% + var(--x) + 44px) calc(-50% + var(--y) + 170px);rotate:220deg;opacity:1;}
-  45%,94% {opacity:0;translate:calc(-50% + var(--x)) calc(-50% + var(--y));} 100% {opacity:1;rotate:0deg;translate:calc(-50% + var(--x)) calc(-50% + var(--y));}}
-@keyframes sx-fall2 {0%,62% {translate:calc(-50% + var(--x)) calc(-50% + var(--y));rotate:0deg;opacity:1;}
-  66% {translate:calc(-50% + var(--x) - 4px) calc(-50% + var(--y) - 10px);rotate:18deg;} 82% {translate:calc(-50% + var(--x) - 40px) calc(-50% + var(--y) + 170px);rotate:-220deg;opacity:1;}
-  83%,94% {opacity:0;translate:calc(-50% + var(--x)) calc(-50% + var(--y));} 100% {opacity:1;rotate:0deg;translate:calc(-50% + var(--x)) calc(-50% + var(--y));}}
-.sx-tools .sx-star {filter:drop-shadow(0 3px 0 #0b0a16aa);}
-
-/* Gold-Geschenk: wackelt, platzt, Gold fliegt raus, Sterne glänzen weiter */
-.ex-stage.sx-gifts {--T:4.6s;background:radial-gradient(70% 80% at 50% 62%,#6b5a2a 0%,#3a3270 50%,#1d1c45 100%);}
-.ex-stage .sx-rays {--x:0px;--y:22px;width:250px;height:250px;opacity:0;animation-name:sx-rays;animation-timing-function:linear;
-  background:repeating-conic-gradient(#ffe27a55 0 10deg,#0000 10deg 22deg);-webkit-mask:radial-gradient(circle,#000 20%,#0000 66%);mask:radial-gradient(circle,#000 20%,#0000 66%);}
-@keyframes sx-rays {0%,30% {opacity:0;rotate:0deg;scale:.4;} 38% {opacity:1;scale:1;} 85% {opacity:1;rotate:70deg;} 95%,100% {opacity:0;rotate:80deg;}}
-.ex-stage .sx-giftbox {width:96px;height:96px;animation-name:sx-gift;filter:drop-shadow(0 0 14px #ffd25a) drop-shadow(0 4px 0 #0007);}
-.sx-giftbox svg {width:100%;height:100%;display:block;}
-@keyframes sx-gift {0% {scale:1;rotate:0deg;opacity:1;} 6% {rotate:-9deg;} 12% {rotate:9deg;} 18% {rotate:-11deg;scale:1.04;} 24% {rotate:11deg;scale:1.08;} 30% {rotate:0deg;scale:1.25 .85;opacity:1;} 35% {scale:1.5;opacity:0;} 36%,90% {opacity:0;scale:.3;} 100% {opacity:1;scale:1;}}
-.ex-stage .sx-gift-spark {animation-name:sx-gspark;animation-timing-function:ease-out;}
-@keyframes sx-gspark {0%,33% {translate:calc(-50% + var(--x)) calc(-50% + var(--y));opacity:0;scale:.3;} 38% {opacity:1;scale:1.2;} 60%,100% {translate:calc(-50% + var(--x) + var(--dx)) calc(-50% + var(--y) + var(--dy));opacity:0;scale:.5;rotate:120deg;}}
-.ex-stage .sx-goldfly {animation-name:sx-goldfly;opacity:0;}
-@keyframes sx-goldfly {0%,33% {opacity:0;scale:.2;translate:calc(-50% + var(--x)) calc(-50% + var(--y));}
-  44% {opacity:1;scale:1.35;translate:calc(-50% + var(--x) + var(--mx) * .6) calc(-50% + var(--y) - 26px);}
-  52%,86% {opacity:1;scale:1.1;translate:calc(-50% + var(--x) + var(--mx)) calc(-50% + var(--y) + var(--my) - 18px);}
-  60%,78% {scale:1.18;} 94%,100% {opacity:0;scale:.5;translate:calc(-50% + var(--x) + var(--mx)) calc(-50% + var(--y) + var(--my) - 18px);}}
-.ex-stage .sx-goldfly.sx-ico {width:56px;height:56px;rotate:48deg;}
-.ex-stage .sx-shine {animation-name:sx-shine;}
-@keyframes sx-shine {0%,46% {scale:1;filter:drop-shadow(0 3px 0 #0b0a16aa);} 54% {scale:1.28;filter:drop-shadow(0 0 12px #fff3a0) drop-shadow(0 3px 0 #0b0a16aa);} 62%,100% {scale:1;filter:drop-shadow(0 3px 0 #0b0a16aa);}}
+/* launch-29 Hilfsmittel & Sterne / Gold: Hilfe → Pfeil → 3 Sterne (normal fällt einer weg, Gold: alle bleiben) */
+.ex-stage.sx-tools,.ex-stage.sx-gifts {--T:3.4s;}
+.ex-stage.sx-gifts {background:radial-gradient(70% 80% at 60% 55%,#6b5a2a 0%,#3a3270 52%,#1d1c45 100%);}
+.sx-help {display:grid;place-items:center;width:62px;height:58px;box-sizing:border-box;border-radius:18px;border:3px solid #0b0a16;
+  background:linear-gradient(180deg,#5a59a0,#3a3970 60%,#22214a);box-shadow:inset 0 2px 0 #ffffff55,0 4px 0 #0b0a16;}
+.sx-help svg {width:44px;height:44px;display:block;}
+.sx-help-plus {font:700 27px/1 var(--aw-comic);color:#c4f75a;text-shadow:1.6px 0 0 #0a3600,-1.6px 0 0 #0a3600,0 1.6px 0 #0a3600,0 -1.6px 0 #0a3600,0 3px 0 #0a3600;}
+.sx-help.is-gold {background:linear-gradient(180deg,#fff3a0,#ffc21f 60%,#d98c00);box-shadow:inset 0 2px 0 #ffffffb0,0 4px 0 #0b0a16,0 0 18px #ffd25aaa;}
+.sx-help.is-gold > svg {filter:sepia(1) saturate(4) hue-rotate(-12deg) brightness(1.15);}
+.sx-help.is-gold .sx-help-plus {color:#fff;text-shadow:1.6px 0 0 #7a4a00,-1.6px 0 0 #7a4a00,0 1.6px 0 #7a4a00,0 -1.6px 0 #7a4a00,0 3px 0 #7a4a00;}
+.sx-help-gift {position:absolute;right:-12px;top:-12px;width:28px;height:28px;}
+.sx-help-gift svg {width:28px;height:28px;}
+.ex-stage .sx-help-tap {animation-name:sx-tap;}
+@keyframes sx-tap {0%,10% {scale:1;} 16% {scale:.86;} 24% {scale:1.14;} 32%,100% {scale:1;}}
+.sx-help-arrow {width:40px;height:30px;} .sx-help-arrow svg {width:100%;height:100%;display:block;filter:drop-shadow(0 2px 0 #0007);}
+.ex-stage .sx-help-arrow {animation-name:sx-arrow;}
+@keyframes sx-arrow {0%,18% {translate:calc(-50% + var(--x)) -50%;scale:1;} 26% {translate:calc(-50% + var(--x) + 8px) -50%;scale:1.15;} 34%,100% {translate:calc(-50% + var(--x)) -50%;scale:1;}}
+.sx-help-cost .sx-star,.sx-help-gold .sx-star {width:50px;height:50px;}
+.ex-stage .sx-stay {animation-name:sx-stay;}
+@keyframes sx-stay {0%,100% {scale:1;} 34% {scale:.92;} 40% {scale:1.04;} 46% {scale:1;}}
+.ex-stage .sx-lose {animation-name:sx-lose;}
+@keyframes sx-lose {0%,30% {translate:calc(-50% + var(--x)) calc(-50% + var(--y));rotate:0deg;opacity:1;filter:drop-shadow(0 3px 0 #0b0a16aa);}
+  34% {rotate:-14deg;} 38% {rotate:12deg;} 42% {rotate:-8deg;filter:grayscale(.8) brightness(.8) drop-shadow(0 3px 0 #0b0a16aa);}
+  62% {translate:calc(-50% + var(--x) + 18px) calc(-50% + var(--y) + 92px);rotate:120deg;opacity:0;filter:grayscale(1) brightness(.6);}
+  63%,90% {translate:calc(-50% + var(--x)) calc(-50% + var(--y));opacity:0;rotate:0deg;filter:none;}
+  100% {translate:calc(-50% + var(--x)) calc(-50% + var(--y));opacity:1;}}
+.ex-stage .sx-keep {animation-name:sx-keep;}
+@keyframes sx-keep {0%,30% {scale:1;filter:drop-shadow(0 3px 0 #0b0a16aa);} 38% {scale:1.22;filter:drop-shadow(0 0 12px #fff3a0) drop-shadow(0 3px 0 #0b0a16aa);}
+  46% {scale:1;} 54%,86% {scale:1.06;filter:drop-shadow(0 0 8px #ffd25a) drop-shadow(0 3px 0 #0b0a16aa);} 100% {scale:1;filter:drop-shadow(0 3px 0 #0b0a16aa);}}
+.ex-stage .sx-keep-spark {animation-name:sx-kspark;animation-timing-function:ease-out;}
+@keyframes sx-kspark {0%,32% {translate:calc(-50% + var(--x)) calc(-50% + var(--y));opacity:0;scale:.3;} 38% {opacity:1;scale:1.2;} 60%,100% {translate:calc(-50% + var(--x) + var(--dx)) calc(-50% + var(--y) + var(--dy));opacity:0;scale:.5;rotate:120deg;}}
 
 /* Kapitel-Sterne: Sterne fliegen ins Schloss, Schloss springt auf */
 .ex-stage.sx-gates {--T:4.6s;}

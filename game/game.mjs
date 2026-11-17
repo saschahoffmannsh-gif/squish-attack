@@ -226,7 +226,12 @@ onLangChange(()=>{if(labMode&&camp&&campaignMode)campaignUI.renderHud(camp.run,c
 // launch-28: Hilfsmittel (+3 Züge, Rakete) beliebig oft. Gold-Geschenke werden zuerst verbraucht (ohne Werbung,
 // sternneutral); sonst kostet jeder Einsatz Sterne (toolStarCap) und – ohne Werbefrei – vorher einen Belohnungsclip.
 const goldNow=()=>Camp.goldStock(inventory);
-const hasGold=type=>(inventory?.[type]|0)>0;
+// launch-29: Reihenfolge der Bild-Lektionen: erst „eine Hilfe kostet einen Stern“, dann „Gold kostet keinen“.
+// Gold bleibt im Vorrat, bis die Stern-Lektion gesehen ist (Tutorial L6 oder erste normale Hilfe), und im Tutorial-Level selbst.
+// Bestand: wer L6 schon gelöst oder die launch-28-Erklärung gesehen hat, gilt als belehrt.
+const costLessonDone=()=>explainer.seen('tool-cost')||explainer.seen('tools')||!!campaignProgress?.levels?.['6'];
+const goldBlocked=()=>!!(campaignMode&&(camp?.tutorialRun||!costLessonDone()));
+const hasGold=type=>!goldBlocked()&&(inventory?.[type]|0)>0;
 function toolCapNote(run=camp?.run){
   const n=run?.toolsUsed.length|0;if(!n)return '';
   return t('note.toolCap',{n});
@@ -236,6 +241,12 @@ function announceToolCap(gold=false,type='rocket'){const msg=gold?t('note.goldUs
 function commitTool(type,gold,ctx){
   if(gold){const g=Camp.spendGold(inventory,type);if(g){inventory=g;Camp.saveInventory(inventory);cloudSync();}}
   logTool('use',type,{...ctx,gold:!!gold});
+}
+/** launch-29: Bild-Lektionen. Nach der Tutorial-Hilfe: ein Stern fällt weg. Beim ersten Gold-Einsatz: kein Stern fällt. */
+function toolLesson(type,{free=false,gold=false}={}){
+  if(gold)return explainer.showOnceAs('gold-used','gifts',{used:type});
+  if(free){explainer.mark('tool-cost');return explainer.show('tools',{used:type});}
+  return explainer.showOnceAs('tool-cost','tools',{used:type});
 }
 // Tutorial (Level 6, bis es einmal gelöst ist): erst ein Hilfsmittel ausprobieren – gratis, ohne Werbung.
 const TOOL_TUTORIAL_LEVEL=6;
@@ -340,7 +351,7 @@ const giftFx=createGiftFx({reduceMotion,sound,haptics});
 async function openGift(){
   if(!Camp.TOOL_GIFTS||giftFx.active||explainer.isOpen||!inventory.pending.length)return false;
   const gift=inventory.pending[0];
-  await explainer.showOnce('gifts');   // launch-28: beim ersten Gold-Geschenk erklären
+  // launch-29: keine Erklärung beim Öffnen – „Gold kostet keinen Stern“ kommt beim ersten Gold-Einsatz (toolLesson).
   if(giftFx.active||!inventory.pending.some(g=>g.id===gift.id))return false;
   const target=type=>{
     const b=campaignMode&&!campaignUI.resultOpen?campaignUI.toolButton(type):null;
@@ -361,7 +372,7 @@ function renderCampaign(){
   if(!campaignMode||!camp)return;
   campaignUI.renderHud(camp.run,camp.n,labMode?labHudLabel():null);   // launch-28: Test-Titel nur im Testmodus
   const tutor=tutorialToolPending();
-  campaignUI.renderTools(goldNow(),{needsAd:toolAdRequired(),canExtra:camp.run.status==='playing',armed:armedTool,locked:camp.run.status!=='playing',
+  campaignUI.renderTools(goldBlocked()?{extraMoves:0,rocket:0}:goldNow(),{needsAd:toolAdRequired(),canExtra:camp.run.status==='playing',armed:armedTool,locked:camp.run.status!=='playing',
     toolsUsed:camp.run.toolsUsed.length,giftsUsed:camp.run.giftsUsed?.length|0,freeTry:tutor||null});
   for(const ty of Camp.ADVENTURE_TOOLS)campaignUI.toolButton(ty)?.classList.toggle('is-tutor',tutor);
 }
@@ -373,6 +384,7 @@ async function prepareLevel(n){
   generation++;pendingMove=null;disarmTools();bombLast=0;
   moveCombo=0;mergeEffects.streak?.(0,{silent:true});
   camp={n,level,run:Camp.createLevelRun(level),tutorialTool:!labMode&&n===TOOL_TUTORIAL_LEVEL&&!campaignProgress.levels[String(n)],tutorialDone:false};
+  camp.tutorialRun=camp.tutorialTool;
   beginAttempt();
   board=camp.run.board.map(row=>row.map(tile=>tile?{...tile}:null));
   nextId=camp.run.ctx.nextId;queue=Camp.queueOf(camp.run);score=0;moves=0;
@@ -421,10 +433,8 @@ async function levelExplainers(){
   if(!campaignMode||!camp||labMode)return;
   const n=camp.n,topic=LEVEL_TOPICS[n];
   if(topic)await explainer.showOnce(topic,topic==='gates'?gatesCtx():undefined);
-  if(camp?.n===n&&camp.tutorialTool){
-    await explainer.show('tools');
-    if(camp?.n===n&&tutorialToolPending()){showNote(t('note.tutorialTool'),0);renderCampaign();}
-  }
+  // launch-29: erst benutzen, dann erklären – die Bild-Lektion „kostet einen Stern“ kommt direkt nach dem Einsatz (toolLesson).
+  if(camp?.n===n&&tutorialToolPending()){showNote(t('note.tutorialTool'),0);renderCampaign();}
 }
 async function moveCampaign(direction,line){
   const r=camp.run;
@@ -507,6 +517,7 @@ async function useExtraMoves(where='tool'){
   renderCampaign();haptics.pulse('merge');sound.play('record');
   showNote(gold?t('note.goldUsed',{tool:Camp.toolName('extraMoves')}):t('note.extraUsed',{n:added})+' '+toolCapNote(),2800);
   showTutorialFinger();
+  await toolLesson('extraMoves',{free,gold});
 }
 // ---------- Hilfsmittel: Rakete und +3 Züge ----------
 const toolFx=createToolFx({reduceMotion,shakeTarget:()=>document.getElementById('playfield')});
@@ -565,6 +576,7 @@ async function rocketAt(tileId){
     board=board.map(row=>row.slice());board[cell[0]][cell[1]]=null;
     renderBoard();
   }finally{if(turn===generation){busy=false;renderCampaign();announceToolCap(gold,'rocket');}}
+  if(turn===generation&&camp?.run===run&&run.status==='playing')await toolLesson('rocket',{free,gold});
   // launch-15: „höchstens N Steine übrig“ kann direkt durch die Rakete erfüllt werden
   if(turn===generation&&camp?.run?.status==='won')await finishLevel();
   return true;
