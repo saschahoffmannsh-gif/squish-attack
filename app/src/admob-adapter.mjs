@@ -1,6 +1,7 @@
 // AdMob-Adapter für game/native-ads.mjs (registerNativeAds). Kein Import, das Plugin kommt aus der
 // Capacitor-Brücke (Capacitor.Plugins.AdMob). Reihenfolge beim ersten Start:
-//   initialize → UMP-Einwilligung (requestConsentInfo / showConsentForm) → ATT → Anzeigen nur bei canRequestAds.
+//   initialize → UMP-Einwilligung (requestConsentInfo / showConsentForm) → Anzeigen nur bei canRequestAds.
+//   launch-32: ATT nicht mehr hier beim Start (askTracking:false), sondern nach dem ersten gelösten Level (att-prompt.mjs).
 // Belohnung nur, wenn der Clip bis zum Ende lief (das Plugin lehnt sonst mit REWARDED_AD_CANCELLED ab).
 export const EVENTS = Object.freeze({
   rewardDismissed: 'onRewardedVideoAdDismissed',

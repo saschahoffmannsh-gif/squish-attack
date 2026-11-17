@@ -49,7 +49,7 @@ test('Squish.storekit enthält die Shop-Verbrauchsgüter plus Werbefrei als Nich
   const adFree = sk.products.find(p => p.productID === APP_CONFIG.store.adFreeProductId);
   assert.ok(adFree, 'squish.adfree fehlt in Squish.storekit');
   assert.equal(adFree.type, 'NonConsumable');
-  assert.equal(adFree.displayPrice, '2.99');
+  assert.equal(adFree.displayPrice, '4.99');
 });
 test('App-Icon und Startbild: alle Dateien vorhanden', () => {
   const icon = JSON.parse(read('ios/App/App/Assets.xcassets/AppIcon.appiconset/Contents.json'));

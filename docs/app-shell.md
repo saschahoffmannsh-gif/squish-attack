@@ -68,11 +68,11 @@ Mobile Ads SDK und die UMP-Einwilligung.
 
 | Stelle | Art | Regel |
 |---|---|---|
-| Abenteuer: Hilfsmittel einsetzen (ohne Werbefrei) | **Rewarded** | je Einsatz ein Clip; nur wenn er zu Ende geschaut wurde, wird die 1×-Ladung verbraucht. Kein Vorrat, kein Ansammeln. Werbefrei (`squish.adfree`, 2,99 €, StoreKit, Nicht-Verbrauch): gleicher 1×-Takt, ohne Clip |
+| Abenteuer: Hilfsmittel einsetzen (ohne Werbefrei) | **Rewarded** | je Einsatz ein Clip; nur wenn er zu Ende geschaut wurde, wird die 1×-Ladung verbraucht. Kein Vorrat, kein Ansammeln. Werbefrei (`squish.adfree`, 4,99 €, StoreKit, Nicht-Verbrauch): gleicher 1×-Takt, ohne Clip |
 | Abenteuer: nach jedem **5.** gewonnenen Level (launch-26, vorher 10) | **Interstitial** | Pflichtwerbung, erst vor dem nächsten Level, nie mitten im Level; entfällt bei Werbefrei |
-| Endlos: alle 10 Minuten ein Angebot, direkt nach einem Zug (wenn die Animationen fertig sind) | **Rewarded** (Angebot, kann weggedrückt werden) | Belohnung = **ein Werkzeug für den eigenen Endlos-Vorrat** (reihum Rakete, Zauberstab; Protokoll-Quelle `ad-endless`); der Abenteuer-Vorrat bleibt unberührt; **kein** Weiterspielen nach Game Over; entfällt bei Werbefrei |
+| Endlos: alle 15 Minuten ein Angebot, direkt nach einem Zug (wenn die Animationen fertig sind) | **Rewarded** (Angebot, kann weggedrückt werden) | Belohnung = **ein Werkzeug für den eigenen Endlos-Vorrat** (reihum Rakete, Zauberstab; Protokoll-Quelle `ad-endless`); der Abenteuer-Vorrat bleibt unberührt; **kein** Weiterspielen nach Game Over; entfällt bei Werbefrei |
 | Geschenke nach Level 3/6/10/20 | – | launch-26: entfallen vollständig, auch nicht in den Endlos-Vorrat |
-| Werbefrei (einmalig 2,99 €, `squish.adfree`) | IAP, nur App | Hook `registerAdFree({ isAdFree, purchase, restore })`. Entfernt Clips, Zwischenwerbung und das Endlos-Angebot, nicht das 1×-Limit. Werkzeug-Shop bleibt aus; in den Einstellungen: Kauf und „Käufe wiederherstellen“ |
+| Werbefrei (einmalig 4,99 €, `squish.adfree`) | IAP, nur App | Hook `registerAdFree({ isAdFree, purchase, restore })`. Entfernt Clips, Zwischenwerbung und das Endlos-Angebot, nicht das 1×-Limit. Werkzeug-Shop bleibt aus; in den Einstellungen: Kauf und „Käufe wiederherstellen“ |
 
 Werkzeug-Pakete im Shop bleiben ausgeblendet. Energie-Systeme: keine.
 
@@ -80,7 +80,7 @@ Werkzeug-Pakete im Shop bleiben ausgeblendet. Energie-Systeme: keine.
 // native-boot.js (Skizze)
 import { AdMob, RewardAdPluginEvents } from '@capacitor-community/admob';
 await AdMob.initialize({ initializeForTesting: false });
-// Einwilligung (UMP) zuerst, dann ATT (siehe 4.)
+// Einwilligung (UMP) beim Start; ATT erst nach dem ersten gelösten Level (siehe 4.)
 const REWARDED = 'ca-app-pub-XXX/YYY', INTER = 'ca-app-pub-XXX/ZZZ';
 window.SquishNative.registerNativeAds({
   name: 'admob',
@@ -98,7 +98,7 @@ window.SquishNative.registerNativeAds({
 ```
 
 **Im Spiel (launch-26):** Takt liegt in `game/ad-pacing.mjs` (`interstitialEvery: 5`,
-`endlessOfferMs: 10 Minuten`). Die App-Hülle zeigt Interstitials über `hasNativeAds()`
+`endlessOfferMs: 15 Minuten`, launch-32). Die App-Hülle zeigt Interstitials über `hasNativeAds()`
 und `takeInterstitial()`; die Web-Version zählt Siege mit `levelWon()`, zeigt aber
 keine Werbung. Endlos-Angebot und Endlos-Vorrat (einv, lokal + Cloud) bleiben nur in der App
 und sind unverändert. Ohne Adapter passiert im Browser nichts Sichtbares. Werbefrei
@@ -138,7 +138,10 @@ gelöscht, ist er weg.
 
 ## 4. Einwilligung: ATT und DSGVO
 
-Reihenfolge beim ersten Start, bevor Werbung geladen wird:
+Reihenfolge (launch-32): UMP beim ersten Start, bevor Werbung geladen wird; ATT erst nach dem
+ersten gelösten Level, mit einer kurzen Vorfrage im Comic-Stil („Hilf uns, das Spiel kostenlos zu
+halten“, nur „Weiter“), danach der Apple-Dialog. Code: `app/src/att-prompt.mjs`, ausgelöst über das
+Spiel-Ereignis `squish:level-won`; nur bei Status `notDetermined`, Merker `squish-att-asked-v1`.
 1. **Google UMP (Consent-Dialog)**, Pflicht in EU/EWR/UK für personalisierte Werbung. Den Dialog
    und die Texte in AdMob unter „Datenschutz & Mitteilungen“ anlegen (IAB-TCF-Dialog). Ohne
    Einwilligung kommt nur nicht personalisierte Werbung.
@@ -316,7 +319,7 @@ in der App liegen.
   Das Cloud-Feld `einv` bleibt im Wire-Format lesbar (`progress-merge.mjs`), die App sendet es nicht mehr;
   der Server-Merge behält einen gespeicherten Stand (PUT ohne `einv` löscht nichts).
 - Endlos-Spielstand (`shift3-play-v1`) und Rekord bleiben unverändert.
-- Die Endlos-Werbung alle 10 Minuten ist eine normale Zwischenwerbung ohne Belohnung; Werbefrei entfernt sie.
+- Die Endlos-Werbung alle 15 Minuten ist eine normale Zwischenwerbung ohne Belohnung; Werbefrei entfernt sie.
 - Abenteuer-Zwischenwerbung alle 10 gewonnenen Level.
 
 ## launch-31: Offline
@@ -333,3 +336,16 @@ in der App liegen.
 - Fällige Zwischenwerbung vor einem Level entfällt offline; der Levelstart wartet höchstens das Zeitlimit.
 - Kein Service Worker in der App (nur im Web, `game/offline-sw.js`).
 - Test: `app/test/e2e-app-offline.browser.mjs` („Funkloch“: SDK hängt, „Flugmodus“: offline).
+
+## launch-32
+
+- **ATT später:** `setupConsent(..., { askTracking: false })` beim Start (nur UMP). Nach dem ersten
+  gewonnenen Level (`squish:level-won`, ~2,4 s Pause) und erst wenn die UMP-Einwilligung fertig ist:
+  Vorfrage (DE „Hilf uns, das Spiel kostenlos zu halten“ / EN „Help us keep the game free“, eine
+  Zeile, Knopf „Weiter“) → `requestTrackingAuthorization`. Nur bei `notDetermined`, nur einmal.
+  Hängt die Einwilligung noch, wird beim nächsten Sieg erneut versucht.
+- **Werbefrei 4,99 €** (vorher 2,99 €): StoreKit-Testdatei, Doku, Spieltexte. In App Store Connect
+  die Preisstufe für 4,99 € wählen.
+- **Endlos-Zwischenwerbung alle 15 Minuten** (vorher 10).
+- **Sterne:** Hilfen kosten keine Sterne mehr; Sterne kommen von den übrigen Zügen (siehe
+  `docs/sterne-launch32.md` im Haupt-Repo).

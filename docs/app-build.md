@@ -65,7 +65,7 @@ Spiel. Werbung läuft mit **Google-Test-Anzeigen** (Banner „Test Ad“). Echte
   Schließt du das Video vorher, gibt es nichts.
 - **Zwischenwerbung:** nach jedem 10. gewonnenen Level (Wiederholungen zählen mit), immer erst
   **vor** dem nächsten Level.
-- **Endlos:** nach je 10 Minuten Spielzeit kommt nach einem Zug eine normale Zwischenwerbung
+- **Endlos:** nach je 15 Minuten Spielzeit kommt nach einem Zug eine normale Zwischenwerbung
   ohne Belohnung (Werbefrei entfernt sie). launch-29: Endlos hat keine Werkzeuge mehr.
 - **Spielstand über Neuinstallation:** ein paar Level spielen, App löschen, neu installieren
   (▶ in Xcode). Die Sterne kommen über den Schlüsselbund und die Cloud-Sicherung zurück.
@@ -87,12 +87,12 @@ angeschlossen und lässt sich lokal testen:
    ```
    Es erscheint der StoreKit-Testkaufdialog. Ergebnis: `{ok: true, items: {rocket: 3}, …}`.
    (Dieser Test bucht nichts in den Vorrat, er prüft nur den Kaufweg.)
-4. Werbefrei (Nicht-Verbrauch, 2,99 €, Produkt-ID `squish.adfree` — **ohne** das Shop-Präfix):
+4. Werbefrei (Nicht-Verbrauch, 4,99 €, Produkt-ID `squish.adfree` — **ohne** das Shop-Präfix):
    ```js
    await SquishApp.testAdFreePurchase()   // Kaufdialog, danach isAdFree() === true
    await SquishApp.testAdFreeRestore()    // Käufe wiederherstellen
    ```
-   In der App steht derselbe Weg unter Einstellungen: „Werbefrei 2,99 €“ und
+   In der App steht derselbe Weg unter Einstellungen: „Werbefrei 4,99 €“ und
    „Käufe wiederherstellen“ (nur in der nativen App, nicht im Web).
 5. Wer den ganzen Werkzeug-Shop sehen will: in `game/shop.mjs` vorübergehend `enabled: true` setzen,
    `npm run sync`, ▶. **Nicht so committen.**
@@ -110,7 +110,7 @@ Einmaliger In-App-Kauf, **kein** Abonnement, **kein** Verbrauchsartikel.
 2. Typ: **Nicht-Verbrauch** (Non-Consumable). Referenzname z. B. „Werbefrei“.
 3. Produkt-ID genau **`squish.adfree`** (nicht `de.hoffmann.squishattack.adfree`). Einmal angelegt,
    lässt sich die ID nicht mehr ändern.
-4. Preis: **2,99 EUR** (Preisstufe wählen, die in Deutschland 2,99 € anzeigt).
+4. Preis: **4,99 EUR** (Preisstufe wählen, die in Deutschland 4,99 € anzeigt).
 5. Lokalisierung Deutsch: Anzeigename „Werbefrei“, Beschreibung z. B. „Keine Werbung vor
    Hilfsmitteln, keine Zwischenwerbung. Jedes Hilfsmittel bleibt 1× je Versuch.“
    Englisch: „Ad-free“ / „No tool ads, no interstitials. Each tool stays 1× per attempt.“
@@ -118,7 +118,7 @@ Einmaliger In-App-Kauf, **kein** Abonnement, **kein** Verbrauchsartikel.
    „Non-consumable unlocks ad-free. Settings → Werbefrei and Käufe wiederherstellen.
    Does not remove the 1×-per-attempt tool limit.“
 7. Dieselbe ID steht in `app/src/app-config.mjs` (`store.adFreeProductId`) und in der Testdatei
-   `app/ios/App/App/Squish.storekit` (Typ `NonConsumable`, 2,99). Nach Änderungen an der Testdatei
+   `app/ios/App/App/Squish.storekit` (Typ `NonConsumable`, 4.99). Nach Änderungen an der Testdatei
    in Xcode das Schema prüfen (**StoreKit Configuration** = `Squish.storekit`).
 8. Werkzeug-Pakete (`de.hoffmann.squishattack.*`) bleiben Verbrauchsartikel und der Shop bleibt
    vorerst ausgeblendet. Sie nicht mit Werbefrei vermischen.
@@ -149,7 +149,7 @@ Einmaliger In-App-Kauf, **kein** Abonnement, **kein** Verbrauchsartikel.
 | **AdMob-Anzeigenblöcke** | Google-Test-IDs für Rewarded und Interstitial | `app/src/app-config.mjs` → `admob.rewardedId`, `admob.interstitialId` |
 | **Test-Modus Werbung** | `testing: true` | `app/src/app-config.mjs` → erst **nach** dem Eintragen der echten IDs auf `false` |
 | **Produkt-IDs (Werkzeug-Shop)** | `de.hoffmann.squishattack.<shop-id>`, z. B. `…rocket_3`, `…bundle_mix` | Präfix in `app/src/app-config.mjs` → `store.productPrefix`; die Shop-IDs kommen aus `SHOP_CONFIG` in `game/shop.mjs`. In App Store Connect als **Verbrauchsartikel** genau so anlegen. Die Testdatei `app/ios/App/App/Squish.storekit` muss dieselben IDs haben (bei neuem Präfix dort mit ändern). Shop bleibt ausgeblendet. |
-| **Werbefrei (IAP)** | `squish.adfree` (ohne Präfix), einmalig **2,99 EUR**, **Nicht-Verbrauch** | `app/src/app-config.mjs` → `store.adFreeProductId`. In App Store Connect als Non-Consumable mit genau dieser ID anlegen (siehe Abschnitt „Werbefrei in App Store Connect anlegen“). Testdatei `Squish.storekit` enthält denselben Eintrag. Einstellungen: Kauf + „Käufe wiederherstellen“. |
+| **Werbefrei (IAP)** | `squish.adfree` (ohne Präfix), einmalig **4,99 EUR**, **Nicht-Verbrauch** | `app/src/app-config.mjs` → `store.adFreeProductId`. In App Store Connect als Non-Consumable mit genau dieser ID anlegen (siehe Abschnitt „Werbefrei in App Store Connect anlegen“). Testdatei `Squish.storekit` enthält denselben Eintrag. Einstellungen: Kauf + „Käufe wiederherstellen“. |
 | **ATT-Text** | „Damit wir dir passendere Werbung zeigen können …“ | `app/ios/App/App/de.lproj/InfoPlist.strings`, `en.lproj/InfoPlist.strings` (und Info.plist) |
 | **ATT ganz weglassen** | `askTracking: true` | `app/src/app-config.mjs`. Bei `false` auch `NSUserTrackingUsageDescription` aus der Info.plist löschen und im Privacy Manifest `NSPrivacyTracking` auf `false`. |
 | **App-Icon / Startbild** | aus `game/icons/squishy-v1-1024.png` und dem Logo erzeugt | neue Vorlagen in `game/…` ablegen, dann `npm run assets` (braucht Python mit Pillow) |
@@ -172,13 +172,14 @@ app/
     native-boot.mjs       Start: Schlüsselbund-Token → Spiel → AdMob/StoreKit anmelden
     app-config.mjs        alle Platzhalter-IDs an einer Stelle
     token-keychain.mjs    Spieler-Token im iOS-Schlüsselbund (Fallback localStorage)
-    admob-adapter.mjs     UMP → ATT → Rewarded/Interstitial (nur Test-IDs)
+    admob-adapter.mjs     UMP → Rewarded/Interstitial (nur Test-IDs)
+    att-prompt.mjs        launch-32: Vorfrage + ATT nach dem ersten gelösten Level
     store-adapter.mjs     StoreKit über @capgo/native-purchases (Werkzeug-Pakete + Werbefrei squish.adfree)
     app.css               kein Zoom/Gummiband in der App
   test/                   Unit-Tests mit Mocks (npm test) + Browser-e2e mit gemocktem Capacitor
   ios/App/                Xcode-Projekt (Swift Package Manager, keine CocoaPods nötig)
 game/native.mjs           Brücke im Spiel: Haptik, Bildschirm wach, Speichern bei App-Pause (im Browser ohne Wirkung)
-game/ad-pacing.mjs        Werbe-Takt: jedes 10. gewonnene Level, Endlos-Zwischenwerbung alle 10 Minuten
+game/ad-pacing.mjs        Werbe-Takt: jedes 10. gewonnene Level, Endlos-Zwischenwerbung alle 15 Minuten
 ```
 
 Plugins: `@capacitor-community/admob` (Google Mobile Ads + UMP + ATT), `@capgo/native-purchases`

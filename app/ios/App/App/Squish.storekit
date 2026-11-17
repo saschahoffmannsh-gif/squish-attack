@@ -108,17 +108,17 @@
       "type": "Consumable"
     },
     {
-      "displayPrice": "2.99",
+      "displayPrice": "4.99",
       "familyShareable": false,
       "internalID": "6700000014",
       "localizations": [
         {
-          "description": "Werbefrei: keine Clips vor Hilfsmitteln, keine Zwischenwerbung. Jedes Hilfsmittel bleibt 1× je Versuch.",
+          "description": "Werbefrei: keine Clips vor Hilfsmitteln, keine Zwischenwerbung – Hilfen so oft du willst.",
           "displayName": "Werbefrei",
           "locale": "de_DE"
         },
         {
-          "description": "Ad-free: no tool clips, no interstitials. Each tool stays 1× per attempt.",
+          "description": "Ad-free: no tool clips, no interstitials – helps as often as you like.",
           "displayName": "Ad-free",
           "locale": "en_US"
         }

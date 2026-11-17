@@ -13,7 +13,8 @@ export const APP_CONFIG = Object.freeze({
     rewardedId: 'ca-app-pub-3940256099942544/1712485313',
     interstitialId: 'ca-app-pub-3940256099942544/4411468910',
     // Die AdMob-App-ID steht in ios/App/App/Info.plist (GADApplicationIdentifier), ebenfalls TEST.
-    // Personalisierte Werbung: ATT-Abfrage nach dem Consent-Dialog. false = nie nach ATT fragen.
+    // Personalisierte Werbung: ATT-Abfrage (launch-32: erst nach dem ersten gelösten Level, mit Vorfrage;
+    // die UMP-Einwilligung kommt weiter beim Start). false = nie nach ATT fragen.
     askTracking: true,
   }),
   store: Object.freeze({
@@ -21,7 +22,7 @@ export const APP_CONFIG = Object.freeze({
     // z. B. de.hoffmann.squishattack.rocket_3. Genau so in App Store Connect anlegen
     // (Typ: Verbrauchsartikel / Consumable). Die Testdatei ios/App/App/Squish.storekit nutzt dieselben IDs.
     productPrefix: 'de.hoffmann.squishattack.',
-    // Werbefrei (launch-26): einmalig 2,99 €, Nicht-Verbrauch / Non-Consumable.
+    // Werbefrei (launch-26, launch-32: 4,99 €): einmalig, Nicht-Verbrauch / Non-Consumable.
     // Feste Produkt-ID, ohne das Shop-Präfix. Genau so in App Store Connect und in Squish.storekit.
     adFreeProductId: 'squish.adfree',
   }),

@@ -4,6 +4,8 @@ import { restoreToken, persistToken } from '../src/token-keychain.mjs';
 import { setupConsent, createAdMobAdapter, EVENTS } from '../src/admob-adapter.mjs';
 import { createStoreKitAdapter, createAdFreeAdapter } from '../src/store-adapter.mjs';
 import { APP_CONFIG, storeProductId, shopIdFromProductId } from '../src/app-config.mjs';
+import { createAttFlow, ATT_ASKED_KEY, ATT_TEXT } from '../src/att-prompt.mjs';
+import { readFileSync } from 'node:fs';
 
 const T1 = 'a'.repeat(64), T2 = 'b'.repeat(64), KEY = 'squish-save-token-v1';
 const mem = (init = {}) => { const m = new Map(Object.entries(init)); return { m, getItem: k => m.get(k) ?? null, setItem: (k, v) => m.set(k, String(v)) }; };
@@ -178,12 +180,12 @@ test('Werbefrei: Nicht-Verbrauch-Kauf, Restore, lokales Entitlement', async () =
     async restorePurchases() { calls.push(['restore']); },
     async getPurchases() { calls.push(['get']); return { purchases }; },
     async getProducts({ productIdentifiers }) {
-      return { products: productIdentifiers.map(id => ({ identifier: id, priceString: '2,99 €', title: 'Werbefrei', price: 2.99 })) };
+      return { products: productIdentifiers.map(id => ({ identifier: id, priceString: '4,99 €', title: 'Werbefrei', price: 4.99 })) };
     },
   };
   const a = createAdFreeAdapter({ NativePurchases: NP, productId: 'squish.adfree', storage, log() {} });
   assert.equal(a.isAdFree(), false);
-  assert.equal(await a.loadPrice(), '2,99 €');
+  assert.equal(await a.loadPrice(), '4,99 €');
   const buy = await a.purchase();
   assert.equal(buy.ok, true);
   assert.equal(buy.transactionId, 'af1');
@@ -218,4 +220,50 @@ test('Werbefrei: Nicht-Verbrauch-Kauf, Restore, lokales Entitlement', async () =
     storage: mem(), log() {},
   });
   assert.equal((await cancel.purchase()).reason, 'cancelled');
+});
+
+// ---------- launch-32: ATT erst nach dem ersten gelösten Level, mit Vorfrage ----------
+const tick = (ms = 5) => new Promise(r => setTimeout(r, ms));
+test('launch-32: App-Start fragt nur UMP, kein ATT (native-boot: askTracking:false)', async () => {
+  const A = admobMock();
+  await setupConsent(A, { askTracking: false, testing: true });
+  assert.deepEqual(A.calls.map(c => c[0]), ['initialize', 'requestConsentInfo', 'showConsentForm']);
+  const boot = readFileSync(new URL('../src/native-boot.mjs', import.meta.url), 'utf8');
+  assert.match(boot, /setupConsent\(AdMob, \{ askTracking: false/);
+  assert.match(boot, /createAttFlow\(/);
+});
+test('launch-32: erst nach dem ersten gelösten Level: Einwilligung → Vorfrage → ATT, nur einmal', async () => {
+  const A = admobMock(), target = new EventTarget(), storage = mem(), order = [];
+  let consentDone = false;
+  const ready = new Promise(r => setTimeout(() => { consentDone = true; order.push('consent'); r({ canRequestAds: true }); }, 10));
+  const prompt = async ({ lang }) => { order.push('pre:' + lang); assert.ok(consentDone, 'Einwilligung vor der Vorfrage'); };
+  const orig = A.requestTrackingAuthorization; A.requestTrackingAuthorization = async () => { order.push('att'); return orig(); };
+  const flow = createAttFlow({ AdMob: A, ready, storage, target, prompt, lang: () => 'de', delayMs: 0 });
+  await tick(30);
+  assert.ok(!A.calls.some(c => c[0] === 'requestTracking'), 'kein ATT vor dem ersten Sieg');
+  target.dispatchEvent(new Event('squish:level-won')); await tick(30);
+  assert.deepEqual(order, ['consent', 'pre:de', 'att']);
+  assert.equal(flow.stats.status, 'authorized'); assert.equal(storage.getItem(ATT_ASKED_KEY), 'authorized');
+  target.dispatchEvent(new Event('squish:level-won')); await tick(30);
+  assert.equal(order.filter(x => x === 'att').length, 1, 'nur einmal');
+});
+test('launch-32: schon entschieden → keine Vorfrage; Einwilligung hängt → später erneut', async () => {
+  const A = admobMock({ att: 'denied' }), target = new EventTarget(), storage = mem(); let shown = 0;
+  createAttFlow({ AdMob: A, storage, target, prompt: async () => { shown++; }, delayMs: 0 });
+  target.dispatchEvent(new Event('squish:level-won')); await tick(20);
+  assert.equal(shown, 0); assert.ok(!A.calls.some(c => c[0] === 'requestTracking')); assert.equal(storage.getItem(ATT_ASKED_KEY), 'denied');
+  const B = admobMock(), t2 = new EventTarget(), s2 = mem(); let shown2 = 0;
+  const f = createAttFlow({ AdMob: B, ready: new Promise(() => {}), storage: s2, target: t2, prompt: async () => { shown2++; }, delayMs: 0, readyMs: 20 });
+  t2.dispatchEvent(new Event('squish:level-won')); await tick(60);
+  assert.equal(shown2, 0); assert.equal(f.stats.skipped, 'consent-pending'); assert.equal(s2.getItem(ATT_ASKED_KEY), null);
+});
+test('launch-32: Vorfrage-Texte DE/EN kurz', () => {
+  assert.equal(ATT_TEXT.de.title, 'Hilf uns, das Spiel kostenlos zu halten');
+  assert.equal(ATT_TEXT.en.title, 'Help us keep the game free');
+  for (const l of ['de', 'en']) assert.ok(ATT_TEXT[l].line.length < 110 && ATT_TEXT[l].ok, l);
+});
+test('launch-32: Werbefrei 4,99 € in der StoreKit-Testdatei', () => {
+  const sk = JSON.parse(readFileSync(new URL('../ios/App/App/Squish.storekit', import.meta.url), 'utf8'));
+  const p = sk.products.find(x => x.productID === 'squish.adfree');
+  assert.equal(p.displayPrice, '4.99'); assert.equal(p.type, 'NonConsumable');
 });

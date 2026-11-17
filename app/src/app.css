@@ -2,3 +2,17 @@
 html, body { overscroll-behavior: none; -webkit-text-size-adjust: 100%; }
 html[data-app-shell] body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 html[data-app-shell] input, html[data-app-shell] textarea { -webkit-user-select: text; user-select: text; }
+
+/* launch-32: ATT-Vorfrage (Comic, Fredoka, Navy/Gold) – nutzt .ex-veil/.ex-panel/.ex-ok aus game/explain.css */
+.att-veil { z-index: 1400; }
+.att-panel { align-items: center; text-align: center; gap: 12px; padding: 18px 16px 16px; }
+.att-pic { position: relative; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; height: 112px;
+  border-radius: 20px; border: 3px solid #0b0a16; background: radial-gradient(70% 80% at 50% 55%, #4a4a9a 0%, #2c2b5c 60%, #1d1c45 100%); }
+.att-pic .ex-tile { --s: 54px; }
+.att-heart { width: 64px; height: 58px; display: block; filter: drop-shadow(0 3px 0 #0b0a16aa) drop-shadow(0 0 12px #ffd25a88); animation: att-beat 1.6s ease-in-out infinite; }
+.att-heart svg { width: 100%; height: 100%; display: block; }
+@keyframes att-beat { 0%, 100% { scale: 1; } 12% { scale: 1.14; } 24% { scale: .98; } 36% { scale: 1.08; } 48% { scale: 1; } }
+.att-title { margin: 2px 4px 0; font: 700 23px/1.12 var(--aw-comic); color: #ffd25a; text-shadow: 0 2px 0 #6a3304; }
+.att-line { margin: 0 6px; font: 600 15.5px/1.35 var(--aw-comic); color: #e9ecff; }
+.att-ok { align-self: stretch; }
+@media (prefers-reduced-motion: reduce) { .att-heart { animation: none; } }
