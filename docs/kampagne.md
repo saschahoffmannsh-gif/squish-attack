@@ -705,3 +705,5 @@ Aktueller Stand im Spiel (Schalter in `campaign.mjs`):
   Limit + 3) und `tools/campaign/gates32.mjs` (alt/neu, mit/ohne +3, beste von 1/3/5 Versuchen).
 - **Werbefrei 4,99 €** (vorher 2,99 €). **Endlos-Zwischenwerbung alle 15 Minuten** aktiver Spielzeit (vorher 10).
 - Signal `squish:level-won` (CustomEvent auf `window`, `detail {level, stars}`) für die App-Hülle (ATT-Vorfrage).
+
+Nachtrag launch-32: Für die Sterne zählt jede Rakete wie ein Zug (übrig = Limit − Züge − Raketen; +3 zählt nie).

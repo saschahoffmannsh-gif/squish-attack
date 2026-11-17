@@ -344,10 +344,14 @@ export function starsFor(level, movesUsed, won = true) {
   const left = level.moves - movesUsed, need = starNeeds(level);
   return left >= need.three ? 3 : left >= need.two ? 2 : 1;
 }
-/** Übrige Züge für die Sterne (ohne „+3“-Züge, nie unter 0 angezeigt). */
-export const starMovesLeft = run => Math.max(0, run.level.moves - run.moves);
-/** Sterne für einen fertigen Lauf. Hilfen und Gold-Geschenke sind sternneutral; nur die Züge zählen. */
-export const starsOfRun = run => starsFor(run.level, run.moves, run.status === 'won');
+/** launch-32 (Entscheidung Sascha): jede Rakete (Clip, Werbefrei, Gold, Tutorial) zählt für die Sterne wie ein Zug. */
+export const rocketsUsed = run => [...(run.toolsUsed || []), ...(run.giftsUsed || [])].filter(x => x === 'rocket').length;
+/** Für die Sterne verbrauchte Züge: echte Züge + Raketen. „+3“ bringt nie etwas dazu. */
+export const starMovesUsed = run => run.moves + rocketsUsed(run);
+/** Übrige Züge für die Sterne (Limit − Züge − Raketen, ohne „+3“-Züge, nie unter 0 angezeigt). */
+export const starMovesLeft = run => Math.max(0, run.level.moves - starMovesUsed(run));
+/** Sterne für einen fertigen Lauf: übrige Züge, jede Rakete zählt als ein Zug; +3 und Gold sonst sternneutral. */
+export const starsOfRun = run => starsFor(run.level, starMovesUsed(run), run.status === 'won');
 
 /**
  * Sterne-Schwellen für Werkzeug-Level (launch-15): Ergebnis ist ohnehin auf 2★ gedeckelt.

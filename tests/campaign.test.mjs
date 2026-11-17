@@ -7,7 +7,7 @@ import {
   validateLevel, encodeMove, decodeMove, recordResult, mergeProgress, emptyProgress, isUnlocked,
   nextLevel, totalStars, loadProgress, saveProgress, goalText, starThresholds, starsOfRun, addExtraMoves,
   markToolUsed, moveLimit, lockReason, chapterOf, starGate, CHAPTER_SIZE, STARS_PER_CHAPTER_GATE, CHAPTER_QUOTAS_28,
-  starNeeds, starMovesLeft, STAR_PLUS3_BAND, tileAt, migrateRules28Once,
+  starNeeds, starMovesLeft, STAR_PLUS3_BAND, rocketsUsed, starMovesUsed, tileAt, migrateRules28Once,
   resetChangedStarsOnce, STARS_RESET, STARS_RESET_KEY,
   resetCurveStarsOnce, CURVE_STARS_RESET, CURVE_STARS_RESET_KEY, CURVE_STARS_RESET_IDS, PROGRESS_EPOCH,
 } from '../game/campaign.mjs';
@@ -80,13 +80,24 @@ test('launch-32: Sterne aus übrigen Zügen – Hilfen kosten keine Sterne, gel�
   applyLevelMove(gold, 'right', 0);
   assert.equal(gold.status, 'won');
   assert.deepEqual(gold.giftsUsed, ['rocket']); assert.deepEqual(gold.toolsUsed, []);
-  assert.equal(starsOfRun(gold), 3);
+  assert.equal(starsOfRun(gold), 2);                                // launch-32: auch die Gold-Rakete zählt als 1 Zug (3 − 1 − 1 = 1 übrig)
   const run = createLevelRun(base());
   markToolUsed(run, 'rocket'); markToolUsed(run, 'rocket');
   applyLevelMove(run, 'right', 0);
   assert.equal(run.status, 'won');
-  assert.equal(starsOfRun(run), 3);                                 // 2 Hilfen (Clip/Werbefrei): weiter 3★
-  assert.equal(starMovesLeft(run), 2);
+  assert.equal(starsOfRun(run), 1);                                 // 2 Raketen + 1 Zug = 3 → 0 übrig → 1★
+  assert.equal(starMovesLeft(run), 0);
+  const plus = createLevelRun(base());
+  addExtraMoves(plus, 3); applyLevelMove(plus, 'right', 0);
+  assert.equal(starsOfRun(plus), 3); assert.equal(starMovesLeft(plus), 2);   // +3 kostet nichts und bringt nichts
+});
+
+test('launch-32: jede Rakete zählt für die Sterne als ein Zug – unbegrenzte Raketen bringen kein 3★', () => {
+  const lv = base({ moves: 6, sequence: [1, 2, 3, 4, 5, 6], stars: starThresholds(3, 6) });     // 3★ ab 2 übrig, 2★ ab 1
+  const at = rockets => { const r = createLevelRun(lv); for (let i = 0; i < rockets; i++) markToolUsed(r, 'rocket', { gift: i % 2 === 1 }); applyLevelMove(r, 'right', 0); return [starsOfRun(r), starMovesLeft(r)]; };
+  assert.deepEqual([0, 3, 4, 5, 9].map(at), [[3, 5], [3, 2], [2, 1], [1, 0], [1, 0]]);
+  assert.equal(rocketsUsed({ toolsUsed: ['rocket', 'extraMoves'], giftsUsed: ['rocket', 'extraMoves'] }), 2);
+  assert.equal(starMovesUsed({ moves: 4, toolsUsed: ['rocket'], giftsUsed: [] }), 5);
 });
 
 test('launch-32: Spitzen-Level ohne 2★-Stufe – 3★ im Limit, 2★ mit höchstens einem +3, sonst 1★', () => {
@@ -225,7 +236,7 @@ import { useRocket, progressVector, emptyInventory, loadInventory, saveInventory
 import { findHint, hintState } from '../game/hint-solver.mjs';
 import { readFileSync } from 'node:fs';
 
-test('Rakete entfernt einen Stein, kostet keinen Zug, deckelt auf 2★', () => {
+test('Rakete entfernt einen Stein (kein Spielzug; für die Sterne zählt sie launch-32 als 1 Zug)', () => {
   const run = createLevelRun(base());
   assert.equal(useRocket(run, 2, 2), false);            // leeres Feld
   assert.equal(useRocket(run, 0, 1), true);
