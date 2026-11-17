@@ -2,8 +2,8 @@
 // Ein Level = feste Startaufstellung + feste Steinfolge + Ziele + Zuglimit.
 // Dieses Modul ist reine Logik (kein DOM). Es wird von der UI, dem Solver,
 // dem Generator und den Tests gemeinsam benutzt, damit alle exakt gleich zählen.
-import { SIZE, insertTile, settle, isGameOver, tickBombs, BOMB_MS, BOMB_UNIT_MS } from './game-logic.mjs?v=launch-29';
-import { t, fmtNum } from './i18n.mjs?v=launch-29';
+import { SIZE, insertTile, settle, isGameOver, tickBombs, BOMB_MS, BOMB_UNIT_MS } from './game-logic.mjs?v=launch-30';
+import { t, fmtNum } from './i18n.mjs?v=launch-30';
 
 export const DIRECTIONS = ['left', 'right', 'up', 'down'];
 export const QUEUE_PREVIEW = 3;
@@ -449,14 +449,17 @@ export function mergeProgress(a, b) {
 export const totalStars = progress => Object.values(progress.levels).reduce((n, r) => n + r.stars, 0);
 
 // ---------------- Kapitel und Sterne-Schranken ----------------
-// Kapitel à 10 Level (max. 30★ je Kapitel). launch-28: deutlich strenger und steigend.
+// Kapitel à 10 Level (max. 30★ je Kapitel). launch-30: 24★ je Kapitel (80 %), kumuliert
+// 24/48/72/96/120/144/168/192/216★. Bis launch-29: 21, 22, 22, 23, 23, 24, 24, 25, 25 (CHAPTER_QUOTAS_28).
+// launch-28: deutlich strenger und steigend.
 // CHAPTER_QUOTAS[j] = Sterne, die Kapitel j+1 zur Schranke beiträgt; für Kapitel k braucht man
 // die Summe der Quoten aller Kapitel davor (insgesamt, Überschuss früherer Kapitel zählt mit).
 //   Kapitel 1→2: 21 (70 %) … Kapitel 9→10: 25 (83 %). Ø ≈ 2,3★ je Level: die meisten Level
 //   brauchen 3★ ohne Hilfe; die Werkzeug-Spitzen dürfen mit einer Hilfe (2★) gespielt werden.
 // Alte Regel bis launch-27: 18★ je Kapitel (60 %).
 export const CHAPTER_SIZE = 10;
-export const CHAPTER_QUOTAS = Object.freeze([21, 22, 22, 23, 23, 24, 24, 25, 25]);
+export const CHAPTER_QUOTAS = Object.freeze([24, 24, 24, 24, 24, 24, 24, 24, 24]);
+export const CHAPTER_QUOTAS_28 = Object.freeze([21, 22, 22, 23, 23, 24, 24, 25, 25]);   // historisch (launch-28/29)
 export const STARS_PER_CHAPTER_GATE = 18;   // historisch (bis launch-27)
 export const chapterOf = n => Math.floor((n - 1) / CHAPTER_SIZE) + 1;
 export const chapterStart = k => (k - 1) * CHAPTER_SIZE + 1;
@@ -721,13 +724,16 @@ export function resetCurveStarsOnce(progress, storage = globalThis.localStorage,
  * Sprache und Einstellungen ebenfalls. Geräte mit Merker launch-22 setzen erneut zurück,
  * weil der Merker jetzt launch-24 ist. Epoche PROGRESS_EPOCH, damit die Cloud den alten
  * Stand nicht zurückbringt. Ein Merker verhindert Wiederholungen. Rückgabe {progress, inventory, reset}.
+ * launch-30: noch einmal für alle (neue Kapitel-Hürden 24★ je Kapitel, Neustart ab Level 1):
+ * Merker und Epoche launch-30; zusätzlich werden die gesehenen Erklär-Fenster (Tutorials) vergessen.
  */
-export const PROGRESS_EPOCH = 'launch-28';
-export const TUTORIAL_RESET = 'launch-24';
+export const PROGRESS_EPOCH = 'launch-30';
+export const TUTORIAL_RESET = 'launch-30';
 export const TUTORIAL_RESET_KEY = 'squish-campaign-tutorial-reset';
 export const MODES_UNLOCK_SEEN_KEY = 'squish-modes-unlock-seen';
 export function resetAdventureForTutorialsOnce(progress, inv, storage = globalThis.localStorage, {
   tag = TUTORIAL_RESET, syncKey = 'squish-progress-sync-v1', unlockSeenKey = MODES_UNLOCK_SEEN_KEY,
+  explainKey = 'squish-explain-seen-v1',
 } = {}) {
   let done = null;
   try { done = storage?.getItem(TUTORIAL_RESET_KEY); } catch {}
@@ -739,6 +745,7 @@ export function resetAdventureForTutorialsOnce(progress, inv, storage = globalTh
   try { storage?.setItem(TUTORIAL_RESET_KEY, tag); } catch {}
   try { storage?.removeItem(syncKey); } catch {}
   try { storage?.removeItem(unlockSeenKey); } catch {}
+  try { if (explainKey) storage?.removeItem(explainKey); } catch {}
   return { progress: p, inventory: out, reset: true };
 }
 /** Offenes Geschenk einsammeln → {inventory, gift} oder null. Ohne id: das älteste. */

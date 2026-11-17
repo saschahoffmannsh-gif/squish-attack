@@ -1,35 +1,35 @@
-import {apiFetch,hasSaveToken} from './api.mjs?v=launch-29';
-import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-29';
+import {apiFetch,hasSaveToken} from './api.mjs?v=launch-30';
+import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-30';
 import { nextSpawn, spawnProfile } from './balance.mjs';
-import {canContinueRun} from './run-availability.mjs?v=launch-29';
-import { createMergeEffects } from './merge-effects.mjs?v=launch-29';
-import { createGameGraphics } from './graphics-adapter.mjs?v=launch-29';
-import { installDeviceMotion } from './device-motion.mjs?v=launch-29';
-import { createGameSound } from './sound.mjs?v=launch-29';
+import {canContinueRun} from './run-availability.mjs?v=launch-30';
+import { createMergeEffects } from './merge-effects.mjs?v=launch-30';
+import { createGameGraphics } from './graphics-adapter.mjs?v=launch-30';
+import { installDeviceMotion } from './device-motion.mjs?v=launch-30';
+import { createGameSound } from './sound.mjs?v=launch-30';
 import { installSettings } from './settings.mjs?v=woodland-menu-1';
-import { createDuelClient } from './duel-client.mjs?v=launch-29';
+import { createDuelClient } from './duel-client.mjs?v=launch-30';
 import {installFullscreen} from './fullscreen.mjs?v=timed-duel-1';
-import {createHomeMenu} from './home-menu.mjs?v=launch-29';
-import {createConfetti} from './confetti.mjs?v=launch-29';
-import {createHaptics} from './haptics.mjs?v=launch-29';
+import {createHomeMenu} from './home-menu.mjs?v=launch-30';
+import {createConfetti} from './confetti.mjs?v=launch-30';
+import {createHaptics} from './haptics.mjs?v=launch-30';
 import {planMergeRipple} from './merge-ripple.mjs?v=swarm-fx-3';
-import * as Camp from './campaign.mjs?v=launch-29';
-import {createCampaignUI} from './campaign-ui.mjs?v=launch-29';
-import {createToolFx} from './tool-fx.mjs?v=launch-29';
-import {createGhostFinger} from './ghost-finger.mjs?v=launch-29';
-import * as Shop from './shop.mjs?v=launch-29';
-import {createShopUI} from './shop-ui.mjs?v=launch-29';
-import {createGiftFx} from './gift-fx.mjs?v=launch-29';
-import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-29';
-import {createAdUI} from './ad-ui.mjs?v=launch-29';
-import {createStatsUI} from './stats-ui.mjs?v=launch-29';
-import * as ToolLog from './tool-log.mjs?v=launch-29';
-import {createProgressSync} from './progress-sync.mjs?v=launch-29';
-import {epochOf} from './progress-merge.mjs?v=launch-29';
-import {createAdPacing} from './ad-pacing.mjs?v=launch-29';
-import {isAdFree,canOfferAdFree,purchaseAdFree,adFreePriceLabel} from './ad-free.mjs?v=launch-29';
-import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-29';
-import {createExplainer} from './explain.mjs?v=launch-29';
+import * as Camp from './campaign.mjs?v=launch-30';
+import {createCampaignUI} from './campaign-ui.mjs?v=launch-30';
+import {createToolFx} from './tool-fx.mjs?v=launch-30';
+import {createGhostFinger} from './ghost-finger.mjs?v=launch-30';
+import * as Shop from './shop.mjs?v=launch-30';
+import {createShopUI} from './shop-ui.mjs?v=launch-30';
+import {createGiftFx} from './gift-fx.mjs?v=launch-30';
+import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-30';
+import {createAdUI} from './ad-ui.mjs?v=launch-30';
+import {createStatsUI} from './stats-ui.mjs?v=launch-30';
+import * as ToolLog from './tool-log.mjs?v=launch-30';
+import {createProgressSync} from './progress-sync.mjs?v=launch-30';
+import {epochOf} from './progress-merge.mjs?v=launch-30';
+import {createAdPacing} from './ad-pacing.mjs?v=launch-30';
+import {isAdFree,canOfferAdFree,purchaseAdFree,adFreePriceLabel} from './ad-free.mjs?v=launch-30';
+import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-30';
+import {createExplainer} from './explain.mjs?v=launch-30';
 const playfield = document.getElementById('playfield');
 const gameElement = document.querySelector('.game');
 const visual = createGameGraphics(document.getElementById('graphics'));
@@ -144,9 +144,9 @@ const newTile = value => ({ id: nextId++, value });
 // in localStorage unangetastet: während der Kampagne wird nichts davon gespeichert,
 // beim Verlassen wird er wieder geladen.
 const MODE_KEY='squish-mode-v1';
-const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-29',import.meta.url);
+const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-30',import.meta.url);
 // launch-16: Test-Level für die neuen Squishes (Eis, Ketten, Bombe) – eigener kleiner Satz, kein Fortschritt/Protokoll.
-const LAB_URL=new URL('../levels/levels-lab.json?v=launch-29',import.meta.url);
+const LAB_URL=new URL('../levels/levels-lab.json?v=launch-30',import.meta.url);
 let labMode=false,labLevels=null,labLoading=null;
 function loadLab(){
   return labLoading||=fetch(LAB_URL,{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('lab '+r.status);return r.json();})
@@ -179,6 +179,8 @@ if(Camp.CAMPAIGN_RESET){const r=Camp.resetCampaignOnce(campaignProgress,inventor
 if(Camp.STARS_RESET){const s=Camp.resetChangedStarsOnce(campaignProgress);campaignProgress=s.progress;}
 // launch-22: Abenteuer (Sterne, Vorrat, Geschenke, Freischaltungen) einmalig leeren für die Tutorials.
 // Endlos-Spielstand, Rekord und Endlos-Vorrat bleiben. Epoche 22, damit die Cloud den alten Stand nicht zurückbringt.
+// launch-30: noch einmal für alle (neue Kapitel-Hürden 24★): Abenteuer, Geschenke, Freischaltungen und gesehene
+// Erklär-Fenster leer, Start ab Level 1. Endlos, Rekord und Einstellungen bleiben. Epoche 30.
 if(Camp.TUTORIAL_RESET){const t=Camp.resetAdventureForTutorialsOnce(campaignProgress,inventory);campaignProgress=t.progress;inventory=t.inventory;}
 if(Camp.CURVE_STARS_RESET){const c=Camp.resetCurveStarsOnce(campaignProgress);campaignProgress=c.progress;}
 // launch-28: neue Regeln (Hilfen kosten Sterne, strengere Kapitel-Hürden). Sterne werden einmalig nach den neuen
@@ -192,7 +194,7 @@ const progressSync=createProgressSync({fetch:apiFetch,epoch:epochOf(Camp.PROGRES
   setLocal:(p,inv)=>{campaignProgress=p;Camp.saveProgress(p);if(inv!==inventory){inventory=inv;Camp.saveInventory(inv,undefined,false);}try{renderCampaign();void worldMenu.refresh?.();}catch{}}});
 const cloudSync=()=>{if(!labMode)progressSync.schedule();};
 progressSync.attach(window);
-const BUILD_LABEL='launch-29';
+const BUILD_LABEL='launch-30';
 let toolLog=ToolLog.loadLog(),logAttempt=null;
 // Versuche, die beim letzten Mal offen blieben (Seite geschlossen), gelten als abgebrochen.
 if(toolLog.attempts.some(a=>!a.outcome)){for(const a of toolLog.attempts)if(!a.outcome)ToolLog.endAttempt(toolLog,a.id,{outcome:'quit',moves:a.moves});ToolLog.saveLog(toolLog);}

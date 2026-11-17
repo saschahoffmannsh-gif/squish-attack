@@ -1,8 +1,8 @@
 // Werkzeug-Statistik (launch-13, Testphase): Übersicht aus dem lokalen Protokoll, Export, Zurücksetzen.
-import { TOOL_ICONS } from './tool-icons.mjs?v=launch-29';
-import { toolName } from './campaign.mjs?v=launch-29';
-import { summarize, exportLog } from './tool-log.mjs?v=launch-29';
-import { t } from './i18n.mjs?v=launch-29';
+import { TOOL_ICONS } from './tool-icons.mjs?v=launch-30';
+import { toolName } from './campaign.mjs?v=launch-30';
+import { summarize, exportLog } from './tool-log.mjs?v=launch-30';
+import { t } from './i18n.mjs?v=launch-30';
 
 const TYPES = ['extraMoves', 'rocket'];   // launch-29: nur noch +3 Züge und Rakete
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };

@@ -433,7 +433,7 @@ export const STRINGS = {
   "ex.gates.title": { de: "Kapitel-Sterne", en: "Chapter stars" },
   "ex.gates.chapter": { de: "Kap. {n}", en: "Ch. {n}" },
   "ex.gates.l1": { de: "Alle {size} Level beginnt ein neues Kapitel. Es öffnet erst, wenn du insgesamt genug Sterne hast.", en: "Every {size} levels a new chapter begins. It opens only once you have enough stars in total." },
-  "ex.gates.l2": { de: "Die Hürde steigt von Kapitel zu Kapitel – die meisten Level brauchst du mit 3 ★, also ohne Hilfe.", en: "The bar rises from chapter to chapter – you need most levels at 3 ★, so without help." },
+  "ex.gates.l2": { de: "Jedes Kapitel braucht 24 ★ mehr – die meisten Level brauchst du mit 3 ★, also ohne Hilfe.", en: "Each chapter needs 24 ★ more – you need most levels at 3 ★, so without help." },
   "ex.gates.now": { de: "Kapitel {chapter} braucht {need} ★ – du hast {have} ★.", en: "Chapter {chapter} needs {need} ★ – you have {have} ★." },
   "ex.gates.l3": { de: "Tipp: Spiel Level ohne Hilfe nochmal – dein bestes Ergebnis zählt.", en: "Tip: replay levels without help – your best result counts." },
   "ex.ads.title": { de: "Werbung & Werbefrei", en: "Ads & Ad-free" },
