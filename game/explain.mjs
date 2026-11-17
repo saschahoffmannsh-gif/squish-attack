@@ -87,17 +87,6 @@ const SCENES = {
     return stage('ads', put(tv, -58, 6, 'sx-tv'), icon(TOOL_ICONS.rocket, -58, 6, 'sx-adreward', { mx: 160, my: -30 }),
       plus3(-58, 6, 'sx-adreward is-late', { mx: 160, my: 38 }), put(el('b', 'sx-stamp', t('ex.ads.price')), -52, 4, '')); },
 };
-/** Endlos-Werkzeuge (nur App-Hülle registriert das Thema). */
-export const ENDLESS_TOPIC = {
-  icon: () => miniTile(10, { gold: true }), title: () => t('ex.endless.title'),
-  scene: () => stage('endless', burst(48, -6, 'sx-eburst'),
-    tile(9, 48, -6, 'sx-e1'), tile(10, 48, -6, 'sx-e2'), tile(19, 48, -6, 'sx-e3'), tile(20, 48, -6, 'sx-e4'),
-    bubble('10!', 48, -58, 'sx-flag1 is-gold'), bubble('20!', 48, -58, 'sx-flag2 is-gold'),
-    put(el('span', 'sx-tray'), -90, 52, ''), put(el('span', 'sx-cell is-slot'), -114, 52), put(el('span', 'sx-cell is-slot'), -66, 52),
-    icon(TOOL_ICONS.rocket, 48, -6, 'sx-etool1', { mx: -114, my: 52 }), icon(TOOL_ICONS.wand, 48, -6, 'sx-etool2', { mx: -66, my: 52 })),
-  line: () => t('ex.endless.line'), sr: () => [t('ex.endless.l1'), t('ex.endless.l2'), t('ex.endless.l3')],
-};
-
 /** Themen: scene(ctx) baut die Mini-Szene, line(ctx) die eine kurze Zeile, sr(ctx) den Volltext für Screenreader. */
 const TOPICS = {
   merge: { icon: () => miniTile(3), title: () => t('ex.merge.title'), scene: SCENES.merge, line: () => t('ex.merge.line'),

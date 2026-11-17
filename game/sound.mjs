@@ -308,7 +308,7 @@ export function createGameSound(button,{
       return;
     }
     if(kind==='magic'){
-      // Zauberstab: kleines aufsteigendes Plopp-Arpeggio.
+      // Funkeln: kleines aufsteigendes Plopp-Arpeggio.
       [1.12,1.4,1.75].forEach((rate,i)=>sample('plop',{volume:.22,rate,pan,delay:delay+i*.07,priority:2}));
       notePlay({kind,name:'plop',size,rate:1.12,volume:.22,delay,t:requestedAt??now()});
       return;

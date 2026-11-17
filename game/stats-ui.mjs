@@ -4,7 +4,7 @@ import { toolName } from './campaign.mjs?v=launch-28';
 import { summarize, exportLog } from './tool-log.mjs?v=launch-28';
 import { t } from './i18n.mjs?v=launch-28';
 
-const TYPES = ['extraMoves', 'hint', 'rocket', 'wand'];
+const TYPES = ['extraMoves', 'rocket'];   // launch-29: nur noch +3 Züge und Rakete
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 const CLOSE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>';
 const ico = type => { const s = el('i', 'ts-ico'); s.innerHTML = TOOL_ICONS[type] || ''; s.title = toolName(type); return s; };

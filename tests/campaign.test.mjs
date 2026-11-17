@@ -220,8 +220,8 @@ test('Freischalten (launch-28): Sterne-Schranke am Kapitelanfang; offene Kapitel
 });
 
 import { FREE_TOOLS_PER_LEVEL, TOOL_STOCK, goldStock, spendGold, ADVENTURE_TOOLS, LEVEL_GIFTS, queueGifts, collectGift, addToStock } from '../game/campaign.mjs';
-import { SHOP_CONFIG, shopProducts, formatPrice, purchase, activeStore, registerNativeStore } from '../game/shop.mjs';
-import { useRocket, useWand, wandChoices, wandCap, progressVector, emptyInventory, loadInventory, saveInventory, spendTool, grantGifts, toolName } from '../game/campaign.mjs';
+import { SHOP_CONFIG, shopProducts, formatPrice, purchase, activeStore, registerNativeStore, productById } from '../game/shop.mjs';
+import { useRocket, progressVector, emptyInventory, loadInventory, saveInventory, spendTool, grantGifts, toolName } from '../game/campaign.mjs';
 import { findHint, hintState } from '../game/hint-solver.mjs';
 import { readFileSync } from 'node:fs';
 
@@ -247,7 +247,7 @@ test('Inventar: laden, speichern, verbrauchen; alter Hammer wird Rakete', () => 
   assert.deepEqual(loadInventory({ getItem: () => '{"version":1,"gifts":[],"extraMoves":-3}' }).extraMoves, 0);
   const old = loadInventory({ getItem: () => '{"version":1,"extraMoves":1,"hammer":2,"gifts":["level-10","stars-20"]}' });
   assert.deepEqual(old, { version: 3, extraMoves: 1, rocket: 2, hint: 0, wand: 0, gifts: ['level-10', 'stars-20'], pending: [] });
-  assert.equal(toolName('rocket'), 'Rakete'); assert.equal(toolName('wand'), 'Zauberstab'); assert.equal(toolName('hint'), 'Hinweis');
+  assert.equal(toolName('rocket'), 'Rakete'); assert.equal(toolName('extraMoves'), '+3 Züge');
 });
 
 test('Gold-Geschenke (launch-28): nur nach Level 3, 10, 20, 30, 50, 75, 100 – je einmal, nur Rakete/+3', () => {
@@ -277,43 +277,6 @@ test('Gold-Geschenke (launch-28): nur nach Level 3, 10, 20, 30, 50, 75, 100 – 
   assert.equal(spendGold({ ...emptyInventory(), rocket: 1 }, 'rocket').rocket, 0);
   assert.equal(spendGold({ ...emptyInventory(), hint: 1 }, 'hint'), null);
   assert.equal(spendGold(emptyInventory(), 'rocket'), null);
-});
-
-test('Zauberstab: Zahlen 1 … Zielwert, nicht der aktuelle Wert, kein Sofort-Sieg; danach normale Fusion', () => {
-  // Ziel 4er; Brett: 3 3 1 . .
-  const lv = base({ board: [[3, 3, 1, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E]],
-    goals: [{ type: 'tile', value: 4 }], moves: 3, stars: { three: 1, two: 2 } });
-  const run = createLevelRun(lv);
-  assert.equal(wandCap(run), 4);
-  // 1 → 3 würde 3,3,3 verbinden und sofort den 4er erzeugen → gesperrt; der Zielwert 4 selbst ist erlaubt (gewinnt nicht sofort)
-  assert.deepEqual(wandChoices(run, 0, 2), [2, 4]);
-  assert.deepEqual(wandChoices(run, 0, 0), [1, 2, 4]);
-  assert.deepEqual(wandChoices(run, 2, 2), []);              // leeres Feld
-  assert.equal(useWand(run, 0, 2, 3).ok, false);
-  const id = run.board[0][2].id;
-  assert.equal(useWand(run, 0, 2, 2).ok, true);
-  assert.equal(run.board[0][2].value, 2); assert.equal(run.board[0][2].id, id);
-  assert.equal(run.moves, 0); assert.deepEqual(run.toolsUsed, ['wand']); assert.equal(run.status, 'playing');
-  // Fusion nach dem Zauberstab: Ziel 5er, 2 2 1 → 1 wird 2 → drei 2er fusionieren zu 3
-  const lv2 = base({ board: [[2, 2, 1, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E]],
-    goals: [{ type: 'tile', value: 5 }], moves: 3, stars: { three: 1, two: 2 } });
-  const run2 = createLevelRun(lv2);
-  const res = useWand(run2, 0, 2, 2);
-  assert.ok(res.ok);
-  assert.equal(run2.board.flat().filter(Boolean).length, 1);
-  assert.equal(run2.board.flat().find(Boolean).value, 3);
-  assert.ok(run2.merges >= 1 && run2.score > 0);
-  // Ohne tile/make-Ziel: höchster Wert auf Brett/Vorschau
-  const run3 = createLevelRun(base({ goals: [{ type: 'score', points: 999 }], sequence: [1, 5, 3] }));
-  assert.equal(wandCap(run3), 5);
-  // Erzeuge-Ziel 2er (wie Level 5/8): Zielwert 2 wird angeboten, außer er gewinnt sofort
-  const run4 = createLevelRun(base({ board: [[1, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E]],
-    goals: [{ type: 'make', value: 2, count: 3 }] }));
-  assert.equal(wandCap(run4), 2);
-  assert.deepEqual(wandChoices(run4, 0, 0), [2]);
-  const run5 = createLevelRun(base({ board: [[2, 2, 1, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E], [E, E, E, E, E]],
-    goals: [{ type: 'tile', value: 3 }] }));
-  assert.deepEqual(wandChoices(run5, 0, 2), [3]);          // 2 würde 2,2,2 → 3er = Sofort-Sieg → gesperrt
 });
 
 test('Hinweis-Suche: kürzester Weg wie der Solver, Züge gewinnen wirklich; kein Weg wird erkannt', () => {
@@ -384,26 +347,27 @@ test('Shop: eine Preistabelle, Testkauf legt in den Vorrat, Schnittstelle für n
   assert.equal((await purchase('hint-3')).ok, false);           // ausgeschaltet = kein Kauf
   const on = { ...SHOP_CONFIG, enabled: true };
   const ps = shopProducts();
-  assert.equal(ps.length, 4 * SHOP_CONFIG.packs.length + SHOP_CONFIG.bundles.length);
+  assert.equal(ps.length, 2 * SHOP_CONFIG.packs.length + SHOP_CONFIG.bundles.length);
   assert.deepEqual(ps.filter(p => p.type === 'rocket').map(p => [p.id, p.items.rocket, p.price]), [['rocket-1', 1, 0.99], ['rocket-3', 3, 2.49], ['rocket-5', 5, 3.99]]);
   assert.match(formatPrice(2.49), /^2,49\s?€$/);
-  const r = await purchase('hint-3', { config: on });
-  assert.ok(r.ok && r.test); assert.deepEqual(r.items, { hint: 3 });
-  assert.equal(addToStock(emptyInventory(), r.items).hint, 3);
+  const r = await purchase('extraMoves-3', { config: on });
+  assert.ok(r.ok && r.test); assert.deepEqual(r.items, { extraMoves: 3 });
+  assert.equal(addToStock(emptyInventory(), r.items).extraMoves, 3);
+  assert.equal(productById('hint-1'), null); assert.equal(productById('wand-1'), null);   // launch-29: keine Hinweis-/Zauberstab-Pakete
   const mix = await purchase('bundle-mix', { config: on });
-  assert.deepEqual(mix.items, { extraMoves: 2, hint: 2, rocket: 2, wand: 2 });
+  assert.deepEqual(mix.items, { extraMoves: 3, rocket: 3 });
   assert.equal((await purchase('gibts-nicht', { config: on })).ok, false);
   // ohne Testkauf und ohne nativen Store: nichts verfügbar
   const off = { ...on, testPurchases: false };
   assert.equal(activeStore(off).kind, 'none');
-  assert.equal((await purchase('hint-1', { config: off })).ok, false);
+  assert.equal((await purchase('rocket-1', { config: off })).ok, false);
   // nativer Store (später Capacitor): wird bevorzugt, Abbruch gibt nichts
-  registerNativeStore({ name: 'fake', purchase: async p => (p.id === 'wand-1' ? { ok: true, transactionId: 't1' } : { ok: false, reason: 'cancelled' }) });
+  registerNativeStore({ name: 'fake', purchase: async p => (p.id === 'rocket-1' ? { ok: true, transactionId: 't1' } : { ok: false, reason: 'cancelled' }) });
   try {
     assert.equal(activeStore(on).kind, 'native');
-    const n = await purchase('wand-1', { config: on });
+    const n = await purchase('rocket-1', { config: on });
     assert.ok(n.ok && !n.test && n.transactionId === 't1');
-    assert.equal((await purchase('wand-3', { config: on })).ok, false);
+    assert.equal((await purchase('rocket-3', { config: on })).ok, false);
   } finally { registerNativeStore(null); }
   assert.equal(activeStore().kind, 'test');
 });

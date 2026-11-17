@@ -19,7 +19,7 @@ export function lockText(lock){
 
 export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,onGift,onCloseSelect,onStar,reduceMotion}={}){
   const hud=$('campaign-hud'),levelEl=$('campaign-level'),goalsEl=$('campaign-goals'),movesEl=$('campaign-moves'),tipEl=$('campaign-tip'),capEl=$('campaign-tool-cap');
-  // launch-28: im Abenteuer nur noch +3 Züge und Rakete (beliebig oft; Hinweis/Zauberstab entfallen).
+  // launch-28: im Abenteuer nur +3 Züge und Rakete (beliebig oft).
   const tools=$('campaign-tools'),extraBtn=$('tool-extra'),rocketBtn=$('tool-rocket');
   for(const b of [rocketBtn]){const ico=b.querySelector('[data-icon]');if(ico&&!ico.firstChild)ico.innerHTML=TOOL_ICONS[ico.dataset.icon];}
   const result=$('campaign-result'),rKicker=$('campaign-result-kicker'),rTitle=$('campaign-result-title'),rStars=$('campaign-result-stars');

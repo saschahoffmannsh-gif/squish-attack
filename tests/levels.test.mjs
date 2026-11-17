@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import {
   validateLevel, replaySolution, createLevelRun, starThresholds, toolStars, decodeMove, applyLevelMove,
-  addExtraMoves, useRocket, useWand, markToolUsed, starsOfRun, chapterOf, starGate, CHAPTER_SIZE,
+  addExtraMoves, useRocket, markToolUsed, starsOfRun, chapterOf, starGate, CHAPTER_SIZE,
 } from '../game/campaign.mjs';
 import { solveLevel } from '../tools/campaign/solver.mjs';
 import { canonicalKey, makeCandidate } from '../tools/campaign/candidates.mjs';
@@ -24,7 +24,6 @@ function replayWithTool(lv, path, { extra = false, hint = false } = {}) {
   for (const tok of path.match(/R\d\d|W\d\d=\d+|[a-t]/g) || []) {
     if (run.status !== 'playing') break;
     if (tok[0] === 'R') { if (!useRocket(run, +tok[1], +tok[2])) return { ok: false, reason: tok, run }; continue; }
-    if (tok[0] === 'W') { if (!useWand(run, +tok[1], +tok[2], +tok.slice(4)).ok) return { ok: false, reason: tok, run }; continue; }
     const m = decodeMove(tok), r = applyLevelMove(run, m.direction, m.line);
     if (!r.ok) return { ok: false, reason: r.reason, run };
   }

@@ -85,8 +85,6 @@ test('toolName und goalText folgen der Sprache', () => {
   assert.match(Camp.goalText({ type: 'fuse', size: 4, shape: 't' }), /T-Form/);
   setLang('en', { persist: false });
   assert.equal(Camp.toolName('rocket'), 'Rocket');
-  assert.equal(Camp.toolName('hint'), 'Hint');
-  assert.equal(Camp.toolName('wand'), 'Wand');
   assert.equal(Camp.toolName('extraMoves'), '+3 Moves');
   assert.match(Camp.goalText({ type: 'fuse', size: 4, shape: 't' }), /T/);
   assert.match(Camp.goalText({ type: 'street', count: 1 }), /straight/i);

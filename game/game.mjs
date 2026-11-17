@@ -508,7 +508,7 @@ async function useExtraMoves(where='tool'){
   showNote(gold?t('note.goldUsed',{tool:Camp.toolName('extraMoves')}):t('note.extraUsed',{n:added})+' '+toolCapNote(),2800);
   showTutorialFinger();
 }
-// ---------- Hilfsmittel: Rakete (launch-28: Hinweis und Zauberstab entfernt) ----------
+// ---------- Hilfsmittel: Rakete und +3 Züge ----------
 const toolFx=createToolFx({reduceMotion,shakeTarget:()=>document.getElementById('playfield')});
 const ghostFinger=createGhostFinger({reduceMotion});
 function showTutorialFinger(afterEntry=false){
@@ -831,7 +831,7 @@ function renderBoard(incoming) {
 }
 // ---------- launch-16: Bomben-Countdown ----------
 // Echtzeit, 20 s ab dem ersten Zug. Die Uhr steht bei Pause, verdeckter Seite, offenem Dialog/Menü/Shop/
-// Werbung/Statistik/Zauberstab-Auswahl, während Animationen (busy) und Hinweis-Vorführung.
+// Werbung/Statistik, während Animationen (busy).
 // Anzeige: kleine DOM-Abzeichen über den Bomben (Text ändert sich 1×/s) – kein WebGL-Frame nötig.
 const bombBadges=new Map();let bombLayer=null,bombTimer=0,bombLast=0,bombBlast=false;
 function bombPaused(){
