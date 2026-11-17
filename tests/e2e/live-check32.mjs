@@ -45,8 +45,8 @@ async function newPage(storage) {
   ok('Build launch-32', build.includes('launch-32'), build);
   const v = await P.page.evaluate(() => [...document.querySelectorAll('script[src],link[href]')].map(e => e.src || e.href).filter(u => /[?]v=launch-/.test(u) && !/v=launch-32/.test(u)));
   ok('Cache-Tags alle launch-32', v.length === 0, v.slice(0, 3).join(' '));
-  const price = await P.page.evaluate(() => document.body.innerHTML.includes('4,99'));
-  ok('Werbefrei-Preis 4,99 € im Spiel', price);
+  const price = await P.page.evaluate(() => /4,99\s*€|€\s*4\.99/.test(document.body.textContent + document.body.innerHTML) && !/2,99\s*(€|&nbsp;€)|€\s*2\.99/.test(document.body.innerHTML));
+  ok('Werbefrei-Preis 4,99 € / €4.99 im Spiel, kein 2,99', price);
   ok('Keine JS-Fehler (Start)', P.errors.length === 0, JSON.stringify(P.errors.slice(0, 3)));
   await P.ctx.close(); }
 const SEEN = JSON.stringify(['merge', 'merge5', 'street', 'gates']);
