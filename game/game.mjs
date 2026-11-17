@@ -1,37 +1,37 @@
-import {apiFetch,hasSaveToken} from './api.mjs?v=launch-30';
-import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-30';
+import {apiFetch,hasSaveToken} from './api.mjs?v=launch-31';
+import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-31';
 import { nextSpawn, spawnProfile } from './balance.mjs';
-import {canContinueRun} from './run-availability.mjs?v=launch-30';
-import { createMergeEffects } from './merge-effects.mjs?v=launch-30';
-import { createGameGraphics } from './graphics-adapter.mjs?v=launch-30';
-import { installDeviceMotion } from './device-motion.mjs?v=launch-30';
-import { createGameSound } from './sound.mjs?v=launch-30';
+import {canContinueRun} from './run-availability.mjs?v=launch-31';
+import { createMergeEffects } from './merge-effects.mjs?v=launch-31';
+import { createGameGraphics } from './graphics-adapter.mjs?v=launch-31';
+import { installDeviceMotion } from './device-motion.mjs?v=launch-31';
+import { createGameSound } from './sound.mjs?v=launch-31';
 import { installSettings } from './settings.mjs?v=woodland-menu-1';
-import { createDuelClient } from './duel-client.mjs?v=launch-30';
+import { createDuelClient } from './duel-client.mjs?v=launch-31';
 import {installFullscreen} from './fullscreen.mjs?v=timed-duel-1';
-import {createHomeMenu} from './home-menu.mjs?v=launch-30';
-import {createConfetti} from './confetti.mjs?v=launch-30';
-import {createHaptics} from './haptics.mjs?v=launch-30';
-import * as native from './native.mjs?v=launch-30';
+import {createHomeMenu} from './home-menu.mjs?v=launch-31';
+import {createConfetti} from './confetti.mjs?v=launch-31';
+import {createHaptics} from './haptics.mjs?v=launch-31';
+import * as native from './native.mjs?v=launch-31';
 import {planMergeRipple} from './merge-ripple.mjs?v=swarm-fx-3';
-import * as Camp from './campaign.mjs?v=launch-30';
-import {createCampaignUI} from './campaign-ui.mjs?v=launch-30';
-import {createToolFx} from './tool-fx.mjs?v=launch-30';
-import {createGhostFinger} from './ghost-finger.mjs?v=launch-30';
-import * as Shop from './shop.mjs?v=launch-30';
-import {createShopUI} from './shop-ui.mjs?v=launch-30';
-import {createGiftFx} from './gift-fx.mjs?v=launch-30';
-import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-30';
-import {createAdUI} from './ad-ui.mjs?v=launch-30';
-import {hasNativeAds,showInterstitial,isOffline} from './native-ads.mjs?v=launch-30';
-import {createStatsUI} from './stats-ui.mjs?v=launch-30';
-import * as ToolLog from './tool-log.mjs?v=launch-30';
-import {createProgressSync} from './progress-sync.mjs?v=launch-30';
-import {epochOf} from './progress-merge.mjs?v=launch-30';
-import {createAdPacing} from './ad-pacing.mjs?v=launch-30';
-import {isAdFree,canOfferAdFree,canRestoreAdFree,purchaseAdFree,restoreAdFree,adFreePriceLabel,onAdFreeChange} from './ad-free.mjs?v=launch-30';
-import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-30';
-import {createExplainer} from './explain.mjs?v=launch-30';
+import * as Camp from './campaign.mjs?v=launch-31';
+import {createCampaignUI} from './campaign-ui.mjs?v=launch-31';
+import {createToolFx} from './tool-fx.mjs?v=launch-31';
+import {createGhostFinger} from './ghost-finger.mjs?v=launch-31';
+import * as Shop from './shop.mjs?v=launch-31';
+import {createShopUI} from './shop-ui.mjs?v=launch-31';
+import {createGiftFx} from './gift-fx.mjs?v=launch-31';
+import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-31';
+import {createAdUI} from './ad-ui.mjs?v=launch-31';
+import {hasNativeAds,showInterstitial,isOffline} from './native-ads.mjs?v=launch-31';
+import {createStatsUI} from './stats-ui.mjs?v=launch-31';
+import * as ToolLog from './tool-log.mjs?v=launch-31';
+import {createProgressSync} from './progress-sync.mjs?v=launch-31';
+import {epochOf} from './progress-merge.mjs?v=launch-31';
+import {createAdPacing} from './ad-pacing.mjs?v=launch-31';
+import {isAdFree,canOfferAdFree,canRestoreAdFree,purchaseAdFree,restoreAdFree,adFreePriceLabel,onAdFreeChange} from './ad-free.mjs?v=launch-31';
+import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-31';
+import {createExplainer} from './explain.mjs?v=launch-31';
 const playfield = document.getElementById('playfield');
 const gameElement = document.querySelector('.game');
 const visual = createGameGraphics(document.getElementById('graphics'));
@@ -146,9 +146,9 @@ const newTile = value => ({ id: nextId++, value });
 // in localStorage unangetastet: während der Kampagne wird nichts davon gespeichert,
 // beim Verlassen wird er wieder geladen.
 const MODE_KEY='squish-mode-v1';
-const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-30',import.meta.url);
+const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-31',import.meta.url);
 // launch-16: Test-Level für die neuen Squishes (Eis, Ketten, Bombe) – eigener kleiner Satz, kein Fortschritt/Protokoll.
-const LAB_URL=new URL('../levels/levels-lab.json?v=launch-30',import.meta.url);
+const LAB_URL=new URL('../levels/levels-lab.json?v=launch-31',import.meta.url);
 let labMode=false,labLevels=null,labLoading=null;
 function loadLab(){
   return labLoading||=fetch(LAB_URL,{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('lab '+r.status);return r.json();})
@@ -198,7 +198,7 @@ const progressSync=createProgressSync({fetch:apiFetch,epoch:epochOf(Camp.PROGRES
     try{renderCampaign();void worldMenu.refresh?.();}catch{}}});
 const cloudSync=()=>{if(!labMode)progressSync.schedule();};
 progressSync.attach(window);
-const BUILD_LABEL='launch-30';
+const BUILD_LABEL='launch-31';
 let toolLog=ToolLog.loadLog(),logAttempt=null;
 // Versuche, die beim letzten Mal offen blieben (Seite geschlossen), gelten als abgebrochen.
 if(toolLog.attempts.some(a=>!a.outcome)){for(const a of toolLog.attempts)if(!a.outcome)ToolLog.endAttempt(toolLog,a.id,{outcome:'quit',moves:a.moves});ToolLog.saveLog(toolLog);}
@@ -281,7 +281,7 @@ const adUI=createAdUI({sound,haptics,onWatch:type=>{
   lastAd={type,where:f?.where||'tool'};
   logTool('ad',type,logCtx(f?.where||'tool'));
   if(f?.then)f.then();else renderCampaign();
-},onClose:()=>{const f=adFollow;adFollow=null;f?.cancel?.();renderCampaign();},
+},onClose:()=>{const f=adFollow;adFollow=null;f?.cancel?.();renderCampaign();},onUnavailable:()=>helpUnavailable('noAd'),
   onAdStart:()=>{adShowing=true;sound.pause();},onAdEnd:()=>{adShowing=false;if(!paused)sound.resume();}});
 // ---------- App-Werbung (App-Hülle; im Browser ohne Adapter: nichts davon) ----------
 const adPacing=createAdPacing({isAdFree});
@@ -302,10 +302,13 @@ function maybeEndlessOffer(){
   void playInterstitial('endless');
 }
 /** Belohnungsclip vor dem Einsatz. Werbefrei oder kein Abenteuer → sofort true. Abbruch → false. */
+/** launch-31: Hilfe braucht einen Clip, aber keiner ist zu haben (offline / kein Clip geladen) → gesperrt, kurzer Hinweis.
+ *  Werbefrei, Gold-Geschenke und die freie Tutorial-Hilfe brauchen keinen Clip und bleiben nutzbar. */
+function helpUnavailable(why='offline'){showNote(t(why==='offline'?'tool.offline':'tool.noAd'),2800);haptics.pulse?.('tap');}
+const helpOffline=()=>toolAdRequired()&&isOffline();
 function requestToolAd(type,where='tool'){
   if(!toolAdRequired())return Promise.resolve(true);
-  // launch-31 (App): ohne Netz gibt es keine Werbung – Hilfe still ohne Clip, kein Dialog.
-  if(hasNativeAds()&&isOffline())return Promise.resolve(true);
+  if(isOffline()){helpUnavailable('offline');return Promise.resolve(false);}
   if(adUI.isOpen)return Promise.resolve(false);
   return explainer.showOnce('ads').then(()=>new Promise(resolve=>{
     let done=false;
@@ -409,11 +412,13 @@ async function openGift(){
   void worldMenu.refresh?.();
   return true;
 }
+// launch-31: Verbindung weg/da → Hilfe-Knöpfe neu zeichnen (Sperr-Abzeichen).
+for(const ev of ['online','offline'])addEventListener(ev,()=>{try{if(campaignMode&&camp)renderCampaign();}catch{}});
 function renderCampaign(){
   if(!campaignMode||!camp)return;
   campaignUI.renderHud(camp.run,camp.n,labMode?labHudLabel():null);   // launch-28: Test-Titel nur im Testmodus
   const tutor=tutorialToolPending();
-  campaignUI.renderTools(goldBlocked()?{extraMoves:0,rocket:0}:goldNow(),{needsAd:toolAdRequired(),canExtra:camp.run.status==='playing',armed:armedTool,locked:camp.run.status!=='playing',
+  campaignUI.renderTools(goldBlocked()?{extraMoves:0,rocket:0}:goldNow(),{needsAd:toolAdRequired(),offline:helpOffline(),canExtra:camp.run.status==='playing',armed:armedTool,locked:camp.run.status!=='playing',
     toolsUsed:camp.run.toolsUsed.length,giftsUsed:camp.run.giftsUsed?.length|0,freeTry:tutor||null});
   for(const ty of Camp.ADVENTURE_TOOLS)campaignUI.toolButton(ty)?.classList.toggle('is-tutor',tutor);
 }
@@ -583,6 +588,7 @@ function toggleTool(type){
   if(type!=null&&type!=='rocket')return;
   const on=type!=null&&armedTool!==type;
   if(on&&(camp.run.status!=='playing'||busy))return;
+  if(on&&helpOffline()&&!hasGold(type)&&!tutorialToolPending()){helpUnavailable('offline');return;}   // launch-31: gar nicht erst scharf
   armedTool=on?type:null;renderCampaign();
   if(on)showNote(t(hasGold('rocket')?'tool.note.rocketGold':'tool.note.rocket'),0);else if(!tutorialToolPending())note.hidden=true;else showNote(t('note.tutorialTool'),0);
 }

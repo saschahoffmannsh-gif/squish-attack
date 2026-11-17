@@ -1,7 +1,8 @@
 // App-Hülle offline (launch-31): gebündeltes Spiel (app/www) mit gemocktem Capacitor, kein Internet.
 //  A „Funkloch“: navigator.onLine = true, aber jeder SDK-Netzaufruf (AdMob, StoreKit) hängt für immer.
 //  B „Flugmodus“: navigator.onLine = false.
-// Erwartung: Start ohne Hänger, Zwischenwerbung blockiert den Levelstart nicht, Hilfe ohne Clip, Level spielbar.
+// Erwartung: Start ohne Hänger, Zwischenwerbung blockiert den Levelstart nicht, Level spielbar.
+// Hilfe (Rakete/+3) braucht einen Clip: ohne Clip gesperrt, kurzer Hinweis, kein Werkzeug (Werbefrei wäre frei).
 // node e2e-app-offline.browser.mjs [appBase] [WxH]   (Server auf app/www, z. B. python3 -m http.server 8732)
 import puppeteer from 'puppeteer-core';
 const [app = 'http://127.0.0.1:8732/index.html', vp = '390x844'] = process.argv.slice(2);
@@ -58,30 +59,32 @@ try {
     check(`${tag}: App startet (kein schwarzer Bildschirm)`, up, (Date.now() - t0) + ' ms');
     check(`${tag}: Start unter 8 s`, Date.now() - t0 < 8000, (Date.now() - t0) + ' ms');
     check(`${tag}: kein Service Worker in der App`, !(await page.evaluate(async () => (await navigator.serviceWorker?.getRegistrations?.() || []).length)));
-    // Level 6 (Rakete) mit fälliger Zwischenwerbung
+    // Level 4 (Rakete, kein Tutorial-Level mit freier Hilfe) mit fälliger Zwischenwerbung
     await page.$$eval('[data-nav]', bs => bs.find(b => b.dataset.nav === 'levels').click());
     await page.waitForFunction(() => !document.getElementById('campaign-screen').hidden, { timeout: 20000 }); await sleep(400);
     const t1 = Date.now();
-    await page.click('.campaign-level-btn[data-level="6"]');
+    await page.click('.campaign-level-btn[data-level="4"]');
     const started = await page.waitForFunction(() => window.SquishGame.campaign.status === 'playing' && window.SquishGame.state.started && !window.SquishGame.state.busy, { timeout: 30000, polling: 100 }).then(() => true, () => false);
     const ls = Date.now() - t1;
     check(`${tag}: Levelstart trotz fälliger Zwischenwerbung`, started, ls + ' ms');
     check(`${tag}: Zwischenwerbung hält höchstens kurz auf`, ls < (airplane ? 3000 : 7000), ls + ' ms');
     await sleep(1200);
     if (await page.evaluate(() => !!document.getElementById('explain-dialog') && !document.getElementById('explain-dialog').hidden)) { await page.click('#explain-ok'); await sleep(400); }
-    // Hilfe: Rakete
+    // Hilfe: Rakete – ohne Clip gesperrt
+    const badge = await page.evaluate(() => ['tool-rocket', 'tool-extra'].map(id => document.getElementById(id)?.dataset.offline));
+    if (airplane) check('Flugmodus: Rakete und +3 mit Kein-Netz-Abzeichen', badge[0] === '1' && badge[1] === '1', JSON.stringify(badge));
+    else check('Funkloch: kein Abzeichen (onLine = true, Clip wird versucht)', badge[0] === '' && badge[1] === '', JSON.stringify(badge));
     await page.click('#tool-rocket'); await sleep(500);
-    const dialog = await page.$('#ad-watch');
-    if (dialog) { await page.click('#ad-watch'); }
-    const armed = await page.waitForFunction(() => window.SquishGame.campaign.armedTool === 'rocket' || document.getElementById('tool-rocket')?.classList.contains('is-armed') || window.SquishGame.campaign.toolsUsed?.length, { timeout: 8000, polling: 100 }).then(() => true, () => false);
-    check(`${tag}: Hilfe ohne Werbeclip nutzbar`, armed, airplane ? (dialog ? 'Dialog trotz Flugmodus' : 'ohne Dialog') : 'Clip nicht verfügbar → Hilfe');
+    const dialog = !!(await page.$('#ad-watch'));
     if (airplane) check('Flugmodus: kein Werbe-Dialog', !dialog);
-    const pt = await page.evaluate(() => { const b = window.SquishGame.state.board; for (let r = 4; r >= 0; r--) for (let q = 0; q < 5; q++) if (b[r][q] && !b[r][q].bound) return window.SquishGame.cellPoint(r, q); });
-    if (!(await page.evaluate(() => window.SquishGame.campaign.toolsUsed?.length))) await page.mouse.click(pt.x, pt.y);
-    await sleep(1500);
-    if (await page.evaluate(() => !!document.getElementById('explain-dialog') && !document.getElementById('explain-dialog').hidden)) { await page.click('#explain-ok'); await sleep(400); }
-    const c = await page.evaluate(() => ({ used: window.SquishGame.campaign.toolsUsed, status: window.SquishGame.campaign.status, busy: window.SquishGame.state.busy }));
-    check(`${tag}: Rakete eingesetzt, Spiel läuft weiter`, c.used?.length === 1 && c.status === 'playing' && !c.busy, JSON.stringify(c));
+    else { check('Funkloch: Werbe-Dialog angeboten', dialog); if (dialog) await page.click('#ad-watch'); }
+    const re = airplane ? /Keine Verbindung – Hilfe gerade nicht verfügbar/ : /Gerade kein Clip da – Hilfe kurz nicht verfügbar/;
+    const t2 = Date.now();
+    const noted = await page.waitForFunction(r => { const n = document.getElementById('note'); return n && !n.hidden && new RegExp(r).test(n.textContent); }, { timeout: 12000, polling: 100 }, re.source).then(() => true, () => false);
+    check(`${tag}: kurzer Hinweis „Hilfe nicht verfügbar“`, noted, (Date.now() - t2) + ' ms');
+    await sleep(600);
+    const c = await page.evaluate(() => ({ used: window.SquishGame.campaign.toolsUsed.length, armed: window.SquishGame.campaign.armedTool || document.getElementById('tool-rocket')?.classList.contains('is-armed') || null, ad: !!document.getElementById('ad-watch'), status: window.SquishGame.campaign.status, busy: window.SquishGame.state.busy }));
+    check(`${tag}: keine Hilfe ohne Clip, Spiel läuft weiter`, !c.used && !c.armed && !c.ad && c.status === 'playing' && !c.busy, JSON.stringify(c));
     const mv = await page.evaluate(() => window.SquishGame.state.moves);
     for (const [d, l] of [['left', 0], ['up', 1]]) { await page.evaluate((d, l) => window.SquishGame.move(d, l), d, l); await sleep(400); await page.waitForFunction(() => !window.SquishGame.state.busy, { timeout: 15000 }).catch(() => {}); }
     check(`${tag}: Züge laufen`, await page.evaluate(m => window.SquishGame.state.moves > m || window.SquishGame.campaign.status !== 'playing', mv));

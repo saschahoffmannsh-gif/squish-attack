@@ -1,9 +1,9 @@
 // Kampagne: DOM-Teile (Ziel-Anzeige, Züge, Hilfsmittel, Ergebnis-Dialog, Levelauswahl).
 // Reine Darstellung; Spiellogik und Speichern liegen in game.mjs / campaign.mjs.
-import {TOOL_ICONS,GIFT_SVG} from './tool-icons.mjs?v=launch-30';
-import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-30';
-import {fitLabelsSoon} from './fit-labels.mjs?v=launch-30';
-import {goalProgress,goalText,goalShort,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName,toolStarCap} from './campaign.mjs?v=launch-30';
+import {TOOL_ICONS,GIFT_SVG} from './tool-icons.mjs?v=launch-31';
+import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-31';
+import {fitLabelsSoon} from './fit-labels.mjs?v=launch-31';
+import {goalProgress,goalText,goalShort,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName,toolStarCap} from './campaign.mjs?v=launch-31';
 
 const $=id=>document.getElementById(id);
 export const TOOL_ARTICLE=new Proxy({},{get:(_,k)=>t('tool.'+k)});
@@ -74,8 +74,8 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
   // gold = {extraMoves, rocket}: Gold-Geschenke (sternneutral, ohne Werbung). Sonst unbegrenzt;
   // needsAd: vor dem Einsatz kommt ein Belohnungsclip (kein Werbefrei).
   function renderTools(gold={},opts={}){
-    const {canExtra=true,armed=null,locked=false,needsAd=false,toolsUsed=0,giftsUsed=0,freeTry=null}=opts;   // freeTry: Typ oder true (alle)
-    lastTools={inv:gold,opts:{canExtra,armed,locked,needsAd,toolsUsed,giftsUsed,freeTry}};tools.hidden=false;
+    const {canExtra=true,armed=null,locked=false,needsAd=false,offline=false,toolsUsed=0,giftsUsed=0,freeTry=null}=opts;   // freeTry: Typ oder true (alle)
+    lastTools={inv:gold,opts:{canExtra,armed,locked,needsAd,offline,toolsUsed,giftsUsed,freeTry}};tools.hidden=false;
     renderToolCap(toolsUsed,giftsUsed);
     const set=(btn,type,enabled,label)=>{
       const g=Math.max(0,gold?.[type]|0),free=freeTry===true||freeTry===type;
@@ -84,8 +84,9 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
       btn.classList.toggle('is-gold',g>0);btn.classList.remove('is-empty');btn.dataset.shop='';btn.dataset.refill='';
       btn.dataset.ad=(g<=0&&needsAd&&!free)?'1':'';
       btn.dataset.free=free&&g<=0?'1':'';btn.dataset.freeLabel=t('tool.freeBadge');
+      const off=g<=0&&needsAd&&!free&&offline;btn.dataset.offline=off?'1':'';   // launch-31: ohne Verbindung gesperrt (Tippen → Hinweis)
       btn.disabled=!enabled;
-      const aria=g>0?t('tool.goldAria',{label,n:g}):free?t('tool.freeTryAria',{label}):needsAd?t('tool.adAria',{label}):t('tool.freeAria',{label});
+      const aria=g>0?t('tool.goldAria',{label,n:g}):free?t('tool.freeTryAria',{label}):off?t('tool.offlineAria',{label}):needsAd?t('tool.adAria',{label}):t('tool.freeAria',{label});
       btn.setAttribute('aria-label',aria);
     };
     set(extraBtn,'extraMoves',canExtra&&!locked,t('tool.help.extra'));

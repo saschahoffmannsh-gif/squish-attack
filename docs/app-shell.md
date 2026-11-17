@@ -324,8 +324,12 @@ in der App liegen.
 - Die App lädt alle Dateien aus dem Paket (Schriften lokal, kein Fremdcode), der Start wartet nur auf den
   Schlüsselbund (max. 1,5 s). Cloud-Abgleich läuft im Hintergrund mit 8-s-Zeitlimit und fällt still aus.
 - Werbung blockiert nie: ohne Netz (`navigator.onLine === false`) wird sie gar nicht angefragt, sonst gelten
-  Zeitlimits (Einwilligung 3 s, Laden 8 s). „Nicht verfügbar“ ≠ „abgebrochen“: Ist kein Clip zu haben, gibt es die
-  Hilfe trotzdem; bricht der Spieler einen Clip ab, nicht. Im Flugmodus öffnet sich kein Werbe-Dialog.
+  Zeitlimits (Einwilligung 3 s, Laden 8 s).
+- Hilfe (Rakete, +3) gibt es nur mit Clip: Ist keiner zu haben (offline, Ladefehler, Zeitlimit), bleibt sie gesperrt –
+  kurzer Hinweis „Keine Verbindung – Hilfe gerade nicht verfügbar“ bzw. „Gerade kein Clip da – …“ (EN entsprechend).
+  Offline sind die Knöpfe grau mit Kein-Netz-Abzeichen, im Flugmodus öffnet sich kein Werbe-Dialog; wieder online
+  verschwindet das Abzeichen. Ausnahmen ohne Clip: Werbefrei-Kauf, Gold-Geschenke, die freie Tutorial-Hilfe.
+  Gilt genauso im Web (Dummy-Clip wird offline nicht angeboten).
 - Fällige Zwischenwerbung vor einem Level entfällt offline; der Levelstart wartet höchstens das Zeitlimit.
 - Kein Service Worker in der App (nur im Web, `game/offline-sw.js`).
 - Test: `app/test/e2e-app-offline.browser.mjs` („Funkloch“: SDK hängt, „Flugmodus“: offline).
