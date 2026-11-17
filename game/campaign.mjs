@@ -2,8 +2,8 @@
 // Ein Level = feste Startaufstellung + feste Steinfolge + Ziele + Zuglimit.
 // Dieses Modul ist reine Logik (kein DOM). Es wird von der UI, dem Solver,
 // dem Generator und den Tests gemeinsam benutzt, damit alle exakt gleich zählen.
-import { SIZE, insertTile, settle, isGameOver, tickBombs, BOMB_MS, BOMB_UNIT_MS } from './game-logic.mjs?v=launch-28';
-import { t, fmtNum } from './i18n.mjs?v=launch-28';
+import { SIZE, insertTile, settle, isGameOver, tickBombs, BOMB_MS, BOMB_UNIT_MS } from './game-logic.mjs?v=launch-29';
+import { t, fmtNum } from './i18n.mjs?v=launch-29';
 
 export const DIRECTIONS = ['left', 'right', 'up', 'down'];
 export const QUEUE_PREVIEW = 3;
@@ -11,8 +11,8 @@ export const GOAL_TYPES = ['tile', 'make', 'score', 'clear', 'street', 'combo', 
 export const FUSE_SIZES = [3, 4, 5];
 export const FUSE_SHAPES = ['line', 't'];
 /** launch-15: neue Missionen – empty: höchstens `max` Steine auf dem Brett; long: `count` Straßen aus ≥ 4 Steinen;
- *  purge: `tiles` Steine mit dem Wert `value` auflösen. Werkzeug-Level: level.tool = 'extraMoves'|'hint'|'rocket'|'wand'. */
-export const TOOL_KEYS = ['extraMoves', 'hint', 'rocket', 'wand'];
+ *  purge: `tiles` Steine mit dem Wert `value` auflösen. Werkzeug-Level: level.tool = 'extraMoves'|'rocket' (launch-29: Hinweis/Zauberstab entfernt). */
+export const TOOL_KEYS = ['extraMoves', 'rocket'];
 export const LONG_STREET = 4;
 
 /** Ein Zug als Buchstabe, identisch zu ranked.mjs: 'a'..'t'. */
@@ -524,7 +524,7 @@ export function nextLevel(progress, count) {
 }
 
 // ---------------- Hilfsmittel ----------------
-// launch-12: Rakete (ersetzt den Hammer), Hinweis, Zauberstab, +3 Züge.
+// launch-12: Rakete (ersetzt den Hammer) und +3 Züge.
 // launch-28: im Abenteuer nur noch Rakete und +3 Züge, beliebig oft (siehe ADVENTURE_TOOLS).
 //   Ohne Werbefrei kostet jeder Einsatz einen Belohnungsclip (game.mjs), mit Werbefrei ist er frei.
 //   Sterne: toolStarCap. Gold-Geschenke (Vorrat inv.extraMoves / inv.rocket) sind sternneutral.
@@ -539,59 +539,11 @@ export function useRocket(run, row, col, { gift = false } = {}) {
   return true;
 }
 
-/**
- * Zauberstab – erlaubte Zahlen für einen Stein:
- *  - 1 … Obergrenze, ohne den aktuellen Wert
- *  - Obergrenze = kleinster Zielwert eines „Erzeuge“-Ziels (tile/make), einschließlich;
- *    gibt es kein solches Ziel: der größte Wert auf Brett/Vorschau (mind. 2)
- *  - ohne Werte, die durch die anschließenden Fusionen sofort alle Ziele erfüllen würden
- */
-export function wandCap(run) {
-  const targets = run.level.goals.filter(g => g.type === 'tile' || g.type === 'make').map(g => g.value);
-  if (targets.length) return Math.min(...targets);   // bis einschließlich Zielwert (Sofort-Sieg wird in wandChoices ausgeschlossen)
-  const seen = [...run.board.flat().filter(Boolean).map(t => t.value), ...queueOf(run)];
-  return Math.max(2, ...seen);
-}
-export function wandChoices(run, row, col) {
-  const tile = run.board[row]?.[col];
-  if (run.status !== 'playing' || !tile || tile.bound) return [];
-  const out = [];
-  for (let v = 1; v <= wandCap(run); v++) {
-    if (v === tile.value) continue;
-    if (wandPreview(run, row, col, v).win) continue;
-    out.push(v);
-  }
-  return out;
-}
-function wandPreview(run, row, col, value) {
-  const board = run.board.map(r => r.map(t => (t ? { ...t } : null)));
-  board[row][col] = { ...board[row][col], value };
-  const settled = settle(board);
-  const probe = { ...run, created: { ...run.created }, board: settled.board };
-  tally(probe, settled);
-  return { settled, probe, win: goalsDone(probe) };
-}
-/**
- * Zauberstab: Stein bekommt einen neuen Wert (gleiche id, kein Zug). Danach gelten
- * die normalen Regeln: entstehen Gruppen, wird wie nach einem Zug fusioniert und
- * gezählt (Punkte, Fusionen, Ketten). Rückgabe {ok, settled}.
- */
-export function useWand(run, row, col, value) {
-  if (!wandChoices(run, row, col).includes(value)) return { ok: false };
-  const { settled } = wandPreview(run, row, col, value);
-  run.board = settled.board;
-  tally(run, settled);
-  markToolUsed(run, 'wand');
-  if (goalsDone(run)) run.status = 'won';
-  else if (isGameOver(run.board) || !hasLegalMove(run)) { run.status = 'lost'; run.lostReason = 'board-full'; }
-  return { ok: true, settled };
-}
-
 /** Zielfortschritt als (gedeckelter) Vektor – Startpunkt für die Hinweis-Suche. */
 export const progressVector = run => run.level.goals.map(g => (g.type === 'empty' ? (goalProgress(g, run).done ? 1 : 0) : goalProgress(g, run).current));
 
 export const TOOLS_KEY = 'squish-campaign-tools-v1';
-export const TOOL_TYPES = ['extraMoves', 'rocket', 'hint', 'wand'];   // Speicher-/Wire-Format (alle bekannten Typen)
+export const TOOL_TYPES = ['extraMoves', 'rocket', 'hint', 'wand'];   // Speicher-/Wire-Format (alte Typen hint/wand bleiben nur lesbar, launch-29: nicht mehr im Spiel)
 /** launch-28: Hilfsmittel im Abenteuer. Hinweis und Zauberstab gibt es dort nicht mehr. */
 export const ADVENTURE_TOOLS = Object.freeze(['extraMoves', 'rocket']);
 /** Vorrat (v3): Anzahl je Hilfsmittel, vergebene Geschenk-ids, noch nicht geöffnete Geschenke. */
@@ -799,7 +751,7 @@ export function collectGift(inv, id) {
   out.pending.splice(i, 1);
   return { inventory: out, gift };
 }
-export const toolName = type => ({ extraMoves: t('tool.extraMoves'), rocket: t('tool.rocket'), hint: t('tool.hint'), wand: t('tool.wand'), hammer: t('tool.rocket') })[type] ?? type;
+export const toolName = type => ({ extraMoves: t('tool.extraMoves'), rocket: t('tool.rocket'), hammer: t('tool.rocket') })[type] ?? type;
 
 /**
  * launch-28: neue Sterne-Regeln einmalig auf den alten Spielstand anwenden – ohne etwas zu löschen.

@@ -201,13 +201,12 @@ test('Level-Format: specials werden geprüft und gesetzt', () => {
   assert.throws(() => Camp.validateLevel(blank({ specials: { lava: [] } })), /unbekannt/);
 });
 
-test('Kampagne: Bomben-Uhr startet erst mit dem ersten Zug, Rakete/Zauberstab nicht auf Ketten', () => {
+test('Kampagne: Bomben-Uhr startet erst mit dem ersten Zug, Rakete nicht auf Ketten', () => {
   const board = blank().board.map(r => r.slice()); board[2][2] = 5; board[0][0] = 3;
   const run = Camp.createLevelRun(blank({ board, specials: { bomb: [[2, 2]], bound: [[0, 0]] } }));
   assert.deepEqual(Camp.tickLevelBombs(run, 30000), [], 'vor dem ersten Zug läuft nichts');
   assert.equal(Camp.nextBombMs(run), 20000);
   assert.equal(Camp.useRocket(run, 0, 0), false);
-  assert.deepEqual(Camp.wandChoices(run, 0, 0), []);
   Camp.applyLevelMove(run, 'right', 4);
   assert.equal(Camp.tickLevelBombs(run, 19999).length, 0);
   const ex = Camp.tickLevelBombs(run, 1);
@@ -254,7 +253,6 @@ test('Kampagne: befreiter Ketten-Squish zählt wieder als Stein, Rakete/Zauberst
   assert.equal(run.board[1][0]?.bound, undefined, 'Ketten gesprengt');
   assert.equal(run.board[1][0]?.value, 4);
   assert.equal(Camp.tilesOn(run.board), 2, 'befreiter Squish + Fusionsergebnis');
-  assert.ok(Camp.wandChoices(run, 1, 0).length > 0);
 });
 
 test('Solver/Hinweis: Ketten lassen sich befreien (Level nur so lösbar)', () => {

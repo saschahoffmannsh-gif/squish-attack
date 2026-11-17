@@ -46,19 +46,6 @@ test('Endlos-Angebot nach 10 Minuten aktiver Spielzeit, Pausen zählen nicht', (
   assert.equal(step(30_000), true);
 });
 
-test('Endlos-Belohnung: reihum durch alle Werkzeuge, nur angesehene Clips zählen, über Neustart gemerkt', () => {
-  const storage = mem(), types = ['extraMoves', 'rocket', 'hint', 'wand'];
-  const p = createAdPacing({ storage });
-  assert.equal(p.peekEndlessReward(types), 'extraMoves');
-  assert.equal(p.peekEndlessReward(types), 'extraMoves', 'weggedrückt → gleiches Werkzeug beim nächsten Mal');
-  assert.equal(p.takeEndlessReward(types), 'extraMoves');
-  assert.equal(p.takeEndlessReward(types), 'rocket');
-  const q = createAdPacing({ storage });
-  assert.equal(q.takeEndlessReward(types), 'hint');
-  assert.equal(q.takeEndlessReward(types), 'wand');
-  assert.equal(q.peekEndlessReward(types), 'extraMoves');
-});
-
 test('Werbefrei unterdrückt Zwischenwerbung und Endlos-Angebot, Siege zählen weiter', () => {
   let owned = true;
   const p = createAdPacing({ storage: mem(), isAdFree: () => owned });

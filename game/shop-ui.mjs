@@ -1,9 +1,9 @@
 // Werkzeug-Shop (launch-12): Comic-Overlay im Stil der Menüs. Darstellung + Bedienung;
 // Preise/Angebote/Kauf-Schnittstelle liegen in shop.mjs, Vorrat in campaign.mjs.
-import { TOOL_ICONS, SHOP_SVG, SPARK_SVG } from './tool-icons.mjs?v=launch-28';
-import { TOOL_TYPES, toolName } from './campaign.mjs?v=launch-28';
-import { SHOP_CONFIG, shopProducts, formatPrice, activeStore } from './shop.mjs?v=launch-28';
-import { t } from './i18n.mjs?v=launch-28';
+import { TOOL_ICONS, SHOP_SVG, SPARK_SVG } from './tool-icons.mjs?v=launch-29';
+import { ADVENTURE_TOOLS as TOOL_TYPES, toolName } from './campaign.mjs?v=launch-29';
+import { SHOP_CONFIG, shopProducts, formatPrice, activeStore } from './shop.mjs?v=launch-29';
+import { t } from './i18n.mjs?v=launch-29';
 
 const DESC = type => t('tool.desc.'+type);
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };

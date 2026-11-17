@@ -1,46 +1,25 @@
-// App-Hülle: eigener Endlos-Werkzeug-Vorrat (Rakete/Zauberstab), Endlos-Werbung (ad-endless), Cloud-Feld einv.
+// App-Hülle: Endlos-Werbung (ad-endless) und Cloud-Feld einv. launch-29: Endlos hat keine Werkzeuge mehr –
+// das Feld einv bleibt im Wire-Format lesbar und wird vom Server nicht gelöscht (Rückwärtskompatibilität).
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ENDLESS_TOOLS, loadEndlessInv, saveEndlessInv, changeEndlessInv, endlessTotal } from '../game/endless-tool.mjs';
-import { createAdPacing } from '../game/ad-pacing.mjs';
+import { readFileSync } from 'node:fs';
 import { normalizeWire, mergeWire, wireKey, ENDLESS_TOOL_TYPES } from '../game/progress-merge.mjs';
 import { toWire, applyWire } from '../game/progress-sync.mjs';
 import { emptyProgress, emptyInventory } from '../game/campaign.mjs';
 import { emptyLog, logEvent, summarize } from '../game/tool-log.mjs';
+import { createAdPacing } from '../game/ad-pacing.mjs';
 
-const mem = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k) }; };
 const base = (extra = {}) => ({ v: 1, epoch: 18, levels: {}, inv: null, invAt: 0, ...extra });
 
-test('Endlos-Werkzeuge: nur Rakete und Zauberstab (kein Extra-Zug/Tipp – ohne Ziel und Zuglimit sinnlos)', () => {
-  assert.deepEqual([...ENDLESS_TOOLS], ['rocket', 'wand']);
-  assert.deepEqual([...ENDLESS_TOOL_TYPES], ['rocket', 'wand']);
-});
-
-test('Endlos-Vorrat: lokal gespeichert, geklemmt, Zeitstempel wächst', () => {
-  const s = mem();
-  assert.deepEqual(loadEndlessInv(s), { rocket: 0, wand: 0, at: 0 });
-  let inv = changeEndlessInv(loadEndlessInv(s), 'rocket', 1, 1000);
-  inv = changeEndlessInv(inv, 'wand', 2, 1000);
-  assert.equal(inv.at, 1001, 'gleiche Uhrzeit → trotzdem neuer Stand');
-  saveEndlessInv(inv, s);
-  assert.deepEqual(loadEndlessInv(s), { rocket: 1, wand: 2, at: 1001 });
-  assert.equal(endlessTotal(inv), 3);
-  assert.equal(changeEndlessInv(inv, 'rocket', -5, 2000).rocket, 0, 'nie negativ');
-  assert.equal(changeEndlessInv(inv, 'hint', 1, 2000), inv, 'fremde Werkzeuge ignoriert');
-  s.setItem('squish-endless-tools-v1', '{"rocket":-3,"wand":"x","at":"y"}');
-  assert.deepEqual(loadEndlessInv(s), { rocket: 0, wand: 0, at: 0 });
-  s.setItem('squish-endless-tools-v1', 'kaputt');
-  assert.deepEqual(loadEndlessInv(s), { rocket: 0, wand: 0, at: 0 });
-});
-
-test('Endlos-Werbung: Belohnung reihum Rakete → Zauberstab → Rakete, weggedrückt zählt nicht', () => {
-  const storage = mem();
-  const p = createAdPacing({ storage });
-  assert.equal(p.peekEndlessReward(ENDLESS_TOOLS), 'rocket');
-  assert.equal(p.peekEndlessReward(ENDLESS_TOOLS), 'rocket');
-  assert.equal(p.takeEndlessReward(ENDLESS_TOOLS), 'rocket');
-  assert.equal(createAdPacing({ storage }).takeEndlessReward(ENDLESS_TOOLS), 'wand');
-  assert.equal(createAdPacing({ storage }).peekEndlessReward(ENDLESS_TOOLS), 'rocket');
+test('launch-29: Endlos ohne Werkzeuge – keine Meilensteine, keine Leiste, keine Endlos-Belohnung', () => {
+  const src = readFileSync(new URL('../game/game.mjs', import.meta.url), 'utf8');
+  for (const s of ['ENDLESS_MILESTONE', 'endlessMilestones', 'endless-tool.mjs', 'endlessRocketAt', 'applyEndlessWand', 'endlessWandChoices', 'takeEndlessReward', "register('endless'"])
+    assert.ok(!src.includes(s), s);
+  const offer = src.slice(src.indexOf('function maybeEndlessOffer'), src.indexOf('function maybeEndlessOffer') + 400);
+  assert.ok(offer.includes("playInterstitial('endless')"), '10-Minuten-Werbung bleibt, ohne Belohnung');
+  assert.ok(/getLocal:\(\)=>\(\{progress:campaignProgress,inventory,endless:null\}\)/.test(src), 'alter Endlos-Vorrat wird nicht mehr gesendet');
+  assert.equal(typeof createAdPacing({}).takeEndlessReward, 'undefined');
+  assert.deepEqual([...ENDLESS_TOOL_TYPES], ['rocket', 'wand'], 'Wire-Format unverändert');
 });
 
 test('Werkzeug-Protokoll: Quelle ad-endless, zählt als Werbung, nicht als Einsatz', () => {
@@ -110,15 +89,4 @@ test('Sync: toWire/applyWire tragen den Endlos-Vorrat, neuerer Server-Stand wird
   assert.equal(stale.endless, local, 'älterer Server-Stand überschreibt nichts');
   const fresh = applyWire(progress, inv, server, 18, 5000, null);
   assert.deepEqual(fresh.endless, { rocket: 4, wand: 2, at: 2000 }, 'neues Gerät holt den Vorrat aus der Cloud');
-});
-
-// launch-28: Endlos-Werkzeuge kommen nur noch über Meilensteine (Rekord-Squish 10, 20, …), nicht aus Werbung.
-import { readFileSync as readSrc28 } from 'node:fs';
-test('launch-28: Meilenstein-Werkzeuge, 10-Minuten-Werbung ohne Belohnung', () => {
-  const src = readSrc28(new URL('../game/game.mjs', import.meta.url), 'utf8');
-  assert.ok(/const ENDLESS_MILESTONE=10;/.test(src));
-  assert.ok(/function endlessMilestones\(prev\)/.test(src));
-  const offer = src.slice(src.indexOf('function maybeEndlessOffer'), src.indexOf('const ENDLESS_MILESTONE'));
-  assert.ok(offer.includes("playInterstitial('endless')") && !offer.includes('changeEndlessInv') && !offer.includes('adUI.open'));
-  assert.ok(!src.includes("where==='endless'"), 'kein Belohnungs-Zweig mehr');
 });

@@ -65,14 +65,8 @@ Spiel. Werbung läuft mit **Google-Test-Anzeigen** (Banner „Test Ad“). Echte
   Schließt du das Video vorher, gibt es nichts.
 - **Zwischenwerbung:** nach jedem 10. gewonnenen Level (Wiederholungen zählen mit), immer erst
   **vor** dem nächsten Level.
-- **Endlos:** nach je 10 Minuten Spielzeit kommt nach einem Zug das Angebot „Werkzeug für Endlos“.
-  „Nein danke“ schließt es. Ansehen legt **ein Werkzeug in den eigenen Endlos-Vorrat** (getrennt vom
-  Abenteuer-Vorrat), reihum Rakete → Zauberstab. Unten links erscheint dann ein Knopf mit Anzahl:
-  antippen, dann einen Stein antippen. Die Rakete sprengt den Stein weg, der Zauberstab gibt ihm
-  eine neue Zahl aus der aktuellen Stein-Spanne (danach wird normal verschmolzen). Extra-Züge und
-  Tipp gibt es in Endlos nicht (kein Ziel, kein Zuglimit). Nach Game Over gibt es kein
-  Weiterspielen und keine Werkzeuge. Der Endlos-Vorrat liegt lokal und wird mit der Cloud
-  abgeglichen (Feld `einv`, siehe unten).
+- **Endlos:** nach je 10 Minuten Spielzeit kommt nach einem Zug eine normale Zwischenwerbung
+  ohne Belohnung (Werbefrei entfernt sie). launch-29: Endlos hat keine Werkzeuge mehr.
 - **Spielstand über Neuinstallation:** ein paar Level spielen, App löschen, neu installieren
   (▶ in Xcode). Die Sterne kommen über den Schlüsselbund und die Cloud-Sicherung zurück.
 - **Hochformat:** Drehen ändert nichts, Zoomen und Gummiband-Scrollen gehen nicht.
@@ -184,8 +178,7 @@ app/
   test/                   Unit-Tests mit Mocks (npm test) + Browser-e2e mit gemocktem Capacitor
   ios/App/                Xcode-Projekt (Swift Package Manager, keine CocoaPods nötig)
 game/native.mjs           Brücke im Spiel: Haptik, Bildschirm wach, Speichern bei App-Pause (im Browser ohne Wirkung)
-game/ad-pacing.mjs        Werbe-Takt: jedes 10. gewonnene Level, Endlos-Angebot alle 10 Minuten, Belohnung reihum
-game/endless-tool.mjs     Endlos-Vorrat (Rakete/Zauberstab): lokal speichern, Knopfleiste unten links
+game/ad-pacing.mjs        Werbe-Takt: jedes 10. gewonnene Level, Endlos-Zwischenwerbung alle 10 Minuten
 ```
 
 Plugins: `@capacitor-community/admob` (Google Mobile Ads + UMP + ATT), `@capgo/native-purchases`
@@ -205,15 +198,12 @@ kommt vom Ursprung `capacitor://localhost`, den die Funktion per CORS schon erla
 - **Keine Test-Werbung:** Erst nach dem Einwilligungsdialog wird Werbung geladen. Im Simulator und
   ohne Netz kommt keine. Das Spiel läuft trotzdem; es gibt dann einfach kein Hilfsmittel.
 
-## Endlos-Vorrat und Cloud
+## Endlos-Vorrat und Cloud (bis launch-28, jetzt stillgelegt)
 
-- Lokal: `localStorage` `squish-endless-tools-v1` = `{rocket, wand, at}`.
-- Cloud: `PUT /progress` trägt zusätzlich `einv:{rocket,wand}` und `einvAt`. Neuerer Stand gewinnt.
-  Die Web-Version schickt das Feld nicht; der Server behält dann den gespeicherten Endlos-Vorrat.
-- Werkzeug-Protokoll: Gutschrift aus dem Endlos-Angebot mit Quelle `ad-endless`.
-- Backend: Änderung liegt auf Branch `endless-inventory` im Backend-Repo (rückwärtskompatibel,
-  Backend-Tests grün). **Noch nicht deployt.** Bis zum Deploy wirft der laufende Server das Feld
-  weg, die App behält den Vorrat dann nur lokal (nichts geht verloren).
+- launch-29: Endlos hat keine Werkzeuge mehr. Der alte lokale Vorrat `squish-endless-tools-v1` wird ignoriert.
+- Das Cloud-Feld `einv`/`einvAt` bleibt im Wire-Format lesbar; die App schickt es nicht mehr, der Server
+  behält einen gespeicherten Stand (rückwärtskompatibel, nichts wird gelöscht).
+- Werkzeug-Protokoll: Quelle `ad-endless` bleibt für alte Einträge lesbar.
 
 ## Bestenliste entfernt
 

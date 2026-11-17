@@ -1,5 +1,5 @@
-import { t } from './i18n.mjs?v=launch-28';
-import {flags,ios,safari,BUILD} from './flags.mjs?v=launch-28';
+import { t } from './i18n.mjs?v=launch-29';
+import {flags,ios,safari,BUILD} from './flags.mjs?v=launch-29';
 // Sampled gel foley. Fetching is optional and never holds up the splash;
 // the AudioContext is created/resumed only by a real player gesture.
 // Slide/land use ralph.whitehead's CC0 Plunger Pop (#05); merge/pop use Gniffelbaf's CC0 balloon burst.
@@ -308,7 +308,7 @@ export function createGameSound(button,{
       return;
     }
     if(kind==='magic'){
-      // Zauberstab: kleines aufsteigendes Plopp-Arpeggio.
+      // Funkeln: kleines aufsteigendes Plopp-Arpeggio.
       [1.12,1.4,1.75].forEach((rate,i)=>sample('plop',{volume:.22,rate,pan,delay:delay+i*.07,priority:2}));
       notePlay({kind,name:'plop',size,rate:1.12,volume:.22,delay,t:requestedAt??now()});
       return;

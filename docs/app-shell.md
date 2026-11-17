@@ -308,11 +308,13 @@ in der App liegen.
 5. Datenschutz- und Impressum-Seiten mit Saschas Daten.
 6. TestFlight-Build über Saschas Konto, auf dem iPhone testen, dann einreichen.
 
-## launch-28: Endlos-Werkzeuge über Meilensteine
+## launch-29: Endlos ohne Werkzeuge
 
-- Erreicht der höchste Squish der Endlos-Runde eine neue Zehnerstufe (10, 20, 30 …), gibt es je Stufe
-  1 Werkzeug in den Endlos-Vorrat, reihum Rakete/Zauberstab (`endlessMilestones`, Rotation über
-  `adPacing.takeEndlessReward`). Der Runden-Rekord (`peak`) wird gespeichert – nach Neuladen keine Doppelvergabe.
+- Endlos hat keine Werkzeuge mehr: keine Meilenstein-Geschenke, keine Werkzeugleiste, kein Zauberstab,
+  kein Erklär-Fenster „Endlos-Werkzeuge“. `game/endless-tool.mjs` ist entfernt.
+- Der alte Endlos-Vorrat (`localStorage` `squish-endless-tools-v1`) wird ignoriert, aber nicht gelöscht.
+  Das Cloud-Feld `einv` bleibt im Wire-Format lesbar (`progress-merge.mjs`), die App sendet es nicht mehr;
+  der Server-Merge behält einen gespeicherten Stand (PUT ohne `einv` löscht nichts).
+- Endlos-Spielstand (`shift3-play-v1`) und Rekord bleiben unverändert.
 - Die Endlos-Werbung alle 10 Minuten ist eine normale Zwischenwerbung ohne Belohnung; Werbefrei entfernt sie.
-- Abenteuer-Zwischenwerbung alle 10 gewonnenen Level (vorher 5). Erklär-Fenster „Endlos-Werkzeuge“
-  (`explainer.register('endless')`) beim ersten Meilenstein, nachlesbar unter Spielregeln.
+- Abenteuer-Zwischenwerbung alle 10 gewonnenen Level.

@@ -2,11 +2,10 @@
 // in der App-Hülle mit AdMob verbunden.
 // - Abenteuer: nach jedem 10. gewonnenen Level (launch-28; vorher 5.) ist eine Zwischenwerbung fällig. Sie wird erst
 //   beim Start des nächsten Levels gezeigt (nie mitten in einem Level, nie über dem Sterne-Dialog).
-// - Endlos: nach je 10 Minuten aktiver Spielzeit gibt es ein freiwilliges Angebot
-//   (Belohnungsclip → 1 Werkzeug für den eigenen Endlos-Vorrat, reihum Rakete/Zauberstab),
-//   direkt nach einem Zug, wenn alles ruhig ist.
+// - Endlos: nach je 10 Minuten aktiver Spielzeit eine kurze Zwischenwerbung ohne Belohnung
+//   (launch-29: Endlos hat keine Werkzeuge), direkt nach einem Zug, wenn alles ruhig ist.
 //   Lange Pausen zwischen zwei Zügen zählen nur bis MAX_GAP_MS (Pause/Menü/Hintergrund zählt nicht).
-//   Werbefrei (`isAdFree`) unterdrückt Zwischenwerbung und Endlos-Angebot, nicht den Hilfsmittel-Takt.
+//   Werbefrei (`isAdFree`) unterdrückt Zwischenwerbung und Endlos-Werbung, nicht den Hilfsmittel-Takt.
 export const AD_PACING = Object.freeze({
   interstitialEvery: 10,          // jedes 10. gewonnene Abenteuer-Level (launch-28; launch-26: 5)
   endlessOfferMs: 10 * 60 * 1000, // 10 Minuten aktive Endlos-Spielzeit
@@ -48,9 +47,5 @@ export function createAdPacing({ storage = globalThis.localStorage, config = AD_
     /** Angebot wurde gezeigt (angesehen oder weggedrückt): Uhr neu starten. */
     endlessOffered() { endlessMs = 0; lastMove = now(); },
     get endlessMs() { return endlessMs; },
-    /** Belohnung des Endlos-Angebots: reihum durch die Werkzeuge (fair, vorhersehbar, über Neustarts gemerkt). */
-    peekEndlessReward(types) { return types[state.reward % types.length]; },
-    /** Nach angesehenem Clip: die gezeigte Belohnung verbuchen, nächstes Mal kommt das nächste Werkzeug. */
-    takeEndlessReward(types) { const t = types[state.reward % types.length]; state.reward = (state.reward + 1) % types.length; save(); return t; },
   };
 }

@@ -1,8 +1,8 @@
 // App-Hülle e2e (Linux, Chrome): Web-Version unverändert + App-Bundle mit gemocktem Capacitor.
 // Supabase wird blockiert (offline-Test, keine Testdaten im Live-Backend).
 // node e2e-app.mjs <webBase> <appBase>
-// launch-28: Fortschritt über Level 5 vorbelegt (Endlos freigeschaltet), 10-Minuten-Werbung ohne Belohnung,
-// Endlos-Werkzeuge je Zehnerstufe des Runden-Rekords.
+// launch-28: Fortschritt über Level 5 vorbelegt (Endlos freigeschaltet), 10-Minuten-Werbung ohne Belohnung.
+// launch-29: Endlos ohne Werkzeuge – Zehnerstufen bringen nichts, alter Endlos-Vorrat wird ignoriert, Spielstand bleibt.
 // Braucht puppeteer-core und Google Chrome (wie die übrigen e2e-Skripte, nicht Teil von npm test).
 // Zwei lokale Server: Repo-Wurzel (Web) und app/www (App-Bundle), z. B. python3 -m http.server.
 import puppeteer from 'puppeteer-core';
@@ -83,7 +83,7 @@ try {
     await page.goto(web, { waitUntil: 'load' });
     const H = helpers(page);
     await startEndless(page, H);
-    const s = await page.evaluate(() => ({ native: window.SquishNative?.isNative, ads: window.SquishGame.appAds.native, btn: !!document.getElementById('endless-tools')?.hidden, app: !!window.SquishApp,
+    const s = await page.evaluate(() => ({ native: window.SquishNative?.isNative, ads: window.SquishGame.appAds.native, btn: !document.getElementById('endless-tools') && !document.querySelector('.endless-tool'), app: !!window.SquishApp,
       lb: !document.getElementById('board-screen') && ![...document.querySelectorAll('button,a')].some(b => /Bestenliste/i.test(b.textContent + (b.dataset.label || ''))) && !/Bestenliste/.test(document.body.innerHTML) }));
     check('Web: keine Bestenliste mehr (kein Knopf, kein Bildschirm)', s.lb);
     check('Web: kein nativer Modus, keine App-Brücke', s.native === false && !s.ads && !s.app, JSON.stringify(s));
@@ -125,13 +125,13 @@ try {
     check('App: Taptic-Haptik bei Zügen/Merges', hap > 0, String(hap));
     check('App: kein Angebot vor 10 Minuten', !(await page.evaluate(() => window.SquishGame.appAds.adOpen)));
     // launch-28: 10-Minuten-Werbung = normale Zwischenwerbung ohne Belohnung
-    const before = await page.evaluate(() => ({ inv: (({ at, ...r }) => r)(window.SquishGame.campaign.inventory), einv: window.SquishGame.appAds.endless, inter: window.__calls.filter(c => c[0] === 'show-inter').length }));
+    const before = await page.evaluate(() => ({ inv: (({ at, ...r }) => r)(window.SquishGame.campaign.inventory), inter: window.__calls.filter(c => c[0] === 'show-inter').length }));
     await page.evaluate(() => { const p = window.SquishGame.appAds.pacing; const o = p.endlessMove; p.endlessMove = () => (o(), true); });
     await page.evaluate(() => window.SquishGame.move('down', 3)); await sleep(300); await H.idle(); await sleep(1200);
     await page.evaluate(() => { delete window.SquishGame.appAds.pacing.endlessMove; });
-    const plain = await page.evaluate(() => { const log = JSON.parse(localStorage.getItem('squish-tool-log-v1') || '{"events":[]}'); return { inter: window.__calls.filter(c => c[0] === 'show-inter').length, reward: window.__calls.filter(c => c[0] === 'show-reward').length, open: window.SquishGame.appAds.adOpen, einv: window.SquishGame.appAds.endless, ev: log.events.filter(e => e.source === 'ad-endless').at(-1) }; });
-    check('App: 10-Minuten-Werbung ist eine Zwischenwerbung ohne Angebot und ohne Werkzeug', plain.inter === before.inter + 1 && plain.reward === 0 && !plain.open && plain.einv.rocket === 0 && plain.einv.wand === 0, JSON.stringify(plain));
-    // Meilensteine: Stand neu laden und weiterspielen
+    const plain = await page.evaluate(() => { const log = JSON.parse(localStorage.getItem('squish-tool-log-v1') || '{"events":[]}'); return { inter: window.__calls.filter(c => c[0] === 'show-inter').length, reward: window.__calls.filter(c => c[0] === 'show-reward').length, open: window.SquishGame.appAds.adOpen, ev: log.events.filter(e => e.source === 'ad-endless').at(-1) }; });
+    check('App: 10-Minuten-Werbung ist eine Zwischenwerbung ohne Angebot und ohne Werkzeug', plain.inter === before.inter + 1 && plain.reward === 0 && !plain.open, JSON.stringify(plain));
+    // launch-29: Zehnerstufen bringen in Endlos nichts mehr; Spielstand bleibt über Neuladen erhalten
     const continueEndless = async () => {
       await page.reload({ waitUntil: 'load' }); await page.waitForFunction(() => window.SquishGame, { timeout: 60000 });
       await H.waitButtons(['Endlos']).catch(() => {});
@@ -145,38 +145,24 @@ try {
       const p0 = await page.evaluate(() => window.SquishGame.state.peak);
       for (const d of ['right']) { const mv = await page.evaluate(() => window.SquishGame.state.moves); await page.evaluate(d => window.SquishGame.move(d, 0), d); await sleep(300); await H.idle(); if (await page.evaluate(m => window.SquishGame.state.moves > m, mv)) break; }
       await sleep(900);
-      return { p0, ...(await page.evaluate(() => ({ peak: window.SquishGame.state.peak, einv: window.SquishGame.appAds.endless, stored: JSON.parse(localStorage.getItem('squish-endless-tools-v1') || 'null'), ex: !!document.querySelector('.ex-panel'), bar: !document.getElementById('endless-tools').hidden }))) };
+      return { p0, ...(await page.evaluate(() => ({ peak: window.SquishGame.state.peak, moves: window.SquishGame.state.moves, stored: JSON.parse(localStorage.getItem('squish-endless-tools-v1') || 'null'),
+        saved: JSON.parse(localStorage.getItem('shift3-play-v1') || 'null'), ex: !!document.querySelector('.ex-panel') && !document.getElementById('explain-dialog')?.hidden,
+        bar: !!document.getElementById('endless-tools') || !!document.querySelector('.endless-tool'), note: document.getElementById('note')?.hidden ? '' : document.getElementById('note')?.textContent || '' }))) };
     };
+    // Alter Endlos-Vorrat aus launch-28 liegt noch im Speicher – wird ignoriert, nicht angezeigt
+    await page.evaluate(() => localStorage.setItem('squish-endless-tools-v1', JSON.stringify({ rocket: 2, wand: 1, at: 1 })));
     const m1 = await milestone(9);
-    check('App: Squish über 10 ⇒ +1 Rakete im Endlos-Vorrat (gespeichert)', m1.p0 === 9 && m1.peak === 10 && m1.einv.rocket === 1 && m1.einv.wand === 0 && m1.stored?.rocket === 1 && m1.bar, JSON.stringify(m1));
-    check('App: Erklär-Fenster „Endlos-Werkzeuge“ beim ersten Meilenstein', m1.ex);
-    await page.evaluate(() => document.querySelector('#explain-ok')?.click()); await sleep(500);
+    check('App: Squish über 10 ⇒ kein Werkzeug, keine Leiste, kein Endlos-Erklärfenster', m1.p0 === 9 && m1.peak === 10 && !m1.bar && !m1.ex && !/Rekord-Squish|Record Squish/.test(m1.note), JSON.stringify({ ...m1, saved: !!m1.saved }));
+    check('App: Endlos-Spielstand gespeichert (Rekord 10)', !!m1.saved && Math.max(...m1.saved.board.flat().filter(Boolean).map(t => t.value)) >= 10, JSON.stringify(m1.saved?.board?.map(r => r.map(t => t?.value ?? 0))));
     { const ia = await page.evaluate(() => (({ at, ...r }) => r)(window.SquishGame.campaign.inventory)); check('App: Abenteuer-Vorrat unverändert', JSON.stringify(ia) === JSON.stringify(before.inv), JSON.stringify({ b: before.inv, a: ia })); }
-    const m2a = await milestone(19);
-    check('App: Squish über 20 ⇒ +1 Zauberstab (reihum)', m2a.peak === 20 && m2a.einv.rocket === 1 && m2a.einv.wand === 1 && m2a.stored?.wand === 1 && !m2a.ex, JSON.stringify(m2a));
-    // Nach Neuladen keine Doppelvergabe
+    const m2 = await milestone(19);
+    check('App: Squish über 20 ⇒ ebenfalls nichts', m2.peak === 20 && !m2.bar && !m2.ex, JSON.stringify({ ...m2, saved: !!m2.saved }));
+    // Neuladen: Spielstand kommt zurück, weiterspielen geht
     await continueEndless();
-    for (const d of ['up', 'left', 'right', 'down']) { const mv = await page.evaluate(() => window.SquishGame.state.moves); await page.evaluate(d => window.SquishGame.move(d, 2), d); await sleep(300); await H.idle(); if (await page.evaluate(m => window.SquishGame.state.moves > m, mv)) break; }
-    await sleep(500);
-    const m2 = await page.evaluate(() => window.SquishGame.appAds.endless);
-    check('App: nach Neuladen keine Doppelvergabe', m2.rocket === 1 && m2.wand === 1, JSON.stringify(m2));
-    // Rakete einsetzen: Knopf antippen (scharf), Stein wählen → Stein weg
-    await H.idle();
-    await page.click('.endless-tool[data-tool=rocket]'); await sleep(200);
-    const armed = await page.evaluate(() => window.SquishGame.appAds.armed);
-    const r0 = await page.evaluate(() => { const b = window.SquishGame.state.board; const t = b.flat().find(Boolean); return { id: t.id, n: b.flat().filter(Boolean).length }; });
-    const fired = await page.evaluate(id => window.SquishGame.appAds.rocketAt(id), r0.id); await sleep(300); await H.idle();
-    const r1 = await page.evaluate(id => { const b = window.SquishGame.state.board; return { n: b.flat().filter(Boolean).length, gone: !b.flat().some(t => t && t.id === id), einv: window.SquishGame.appAds.endless, armed: window.SquishGame.appAds.armed, rocketBtn: !document.querySelector('.endless-tool[data-tool=rocket]').hidden }; }, r0.id);
-    check('App: Endlos-Rakete sprengt einen Stein weg, Vorrat −1, Knopf weg', armed === 'rocket' && fired && r1.gone && r1.n === r0.n - 1 && r1.einv.rocket === 0 && !r1.armed && !r1.rocketBtn, JSON.stringify({ armed, fired, r0, r1 }));
-    // Zauberstab: Wert innerhalb der Spanne setzen
-    await page.click('.endless-tool[data-tool=wand]'); await sleep(200);
-    const w0 = await page.evaluate(() => { const b = window.SquishGame.state.board; const t = b.flat().find(Boolean); const ch = window.SquishGame.appAds.wandChoices(t.value); return { id: t.id, value: t.value, ch, armed: window.SquishGame.appAds.armed }; });
-    const pick = w0.ch.find(v => v !== w0.value);
-    const ok = await page.evaluate((id, v) => window.SquishGame.appAds.wand(id, v), w0.id, pick); await sleep(400); await H.idle();
-    const w1 = await page.evaluate(() => ({ einv: window.SquishGame.appAds.endless, board: JSON.stringify(window.SquishGame.state.board), stored: JSON.parse(localStorage.getItem('squish-endless-tools-v1') || 'null'), bar: !!document.getElementById('endless-tools').hidden }));
-    check('App: Endlos-Zauberstab setzt eine Zahl der Spanne, Vorrat −1, Leiste leer → ausgeblendet', w0.armed === 'wand' && ok && !w0.ch.includes(w0.value) && Math.max(...w0.ch) <= 12 && w1.einv.wand === 0 && w1.stored?.wand === 0 && w1.bar, JSON.stringify({ w0, pick, w1: w1.einv }));
-    const inv3 = await page.evaluate(() => (({ at, ...r }) => r)(window.SquishGame.campaign.inventory));
-    check('App: Abenteuer-Vorrat nach Endlos-Einsätzen unverändert', JSON.stringify(inv3) === JSON.stringify(before.inv));
+    const r = await page.evaluate(() => ({ peak: window.SquishGame.state.peak, started: window.SquishGame.state.started, moves: window.SquishGame.state.moves, campaign: window.SquishGame.campaign.mode }));
+    let moved = false;
+    for (const d of ['up', 'left', 'right', 'down']) { const mv = await page.evaluate(() => window.SquishGame.state.moves); await page.evaluate(d => window.SquishGame.move(d, 2), d); await sleep(300); await H.idle(); if (await page.evaluate(m => window.SquishGame.state.moves > m, mv)) { moved = true; break; } }
+    check('App: nach Neuladen Endlos-Stand da und spielbar', r.started && r.peak >= 20 && !r.campaign && moved, JSON.stringify({ ...r, moved }));
 
     // Zwischenwerbung: nach 10 Siegen beim nächsten Levelstart
     await page.evaluate(() => { const p = window.SquishGame.appAds.pacing; for (let i = 0; i < 10; i++) p.levelWon(); });
