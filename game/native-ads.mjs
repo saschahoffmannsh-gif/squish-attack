@@ -12,14 +12,20 @@ export function registerNativeAds(a) { adapter = a && typeof a.showRewarded === 
 export const hasNativeAds = () => !!adapter;
 export const nativeAdsName = () => adapter?.name || null;
 
-/** Belohnungsclip. → {ok, dummy?}. Ohne Adapter sofort ok (Testphase); Fehler = kein Werkzeug. */
+/** Kein Netz laut Browser/WebView (navigator.onLine). Dann gibt es keine Werbung – sie wird still übersprungen. */
+export const isOffline = (nav = globalThis.navigator) => nav?.onLine === false;
+/** Belohnungsclip. → {ok, dummy?, unavailable?}. Ohne Adapter sofort ok (Testphase).
+ *  unavailable = keine Werbung zu haben (offline, nicht geladen, Zeitüberschreitung) – das Spiel gibt die Hilfe
+ *  dann trotzdem (launch-31: offline voll spielbar). Abbruch durch den Spieler = {ok:false} ohne unavailable. */
 export async function showRewarded(opts = {}) {
   if (!adapter) return { ok: true, dummy: true };
-  try { const r = await adapter.showRewarded(opts); return { ok: !!r?.ok }; } catch { return { ok: false }; }
+  if (isOffline()) return { ok: false, unavailable: true };
+  try { const r = await adapter.showRewarded(opts); return { ok: !!r?.ok, ...(r?.unavailable ? { unavailable: true } : {}) }; } catch { return { ok: false, unavailable: true }; }
 }
 /** Zwischenwerbung (nicht belohnt). Ohne Adapter: nichts. Blockiert nie das Spiel bei Fehlern. */
 export async function showInterstitial(opts = {}) {
   if (!adapter?.showInterstitial) return { ok: false, skipped: true };
+  if (isOffline()) return { ok: false, skipped: true, unavailable: true };
   try { const r = await adapter.showInterstitial(opts); return { ok: !!r?.ok }; } catch { return { ok: false }; }
 }
 // Für die App-Hülle ohne Modul-Import erreichbar (window.SquishNative.registerNativeAds(...)).

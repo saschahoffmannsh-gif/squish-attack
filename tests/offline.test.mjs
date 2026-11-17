@@ -29,3 +29,25 @@ test('Start blockiert nie auf dem Netz: Build-Check ohne festen alten Tag, keine
   assert.ok(/timeout\(fetch\(req\), 4000\)/.test(sw), 'Navigation wartet höchstens 4 s aufs Netz');
   assert.ok(/searchParams\.has\('t'\)/.test(sw), 'build.txt?t=… geht unverändert durchs Netz');
 });
+
+test('Werbung offline: still übersprungen – Belohnungsclip „nicht verfügbar“ (Hilfe gibt es trotzdem), Zwischenwerbung entfällt', async () => {
+  const na = await import('../game/native-ads.mjs');
+  const nav = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+  let calls = 0;
+  na.registerNativeAds({ name: 'mock', showRewarded: async () => (calls++, { ok: true }), showInterstitial: async () => (calls++, { ok: true }) });
+  try {
+    Object.defineProperty(globalThis, 'navigator', { value: { onLine: false }, configurable: true });
+    assert.deepEqual(await na.showRewarded({}), { ok: false, unavailable: true });
+    assert.equal((await na.showInterstitial({})).skipped, true);
+    assert.equal(calls, 0, 'Adapter wird offline gar nicht gefragt');
+    Object.defineProperty(globalThis, 'navigator', { value: { onLine: true }, configurable: true });
+    assert.deepEqual(await na.showRewarded({}), { ok: true });
+    na.registerNativeAds({ name: 'mock', showRewarded: async () => { throw new Error('load'); } });
+    assert.deepEqual(await na.showRewarded({}), { ok: false, unavailable: true }, 'Ladefehler = nicht verfügbar');
+    na.registerNativeAds({ name: 'mock', showRewarded: async () => ({ ok: false }) });
+    assert.deepEqual(await na.showRewarded({}), { ok: false }, 'Abbruch = keine Hilfe');
+  } finally {
+    na.registerNativeAds(null);
+    if (nav) Object.defineProperty(globalThis, 'navigator', nav); else delete globalThis.navigator;
+  }
+});

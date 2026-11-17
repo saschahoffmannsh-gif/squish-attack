@@ -44,8 +44,9 @@ export function createAdUI({ onWatch, onClose, sound, haptics } = {}) {
     api.close({ silent: true });
     // App: echter Clip über den nativen Adapter; Werkzeug nur, wenn er zu Ende geschaut wurde.
     const res = await showRewarded({ placement: 'tool', tool: type });
-    if (!res.ok) return;
-    stats.watched++;
+    // launch-31: keine Werbung zu haben (offline/Ladefehler) → Hilfe trotzdem, still. Abbruch durch den Spieler → keine.
+    if (!res.ok && !res.unavailable) return;
+    if (res.ok) stats.watched++; else stats.unavailable = (stats.unavailable || 0) + 1;
     sound?.play?.('gift'); haptics?.pulse?.('merge');
     await onWatch?.(type);
   }
