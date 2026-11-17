@@ -46,7 +46,8 @@ const within = (p, ms) => Promise.race([Promise.resolve(p), new Promise(r => set
  *               nächsten gelösten Level erneut versucht.
  */
 export function createAttFlow({ AdMob, ready = Promise.resolve({}), doc = globalThis.document, storage = globalThis.localStorage,
-  target = globalThis, lang = () => 'de', delayMs = 2400, readyMs = 4000, prompt = showAttPrePrompt, log = () => {} } = {}) {
+  target = globalThis, lang = () => 'de', delayMs = 2400, readyMs = 4000, prompt = showAttPrePrompt, log = () => {},
+  calm = () => { const d = doc?.getElementById?.('explain-dialog'); return !d || d.hidden; }, calmMs = 20000 } = {}) {
   const stats = { wins: 0, shown: 0, asked: 0, status: null, skipped: null };
   let busy = false;
   const asked = () => { try { return !!storage?.getItem(ATT_ASKED_KEY); } catch { return false; } };
@@ -59,6 +60,8 @@ export function createAttFlow({ AdMob, ready = Promise.resolve({}), doc = global
       if (!consent) { stats.skipped = 'consent-pending'; return stats; }
       const st = (await AdMob.trackingAuthorizationStatus())?.status ?? null;
       if (st !== 'notDetermined') { stats.status = st; stats.skipped = 'decided'; remember(st); return stats; }
+      // nicht über ein offenes Erklärfenster legen: kurz warten, bis der Spieler es geschlossen hat
+      for (let t = 0; t < calmMs && !calm(); t += 300) await new Promise(r => setTimeout(r, 300));
       stats.shown++;
       await prompt({ doc, lang: lang() });
       stats.asked++;

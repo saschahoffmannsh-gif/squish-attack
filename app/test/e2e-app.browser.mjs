@@ -112,7 +112,10 @@ try {
     await page.waitForFunction(() => window.SquishApp?.store === 'storekit' && window.SquishApp?.ads, { timeout: 30000 });
     const a = await page.evaluate(() => ({ app: window.SquishApp, tok: localStorage.getItem('squish-save-token-v1'), calls: window.__calls.map(c => c[0]), native: window.SquishGame.appAds.native, hapt: window.SquishNative.hasNativeHaptics, cls: document.documentElement.className, vp: document.querySelector('meta[name=viewport]').content }));
     check('App: Token nach "Neuinstallation" aus dem Schlüsselbund', a.tok === T && a.app.token === 'keychain', a.app.token);
-    check('App: UMP vor ATT, Test-Modus', JSON.stringify(a.calls.filter(c => ['admob-init', 'consent', 'consent-form', 'att'].includes(c))) === JSON.stringify(['admob-init', 'consent', 'consent-form', 'att']), a.calls.join(','));
+    // launch-32: beim Start nur UMP, ATT erst nach dem ersten gelösten Level (mit Vorfrage)
+    await sleep(1500);
+    const a0 = await page.evaluate(() => ({ calls: window.__calls.map(c => c[0]), pre: !!document.getElementById('att-preprompt') }));
+    check('App: Start nur UMP (Test-Modus), kein ATT, keine Vorfrage', JSON.stringify(a0.calls.filter(c => ['admob-init', 'consent', 'consent-form', 'att'].includes(c))) === JSON.stringify(['admob-init', 'consent', 'consent-form']) && !a0.pre, a0.calls.join(','));
     check('App: Werbe-Adapter und StoreKit angemeldet, native Haptik', a.native && a.app.store === 'storekit' && a.hapt, JSON.stringify(a.app.ads));
     check('App: is-native-app, Splash ausgeblendet, Viewport ohne Zoom', /is-native-app/.test(a.cls) && a.calls.includes('splash-hide') && /user-scalable=no/.test(a.vp));
     const price = await page.evaluate(async () => (await import(performance.getEntriesByType('resource').map(e => e.name).find(n => /\/shop\.mjs/.test(n)))).productById('rocket-3').priceLabel);
@@ -124,14 +127,14 @@ try {
     for (let i = 0; i < 3; i++) { await page.evaluate(i => window.SquishGame.move(['left', 'up', 'right'][i], i + 1), i); await sleep(200); await H.idle(); }
     const hap = await page.evaluate(() => window.__calls.filter(c => c[0] === 'impact').length);
     check('App: Taptic-Haptik bei Zügen/Merges', hap > 0, String(hap));
-    check('App: kein Angebot vor 10 Minuten', !(await page.evaluate(() => window.SquishGame.appAds.adOpen)));
-    // launch-28: 10-Minuten-Werbung = normale Zwischenwerbung ohne Belohnung
+    check('App: kein Angebot vor 15 Minuten', !(await page.evaluate(() => window.SquishGame.appAds.adOpen)));
+    // launch-28: Endlos-Werbung (launch-32: alle 15 Minuten) = normale Zwischenwerbung ohne Belohnung
     const before = await page.evaluate(() => ({ inv: (({ at, ...r }) => r)(window.SquishGame.campaign.inventory), inter: window.__calls.filter(c => c[0] === 'show-inter').length }));
     await page.evaluate(() => { const p = window.SquishGame.appAds.pacing; const o = p.endlessMove; p.endlessMove = () => (o(), true); });
     await page.evaluate(() => window.SquishGame.move('down', 3)); await sleep(300); await H.idle(); await sleep(1200);
     await page.evaluate(() => { delete window.SquishGame.appAds.pacing.endlessMove; });
     const plain = await page.evaluate(() => { const log = JSON.parse(localStorage.getItem('squish-tool-log-v1') || '{"events":[]}'); return { inter: window.__calls.filter(c => c[0] === 'show-inter').length, reward: window.__calls.filter(c => c[0] === 'show-reward').length, open: window.SquishGame.appAds.adOpen, ev: log.events.filter(e => e.source === 'ad-endless').at(-1) }; });
-    check('App: 10-Minuten-Werbung ist eine Zwischenwerbung ohne Angebot und ohne Werkzeug', plain.inter === before.inter + 1 && plain.reward === 0 && !plain.open, JSON.stringify(plain));
+    check('App: 15-Minuten-Werbung ist eine Zwischenwerbung ohne Angebot und ohne Werkzeug', plain.inter === before.inter + 1 && plain.reward === 0 && !plain.open, JSON.stringify(plain));
     // launch-29: Zehnerstufen bringen in Endlos nichts mehr; Spielstand bleibt über Neuladen erhalten
     const continueEndless = async () => {
       await page.reload({ waitUntil: 'load' }); await page.waitForFunction(() => window.SquishGame, { timeout: 60000 });
@@ -179,6 +182,24 @@ try {
     const n1 = await page.evaluate(() => window.__calls.filter(c => c[0] === 'show-inter').length);
     const due = await page.evaluate(() => window.SquishGame.appAds.pacing.interstitialDue);
     check('App: Zwischenwerbung vor dem Level nach dem 10. Sieg', n1 === n0 + 1 && !due, `${n0}→${n1}`);
+    // launch-32: Level 1 lösen → Vorfrage („Hilf uns …“) → erst dann ATT
+    await page.evaluate(() => { const v = document.getElementById('explain-ok'); if (v && !document.getElementById('explain-dialog')?.hidden) v.click(); }); await sleep(600); await H.idle();
+    const preAtt = await page.evaluate(() => window.__calls.filter(c => c[0] === 'att').length);
+    await page.evaluate(() => window.SquishGame.move('right', 2)); await sleep(300); await H.idle();
+    // ein Erklärfenster nach dem Sieg zuerst schließen – die Vorfrage wartet darauf
+    await sleep(3200);
+    const preEx = await page.evaluate(() => { const d = document.getElementById('explain-dialog'); return { pre: !!document.getElementById('att-preprompt'), ex: !!d && !d.hidden }; });
+    check('App: Vorfrage legt sich nicht über ein offenes Erklärfenster', !(preEx.pre && preEx.ex), JSON.stringify(preEx));
+    await page.evaluate(() => { const d = document.getElementById('explain-dialog'); if (d && !d.hidden) document.getElementById('explain-ok')?.click(); });
+    const pp = await page.waitForFunction(() => document.getElementById('att-preprompt'), { timeout: 15000, polling: 100 }).then(() => true, () => false);
+    await sleep(900);
+    const ppi = await page.evaluate(() => ({ won: window.SquishGame.campaign.resultOpen, title: document.querySelector('.att-title')?.textContent, line: document.querySelector('.att-line')?.textContent, ok: document.getElementById('att-ok')?.textContent,
+      att: window.__calls.filter(c => c[0] === 'att').length, font: getComputedStyle(document.querySelector('.att-title') || document.body).fontFamily }));
+    check('App: nach dem ersten Sieg die Vorfrage, ATT noch nicht gefragt', pp && preAtt === 0 && ppi.att === 0 && /Hilf uns, das Spiel kostenlos zu halten|Help us keep the game free/.test(ppi.title || '') && /Fredoka/i.test(ppi.font), JSON.stringify(ppi));
+    if (process.env.ATT_SHOT) await page.screenshot({ path: process.env.ATT_SHOT });
+    await page.click('#att-ok'); await sleep(800);
+    const after = await page.evaluate(() => ({ att: window.__calls.filter(c => c[0] === 'att').length, pre: !!document.getElementById('att-preprompt'), mark: localStorage.getItem('squish-att-asked-v1') }));
+    check('App: „Weiter“ → ATT genau einmal, Vorfrage weg, gemerkt', after.att === 1 && !after.pre && !!after.mark, JSON.stringify(after));
     check('App: keine JS-Fehler', errors.length === 0, errors.join(' | '));
     await page.close();
   }
