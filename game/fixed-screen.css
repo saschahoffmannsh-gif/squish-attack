@@ -4,7 +4,7 @@ body {display:block;}
 html.is-boot-splash,html.is-boot-splash body {background:#08080a;color-scheme:dark;}
 /* Foreground geometry stays fitted to its existing safe area. The forest is
    a separate fixed layer so Safari's shorter dvh cannot clip its bottom. */
-.game {--safe-top:env(safe-area-inset-top);--safe-right:env(safe-area-inset-right);--safe-bottom:env(safe-area-inset-bottom);--safe-left:env(safe-area-inset-left);position:fixed;inset:0;z-index:1;width:100%;height:auto;min-height:0;max-width:none;aspect-ratio:auto;padding:var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);margin:0;display:grid;place-items:center;overflow:hidden;isolation:isolate;}
+.game {--safe-top:env(safe-area-inset-top);--safe-right:env(safe-area-inset-right);--safe-bottom:env(safe-area-inset-bottom);--safe-left:env(safe-area-inset-left);position:fixed;inset:0;z-index:1;width:100%;height:auto;min-height:0;max-width:none;aspect-ratio:auto;padding:var(--safe-top) var(--safe-right) max(10px,var(--safe-bottom)) var(--safe-left);margin:0;display:grid;place-items:center;overflow:hidden;isolation:isolate;}
 .game-stage {position:relative;width:min(100%,calc((100vh - var(--safe-top) - var(--safe-bottom)) * 941 / 1672));width:min(100%,calc((100dvh - var(--safe-top) - var(--safe-bottom)) * 941 / 1672));aspect-ratio:941 / 1672;overflow:hidden;container-type:inline-size;}
 /* Fit the original scene to the actual content box, including safe-area
    padding, rather than independently guessing the available viewport height. */

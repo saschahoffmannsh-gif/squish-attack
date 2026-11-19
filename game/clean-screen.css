@@ -6,6 +6,8 @@ body {background:transparent;}
   --stage-height:calc(var(--stage-width) * 1.79);
   width:var(--stage-width);height:var(--stage-height);aspect-ratio:auto;
   align-self:start;
+  /* Shadows of the queue/help buttons may paint into .game's min 10px bottom inset. */
+  overflow:visible;
   /* Keep the old logo position when the safe viewport has room below it. */
   margin-top:max(0px,min(calc((100cqh - var(--stage-width) * 1.66) / 2),calc(100cqh - var(--stage-height))));
 }
