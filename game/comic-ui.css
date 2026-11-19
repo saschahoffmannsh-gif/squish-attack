@@ -45,7 +45,7 @@
 .aw-btn:focus-visible,.aw-tile:focus-visible,.aw-gear:focus-visible {outline:3px solid #fff3b0;outline-offset:4px;}
 
 /* ---------- Kopfleiste: Sterne, Rekord, Zahnrad ---------- */
-.aw-topbar {flex:none;display:flex;align-items:center;gap:10px;width:min(100%,420px);padding:2px 2px 0 8px;}
+.aw-topbar {flex:none;display:flex;align-items:center;gap:10px;width:min(100%,420px);min-width:0;padding:2px 2px 0 8px;}
 .aw-topbar-gap {flex:1;}
 .aw-stat {position:relative;display:flex;align-items:center;height:38px;padding:0 16px 0 40px;border-radius:999px;
   background:#0b0b18b8;border:2px solid #3d3c63;box-shadow:inset 0 2px 6px #000a;color:#fff;font:700 19px/1 var(--aw-comic);letter-spacing:.01em;text-shadow:0 2px 0 #000a;white-space:nowrap;}
@@ -73,9 +73,22 @@
 .aw-btn .aw-label {min-width:0;}
 .aw-btn .aw-label>span {white-space:nowrap;overflow:visible;max-width:100%;}
 @media (max-width:380px) {
-  .aw-lang {height:34px;}
-  .aw-lang-btn {min-width:30px;padding:0 8px;font-size:13px;}
+  .aw-lang {height:36px;}
+  .aw-lang-btn {min-width:30px;padding:0 7px;font-size:13px;}
   #campaign-extra .aw-label>span {font-size:.86em;}
+}
+@media (max-width:400px) {
+  .aw-home {padding-left:14px;padding-right:14px;}
+  .aw-topbar {gap:8px;padding:2px 0 0 4px;width:100%;}
+}
+@media (max-width:360px) {
+  .aw-home {padding-left:10px;padding-right:10px;}
+  .aw-topbar {gap:6px;padding:2px 0 0 2px;width:100%;}
+  .aw-stat {height:32px;font-size:16px;padding:0 8px 0 30px;}
+  .aw-stat-ico {width:36px;height:36px;margin-top:-19px;left:-8px;}
+  .aw-lang {height:36px;}
+  .aw-lang-btn {min-width:28px;padding:0 6px;font-size:13px;}
+  .aw-topbar .aw-gear {width:40px;height:40px;}
 }
 
 
@@ -276,6 +289,8 @@ html.aw .veil .dialog .menu-button:active:not(:disabled) {transform:translateY(3
   .aw-tile {width:82px;height:80px;border-radius:20px;font-size:13px;}
   .aw-tile-ico {width:40px;height:40px;}
   .aw-rules {max-height:40svh;}
+  .aw-home[data-screen="home"] .aw-screen {padding-bottom:12px;}
+  .aw .settings-panel {max-height:calc(100dvh - 12px - env(safe-area-inset-top) - env(safe-area-inset-bottom));overflow-y:auto;overscroll-behavior:contain;}
 }
 @media (prefers-reduced-motion:reduce) {.aw .campaign-moves.is-low {animation:none;}}
 
