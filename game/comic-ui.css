@@ -45,22 +45,24 @@
 .aw-btn:focus-visible,.aw-tile:focus-visible,.aw-gear:focus-visible {outline:3px solid #fff3b0;outline-offset:4px;}
 
 /* ---------- Kopfleiste: Sterne, Rekord, Zahnrad ---------- */
-.aw-topbar {flex:none;display:flex;align-items:center;gap:10px;width:min(100%,420px);min-width:0;padding:2px 2px 0 8px;}
-.aw-topbar-gap {flex:1;}
-.aw-stat {position:relative;display:flex;align-items:center;height:38px;padding:0 16px 0 40px;border-radius:999px;
+/* launch-34: lange Zahlen dürfen die Leiste nicht über den rechten Rand (Zahnrad) schieben. */
+.aw-topbar {flex:none;display:flex;align-items:center;gap:8px;width:100%;max-width:420px;min-width:0;box-sizing:border-box;padding:2px 0 0 10px;}
+.aw-topbar-gap {flex:1 1 0;min-width:0;}
+.aw-stat {position:relative;display:flex;align-items:center;flex:0 1 auto;min-width:0;height:38px;padding:0 12px 0 36px;border-radius:999px;
   background:#0b0b18b8;border:2px solid #3d3c63;box-shadow:inset 0 2px 6px #000a;color:#fff;font:700 19px/1 var(--aw-comic);letter-spacing:.01em;text-shadow:0 2px 0 #000a;white-space:nowrap;}
-.aw-stat-ico {position:absolute;left:-10px;top:50%;width:44px;height:44px;margin-top:-23px;filter:drop-shadow(0 2px 2px #0008);}
+.aw-stat b {display:block;min-width:0;max-width:100%;overflow:hidden;white-space:nowrap;}
+.aw-stat-ico {position:absolute;left:-10px;top:50%;width:44px;height:44px;margin-top:-23px;filter:drop-shadow(0 2px 2px #0008);pointer-events:none;}
 .aw-stat-ico svg {display:block;width:100%;height:100%;}
-.aw-topbar .aw-gear {position:relative;right:auto;bottom:auto;flex:none;width:46px;height:46px;border-radius:14px;border:2px solid #14163e;color:#fff;
+.aw-topbar .aw-gear {position:relative;right:auto;bottom:auto;flex:none;flex-shrink:0;width:46px;height:46px;border-radius:14px;border:2px solid #14163e;color:#fff;
   background:linear-gradient(180deg,#7685ee,#3d47b4);box-shadow:inset 0 2px 0 #ffffff73,inset 0 -4px 0 #2a2e86,0 0 12px #5a6aff4d,0 5px 8px #0007;}
 .aw-topbar .aw-gear svg {width:28px;height:28px;filter:drop-shadow(1.4px 0 0 #191c58) drop-shadow(-1.4px 0 0 #191c58) drop-shadow(0 1.4px 0 #191c58) drop-shadow(0 -1.4px 0 #191c58) drop-shadow(0 2px 0 #191c58);}
 .aw-topbar .aw-gear:active {transform:translateY(2px);}
 
 /* launch-23: language pill (navy/gold, Fredoka) */
-.aw-lang {display:flex;flex:none;align-items:stretch;height:38px;border-radius:999px;overflow:hidden;
+.aw-lang {display:flex;flex:none;flex-shrink:0;align-items:stretch;height:36px;border-radius:999px;overflow:hidden;
   border:2.2px solid #14163e;background:#14163e;box-shadow:0 3px 0 #0a0c28,0 5px 10px #0006;}
-.aw-lang-btn {appearance:none;margin:0;min-width:36px;padding:0 10px;border:0;background:transparent;
-  color:#ffe8a3;font-family:var(--aw-comic);font-weight:700;font-size:14px;letter-spacing:.06em;line-height:1;cursor:pointer;}
+.aw-lang-btn {appearance:none;margin:0;min-width:28px;padding:0 7px;border:0;background:transparent;
+  color:#ffe8a3;font-family:var(--aw-comic);font-weight:700;font-size:13px;letter-spacing:.06em;line-height:1;cursor:pointer;}
 .aw-lang-btn.is-on,.aw-lang-btn[aria-pressed="true"] {background:linear-gradient(180deg,#ffe27a,#e8a61a);color:#14163e;text-shadow:none;}
 .aw-lang-btn:focus-visible {outline:3px solid #fff3b0;outline-offset:-2px;z-index:1;}
 .setting-lang {display:flex;flex-direction:column;gap:8px;margin:14px 0 8px;text-align:left;}
@@ -78,12 +80,12 @@
   #campaign-extra .aw-label>span {font-size:.86em;}
 }
 @media (max-width:400px) {
-  .aw-home {padding-left:14px;padding-right:14px;}
-  .aw-topbar {gap:8px;padding:2px 0 0 4px;width:100%;}
+  .aw-home {padding-left:max(14px,env(safe-area-inset-left),var(--sim-safe-left,0px));padding-right:max(14px,env(safe-area-inset-right),var(--sim-safe-right,0px));}
+  .aw-topbar {gap:6px;padding:2px 0 0 10px;width:100%;}
 }
 @media (max-width:360px) {
-  .aw-home {padding-left:10px;padding-right:10px;}
-  .aw-topbar {gap:6px;padding:2px 0 0 2px;width:100%;}
+  .aw-home {padding-left:max(10px,env(safe-area-inset-left),var(--sim-safe-left,0px));padding-right:max(10px,env(safe-area-inset-right),var(--sim-safe-right,0px));}
+  .aw-topbar {gap:6px;padding:2px 0 0 10px;width:100%;}
   .aw-stat {height:32px;font-size:16px;padding:0 8px 0 30px;}
   .aw-stat-ico {width:36px;height:36px;margin-top:-19px;left:-8px;}
   .aw-lang {height:36px;}
@@ -93,7 +95,7 @@
 
 
 /* ---------- Startbildschirm-Layout ---------- */
-.aw-home {padding-top:max(14px,env(safe-area-inset-top));}
+.aw-home {padding-top:max(14px,env(safe-area-inset-top),var(--sim-safe-top,0px));padding-left:max(16px,env(safe-area-inset-left),var(--sim-safe-left,0px));padding-right:max(16px,env(safe-area-inset-right),var(--sim-safe-right,0px));}
 .aw-tagline {display:none;}
 .aw-logo-wrap {width:min(90vw,390px);margin:clamp(4px,2.4svh,28px) auto 0;}
 .aw-home[data-screen="campaign"] .aw-logo-wrap,.aw-home[data-screen="endless"] .aw-logo-wrap,.aw-home[data-screen="rules"] .aw-logo-wrap {width:min(56vw,240px);margin-top:clamp(0px,1svh,12px);}

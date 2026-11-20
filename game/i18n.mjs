@@ -1,6 +1,6 @@
 // launch-23: schlanke i18n-Schicht. Texte liegen in locales.mjs (de/en),
 // Platzhalter {name}, Mehrzahl als {one, other} (n === 1 → one).
-import { STRINGS } from './locales.mjs?v=launch-33';
+import { STRINGS } from './locales.mjs?v=launch-34';
 
 export const LANGS = Object.freeze(['de', 'en']);
 export const LANG_KEY = 'squish-lang-v1';
@@ -67,6 +67,19 @@ export function localeTag() { return lang === 'de' ? 'de-DE' : 'en-US'; }
 
 export function fmtNum(n, options) {
   return Number(n || 0).toLocaleString(localeTag(), options);
+}
+
+// Short labels for tight UI (start-menu record pill): 8,37 Mio / 8.37M
+export function fmtCompact(n) {
+  const rounded = Math.round(Number(n) || 0);
+  const sign = rounded < 0 ? '-' : '';
+  const abs = Math.abs(rounded);
+  if (abs < 1_000_000) return sign + fmtNum(abs);
+  const useBillions = abs >= 1_000_000_000 || Math.round(abs / 10_000) >= 100_000;
+  const unit = useBillions ? 1_000_000_000 : 1_000_000;
+  const value = Math.round((abs / unit) * 100) / 100;
+  const digits = value.toLocaleString(localeTag(), { maximumFractionDigits: 2, minimumFractionDigits: 0 });
+  return sign + t(useBillions ? 'num.billions' : 'num.millions', { n: digits });
 }
 
 export function fmtPrice(amount, currency = 'EUR') {

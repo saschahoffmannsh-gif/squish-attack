@@ -1,9 +1,9 @@
 // Kampagne: DOM-Teile (Ziel-Anzeige, Züge, Hilfsmittel, Ergebnis-Dialog, Levelauswahl).
 // Reine Darstellung; Spiellogik und Speichern liegen in game.mjs / campaign.mjs.
-import {TOOL_ICONS,GIFT_SVG} from './tool-icons.mjs?v=launch-33';
-import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-33';
-import {fitLabelsSoon} from './fit-labels.mjs?v=launch-33';
-import {goalProgress,goalText,goalShort,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName,starsFor,starMovesUsed} from './campaign.mjs?v=launch-33';
+import {TOOL_ICONS,GIFT_SVG} from './tool-icons.mjs?v=launch-34';
+import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-34';
+import {fitLabelsSoon} from './fit-labels.mjs?v=launch-34';
+import {goalProgress,goalText,goalShort,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName,starsFor,starMovesUsed} from './campaign.mjs?v=launch-34';
 
 const $=id=>document.getElementById(id);
 export const TOOL_ARTICLE=new Proxy({},{get:(_,k)=>t('tool.'+k)});

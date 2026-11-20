@@ -1,10 +1,10 @@
 // Startbildschirm und Modus-Menüs im Herbst-Design (reines DOM, kein 3D).
 // Ersetzt das frühere 3D-Glastisch-Menü (world-menu.mjs) mit derselben
 // Schnittstelle, die game.mjs und start-menu.mjs erwarten.
-import {ICONS,TILE_ICONS,leafSvg} from './aw-icons.mjs?v=launch-33';
-import {BUILD} from './flags.mjs?v=launch-33';
-import {t, fmtNum, onLangChange} from './i18n.mjs?v=launch-33';
-import {fitLabelsSoon} from './fit-labels.mjs?v=launch-33';
+import {ICONS,TILE_ICONS,leafSvg} from './aw-icons.mjs?v=launch-34';
+import {BUILD} from './flags.mjs?v=launch-34';
+import {t, fmtNum, fmtCompact, onLangChange} from './i18n.mjs?v=launch-34';
+import {fitLabelsSoon} from './fit-labels.mjs?v=launch-34';
 
 const LEAF_COLORS=['#f07a1c','#e8541a','#c9301c','#f2a01e','#d94a17','#b8321a','#ffb030'];
 const fmt=n=>fmtNum(n);
@@ -220,7 +220,12 @@ export function createHomeMenu({page=document,sound,reduceMotion,hooks}){
   function updateTopbar(){
     const c=hooks.campaign?.summary?.()||{},e=hooks.endlessStats?.()||{};
     if(starsEl){starsEl.querySelector('b').textContent=`${c.total??0}/${(c.count||25)*3}`;starsEl.setAttribute('aria-label',t('menu.starsAria',{n:c.total??0,max:(c.count||25)*3}));}
-    if(recordEl){recordEl.querySelector('b').textContent=fmt(e.best||0);recordEl.setAttribute('aria-label',t('menu.recordAria',{score:fmt(e.best||0)}));}
+    if(recordEl){
+      const full=fmt(e.best||0);
+      recordEl.querySelector('b').textContent=fmtCompact(e.best||0);
+      recordEl.setAttribute('aria-label',t('menu.recordAria',{score:full}));
+    }
+    fitLabelsSoon(root);
   }
   function render(name,{animate=true}={}){
     screen=name;lastScreen=name;root.dataset.screen=name;
