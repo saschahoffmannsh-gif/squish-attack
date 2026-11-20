@@ -15,6 +15,36 @@ const N_MODEL = 160, N_RAND = 2500;
 // Mit dem Schlüssel-Werkzeug „bequem“: Gelegenheitsspieler gewinnt mindestens so oft.
 export const CAS_TOOL = 0.4;
 const int = (rng, lo, hi) => lo + Math.floor(rng() * (hi - lo + 1));
+/**
+ * Keep one high tile and shift every other start/queue value up so the body
+ * sits immediately under it (max body becomes high-1). Isolated highs among
+ * 1s/2s cannot merge or form streets; a tight band around the high tile can.
+ * Returns the applied offset (0 if the board is already in band).
+ */
+export function liftAroundHigh(board, sequence, hv) {
+  const body = board.flat().filter(v => v != null && v !== hv);
+  if (!body.length) return 0;
+  const offset = (hv - 1) - Math.max(...body);
+  if (offset <= 0) return 0;
+  for (let r = 0; r < board.length; r++) for (let c = 0; c < board[r].length; c++) {
+    if (board[r][c] != null && board[r][c] !== hv) board[r][c] += offset;
+  }
+  if (sequence) for (let i = 0; i < sequence.length; i++) sequence[i] += offset;
+  return offset;
+}
+
+/** Scale a score goal with the body lift so the same merge count is still required. */
+export function scaleScorePoints(points, bodyMax, offset) {
+  if (!offset || !bodyMax) return points;
+  // 2-merge of the old max body: (v+1)*2*10, after lift: (v+offset+1)*2*10.
+  const factor = (bodyMax + offset + 1) / (bodyMax + 1);
+  return Math.max(points, Math.round(points * factor / 50) * 50);
+}
+
+function applyScoreLift(goals, offset, bodyMax) {
+  if (!offset) return goals.map(g => ({ ...g }));
+  return goals.map(g => g.type === 'score' ? { ...g, points: scaleScorePoints(g.points, bodyMax, offset) } : { ...g });
+}
 const weighted = (rng, max, focus) => {
   const w = Array.from({ length: max }, (_, i) => (max - i + 1) * (focus === i + 1 ? 3 : 1)), sum = w.reduce((a, b) => a + b);
   let x = rng() * sum; for (let i = 0; i < max; i++) { x -= w[i]; if (x < 0) return i + 1; } return max;
@@ -203,11 +233,17 @@ export function makeLevel(id, k, seqLen) {
       const i6 = placeFar(6, a5 >= 0 ? [a5] : []);
       placeFar(7, [a5, i6].filter(x => x != null && x >= 0));
     }
+    let highOffset = 0, highBodyMax = 0;
     if (variety.high) {
       const [lo, hi] = variety.high, hv = int(rng, lo, hi);
       const spots = free2();
       const i = spots.length ? spots[int(rng, 0, spots.length - 1)] : int(rng, 0, 24);
+      const bodyBefore = board.flat().filter(v => v != null);
+      highBodyMax = bodyBefore.length ? Math.max(...bodyBefore) : 1;
       board[Math.floor(i / 5)][i % 5] = hv;
+      // launch-36: keep the high tile, lift the rest of the board and the
+      // spawn queue into a band immediately under it so values stay coherent.
+      highOffset = liftAroundHigh(board, sequence, hv);
     }
     const tiles = board.map(r => r.map(v => (v == null ? null : { value: v })));
     if (settle(tiles).passes.length) continue;
@@ -219,7 +255,7 @@ export function makeLevel(id, k, seqLen) {
       missingVals.forEach((v, i) => { sequence[i] = v; });
       sequence[Math.max(at, missingVals.length)] = planted.trigger;
     }
-    return { board, sequence, goals: goals.map(g => ({ ...g })), variety };
+    return { board, sequence, goals: applyScoreLift(goals, highOffset, highBodyMax), variety, highOffset };
   }
   return null;
 }

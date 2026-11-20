@@ -11,7 +11,7 @@ import {
 } from '../game/campaign.mjs';
 import { solveLevel } from '../tools/campaign/solver.mjs';
 import { canonicalKey, makeCandidate } from '../tools/campaign/candidates.mjs';
-import { makeLevel } from '../tools/campaign/evaluate100.mjs';
+import { makeLevel, liftAroundHigh, scaleScorePoints } from '../tools/campaign/evaluate100.mjs';
 import { TOOL_LEVELS, BOSSES } from '../tools/campaign/plan100.mjs';
 import { findHint } from '../game/hint-solver.mjs';
 import { settle } from '../game/game-logic.mjs';
@@ -56,12 +56,12 @@ test(`${file}: ${expected} gültige, eindeutige Level mit fortlaufender ID`, () 
 test(`${file}: keine Felsen; Sterne: 3★ = Optimum + 1 / Mitte (launch-16 auch für Werkzeug-Spitzen)`, () => {
   for (const lv of levels) {
     assert.ok(lv.board.flat().every(v => v === null || Number.isInteger(v)) && lv.sequence.every(Number.isInteger), `Level ${lv.id}`);
-    // launch-28: kalibrierte Level (meta.cal28) – 3★ nach Spielermodell, nie unter Optimum + 1; sonst Formel
+    // launch-28/36: kalibrierte Level (meta.cal28 / meta.cal36) – 3★ nach Spielermodell, nie unter Optimum + 1; sonst Formel
     if (tool(lv)) {   // Spitze: Stufen fallen zusammen – jeder Sieg ohne Hilfe = 3★
       assert.deepEqual(lv.stars, { three: lv.moves, two: lv.moves }, `Level ${lv.id}`);
       assert.ok(lv.meta.minMoves <= lv.moves, `Level ${lv.id}: ohne Werkzeug im Limit`); continue;
     }
-    if (lv.meta.cal28) {
+    if (lv.meta.cal28 || lv.meta.cal36) {
       assert.ok(lv.stars.three >= Math.min(lv.moves, lv.meta.minMoves + 1) && lv.stars.three <= lv.stars.two && lv.stars.two <= lv.moves, `Level ${lv.id}: ${JSON.stringify(lv.stars)}`);
       continue;
     }
@@ -181,7 +181,7 @@ test('launch-16: Werkzeug-Spitzen – ohne Werkzeug lösbar, aber sehr eng; mit 
     // Schätzung – eng ist die Spitze dann für Spieler (Modell-Gewinnrate), nicht für den Solver (meta.cal28.spike).
     const plain = replaySolution(lv, lv.solution);
     assert.ok(plain.ok && plain.stars === 3, `${id}: ohne Werkzeug 3★`);
-    assert.ok(lv.moves - lv.meta.minMoves <= 1 || lv.meta.cal28?.spike, `${id}: eng (Limit ${lv.moves}, Optimum ${lv.meta.minMoves})`);
+    assert.ok(lv.moves - lv.meta.minMoves <= 1 || lv.meta.cal28?.spike || lv.meta.cal36?.spike, `${id}: eng (Limit ${lv.moves}, Optimum ${lv.meta.minMoves})`);
     const ts = lv.meta.toolSolution;
     if (lv.tool === 'extraMoves') {
       const r = replayWithTool(lv, ts, { extra: true });
@@ -275,7 +275,7 @@ test('launch-18: längere Level – Zugzahl wächst, ohne Ketten und ohne besond
   // launch-28: zu leichte Level wurden gekürzt (meta.cal28) – nie verlängert; die Zugzahl wächst bis Kapitel 9
   for (let k = 3; k <= 9; k++) assert.ok(avg(k) > avg(k - 1), `Kapitel ${k}: mehr Züge als Kapitel ${k - 1}`);
   for (const lv of L100.filter(l => l.id > 10 && !l.tool)) {
-    if (lv.meta.cal28) assert.ok(lv.moves <= moveWindow(lv.id), `Level ${lv.id}: höchstens Zugfenster`);
+    if (lv.meta.cal28 || lv.meta.cal36) assert.ok(lv.moves <= moveWindow(lv.id), `Level ${lv.id}: höchstens Zugfenster`);
     else assert.equal(lv.moves, moveWindow(lv.id), `Level ${lv.id}: Zugfenster laut Plan`);
   }
   assert.ok(L100[99].moves >= 30 || L100[96].moves >= 38, 'späte Level sind lang');
@@ -286,4 +286,47 @@ test('launch-18: längere Level – Zugzahl wächst, ohne Ketten und ohne besond
   assert.ok(L100.filter(l => l.board.flat().some(v => v >= 20)).length >= 3, 'hohe Werte als Blocker');
   assert.ok(L100.filter(l => l.goals.length >= 2).length >= 30, 'viele Mehrfach-Aufgaben');
   assert.ok(L100.some(l => l.goals.some(g => g.type === 'tile' && g.value === 8)), 'eine 8 bauen');
+});
+
+test('launch-36: hoher Stein bleibt, restliches Brett und Folge liegen in einer Bandbreite darunter', () => {
+  const board = [
+    [1, null, null, null, null],
+    [null, null, 1, null, null],
+    [30, null, null, null, null],
+    [1, null, null, 2, null],
+    [2, null, 4, null, 1],
+  ];
+  const seq = [1, 2, 2, 1];
+  assert.equal(liftAroundHigh(board, seq, 30), 25);
+  assert.deepEqual(board[0][0], 26);
+  assert.deepEqual(board[2][0], 30);
+  assert.deepEqual(board[4][2], 29);
+  assert.deepEqual(seq, [26, 27, 27, 26]);
+  assert.equal(scaleScorePoints(600, 2, 27), 6000);
+  for (const lv of L100) {
+    const vals = lv.board.flat().filter(v => v != null);
+    if (!vals.length) continue;
+    const mx = Math.max(...vals);
+    const rest = vals.filter(v => v !== mx);
+    if (!rest.length || mx < 20) continue;
+    assert.ok(mx - Math.max(...rest) <= 4, `Level ${lv.id}: isolierter Hochwert ${mx} neben ${rest}`);
+    assert.ok(Math.min(...lv.sequence) >= Math.min(...rest) - 2, `Level ${lv.id}: Folge passt nicht zum Brett`);
+  }
+  for (const id of [84, 91, 96, 98]) {
+    const lv = L100[id - 1];
+    const r = replaySolution(lv, lv.solution);
+    assert.ok(r.ok && r.stars === 3, `Level ${id}`);
+    const vals = lv.board.flat().filter(v => v != null);
+    assert.ok(Math.max(...vals) >= 26);
+  }
+});
+
+test('launch-36: zugeschnittene Limits bleiben ohne Werkzeug mit 3★ lösbar', () => {
+  for (const id of [15, 17, 20, 23, 25, 35, 44, 50, 60, 66, 82, 92]) {
+    const lv = L100[id - 1];
+    assert.ok(lv.meta.cal36, `Level ${id}: cal36`);
+    assert.ok(lv.solution.length <= lv.moves, `Level ${id}: Lösung im Limit`);
+    const r = replaySolution({ ...lv, tool: undefined }, lv.solution);
+    assert.ok(r.ok && r.stars === 3, `Level ${id}: ${r.reason ?? r.run.status}`);
+  }
 });
