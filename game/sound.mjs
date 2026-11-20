@@ -1,5 +1,5 @@
-import { t } from './i18n.mjs?v=launch-33';
-import {flags,ios,safari,BUILD} from './flags.mjs?v=launch-33';
+import { t } from './i18n.mjs?v=launch-34';
+import {flags,ios,safari,BUILD} from './flags.mjs?v=launch-34';
 // Sampled gel foley. Fetching is optional and never holds up the splash;
 // the AudioContext is created/resumed only by a real player gesture.
 // Slide/land use ralph.whitehead's CC0 Plunger Pop (#05); merge/pop use Gniffelbaf's CC0 balloon burst.

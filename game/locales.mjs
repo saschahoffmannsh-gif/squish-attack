@@ -45,6 +45,8 @@ export const STRINGS = {
   "menu.noRecord": { de: "Noch kein Rekord", en: "No record yet" },
   "menu.starsAria": { de: "{n} von {max} Sternen im Abenteuer", en: "{n} of {max} stars in Adventure" },
   "menu.recordAria": { de: "Endlos-Rekord: {score} Punkte", en: "Endless record: {score} points" },
+  "num.millions": { de: "{n} Mio", en: "{n}M" },
+  "num.billions": { de: "{n} Mrd", en: "{n}B" },
   "menu.settingsAria": { de: "Einstellungen", en: "Settings" },
   "menu.lockedAria": { de: "{label}, gesperrt. {hint}", en: "{label}, locked. {hint}" },
   "lang.groupAria": { de: "Sprache", en: "Language" },

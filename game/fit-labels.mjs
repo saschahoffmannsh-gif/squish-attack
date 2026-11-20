@@ -20,6 +20,8 @@ export function fitLabels(root, { minBtn = 11, minTile = 8 } = {}) {
     shrink(b.querySelector('.aw-label small'), 9);
   }
   for (const t of root.querySelectorAll('.aw-tile-label, .ts-tile small')) shrink(t, minTile);
+  // Start-menu stat pills (long records / 300/300) shrink the number, never the gear.
+  for (const n of root.querySelectorAll('.aw-stat b')) shrink(n, 11);
 }
 
 export function fitLabelsSoon(root, opts) {

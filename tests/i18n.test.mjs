@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test, describe } from 'node:test';
-import { LANGS, LANG_KEY, detectLang, loadLang, saveLang, t, setLang, getLang, hasKey, fmtNum } from '../game/i18n.mjs?v=launch-33';
-import { STRINGS } from '../game/locales.mjs?v=launch-33';
+import { LANGS, LANG_KEY, detectLang, loadLang, saveLang, t, setLang, getLang, hasKey, fmtNum, fmtCompact } from '../game/i18n.mjs?v=launch-34';
+import { STRINGS } from '../game/locales.mjs?v=launch-34';
 import * as Camp from '../game/campaign.mjs';
 
 test('Sprachen de und en, Schlüssel vollständig', () => {
@@ -113,5 +113,25 @@ test('fmtNum folgt der Locale', () => {
   assert.match(fmtNum(12000), /12/);
   setLang('en', { persist: false });
   assert.equal(fmtNum(12000), '12,000');
+});
+
+test('fmtCompact kürzt große Rekorde in DE und EN', () => {
+  setLang('de', { persist: false });
+  assert.equal(fmtCompact(0), '0');
+  assert.equal(fmtCompact(12000), '12.000');
+  assert.equal(fmtCompact(999999), '999.999');
+  assert.equal(fmtCompact(1000000), '1 Mio');
+  assert.equal(fmtCompact(1200000), '1,2 Mio');
+  assert.equal(fmtCompact(8369340), '8,37 Mio');
+  assert.equal(fmtCompact(99999999), '100 Mio');
+  assert.equal(fmtCompact(1000000000), '1 Mrd');
+  setLang('en', { persist: false });
+  assert.equal(fmtCompact(12000), '12,000');
+  assert.equal(fmtCompact(999999), '999,999');
+  assert.equal(fmtCompact(1000000), '1M');
+  assert.equal(fmtCompact(1200000), '1.2M');
+  assert.equal(fmtCompact(8369340), '8.37M');
+  assert.equal(fmtCompact(99999999), '100M');
+  assert.equal(fmtCompact(1000000000), '1B');
 });
 });
