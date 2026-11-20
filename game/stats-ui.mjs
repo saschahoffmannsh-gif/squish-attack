@@ -1,8 +1,9 @@
 // Werkzeug-Statistik (launch-13, Testphase): Übersicht aus dem lokalen Protokoll, Export, Zurücksetzen.
-import { TOOL_ICONS } from './tool-icons.mjs?v=launch-34';
-import { toolName } from './campaign.mjs?v=launch-34';
-import { summarize, exportLog } from './tool-log.mjs?v=launch-34';
-import { t } from './i18n.mjs?v=launch-34';
+// launch-35: lokale Variable sm.total nicht mehr t nennen – das hat t() (i18n) überschrieben und das Öffnen verhindert.
+import { TOOL_ICONS } from './tool-icons.mjs?v=launch-35';
+import { toolName } from './campaign.mjs?v=launch-35';
+import { summarize, exportLog } from './tool-log.mjs?v=launch-35';
+import { t } from './i18n.mjs?v=launch-35';
 
 const TYPES = ['extraMoves', 'rocket'];   // launch-29: nur noch +3 Züge und Rakete
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
@@ -15,13 +16,13 @@ export function createStatsUI({ getLog, onReset, build = '', sound } = {}) {
   const stats = { opens: 0, exports: 0, resets: 0, lastExport: null, lastExportMode: null };
 
   function cells(row, s) {
-    for (const t of TYPES) {
+    for (const ty of TYPES) {
       const td = el('td', 'ts-num');
-      const u = s.use[t], a = s.ads[t], g = s.gifts?.[t] | 0;
+      const u = s.use[ty], a = s.ads[ty], g = s.gifts?.[ty] | 0;
       td.textContent = u || a || g ? `${u}` : '–';
       if (a) td.append(el('sup', 'ts-ad', `${a}▶`));
       if (g) td.append(el('sup', 'ts-gift', `${g}🎁`));
-      td.setAttribute('aria-label', t('stats.cellAria', { tool: toolName(t), use:u, ads:a, gifts:g }));
+      td.setAttribute('aria-label', t('stats.cellAria', { tool: toolName(ty), use:u, ads:a, gifts:g }));
       row.append(td);
     }
   }
@@ -33,15 +34,15 @@ export function createStatsUI({ getLog, onReset, build = '', sound } = {}) {
     const close = el('button', 'ad-close'); close.type = 'button'; close.setAttribute('aria-label', t('stats.closeAria')); close.innerHTML = CLOSE_SVG;
     close.addEventListener('click', () => api.close());
     const title = el('h2', 'ad-title', t('stats.title')); title.id = 'ts-title';
-    const t = sm.total;
+    const tot = sm.total;
     const tiles = el('div', 'ts-totals');
-    for (const [v, l] of [[t.attempts, t('stats.attempts')], [t.wins, t('stats.wins')], [sum(t.use), t('stats.uses')], [sum(t.ads), t('stats.ads')], [sum(t.gifts), t('stats.gifts')]]) {
+    for (const [v, l] of [[tot.attempts, t('stats.attempts')], [tot.wins, t('stats.wins')], [sum(tot.use), t('stats.uses')], [sum(tot.ads), t('stats.ads')], [sum(tot.gifts), t('stats.gifts')]]) {
       const d = el('div', 'ts-tile'); d.append(el('b', '', String(v)), el('small', '', l)); tiles.append(d);
     }
     const perType = el('div', 'ts-types');
     for (const ty of TYPES) {
-      const d = el('div', 'ts-type'); d.append(ico(ty), el('b', '', String(t.use[ty])), el('small', '', `${t.ads[ty]}▶`), el('small', 'ts-gift', `${t.gifts[ty]}🎁`));
-      d.setAttribute('aria-label', t('stats.cellAria', { tool: toolName(ty), use:t.use[ty], ads:t.ads[ty], gifts:t.gifts[ty] })); perType.append(d);
+      const d = el('div', 'ts-type'); d.append(ico(ty), el('b', '', String(tot.use[ty])), el('small', '', `${tot.ads[ty]}▶`), el('small', 'ts-gift', `${tot.gifts[ty]}🎁`));
+      d.setAttribute('aria-label', t('stats.cellAria', { tool: toolName(ty), use:tot.use[ty], ads:tot.ads[ty], gifts:tot.gifts[ty] })); perType.append(d);
     }
     const wrap = el('div', 'ts-table-wrap');
     if (sm.levels.length) {
