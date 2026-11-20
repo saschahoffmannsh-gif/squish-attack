@@ -1157,7 +1157,7 @@
     "slack": 7,
     "toolMin": null,
     "optimalSolutions": 3,
-    "pOptimal": 0.00000139,
+    "pOptimal": 1.39e-06,
     "target": 20,
     "estimate": {
      "D": 20,
@@ -1338,7 +1338,7 @@
     1,
     1
    ],
-   "moves": 5,
+   "moves": 7,
    "goals": [
     {
      "type": "clear",
@@ -1350,8 +1350,8 @@
     }
    ],
    "stars": {
-    "three": 5,
-    "two": 5
+    "three": 7,
+    "two": 7
    },
    "solution": "aabsh",
    "tool": "extraMoves",
@@ -1362,7 +1362,7 @@
     "role": "tool",
     "note": "1. Werkzeug-Spitze: +3 Züge",
     "minMoves": 5,
-    "slack": 0,
+    "slack": 2,
     "toolMin": 5,
     "optimalSolutions": 2023,
     "pOptimal": 0.000988,
@@ -1382,6 +1382,15 @@
     "searched": {
      "tried": 95,
      "usable": 14
+    },
+    "cal36": {
+     "oldMoves": 5,
+     "oldStars": {
+      "three": 5,
+      "two": 5
+     },
+     "reason": "soften-too-hard",
+     "spike": true
     }
    }
   },
@@ -1557,7 +1566,7 @@
     4,
     2
    ],
-   "moves": 14,
+   "moves": 8,
    "goals": [
     {
      "type": "tile",
@@ -1566,7 +1575,7 @@
    ],
    "stars": {
     "three": 6,
-    "two": 10
+    "two": 7
    },
    "solution": "aamrr",
    "meta": {
@@ -1576,7 +1585,7 @@
     "role": "normal",
     "note": null,
     "minMoves": 5,
-    "slack": 9,
+    "slack": 3,
     "toolMin": null,
     "optimalSolutions": 4015,
     "pOptimal": 0.00112,
@@ -1593,6 +1602,14 @@
     "searched": {
      "tried": 1500,
      "usable": 41
+    },
+    "cal36": {
+     "oldMoves": 14,
+     "oldStars": {
+      "three": 6,
+      "two": 10
+     },
+     "reason": "medium-hard-stretch"
     }
    }
   },
@@ -1681,7 +1698,7 @@
     "slack": 9,
     "toolMin": null,
     "optimalSolutions": 177,
-    "pOptimal": 0.00000165,
+    "pOptimal": 1.65e-06,
     "target": 26,
     "estimate": {
      "D": 26,
@@ -1877,7 +1894,7 @@
     3,
     1
    ],
-   "moves": 18,
+   "moves": 12,
    "goals": [
     {
      "type": "tile",
@@ -1889,8 +1906,8 @@
     }
    ],
    "stars": {
-    "three": 13,
-    "two": 16
+    "three": 10,
+    "two": 11
    },
    "solution": "ordrrr",
    "meta": {
@@ -1900,7 +1917,7 @@
     "role": "milestone",
     "note": "Meilenstein: ein 5er liegt schon auf dem Brett, dazu räumen",
     "minMoves": 6,
-    "slack": 12,
+    "slack": 6,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -1928,6 +1945,14 @@
      "good3": 0.15,
      "cas": 0.32,
      "casOld": 0.32
+    },
+    "cal36": {
+     "oldMoves": 18,
+     "oldStars": {
+      "three": 13,
+      "two": 16
+     },
+     "reason": "medium-hard-stretch"
     }
    }
   },
@@ -2013,7 +2038,7 @@
     "slack": 7,
     "toolMin": null,
     "optimalSolutions": 3,
-    "pOptimal": 0.0000206,
+    "pOptimal": 2.06e-05,
     "target": 15,
     "estimate": {
      "D": 15,
@@ -2123,7 +2148,7 @@
     "slack": 7,
     "toolMin": null,
     "optimalSolutions": 1477,
-    "pOptimal": 0.00003,
+    "pOptimal": 3e-05,
     "target": 20,
     "estimate": {
      "D": 22,
@@ -2204,7 +2229,7 @@
     1,
     2
    ],
-   "moves": 15,
+   "moves": 10,
    "goals": [
     {
      "type": "tile",
@@ -2217,7 +2242,7 @@
    ],
    "stars": {
     "three": 8,
-    "two": 12
+    "two": 9
    },
    "solution": "ijjmj",
    "meta": {
@@ -2227,7 +2252,7 @@
     "role": "normal",
     "note": "Doppelziel mit bekannten Typen",
     "minMoves": 5,
-    "slack": 10,
+    "slack": 5,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -2255,6 +2280,14 @@
      "good3": 0.45,
      "cas": 0.95,
      "casOld": 0.98
+    },
+    "cal36": {
+     "oldMoves": 15,
+     "oldStars": {
+      "three": 8,
+      "two": 12
+     },
+     "reason": "medium-hard-stretch"
     }
    }
   },
@@ -2348,7 +2381,7 @@
     "slack": 5,
     "toolMin": null,
     "optimalSolutions": 58,
-    "pOptimal": 0.0000954,
+    "pOptimal": 9.54e-05,
     "target": 29,
     "estimate": {
      "D": 18,
@@ -2440,7 +2473,7 @@
     1,
     2
    ],
-   "moves": 16,
+   "moves": 18,
    "goals": [
     {
      "type": "tile",
@@ -2448,8 +2481,8 @@
     }
    ],
    "stars": {
-    "three": 16,
-    "two": 16
+    "three": 18,
+    "two": 18
    },
    "solution": "csbgsq",
    "tool": "extraMoves",
@@ -2460,7 +2493,7 @@
     "role": "tool",
     "note": "Werkzeug-Spitze: Zauberstab",
     "minMoves": 6,
-    "slack": 0,
+    "slack": 12,
     "optimalSolutions": null,
     "pOptimal": null,
     "target": 31,
@@ -2489,6 +2522,14 @@
       "toolSolution": "W01=4 as",
       "toolMin": 2
      }
+    },
+    "cal36": {
+     "oldMoves": 16,
+     "oldStars": {
+      "three": 16,
+      "two": 16
+     },
+     "reason": "soften-slight"
     }
    }
   },
@@ -3271,7 +3312,7 @@
     "slack": 9,
     "toolMin": null,
     "optimalSolutions": 586,
-    "pOptimal": 0.0000736,
+    "pOptimal": 7.36e-05,
     "target": 24,
     "estimate": {
      "D": 23,
@@ -3498,7 +3539,7 @@
     "slack": 14,
     "toolMin": null,
     "optimalSolutions": 3,
-    "pOptimal": 0.0000051,
+    "pOptimal": 5.1e-06,
     "target": 33,
     "estimate": {
      "D": 35,
@@ -3575,7 +3616,7 @@
     3,
     1
    ],
-   "moves": 12,
+   "moves": 16,
    "goals": [
     {
      "type": "empty",
@@ -3587,8 +3628,8 @@
     }
    ],
    "stars": {
-    "three": 12,
-    "two": 12
+    "three": 16,
+    "two": 16
    },
    "solution": "gclbclc",
    "tool": "rocket",
@@ -3599,7 +3640,7 @@
     "role": "tool",
     "note": "Werkzeug-Spitze: Rakete",
     "minMoves": 7,
-    "slack": 0,
+    "slack": 9,
     "toolMin": 3,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -3629,6 +3670,14 @@
       "toolSolution": "R13 bfr",
       "toolMin": 3
      }
+    },
+    "cal36": {
+     "oldMoves": 12,
+     "oldStars": {
+      "three": 12,
+      "two": 12
+     },
+     "reason": "soften-spike"
     }
    }
   },
@@ -3718,7 +3767,7 @@
     "slack": 8,
     "toolMin": null,
     "optimalSolutions": 6,
-    "pOptimal": 0.00000281,
+    "pOptimal": 2.81e-06,
     "target": 22,
     "estimate": {
      "D": 21,
@@ -4412,7 +4461,7 @@
     "slack": 14,
     "toolMin": null,
     "optimalSolutions": 2,
-    "pOptimal": 0.0000127,
+    "pOptimal": 1.27e-05,
     "target": 29,
     "estimate": {
      "D": 30,
@@ -4623,7 +4672,7 @@
     2,
     2
    ],
-   "moves": 22,
+   "moves": 24,
    "goals": [
     {
      "type": "make",
@@ -4633,7 +4682,7 @@
    ],
    "stars": {
     "three": 14,
-    "two": 18
+    "two": 19
    },
    "solution": "lnjcmpghlhrrm",
    "meta": {
@@ -4643,7 +4692,7 @@
     "role": "normal",
     "note": null,
     "minMoves": 13,
-    "slack": 9,
+    "slack": 11,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -4660,6 +4709,14 @@
     "searched": {
      "tried": 39,
      "usable": 12
+    },
+    "cal36": {
+     "reason": "soften-slight",
+     "oldMoves": 22,
+     "oldStars": {
+      "three": 14,
+      "two": 18
+     }
     }
    }
   },
@@ -5331,7 +5388,7 @@
     3,
     3
    ],
-   "moves": 22,
+   "moves": 12,
    "goals": [
     {
      "type": "tile",
@@ -5343,8 +5400,8 @@
     }
    ],
    "stars": {
-    "three": 22,
-    "two": 22
+    "three": 12,
+    "two": 12
    },
    "solution": "cssacs",
    "tool": "extraMoves",
@@ -5355,7 +5412,7 @@
     "role": "boss",
     "note": "Boss: eine 6 und Punkte, Werkzeug-Spitze (Zauberstab)",
     "minMoves": 6,
-    "slack": 0,
+    "slack": 6,
     "optimalSolutions": null,
     "pOptimal": null,
     "target": 49,
@@ -5384,6 +5441,14 @@
       "toolSolution": "W03=5 qss",
       "toolMin": 3
      }
+    },
+    "cal36": {
+     "oldMoves": 22,
+     "oldStars": {
+      "three": 22,
+      "two": 22
+     },
+     "reason": "medium-hard-stretch"
     }
    }
   },
@@ -5953,7 +6018,7 @@
     "slack": 0,
     "toolMin": 3,
     "optimalSolutions": 3,
-    "pOptimal": 0.00000212,
+    "pOptimal": 2.12e-06,
     "target": 45,
     "estimate": {
      "D": 72,
@@ -6524,7 +6589,7 @@
     3,
     2
    ],
-   "moves": 24,
+   "moves": 17,
    "goals": [
     {
      "type": "tile",
@@ -6536,8 +6601,8 @@
     }
    ],
    "stars": {
-    "three": 18,
-    "two": 21
+    "three": 12,
+    "two": 15
    },
    "solution": "qfhjq",
    "meta": {
@@ -6547,7 +6612,7 @@
     "role": "milestone",
     "note": "Meilenstein, 5er schon auf dem Brett",
     "minMoves": 5,
-    "slack": 25,
+    "slack": 12,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -6582,6 +6647,14 @@
        "two": 24
       }
      }
+    },
+    "cal36": {
+     "oldMoves": 24,
+     "oldStars": {
+      "three": 18,
+      "two": 21
+     },
+     "reason": "medium-hard-stretch"
     }
    }
   },
@@ -7267,7 +7340,7 @@
     1,
     2
    ],
-   "moves": 22,
+   "moves": 16,
    "goals": [
     {
      "type": "make",
@@ -7276,8 +7349,8 @@
     }
    ],
    "stars": {
-    "three": 12,
-    "two": 17
+    "three": 13,
+    "two": 15
    },
    "solution": "fjjrsaf",
    "meta": {
@@ -7287,7 +7360,7 @@
     "role": "relief",
     "note": "Erholung",
     "minMoves": 7,
-    "slack": 15,
+    "slack": 9,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -7315,6 +7388,14 @@
      "good3": 0.25,
      "cas": 0.9,
      "casOld": 0.98
+    },
+    "cal36": {
+     "oldMoves": 22,
+     "oldStars": {
+      "three": 12,
+      "two": 17
+     },
+     "reason": "medium-hard-stretch"
     }
    }
   },
@@ -9321,7 +9402,7 @@
     2,
     1
    ],
-   "moves": 30,
+   "moves": 15,
    "goals": [
     {
      "type": "long",
@@ -9330,7 +9411,7 @@
    ],
    "stars": {
     "three": 12,
-    "two": 21
+    "two": 14
    },
    "solution": "ghiih",
    "meta": {
@@ -9340,7 +9421,7 @@
     "role": "relief",
     "note": "fast fertige Straße aus 5",
     "minMoves": 5,
-    "slack": 25,
+    "slack": 10,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -9368,6 +9449,14 @@
      "good3": 0,
      "cas": 0.2,
      "casOld": 0.2
+    },
+    "cal36": {
+     "oldMoves": 30,
+     "oldStars": {
+      "three": 12,
+      "two": 21
+     },
+     "reason": "medium-hard-stretch"
     }
    }
   },
@@ -9516,30 +9605,30 @@
     [
      null,
      null,
-     2,
-     2,
+     29,
+     29,
      null
     ],
     [
-     1,
+     28,
      null,
      null,
      null,
      null
     ],
     [
-     1,
+     28,
      null,
      null,
-     1,
-     1
+     28,
+     28
     ],
     [
      null,
      null,
      30,
      null,
-     1
+     28
     ],
     [
      null,
@@ -9550,52 +9639,52 @@
     ]
    ],
    "sequence": [
-    1,
-    2,
-    1,
-    2,
-    1,
-    2,
-    1,
-    2,
-    2,
-    1,
-    1,
-    2,
-    1,
-    2,
-    1,
-    1,
-    1,
-    2,
-    1,
-    1,
-    2,
-    2,
-    1,
-    2,
-    1,
-    1,
-    1,
-    1,
-    1,
-    2,
-    2,
-    1,
-    1,
-    2,
-    2,
-    1,
-    2,
-    1,
-    2,
-    1
+    28,
+    29,
+    28,
+    29,
+    28,
+    29,
+    28,
+    29,
+    29,
+    28,
+    28,
+    29,
+    28,
+    29,
+    28,
+    28,
+    28,
+    29,
+    28,
+    28,
+    29,
+    29,
+    28,
+    29,
+    28,
+    28,
+    28,
+    28,
+    28,
+    29,
+    29,
+    28,
+    28,
+    29,
+    29,
+    28,
+    29,
+    28,
+    29,
+    28
    ],
    "moves": 18,
    "goals": [
     {
      "type": "score",
-     "points": 600
+     "points": 6000
     },
     {
      "type": "clear",
@@ -9603,18 +9692,18 @@
     }
    ],
    "stars": {
-    "three": 18,
-    "two": 18
+    "three": 12,
+    "two": 15
    },
-   "solution": "baftaffphbtscbpmcq",
+   "solution": "bqfcdcofpod",
    "meta": {
     "generator": "build18",
     "k": 219,
     "seed": 1551148951,
     "role": "normal",
-    "note": "hoher Wert (~30) als Blocker auf dem Brett",
-    "minMoves": 18,
-    "slack": 0,
+    "note": "hoher Wert, restliches Brett und Folge in einer Bandbreite darunter",
+    "minMoves": 11,
+    "slack": 7,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -9631,6 +9720,10 @@
     "searched": {
      "tried": 244,
      "usable": 22
+    },
+    "cal36": {
+     "reason": "coherent-high",
+     "offset": 27
     }
    }
   },
@@ -10438,7 +10531,7 @@
    "board": [
     [
      null,
-     1,
+     26,
      null,
      null,
      null
@@ -10446,9 +10539,9 @@
     [
      null,
      null,
-     1,
+     26,
      null,
-     2
+     27
     ],
     [
      null,
@@ -10462,76 +10555,76 @@
      null,
      28,
      null,
-     1
+     26
     ],
     [
-     1,
-     2,
+     26,
+     27,
      null,
      null,
      null
     ]
    ],
    "sequence": [
-    1,
-    1,
-    4,
-    4,
-    1,
-    1,
-    2,
-    2,
-    3,
-    1,
-    3,
-    1,
-    4,
-    4,
-    3,
-    1,
-    2,
-    2,
-    1,
-    2,
-    1,
-    2,
-    3,
-    3,
-    2,
-    3,
-    1,
-    1,
-    1,
-    2,
-    3,
-    1,
-    2,
-    1,
-    4,
-    2,
-    1,
-    4
+    26,
+    26,
+    29,
+    29,
+    26,
+    26,
+    27,
+    27,
+    28,
+    26,
+    28,
+    26,
+    29,
+    29,
+    28,
+    26,
+    27,
+    27,
+    26,
+    27,
+    26,
+    27,
+    28,
+    28,
+    27,
+    28,
+    26,
+    26,
+    26,
+    27,
+    28,
+    26,
+    27,
+    26,
+    29,
+    27,
+    26,
+    29
    ],
    "moves": 20,
    "goals": [
     {
      "type": "score",
-     "points": 500
+     "points": 4650
     }
    ],
    "stars": {
-    "three": 13,
-    "two": 17
+    "three": 12,
+    "two": 16
    },
-   "solution": "rsrrddmmmtmr",
+   "solution": "rsrrddmmmtm",
    "meta": {
     "generator": "build18",
     "k": 0,
     "seed": 91000273,
     "role": "relief",
-    "note": "Erholung, hoher Wert (~30) als Blocker auf dem Brett",
-    "minMoves": 12,
-    "slack": 21,
+    "note": "Erholung, hoher Wert, restliches Brett und Folge in einer Bandbreite darunter",
+    "minMoves": 11,
+    "slack": 9,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -10548,6 +10641,10 @@
     "searched": {
      "tried": 101,
      "usable": 63
+    },
+    "cal36": {
+     "reason": "coherent-high",
+     "offset": 25
     }
    }
   },
@@ -10632,7 +10729,7 @@
     1,
     1
    ],
-   "moves": 15,
+   "moves": 13,
    "goals": [
     {
      "type": "score",
@@ -10645,7 +10742,7 @@
    ],
    "stars": {
     "three": 11,
-    "two": 13
+    "two": 12
    },
    "solution": "hijhhh",
    "meta": {
@@ -10655,7 +10752,7 @@
     "role": "relief",
     "note": "Erholung",
     "minMoves": 6,
-    "slack": 9,
+    "slack": 7,
     "toolMin": null,
     "optimalSolutions": null,
     "pOptimal": null,
@@ -10683,6 +10780,14 @@
      "good3": 0.59,
      "cas": 0.9,
      "casOld": 1
+    },
+    "cal36": {
+     "oldMoves": 15,
+     "oldStars": {
+      "three": 11,
+      "two": 13
+     },
+     "reason": "medium-hard-stretch"
     }
    }
   },
@@ -11078,7 +11183,7 @@
    "kind": "street",
    "board": [
     [
-     1,
+     26,
      null,
      null,
      null,
@@ -11087,7 +11192,7 @@
     [
      null,
      null,
-     1,
+     26,
      null,
      null
     ],
@@ -11099,61 +11204,61 @@
      null
     ],
     [
-     1,
+     26,
      null,
      null,
-     2,
+     27,
      null
     ],
     [
-     2,
+     27,
      null,
-     4,
+     29,
      null,
-     1
+     26
     ]
    ],
    "sequence": [
-    1,
-    2,
-    2,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    2,
-    2,
-    2,
-    1,
-    2,
-    1,
-    1,
-    1,
-    2,
-    1,
-    2,
-    1,
-    1,
-    2,
-    1,
-    1,
-    1,
-    1,
-    2,
-    2,
-    1,
-    2,
-    2,
-    2,
-    1,
-    1,
-    2,
-    1,
-    2
+    26,
+    27,
+    27,
+    26,
+    26,
+    26,
+    26,
+    26,
+    26,
+    26,
+    26,
+    27,
+    27,
+    27,
+    26,
+    27,
+    26,
+    26,
+    26,
+    27,
+    26,
+    27,
+    26,
+    26,
+    27,
+    26,
+    26,
+    26,
+    26,
+    27,
+    27,
+    26,
+    27,
+    27,
+    27,
+    26,
+    26,
+    27,
+    26,
+    27
    ],
    "moves": 32,
    "goals": [
@@ -11172,7 +11277,7 @@
     "k": 152,
     "seed": 4115175480,
     "role": "relief",
-    "note": "Erholung, hoher Wert als Blocker",
+    "note": "Erholung, hoher Wert, restliches Brett und Folge in einer Bandbreite darunter",
     "minMoves": 6,
     "slack": 26,
     "toolMin": null,
@@ -11202,6 +11307,10 @@
      "good3": 0.03,
      "cas": 0.85,
      "casOld": 0.9
+    },
+    "cal36": {
+     "reason": "coherent-high",
+     "offset": 25
     }
    }
   },
@@ -11338,85 +11447,85 @@
    "board": [
     [
      null,
-     2,
-     2,
+     28,
+     28,
      null,
      null
     ],
     [
      null,
      null,
-     3,
+     29,
      null,
-     1
+     27
     ],
     [
      null,
-     1,
-     1,
+     27,
+     27,
      null,
      null
     ],
     [
      30,
      null,
-     3,
+     29,
      null,
      null
     ],
     [
      null,
      null,
-     2,
+     28,
      null,
      null
     ]
    ],
    "sequence": [
-    1,
-    2,
-    2,
-    1,
-    1,
-    2,
-    1,
-    2,
-    1,
-    1,
-    1,
-    1,
-    2,
-    1,
-    1,
-    2,
-    1,
-    1,
-    2,
-    1,
-    2,
-    1,
-    2,
-    1,
-    1,
-    1,
-    1,
-    2,
-    1,
-    1,
-    2,
-    1,
-    1,
-    1,
-    1,
-    1,
-    2,
-    1,
-    1,
-    2,
-    1,
-    1,
-    2,
-    2
+    27,
+    28,
+    28,
+    27,
+    27,
+    28,
+    27,
+    28,
+    27,
+    27,
+    27,
+    27,
+    28,
+    27,
+    27,
+    28,
+    27,
+    27,
+    28,
+    27,
+    28,
+    27,
+    28,
+    27,
+    27,
+    27,
+    27,
+    28,
+    27,
+    27,
+    28,
+    27,
+    27,
+    27,
+    27,
+    27,
+    28,
+    27,
+    27,
+    28,
+    27,
+    27,
+    28,
+    28
    ],
    "moves": 17,
    "goals": [
@@ -11439,7 +11548,7 @@
     "k": 40,
     "seed": 3179044366,
     "role": "normal",
-    "note": "hoher Wert (~30) als Blocker plus Straße",
+    "note": "hoher Wert plus Straße, restliches Brett und Folge in einer Bandbreite darunter",
     "minMoves": 6,
     "slack": 11,
     "toolMin": null,
@@ -11469,6 +11578,10 @@
      "good3": 0.51,
      "cas": 0.86,
      "casOld": 1
+    },
+    "cal36": {
+     "reason": "coherent-high",
+     "offset": 26
     }
    }
   },

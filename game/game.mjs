@@ -1,36 +1,36 @@
-import {apiFetch,hasSaveToken} from './api.mjs?v=launch-35';
-import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-35';
+import {apiFetch,hasSaveToken} from './api.mjs?v=launch-36';
+import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-36';
 import { nextSpawn, spawnProfile } from './balance.mjs';
-import {canContinueRun} from './run-availability.mjs?v=launch-35';
-import { createMergeEffects } from './merge-effects.mjs?v=launch-35';
-import { createGameGraphics } from './graphics-adapter.mjs?v=launch-35';
-import { installDeviceMotion } from './device-motion.mjs?v=launch-35';
-import { createGameSound } from './sound.mjs?v=launch-35';
+import {canContinueRun} from './run-availability.mjs?v=launch-36';
+import { createMergeEffects } from './merge-effects.mjs?v=launch-36';
+import { createGameGraphics } from './graphics-adapter.mjs?v=launch-36';
+import { installDeviceMotion } from './device-motion.mjs?v=launch-36';
+import { createGameSound } from './sound.mjs?v=launch-36';
 import { installSettings } from './settings.mjs?v=woodland-menu-1';
-import { createDuelClient } from './duel-client.mjs?v=launch-35';
+import { createDuelClient } from './duel-client.mjs?v=launch-36';
 import {installFullscreen} from './fullscreen.mjs?v=timed-duel-1';
-import {createHomeMenu} from './home-menu.mjs?v=launch-35';
-import {createConfetti} from './confetti.mjs?v=launch-35';
-import {createHaptics} from './haptics.mjs?v=launch-35';
+import {createHomeMenu} from './home-menu.mjs?v=launch-36';
+import {createConfetti} from './confetti.mjs?v=launch-36';
+import {createHaptics} from './haptics.mjs?v=launch-36';
 import {planMergeRipple} from './merge-ripple.mjs?v=swarm-fx-3';
-import * as Camp from './campaign.mjs?v=launch-35';
-import {createCampaignUI} from './campaign-ui.mjs?v=launch-35';
-import {createToolFx} from './tool-fx.mjs?v=launch-35';
-import {createGhostFinger} from './ghost-finger.mjs?v=launch-35';
-import * as Shop from './shop.mjs?v=launch-35';
-import {createShopUI} from './shop-ui.mjs?v=launch-35';
-import {createGiftFx} from './gift-fx.mjs?v=launch-35';
-import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-35';
-import {createAdUI} from './ad-ui.mjs?v=launch-35';
-import {isOffline} from './native-ads.mjs?v=launch-35';
-import {createStatsUI} from './stats-ui.mjs?v=launch-35';
-import * as ToolLog from './tool-log.mjs?v=launch-35';
-import {createProgressSync} from './progress-sync.mjs?v=launch-35';
-import {epochOf} from './progress-merge.mjs?v=launch-35';
-import {createAdPacing} from './ad-pacing.mjs?v=launch-35';
-import {isAdFree,canOfferAdFree,purchaseAdFree,adFreePriceLabel} from './ad-free.mjs?v=launch-35';
-import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-35';
-import {createExplainer} from './explain.mjs?v=launch-35';
+import * as Camp from './campaign.mjs?v=launch-36';
+import {createCampaignUI} from './campaign-ui.mjs?v=launch-36';
+import {createToolFx} from './tool-fx.mjs?v=launch-36';
+import {createGhostFinger} from './ghost-finger.mjs?v=launch-36';
+import * as Shop from './shop.mjs?v=launch-36';
+import {createShopUI} from './shop-ui.mjs?v=launch-36';
+import {createGiftFx} from './gift-fx.mjs?v=launch-36';
+import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-36';
+import {createAdUI} from './ad-ui.mjs?v=launch-36';
+import {isOffline} from './native-ads.mjs?v=launch-36';
+import {createStatsUI} from './stats-ui.mjs?v=launch-36';
+import * as ToolLog from './tool-log.mjs?v=launch-36';
+import {createProgressSync} from './progress-sync.mjs?v=launch-36';
+import {epochOf} from './progress-merge.mjs?v=launch-36';
+import {createAdPacing} from './ad-pacing.mjs?v=launch-36';
+import {isAdFree,canOfferAdFree,purchaseAdFree,adFreePriceLabel} from './ad-free.mjs?v=launch-36';
+import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-36';
+import {createExplainer} from './explain.mjs?v=launch-36';
 const playfield = document.getElementById('playfield');
 const gameElement = document.querySelector('.game');
 const visual = createGameGraphics(document.getElementById('graphics'));
@@ -145,9 +145,9 @@ const newTile = value => ({ id: nextId++, value });
 // in localStorage unangetastet: während der Kampagne wird nichts davon gespeichert,
 // beim Verlassen wird er wieder geladen.
 const MODE_KEY='squish-mode-v1';
-const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-35',import.meta.url);
+const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-36',import.meta.url);
 // launch-16: Test-Level für die neuen Squishes (Eis, Ketten, Bombe) – eigener kleiner Satz, kein Fortschritt/Protokoll.
-const LAB_URL=new URL('../levels/levels-lab.json?v=launch-35',import.meta.url);
+const LAB_URL=new URL('../levels/levels-lab.json?v=launch-36',import.meta.url);
 let labMode=false,labLevels=null,labLoading=null;
 function loadLab(){
   return labLoading||=fetch(LAB_URL,{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('lab '+r.status);return r.json();})
@@ -195,7 +195,7 @@ const progressSync=createProgressSync({fetch:apiFetch,epoch:epochOf(Camp.PROGRES
   setLocal:(p,inv)=>{campaignProgress=p;Camp.saveProgress(p);if(inv!==inventory){inventory=inv;Camp.saveInventory(inv,undefined,false);}try{renderCampaign();void worldMenu.refresh?.();}catch{}}});
 const cloudSync=()=>{if(!labMode)progressSync.schedule();};
 progressSync.attach(window);
-const BUILD_LABEL='launch-35';
+const BUILD_LABEL='launch-36';
 let toolLog=ToolLog.loadLog(),logAttempt=null;
 // Versuche, die beim letzten Mal offen blieben (Seite geschlossen), gelten als abgebrochen.
 if(toolLog.attempts.some(a=>!a.outcome)){for(const a of toolLog.attempts)if(!a.outcome)ToolLog.endAttempt(toolLog,a.id,{outcome:'quit',moves:a.moves});ToolLog.saveLog(toolLog);}
