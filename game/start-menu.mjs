@@ -1,11 +1,11 @@
-import {t} from './i18n.mjs?v=launch-37';
+import {t} from './i18n.mjs?v=launch-38';
 const controllerKey=Symbol.for('squish.start-menu-controller');
 
 // The splash hands over to the 2D start screen (home-menu.mjs). The legacy
 // title panel only keeps the loading status and retry for failures.
 export function installStartMenu({
   page=document,
-  loadGame=()=>import('./game.mjs?v=launch-37'),
+  loadGame=()=>import('./game.mjs?v=launch-38'),
   paint=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))),
   delay=ms=>new Promise(resolve=>setTimeout(resolve,ms)),
   splashMs=4000,timeoutMs=30000,

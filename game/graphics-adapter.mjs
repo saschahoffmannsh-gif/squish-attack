@@ -1,15 +1,15 @@
 import {createContactSolver} from './dense-contacts.mjs?v=dense-board-1';
-import {configureRenderQuality} from './render-quality.mjs?v=launch-37';
+import {configureRenderQuality} from './render-quality.mjs?v=launch-38';
 import {enqueueRippleImpulse} from './merge-ripple.mjs?v=swarm-fx-3';
 import {installPressureWave} from './pressure-wave.mjs?v=soft-gel-1';
-import {applyGelSoftness,softWobblePower,wobbleDecayFactor} from './gel-softness.mjs?v=launch-37';
-import {applyNeonGlassLighting} from './gel-lighting.mjs?v=launch-37';
-import {createCrispLabelFactory} from './crisp-labels.mjs?v=launch-37';
-import {applyComic,comicBodyMaterial,setComicValue} from './comic-style.mjs?v=launch-37';
-import {installCleanScreen} from './clean-screen.mjs?v=launch-37';
-import {applySpecial,setSpecialRuntime,deformSpecial} from './special-squish.mjs?v=launch-37';
-import {createFusion} from './fusion.mjs?v=launch-37';
-import {flags} from './flags.mjs?v=launch-37';
+import {applyGelSoftness,softWobblePower,wobbleDecayFactor} from './gel-softness.mjs?v=launch-38';
+import {applyNeonGlassLighting} from './gel-lighting.mjs?v=launch-38';
+import {createCrispLabelFactory} from './crisp-labels.mjs?v=launch-38';
+import {applyComic,comicBodyMaterial,setComicValue} from './comic-style.mjs?v=launch-38';
+import {installCleanScreen} from './clean-screen.mjs?v=launch-38';
+import {applySpecial,setSpecialRuntime,deformSpecial} from './special-squish.mjs?v=launch-38';
+import {createFusion} from './fusion.mjs?v=launch-38';
+import {flags} from './flags.mjs?v=launch-38';
 import {createSquishGraphics,THREE,PARAMETERS} from '../squish/squish-graphics.js?v=play-sharp-1';
 import {buildSquishy,createLabel,bindGelOptics,initializeMotion,updateSquishy as updateSquishyCore,PARAMETERS as HUD_PARAMETERS} from './original-gel-models.js?v=menu-1';
 function updateSquishy(s,...args){updateSquishyCore(s,...args);deformSpecial(s);}
@@ -137,10 +137,12 @@ export function createGameGraphics(host) {
     warming=true;
     try {
       for(const tile of bodies){tile.group.visible=true;delete tile.group.userData.entryProgress;}
-      if(!flags.noprewarm)fusion?.warm(true);
-      // Compile behind the menu, then present only the empty table until play.
-      // One warm render also uploads labels, geometry, shadows and textures.
-      // On phones, skip compileAsync: it can hang, and programs link on first use.
+      // Always link fusion pop programs (fused gel, skin, droplets, flash) here,
+      // also on phones. compileAsync and blob prefill stay behind noprewarm
+      // (they have hung or exhausted iPhone GPU memory). Sync compile + one
+      // render is enough to upload textures and cache the programs.
+      fusion?.warm(true);
+      try{await fusion?.whenReady?.();}catch{}
       if(!flags.noprewarm){
         const compile=typeof graphics.renderer.compileAsync==='function'
           ?graphics.renderer.compileAsync(graphics.scene,graphics.camera)

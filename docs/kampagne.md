@@ -715,3 +715,7 @@ Nachtrag launch-32: Für die Sterne zählt jede Rakete wie ein Zug (übrig = Lim
 - **Spielstand, Sterne, Epoche und Cloud** unverändert. Kein neuer Reset.
 - Spezial-Squishes (Eis, Kette, Bombe) behalten ihr eigenes Textur-Material auf dem gleichen Modell.
 
+## Erster Merge ohne Ruckler (launch-38)
+
+- **Platzen:** Beim allerersten Merge nach einem frischen Laden hakte das Platzen, weil die Shader für den Fusionskörper, die Hautfetzen, Tropfen, die Tintenkontur und den Blitz erst in diesem Moment übersetzt wurden. Auf dem iPhone war das Vorwärmen dieser Programme abgeschaltet (compileAsync und Blob-Vorrat bleiben abgeschaltet – sie haben dort schon einmal gehängt bzw. den Speicher vollgemacht).
+- **Fix:** Dieselben Programme und Texturen werden jetzt hinter dem Startbildschirm einmal synchron kompiliert und hochgeladen; die Materialien bleiben danach erhalten, damit die Programme nicht wieder freigegeben werden. VFX-Atlas wird sofort vorgeladen. Audiodateien werden auf iOS schon beim Laden geholt, dekodiert wird weiter erst nach dem ersten Tipp. Kein neuer Reset, Look unverändert.

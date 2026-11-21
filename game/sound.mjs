@@ -1,5 +1,5 @@
-import { t } from './i18n.mjs?v=launch-37';
-import {flags,ios,safari,BUILD} from './flags.mjs?v=launch-37';
+import { t } from './i18n.mjs?v=launch-38';
+import {flags,ios,safari,BUILD} from './flags.mjs?v=launch-38';
 // Sampled gel foley. Fetching is optional and never holds up the splash;
 // the AudioContext is created/resumed only by a real player gesture.
 // Slide/land use ralph.whitehead's CC0 Plunger Pop (#05); merge/pop use Gniffelbaf's CC0 balloon burst.
@@ -401,9 +401,10 @@ export function createGameSound(button,{
   button?.addEventListener('click',toggle);page?.addEventListener('visibilitychange',visibility);
   page?.addEventListener('pointerdown',onGesture,{capture:true});
   render();
-  // On iOS, wait for a real gesture before fetching/decoding, so start-of-round
-  // landings cannot pile up onto a stuck decodeAudioData.
-  if(enabled&&!flags.nosound&&!ios)void preload();
+  // Fetch samples during load even on iOS (no AudioContext needed). Decode
+  // still waits for unlock() on a real gesture so a stuck decodeAudioData
+  // cannot pile onto start-of-round landings.
+  if(enabled&&!flags.nosound)void preload();
   return {
     unlock,play,collect,endCollect,stop,preload,flushQueue,
     pause(){paused=true;stop();},resume(){paused=false;},

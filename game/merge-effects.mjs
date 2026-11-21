@@ -1,7 +1,7 @@
 import {createScoreLedger} from './score-ledger.mjs?v=reward-fx-1';
-import {createFlipbookLayer,hexColor} from './vfx-flipbooks.mjs?v=launch-37';
+import {createFlipbookLayer,hexColor} from './vfx-flipbooks.mjs?v=launch-38';
 import {createComboMeter,comboTint} from './combo-meter.mjs?v=combo-1';
-import { t, fmtNum } from './i18n.mjs?v=launch-37';
+import { t, fmtNum } from './i18n.mjs?v=launch-38';
 const palette=['#00b5ff','#f31954','#00dc45','#ff850c','#9239ff','#ffc829','#f44ebd','#20d8ce'];
 const gold='#ffce70',ivory='#fff8dd';
 const GOLD=hexColor('#ffc964'),IVORY=hexColor(ivory);
@@ -41,7 +41,7 @@ export function createMergeEffects(layer,reduceMotion,{
   // Merge first; the rarer tiers follow while the player reads the board.
   // Merges are real gel now (fusion.mjs); only the light bits and the combo
   // cushions remain as rendered sprites.
-  setTimeout(()=>vfx.preload(['bits','cushion']),400);
+  vfx.preload(['bits','cushion']);
   const counter=scoreElement?.closest('.run-score'),format={format:n=>fmtNum(n)};
   const ledger=createScoreLedger(value=>{if(scoreElement)scoreElement.textContent=format.format(value);});
   const announcement=page.getElementById?.('score-announcement');
@@ -221,6 +221,13 @@ export function createMergeEffects(layer,reduceMotion,{
       if(announcement)announcement.textContent=`Combo ${count}`;
     },
     combo(count){if(count<2||page.hidden)return;showHero(celebrationFor(null,count));},
+    async warm(){
+      // Decode and upload the burst atlases, then draw one invisible frame so
+      // the VFX program and textures are ready before the first pop.
+      try{await Promise.all(['bits','cushion'].map(name=>vfx.load(name)));}catch{}
+      vfx.stamp('bits',BIT.gel,{x:-80,y:-80,w:1,alpha:0,life:.05,gain:0,hot:0,cover:0});
+      vfx.play('cushion',{x:-80,y:-80,w:1,alpha:0,life:.05,gain:0,hot:0,cover:0,fps:30});
+    },
     finish(){settle();},
     clear(){settle();meter.clear();for(const el of labels){el.getAnimations().forEach(a=>a.cancel());el.remove();}labels.clear();comboLabel=recordLabel=null;},
     dispose(){this.clear();disposed=true;page.removeEventListener('visibilitychange',visibility);reduceMotion.removeEventListener?.('change',settle);vfx.dispose();},
