@@ -1,0 +1,28 @@
+Squish attack – Audio-Quellen
+=============================
+
+Neue Foley unter assets/audio/foley-v4/. Alle genannten Aufnahmen stehen
+unter CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/) und dürfen
+frei, auch kommerziell, verwendet werden. Eine Namensnennung ist nicht
+pflichtig, wird hier aber festgehalten.
+
+1. Schieben, Landen, Menü und Spielstart – slide.{wav,m4a,mp3,ogg}
+   Titel: Plunger Pop
+   Autor: ralph.whitehead
+   Quelle: https://freesound.org/people/ralph.whitehead/sounds/342815/
+   Lizenz: CC0 1.0
+   Bearbeitung fürs Spiel: ein 0,29 s langer Ausschnitt aus der Hörprobe
+   (Nummer 5), nur mit 3 ms Fade-in, ohne weiteren Eingriff in den Klang,
+   und als WAV, AAC (m4a), MP3 und Ogg Vorbis ausgegeben. Ziel ca. −1,5 dBTP.
+
+2. Merge-Platzer und Duell-Platzer – burst.{ogg,m4a,mp3}
+   Titel: Balloon Burst 05
+   Autor: Gniffelbaf
+   Quelle: https://freesound.org/people/Gniffelbaf/sounds/82119/
+   Lizenz: CC0 1.0
+   Bearbeitung fürs Spiel: zugeschnitten, ausgesteuert und komprimiert.
+   Grundlage ist die offizielle Freesound-HQ-Vorschau; das originale WAV
+   erfordert eine Freesound-Anmeldung und lag bei der Einbindung nicht vor.
+
+Ältere Foley unter assets/audio/plop-v3/ (plop, suction, count) bleibt für
+das Quetschen, das Punkte-Zählgeräusch und den Rekord-Jingle im Spiel.
