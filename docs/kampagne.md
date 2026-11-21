@@ -707,3 +707,11 @@ Aktueller Stand im Spiel (Schalter in `campaign.mjs`):
 - Signal `squish:level-won` (CustomEvent auf `window`, `detail {level, stars}`) für die App-Hülle (ATT-Vorfrage).
 
 Nachtrag launch-32: Für die Sterne zählt jede Rakete wie ein Zug (übrig = Limit − Züge − Raketen; +3 zählt nie).
+
+## Opake glänzende Gel-Kissen (launch-37)
+
+- **Look:** die weichen, glänzenden Gel-Kissen aus der Vorschau (`preview-gel`) sind jetzt live. Neonfarben wie in launch-5, weiches Wrap-Licht und ein enger Glanzpunkt, **ohne** Lichtbrechung, Bloom und Comic-Kontur. Ein einzelner opaker Shader-Pass. Form, Federn und Verformung unverändert.
+- **Ziffern** bleiben weiß mit dunkler Kontur (auch zweistellig lesbar). iPhone-Auflösung bleibt 3× mit Canvas-MSAA.
+- **Spielstand, Sterne, Epoche und Cloud** unverändert. Kein neuer Reset.
+- Spezial-Squishes (Eis, Kette, Bombe) behalten ihr eigenes Textur-Material auf dem gleichen Modell.
+
