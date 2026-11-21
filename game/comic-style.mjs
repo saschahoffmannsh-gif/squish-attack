@@ -1,90 +1,82 @@
 import {THREE} from '../squish/squish-graphics.js?v=play-sharp-1';
 
-// Comic look (Stil C aus dem Labor): flaches Cel-Shading mit zwei Stufen,
-// dicke dunkle Kontur (invertierte Hülle auf derselben, CPU-verformten
-// Geometrie), harter weißer Glanzfleck + kleiner Punkt, weiße Ziffer mit
-// dunkler Kontur. Form, Verformung und Federn bleiben die des Spiels.
+// Opaque glossy gel (launch-37): launch-5 neon cushion colors and a soft
+// clearcoat-like highlight, but no transmission/refraction pass and no bloom.
+// One opaque ShaderMaterial pass. Form, springs and labels stay as in launch-36.
 export const INK='#140a10';
-// [hell, mittel, dunkel] je Spielfarbe 1–8 (Blau, Rot, Grün, Orange, Violett, Gelb, Pink, Türkis).
-const PALETTE={
-  1:['#5cc2ff','#1f7ff0','#0d3f9e'],2:['#ff7a66','#e8291f','#a3101a'],3:['#9df25a','#38b81c','#1b7a10'],
-  4:['#ffb04a','#ff7a0c','#b8460a'],5:['#b57cff','#8a3cf0','#5418a8'],6:['#ffe36b','#ffc21f','#c98a06'],
-  7:['#ff8cc6','#f0459e','#a8186a'],8:['#6ff0e2','#1fc9bd','#0e8a84'],
+// Launch-5 neon dye, plus a lighter face and a deeper shade for wrap lighting.
+const NEON={
+  1:'#00c9ff',2:'#ff2455',3:'#39ff29',4:'#ff7816',
+  5:'#a440ff',6:'#fff13b',7:'#ff42ca',8:'#11ffe0',
 };
 const col=hex=>new THREE.Color(hex);
 const cache=new Map();
-// Licht- und Schattenton (wie Stil C im Labor), plus Akzent für Effekte.
 export function comicColors(value){
   const key=((Math.max(1,value|0)-1)%8)+1;let c=cache.get(key);
-  if(!c){const [hi,mid,lo]=PALETTE[key];c={light:col(mid).lerp(col(hi),.12),shade:col(lo).lerp(col(mid),.35),hi:col(hi),mid:col(mid),lo:col(lo),hex:{hi,mid,lo}};cache.set(key,c);}
+  if(!c){
+    const mid=col(NEON[key]);
+    const hi=mid.clone().lerp(col('#ffffff'),.14);
+    const lo=mid.clone().multiplyScalar(.2).lerp(col('#04060a'),.32);
+    c={light:mid.clone(),shade:lo,hi,mid,lo,hex:{hi:'#'+hi.getHexString(),mid:NEON[key],lo:'#'+lo.getHexString()}};
+    cache.set(key,c);
+  }
   return c;
 }
-export const LIGHT=new THREE.Vector3(-.55,.9,-.3).normalize();
+export const LIGHT=new THREE.Vector3(.48,.82,-.32).normalize();
 
-const bodyVert=`varying vec3 vN;varying vec3 vP;
-void main(){vP=position;vN=normalize(mat3(modelMatrix)*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
-// Bandkanten und Glanzfleck werden per fwidth geglättet: hart, aber ohne Treppen.
-const bodyFrag=`uniform vec3 uLight,uShade,uL;uniform vec4 uBox;uniform float uSpot;varying vec3 vN;varying vec3 vP;
-float aastep(float e,float x){float w=max(fwidth(x),1e-4)*.75;return smoothstep(e-w,e+w,x);}
-void main(){float nl=length(vN);vec3 N=nl>1e-5?vN/nl:vec3(0.,1.,0.);
- float d=dot(N,normalize(uL))*.5+.5;
- vec3 c=mix(uShade,uLight,aastep(.5,d));
- vec2 q=(vP.xz-uBox.xy)/uBox.zw;
- #ifdef FUSED
-  // Balloon: the top cap is rounder, so the spot may sit lower on it.
-  float top=aastep(.3,N.y);
- #else
-  float top=aastep(.6,N.y);
- #endif
- float g=length((q-vec2(-.52,-.46))*vec2(1.,1.7)),g2=length(q-vec2(-.2,-.62));
- float spot=max(1.-aastep(.17*uSpot,g),1.-aastep(.065*uSpot,g2))*top;
- gl_FragColor=vec4(c,1.);
- #include <tonemapping_fragment>
- // The shine stays pure white after tone mapping.
- gl_FragColor.rgb=mix(gl_FragColor.rgb,vec3(1.),spot);
- #include <colorspace_fragment>
+const bodyVert=`varying vec3 vN;varying vec3 vW;
+void main(){vN=normalize(mat3(modelMatrix)*normal);vW=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
+const bodyFrag=`uniform vec3 uLight,uShade,uHi,uL;uniform float uSoft;
+varying vec3 vN;varying vec3 vW;
+void main(){
+  float nl=length(vN);vec3 N=nl>1e-5?vN/nl:vec3(0.,1.,0.);
+  vec3 V=normalize(cameraPosition-vW);
+  vec3 L=normalize(uL);
+  float wrap=clamp(dot(N,L)*.5+.5,0.,1.);
+  wrap=smoothstep(.0,.85,wrap);
+  vec3 c=mix(uShade,uLight,wrap);
+  c+=uLight*smoothstep(.2,1.,N.y)*.1;
+  float fres=pow(1.-clamp(dot(N,V),0.,1.),3.0);
+  c=mix(c,uHi,fres*.28);
+  vec3 H=normalize(L+V);
+  float nh=max(dot(N,H),0.);
+  float specSoft=pow(nh,32.)*uSoft;
+  float specHard=pow(nh,110.)*uSoft;
+  c+=uHi*specSoft*.22;
+  gl_FragColor=vec4(c,1.);
+  #include <tonemapping_fragment>
+  gl_FragColor.rgb=mix(gl_FragColor.rgb,vec3(1.),clamp(specHard,0.,1.));
+  #include <colorspace_fragment>
 }`;
-// Highlight placement uses the body's rest footprint (top face, top-left).
-function fitBox(box,geometry){geometry.computeBoundingBox();const b=geometry.boundingBox;box.set((b.min.x+b.max.x)/2,(b.min.z+b.max.z)/2,(b.max.x-b.min.x)/2||1,(b.max.z-b.min.z)/2||1);}
+
 export function comicBodyMaterial(value,geometry,{fused=false}={}){
-  const {light,shade}=comicColors(value);
-  const box=new THREE.Vector4(0,0,1,1);
-  if(geometry&&!fused)fitBox(box,geometry);
-  const m=new THREE.ShaderMaterial({vertexShader:bodyVert,fragmentShader:bodyFrag,toneMapped:true,defines:fused?{FUSED:1}:{},side:fused?THREE.DoubleSide:THREE.FrontSide,
-    uniforms:{uLight:{value:light.clone()},uShade:{value:shade.clone()},uL:{value:LIGHT},uBox:{value:box},uSpot:{value:1}}});
-  m.name='Comic_body';m.userData.comic={value,fused,boxed:!!geometry&&!fused};
+  const {light,shade,hi}=comicColors(value);
+  const m=new THREE.ShaderMaterial({
+    vertexShader:bodyVert,fragmentShader:bodyFrag,toneMapped:true,
+    defines:fused?{FUSED:1}:{},
+    side:fused?THREE.DoubleSide:THREE.FrontSide,
+    uniforms:{
+      uLight:{value:light.clone()},uShade:{value:shade.clone()},uHi:{value:hi.clone()},
+      uL:{value:LIGHT},uSoft:{value:fused?1.15:1},
+    },
+  });
+  m.name='Gel_body';
+  m.userData.comic={value,fused,gel:true};
   return m;
 }
 export function setComicValue(material,value){
-  const u=material?.uniforms;if(!u?.uLight)return;const {light,shade}=comicColors(value);
-  u.uLight.value.copy(light);u.uShade.value.copy(shade);material.userData.comic.value=value;
+  const u=material?.uniforms;if(!u?.uLight)return;const {light,shade,hi}=comicColors(value);
+  u.uLight.value.copy(light);u.uShade.value.copy(shade);if(u.uHi)u.uHi.value.copy(hi);
+  material.userData.comic.value=value;
 }
 
-// Kontur: Rückseiten-Hülle, entlang der Normalen verschoben. Die Dicke ist in
-// Weltmaß konstant (kleine Vorschau-Steine bekommen dieselbe Linie).
-const hullVert=`uniform float uT,uPush;void main(){float nl=length(normal);vec3 p=position+(nl>1e-5?normal/nl:vec3(0.))*uT;vec4 v=modelViewMatrix*vec4(p,1.);v.z-=uPush;gl_Position=projectionMatrix*v;}`;
-const hullFrag=`uniform vec3 uC;void main(){gl_FragColor=vec4(uC,1.);
- #include <colorspace_fragment>
-}`;
+// Kept for specials / fusion imports; the opaque gel path does not attach an ink hull.
 export const OUTLINE_WORLD=.085;
-const scaleOf=new THREE.Vector3();
-// `push` moves the hull away from the camera (fused balloon: its folds must never show ink).
 export function comicOutline(geometry,{world=OUTLINE_WORLD,push=0}={}){
-  const m=new THREE.ShaderMaterial({vertexShader:hullVert,fragmentShader:hullFrag,side:THREE.BackSide,toneMapped:false,
-    uniforms:{uT:{value:.05},uPush:{value:push},uC:{value:col(INK)}}});
-  m.name='Comic_outline';
-  const mesh=new THREE.Mesh(geometry,m);mesh.name='Comic_outline';mesh.castShadow=false;mesh.receiveShadow=false;
-  mesh.raycast=()=>{};
-  mesh.onBeforeRender=function(){
-    const e=this.matrixWorld.elements,sx=Math.hypot(e[0],e[1],e[2])||1;
-    m.uniforms.uT.value=Math.min(.16,world/sx);
-  };
-  return mesh;
+  const m=new THREE.Mesh();m.name='Comic_outline';m.visible=false;m.raycast=()=>{};
+  return m;
 }
 
-// Ziffer: weiß mit dunkler Kontur, aus der vorhandenen Coverage-Textur
-// (12 Abtastungen im Kreis). Bleibt ein MeshBasicMaterial, damit opacity,
-// clone() und die Fusion unverändert funktionieren.
 export function setComicLabel(material,{face='#ffffff',ink=INK}={}){
   if(!material)return;
   material.color.set(face);
@@ -115,27 +107,21 @@ export function comicLabelMaterial(material,{width=.5,height=.7,thickness=.03,fa
   return material;
 }
 
-// Einen Squish (Spielstein, Vorschau, Rekord, Fusionskörper) auf Comic umstellen.
 export function applyComic(s,value=s.value,{fused=false}={}){
   const body=s.body;if(!body)return;
   const current=body.material;
   if(current?.userData?.special){
-    if(!body.children.some(o=>o.name==='Comic_outline'))body.add(comicOutline(body.geometry));
-    else for(const o of body.children)if(o.name==='Comic_outline'&&o.geometry!==body.geometry)o.geometry=body.geometry;
     if(s.bubbles)s.bubbles.visible=false;
     return;
   }
   if(current?.userData?.comic){
     const info=current.userData.comic;if(info.value!==value)setComicValue(current,value);
-    if(!info.fused&&!info.boxed&&body.geometry?.attributes?.position){fitBox(current.uniforms.uBox.value,body.geometry);info.boxed=true;}
-  }
-  else{
+  }else{
     const old=current;body.material=comicBodyMaterial(value,body.geometry,{fused});
-    // The SDK's translucent shadow keeps working: it is a separate depth material.
     if(old&&old!==body.material)setTimeout(()=>old.dispose(),0);
   }
-  if(!body.children.some(o=>o.name==='Comic_outline'))body.add(comicOutline(body.geometry));
-  else for(const o of body.children)if(o.name==='Comic_outline'&&o.geometry!==body.geometry)o.geometry=body.geometry;
+  // Drop any leftover comic ink hull from a reused body.
+  for(const o of [...body.children])if(o.name==='Comic_outline'){body.remove(o);o.material?.dispose?.();}
   if(s.bubbles)s.bubbles.visible=false;
 }
 

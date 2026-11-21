@@ -1,6 +1,6 @@
 // launch-23: schlanke i18n-Schicht. Texte liegen in locales.mjs (de/en),
 // Platzhalter {name}, Mehrzahl als {one, other} (n === 1 → one).
-import { STRINGS } from './locales.mjs?v=launch-36';
+import { STRINGS } from './locales.mjs?v=launch-37';
 
 export const LANGS = Object.freeze(['de', 'en']);
 export const LANG_KEY = 'squish-lang-v1';

@@ -1,0 +1,336 @@
+/* Comic-Look (launch-5): Knöpfe, Kacheln, Kopfleiste, Panels und Spiel-HUD nach dem Menü-Mockup.
+   Dezenter Glanz: nur eine feine Lichtkante oben, dunkle Unterlippe, dünne dunkle Kontur, weicher Farbschein.
+   Schrift: Fredoka Bold (statische Instanz, OFL). */
+@font-face {font-family:"AW Comic";src:url("assets/fonts/fredoka-bold.woff2") format("woff2");font-weight:100 900;font-display:swap;}
+:root {--aw-comic:"AW Comic","Fredoka",ui-rounded,"SF Pro Rounded",system-ui,sans-serif;--aw-display:var(--aw-comic);}
+
+/* ---------- Farbpaletten (aus dem Mockup gemessen) ---------- */
+.aw-green,.aw .aw-green {--t:#b4f22e;--b:#2cb500;--rim:#5fd414;--lip:#078a00;--o:#0a3600;--ts:#0f5200;--g:#9be52a;}
+.aw-orange,.aw .aw-orange {--t:#ffd81e;--b:#fe6f00;--rim:#ff9406;--lip:#cf3000;--o:#3a0900;--ts:#8f2c00;--g:#ff8a12;}
+.aw-blue,.aw .aw-blue {--t:#52cdf8;--b:#0684f8;--rim:#4aa8ff;--lip:#06349a;--o:#06173f;--ts:#0a3a8a;--g:#2a9dff;}
+.aw-purple,.aw .aw-purple {--t:#e490ff;--b:#7b18e9;--rim:#a42afb;--lip:#43037f;--o:#21003d;--ts:#4a0a85;--g:#b05cff;}
+.aw-red,.aw .aw-red {--t:#ff8466;--b:#e2261a;--rim:#ff5236;--lip:#990c06;--o:#3a0300;--ts:#7a0a04;--g:#ff4a2a;}
+.aw-gold,.aw .aw-gold {--t:#fff07a;--b:#ffae00;--rim:#ffd040;--lip:#c46a00;--o:#452200;--ts:#8a4a00;--g:#ffc828;}
+.aw-slate,.aw .aw-slate {--t:#545887;--b:#2c2e52;--rim:#43467a;--lip:#1a1b36;--o:#0b0b18;--ts:#14152e;--g:#0000;}
+
+/* ---------- Pillen-Knöpfe ---------- */
+.aw-btn {--ring:2px 0 0 var(--ts),-2px 0 0 var(--ts),0 2px 0 var(--ts),0 -2px 0 var(--ts),1.5px 1.5px 0 var(--ts),-1.5px 1.5px 0 var(--ts),1.5px -1.5px 0 var(--ts),-1.5px -1.5px 0 var(--ts),0 3.5px 0 var(--ts),0 4px 5px #0006;
+  gap:8px;min-height:70px;padding:4px 14px 12px;border:3px solid var(--o);color:#fffbea;
+  background:linear-gradient(180deg,var(--t) 0%,var(--b) 100%);
+  box-shadow:inset 0 2px 0 #ffffff80,inset 0 -6px 0 var(--lip),inset 0 -8px 0 var(--rim),0 0 20px color-mix(in srgb,var(--g) 50%,transparent),0 6px 10px #00000073;
+  font:700 32px/1 var(--aw-comic);letter-spacing:.005em;text-shadow:var(--ring);}
+.aw-btn::before {left:24px;right:auto;top:5px;width:18px;height:5px;border-radius:6px 6px 3px 3px;background:#ffffff73;transform:rotate(-8deg);}
+.aw-btn::after {display:none;}
+.aw-btn:active:not(:disabled):not(.is-dim) {transform:translateY(3px);filter:brightness(.97);
+  box-shadow:inset 0 2px 0 #ffffff80,inset 0 -3px 0 var(--lip),inset 0 -5px 0 var(--rim),0 0 12px color-mix(in srgb,var(--g) 36%,transparent),0 2px 5px #0007;}
+.aw-btn:disabled,.aw-btn.is-dim {filter:saturate(.4) brightness(.78);}
+.aw-btn .aw-ico {width:auto;height:auto;margin:0 0 0 2px;border-radius:0;background:none;box-shadow:none;}
+.aw-btn .aw-ico svg {width:34px;height:34px;color:#fffbea;overflow:visible;
+  filter:drop-shadow(1.6px 0 0 var(--ts)) drop-shadow(-1.6px 0 0 var(--ts)) drop-shadow(0 1.6px 0 var(--ts)) drop-shadow(0 -1.6px 0 var(--ts)) drop-shadow(0 2px 0 var(--ts));}
+.aw-btn .aw-label {margin-right:4px;flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;}
+.aw-btn .aw-label small {font:700 12px/1.1 var(--aw-comic);text-shadow:0 1px 0 var(--ts),0 0 3px var(--ts);}
+.aw-btn.aw-big {min-height:76px;font-size:30px;padding-bottom:12px;gap:8px;}
+.aw-btn.aw-big .aw-ico svg {width:40px;height:40px;}
+.aw-btn .aw-label>span {white-space:nowrap;overflow:visible;max-width:100%;}
+#home-play-level {font-size:26px;}
+.aw-btn.aw-big::before {left:22px;top:6px;width:22px;height:6px;}
+.aw-screen > .aw-btn:not(.aw-big):not(.aw-small) {width:90%;align-self:center;}
+.aw-btn.aw-small {width:min(100%,220px);min-height:50px;font-size:18px;padding:4px 12px 9px;gap:6px;}
+.aw-btn.aw-small .aw-ico svg {width:18px;height:18px;}
+.aw-btn.aw-small .aw-label {margin-right:4px;}
+.aw-btn.aw-small::before {left:16px;width:14px;height:4px;}
+.aw-pair .aw-btn {font-size:22px;min-height:56px;padding:4px 10px 10px;gap:6px;}
+.aw-pair .aw-btn .aw-ico svg {width:22px;height:22px;}
+.aw-pair .aw-btn::before {left:16px;width:14px;}
+.aw-btn:focus-visible,.aw-tile:focus-visible,.aw-gear:focus-visible {outline:3px solid #fff3b0;outline-offset:4px;}
+
+/* ---------- Kopfleiste: Sterne, Rekord, Zahnrad ---------- */
+/* launch-34: lange Zahlen dürfen die Leiste nicht über den rechten Rand (Zahnrad) schieben. */
+.aw-topbar {flex:none;display:flex;align-items:center;gap:8px;width:100%;max-width:420px;min-width:0;box-sizing:border-box;padding:2px 0 0 10px;}
+.aw-topbar-gap {flex:1 1 0;min-width:0;}
+.aw-stat {position:relative;display:flex;align-items:center;flex:0 1 auto;min-width:0;height:38px;padding:0 12px 0 36px;border-radius:999px;
+  background:#0b0b18b8;border:2px solid #3d3c63;box-shadow:inset 0 2px 6px #000a;color:#fff;font:700 19px/1 var(--aw-comic);letter-spacing:.01em;text-shadow:0 2px 0 #000a;white-space:nowrap;}
+.aw-stat b {display:block;min-width:0;max-width:100%;overflow:hidden;white-space:nowrap;}
+.aw-stat-ico {position:absolute;left:-10px;top:50%;width:44px;height:44px;margin-top:-23px;filter:drop-shadow(0 2px 2px #0008);pointer-events:none;}
+.aw-stat-ico svg {display:block;width:100%;height:100%;}
+.aw-topbar .aw-gear {position:relative;right:auto;bottom:auto;flex:none;flex-shrink:0;width:46px;height:46px;border-radius:14px;border:2px solid #14163e;color:#fff;
+  background:linear-gradient(180deg,#7685ee,#3d47b4);box-shadow:inset 0 2px 0 #ffffff73,inset 0 -4px 0 #2a2e86,0 0 12px #5a6aff4d,0 5px 8px #0007;}
+.aw-topbar .aw-gear svg {width:28px;height:28px;filter:drop-shadow(1.4px 0 0 #191c58) drop-shadow(-1.4px 0 0 #191c58) drop-shadow(0 1.4px 0 #191c58) drop-shadow(0 -1.4px 0 #191c58) drop-shadow(0 2px 0 #191c58);}
+.aw-topbar .aw-gear:active {transform:translateY(2px);}
+
+/* launch-23: language pill (navy/gold, Fredoka) */
+.aw-lang {display:flex;flex:none;flex-shrink:0;align-items:stretch;height:36px;border-radius:999px;overflow:hidden;
+  border:2.2px solid #14163e;background:#14163e;box-shadow:0 3px 0 #0a0c28,0 5px 10px #0006;}
+.aw-lang-btn {appearance:none;margin:0;min-width:28px;padding:0 7px;border:0;background:transparent;
+  color:#ffe8a3;font-family:var(--aw-comic);font-weight:700;font-size:13px;letter-spacing:.06em;line-height:1;cursor:pointer;}
+.aw-lang-btn.is-on,.aw-lang-btn[aria-pressed="true"] {background:linear-gradient(180deg,#ffe27a,#e8a61a);color:#14163e;text-shadow:none;}
+.aw-lang-btn:focus-visible {outline:3px solid #fff3b0;outline-offset:-2px;z-index:1;}
+.setting-lang {display:flex;flex-direction:column;gap:8px;margin:14px 0 8px;text-align:left;}
+.setting-lang .setting-label {color:#fff7e8;font-family:var(--aw-comic);font-weight:700;font-size:1.05rem;}
+.setting-lang-picks {display:flex;gap:8px;}
+.setting-lang-picks .aw-lang-btn {flex:1;min-height:44px;border-radius:999px;border:2px solid #14163e;
+  background:#1a1e4a;color:#ffe8a3;box-shadow:0 3px 0 #0a0c28;}
+.setting-lang-picks .aw-lang-btn.is-on,.setting-lang-picks .aw-lang-btn[aria-pressed="true"] {
+  background:linear-gradient(180deg,#ffe27a,#e8a61a);color:#14163e;}
+.aw-btn .aw-label {min-width:0;}
+.aw-btn .aw-label>span {white-space:nowrap;overflow:visible;max-width:100%;}
+@media (max-width:380px) {
+  .aw-lang {height:36px;}
+  .aw-lang-btn {min-width:30px;padding:0 7px;font-size:13px;}
+  #campaign-extra .aw-label>span {font-size:.86em;}
+}
+@media (max-width:400px) {
+  .aw-home {padding-left:max(14px,env(safe-area-inset-left),var(--sim-safe-left,0px));padding-right:max(14px,env(safe-area-inset-right),var(--sim-safe-right,0px));}
+  .aw-topbar {gap:6px;padding:2px 0 0 10px;width:100%;}
+}
+@media (max-width:360px) {
+  .aw-home {padding-left:max(10px,env(safe-area-inset-left),var(--sim-safe-left,0px));padding-right:max(10px,env(safe-area-inset-right),var(--sim-safe-right,0px));}
+  .aw-topbar {gap:6px;padding:2px 0 0 10px;width:100%;}
+  .aw-stat {height:32px;font-size:16px;padding:0 8px 0 30px;}
+  .aw-stat-ico {width:36px;height:36px;margin-top:-19px;left:-8px;}
+  .aw-lang {height:36px;}
+  .aw-lang-btn {min-width:28px;padding:0 6px;font-size:13px;}
+  .aw-topbar .aw-gear {width:40px;height:40px;}
+}
+
+
+/* ---------- Startbildschirm-Layout ---------- */
+.aw-home {padding-top:max(14px,env(safe-area-inset-top),var(--sim-safe-top,0px));padding-left:max(16px,env(safe-area-inset-left),var(--sim-safe-left,0px));padding-right:max(16px,env(safe-area-inset-right),var(--sim-safe-right,0px));}
+.aw-tagline {display:none;}
+.aw-logo-wrap {width:min(90vw,390px);margin:clamp(4px,2.4svh,28px) auto 0;}
+.aw-home[data-screen="campaign"] .aw-logo-wrap,.aw-home[data-screen="endless"] .aw-logo-wrap,.aw-home[data-screen="rules"] .aw-logo-wrap {width:min(56vw,240px);margin-top:clamp(0px,1svh,12px);}
+.aw-screen {width:min(100%,340px);gap:16px;padding:6px 0 40px;}
+.aw-home[data-screen="home"] .aw-screen {justify-content:center;padding-bottom:9svh;}
+.aw-home[data-screen="home"] .aw-tiles {margin-top:18px;}
+.aw-build {left:max(12px,env(safe-area-inset-left));bottom:max(8px,env(safe-area-inset-bottom));}
+
+/* Quadratische Kacheln (Shop/Belohnungen/Erfolge-Stil) */
+.aw-tiles {display:flex;justify-content:center;gap:16px;margin-top:10px;}
+.aw-tile {position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:96px;height:96px;padding:6px 2px 11px;margin:0;
+  border:2px solid #0b0a16;border-radius:22px;cursor:pointer;color:#fff;isolation:isolate;
+  background:linear-gradient(180deg,#4d4c7c 0%,#2b2a4c 100%);
+  box-shadow:inset 0 2px 0 #d2cdf599,inset 0 0 0 2px #67669a,inset 0 -5px 0 #1b1a34,0 6px 10px #0008;
+  font:700 15px/1 var(--aw-comic);letter-spacing:.01em;
+  text-shadow:1.5px 0 0 #141328,-1.5px 0 0 #141328,0 1.5px 0 #141328,0 -1.5px 0 #141328,0 2.5px 0 #141328;
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:transform .12s;}
+.aw-tile:active {transform:translateY(3px);}
+.aw-tile-ico {display:block;width:52px;height:52px;filter:drop-shadow(0 3px 2px #0007);}
+.aw-tile-ico svg {display:block;width:100%;height:100%;}
+.aw-tile-label {white-space:nowrap;}
+.aw-badge {position:absolute;top:-9px;right:-9px;min-width:26px;height:26px;padding:0 6px;border-radius:13px;border:2px solid #fff;
+  background:linear-gradient(180deg,#ff5a48,#d3150c);box-shadow:0 2px 5px #0009;color:#fff;font:700 15px/22px var(--aw-comic);text-align:center;text-shadow:0 1px 0 #7a0a04;}
+
+/* Bänder und Karten */
+.aw-ribbon,.aw .settings-panel h2,.aw .duel-panel h2,.aw .veil .dialog h2,.aw .campaign-result h2 {font:700 25px/1.05 var(--aw-comic);
+  text-shadow:1.5px 0 0 var(--r3),-1.5px 0 0 var(--r3),0 1.5px 0 var(--r3),0 -1.5px 0 var(--r3),0 3px 0 var(--r3);
+  box-shadow:inset 0 2px 0 #ffffff66,inset 0 -4px 0 #00000038,0 5px 10px #0008;}
+.aw .campaign-result h2 {font-size:28px;}
+.aw-ribbon.aw-r-orange {--r1:#ffc21e;--r2:#f26a00;--r3:#7a2400;--r4:#a83a00;}
+.aw-card {border-radius:22px;background:#0b0b18b8;border:2px solid #45447a;box-shadow:inset 0 2px 8px #0009,0 8px 18px #0007;}
+.aw-card-big {font:700 30px/1.1 var(--aw-comic);color:#ffd25a;text-shadow:1.5px 0 0 #6a3304,-1.5px 0 0 #6a3304,0 1.5px 0 #6a3304,0 -1.5px 0 #6a3304,0 3px 0 #6a3304;}
+.aw-card-sub {font:500 14px/1.35 var(--aw-text);color:#d6d9ef;}
+.aw-chip {font:700 13px/1 var(--aw-comic);}
+.aw-chip i {font:700 13px/1 var(--aw-comic);}
+.aw-rules {max-height:min(46svh,420px);overflow-y:auto;overscroll-behavior:contain;text-align:left;padding:12px 16px;}
+.aw-rules p {margin:0 0 10px;font:500 14px/1.45 var(--aw-text);color:#d6d9ef;}
+.aw-rules p:last-child {margin-bottom:0;}
+.aw-rules .aw-rules-lead {color:#ffe2b0;}
+
+/* ---------- Panels ---------- */
+.aw .classic-panel h2,.aw .duel-panel h2,.aw .veil .dialog h2 {font-weight:700;}
+.aw .menu-kicker,.aw .duel-eyebrow {font-family:var(--aw-comic);font-weight:700;}
+/* Roter Schließen-Knopf: weniger Glanz */
+.aw #campaign-close,.aw #board-close,.aw #duel-close,.aw #settings-close,.aw .aw-close {border:2px solid #3a0300;
+  background:linear-gradient(180deg,#ff8466,#e2261a);box-shadow:inset 0 2px 0 #ffffff73,inset 0 -4px 0 #990c06,0 0 10px #ff4a2a40,0 5px 8px #0008;}
+.aw #campaign-close::before,.aw #board-close::before,.aw #duel-close::before,.aw #settings-close::before,.aw .aw-close::before {
+  filter:drop-shadow(1.2px 0 0 #7a0a04) drop-shadow(-1.2px 0 0 #7a0a04) drop-shadow(0 1.2px 0 #7a0a04) drop-shadow(0 -1.2px 0 #7a0a04);}
+/* Tabs */
+.aw .duel-tabs {background:#0b0b18b8;border:2px solid #3d3c63;}
+.aw .duel-tabs button {font:700 16px/1 var(--aw-comic);}
+.aw .duel-tabs button[aria-pressed=true] {--t:#e490ff;--b:#7b18e9;--lip:#43037f;--o:#21003d;--ts:#4a0a85;
+  border:2px solid var(--o);background:linear-gradient(180deg,var(--t),var(--b));box-shadow:inset 0 2px 0 #ffffff80,inset 0 -3px 0 var(--lip);
+  text-shadow:1.4px 0 0 var(--ts),-1.4px 0 0 var(--ts),0 1.4px 0 var(--ts),0 -1.4px 0 var(--ts),0 2.4px 0 var(--ts);}
+.aw .board-panel .duel-tabs button[aria-pressed=true] {--t:#52cdf8;--b:#0684f8;--lip:#06349a;--o:#06173f;--ts:#0a3a8a;
+  background:linear-gradient(180deg,var(--t),var(--b));box-shadow:inset 0 2px 0 #ffffff80,inset 0 -3px 0 var(--lip);
+  text-shadow:1.4px 0 0 var(--ts),-1.4px 0 0 var(--ts),0 1.4px 0 var(--ts),0 -1.4px 0 var(--ts),0 2.4px 0 var(--ts);}
+/* Aktionsknöpfe im Duell / Bestenliste */
+.aw .duel-action {--t:#b4f22e;--b:#2cb500;--rim:#5fd414;--lip:#078a00;--o:#0a3600;--ts:#0f5200;
+  min-height:54px;padding:6px 16px 11px;border:2px solid var(--o);color:#fffbea;background:linear-gradient(180deg,var(--t),var(--b));
+  box-shadow:inset 0 2px 0 #ffffff80,inset 0 -5px 0 var(--lip),inset 0 -7px 0 var(--rim),0 0 14px #9be52a55,0 5px 9px #0007;
+  font:700 21px/1.1 var(--aw-comic);text-shadow:1.6px 0 0 var(--ts),-1.6px 0 0 var(--ts),0 1.6px 0 var(--ts),0 -1.6px 0 var(--ts),0 3px 0 var(--ts);}
+.aw .duel-action:active:not(:disabled) {transform:translateY(3px);box-shadow:inset 0 2px 0 #ffffff80,inset 0 -3px 0 var(--lip),inset 0 -5px 0 var(--rim),0 2px 4px #0007;}
+.aw .duel-code,.aw .duel-panel input {font-family:var(--aw-comic);font-weight:700;}
+.aw .duel-rules b {font:700 15px/1 var(--aw-comic);}
+/* Einstellungen */
+.aw .setting-toggle {background:#0b0b18b8;border:2px solid #3d3c63;font:600 16px/1.2 var(--aw-text);}
+.aw .setting-toggle [data-toggle-state] {font:700 13px/32px var(--aw-comic);}
+.aw .setting-toggle[aria-checked=true] [data-toggle-state],.aw .setting-toggle[aria-pressed=true] [data-toggle-state] {background:linear-gradient(180deg,#b4f22e,#2cb500);box-shadow:inset 0 2px 0 #ffffff70,inset 0 -3px 0 #078a00;text-shadow:0 1px 0 #0f5200;}
+
+/* Levelauswahl: Kachel-Knöpfe im gleichen Rezept */
+.aw .campaign-panel .campaign-total {font:700 26px/1.1 var(--aw-comic) !important;text-shadow:1.5px 0 0 #6a3304,-1.5px 0 0 #6a3304,0 1.5px 0 #6a3304,0 -1.5px 0 #6a3304,0 3px 0 #6a3304;}
+.aw .campaign-chapter h3 {font:700 18px/1.2 var(--aw-comic);text-shadow:0 2px 0 #0008;}
+.aw .campaign-chapter h3 small {font:700 12px/1 var(--aw-comic);background:#0b0b18b8;border:1px solid #3d3c63;}
+.aw .campaign-level-btn {--t:#52cdf8;--b:#0684f8;--rim:#4aa8ff;--lip:#06349a;--o:#06173f;--ts:#0a3a8a;
+  border:2px solid var(--o);border-radius:16px;background:linear-gradient(180deg,var(--t),var(--b));
+  box-shadow:inset 0 2px 0 #ffffff80,inset 0 -4px 0 var(--lip),inset 0 -6px 0 var(--rim),0 4px 7px #0007;}
+.aw .campaign-level-btn .num {font:700 22px/1 var(--aw-comic);text-shadow:1.4px 0 0 var(--ts),-1.4px 0 0 var(--ts),0 1.4px 0 var(--ts),0 -1.4px 0 var(--ts),0 2.4px 0 var(--ts);}
+.aw .campaign-level-btn .stars {color:color-mix(in srgb,var(--ts) 60%,transparent);}
+.aw .campaign-level-btn.is-done {--t:#b4f22e;--b:#2cb500;--rim:#5fd414;--lip:#078a00;--o:#0a3600;--ts:#0f5200;
+  border-color:var(--o);background:linear-gradient(180deg,var(--t),var(--b));box-shadow:inset 0 2px 0 #ffffff80,inset 0 -4px 0 var(--lip),inset 0 -6px 0 var(--rim),0 4px 7px #0007;}
+.aw .campaign-level-btn.is-done .num {text-shadow:1.4px 0 0 var(--ts),-1.4px 0 0 var(--ts),0 1.4px 0 var(--ts),0 -1.4px 0 var(--ts),0 2.4px 0 var(--ts);}
+.aw .campaign-level-btn.is-done .stars {color:#0f520099;}
+@keyframes aw-pulse {50%{box-shadow:inset 0 2px 0 #ffffff80,inset 0 -4px 0 var(--lip),inset 0 -6px 0 var(--rim),0 0 0 3px #ffd25a,0 0 14px #ffd25a99;}}
+.aw .campaign-level-btn.is-locked {border:2px solid #0b0a16;background:linear-gradient(180deg,#3a3960,#22213c);box-shadow:inset 0 2px 0 #b8b4e04d,inset 0 -4px 0 #15142a,0 3px 6px #0007;}
+
+/* Pause-Dialog-Knöpfe */
+html.aw .veil .dialog .menu-button,html.aw .veil .dialog #resume,html.aw .veil .dialog #restart,html.aw .veil .dialog #to-menu,html.aw .veil .dialog [data-open-settings] {
+  --t:#52cdf8;--b:#0684f8;--rim:#4aa8ff;--lip:#06349a;--o:#06173f;--ts:#0a3a8a;--g:#2a9dff;
+  min-height:56px;padding:5px 18px 10px 56px;border:2px solid var(--o);color:#fffbea;background:linear-gradient(180deg,var(--t),var(--b));
+  box-shadow:inset 0 2px 0 #ffffff80,inset 0 -5px 0 var(--lip),inset 0 -7px 0 var(--rim),0 0 14px color-mix(in srgb,var(--g) 40%,transparent),0 5px 9px #0007;
+  font:700 23px/1 var(--aw-comic);text-shadow:1.8px 0 0 var(--ts),-1.8px 0 0 var(--ts),0 1.8px 0 var(--ts),0 -1.8px 0 var(--ts),1.3px 1.3px 0 var(--ts),-1.3px 1.3px 0 var(--ts),1.3px -1.3px 0 var(--ts),-1.3px -1.3px 0 var(--ts),0 3px 0 var(--ts);}
+html.aw .veil .dialog #resume,html.aw .veil .dialog #resume[hidden]+#restart {--t:#b4f22e;--b:#2cb500;--rim:#5fd414;--lip:#078a00;--o:#0a3600;--ts:#0f5200;--g:#9be52a;min-height:68px;font-size:29px;}
+html.aw .veil .dialog #restart {--t:#e490ff;--b:#7b18e9;--rim:#a42afb;--lip:#43037f;--o:#21003d;--ts:#4a0a85;--g:#b05cff;}
+html.aw .veil .dialog [data-open-settings] {--t:#ffd81e;--b:#fe6f00;--rim:#ff9406;--lip:#cf3000;--o:#3a0900;--ts:#8f2c00;--g:#ff8a12;}
+html.aw .veil .dialog .menu-button::before {left:16px;width:30px;height:30px;margin-top:-17px;border-radius:0;background:var(--ico) center/26px no-repeat;box-shadow:none;
+  filter:drop-shadow(1.5px 0 0 var(--ts)) drop-shadow(-1.5px 0 0 var(--ts)) drop-shadow(0 1.5px 0 var(--ts)) drop-shadow(0 -1.5px 0 var(--ts)) drop-shadow(0 2px 0 var(--ts));}
+html.aw .veil .dialog .menu-button:active:not(:disabled) {transform:translateY(3px);box-shadow:inset 0 2px 0 #ffffff80,inset 0 -3px 0 var(--lip),inset 0 -5px 0 var(--rim),0 2px 4px #0007;}
+.aw .veil .rules summary {font:700 16px/1.4 var(--aw-comic);}
+
+/* Ergebnis-Dialog */
+.aw .campaign-result .menu-kicker {font:700 18px/1.1 var(--aw-comic);}
+.aw-result-stats span {font:700 11px/1 var(--aw-comic);}
+.aw-result-stats b {font:700 25px/1 var(--aw-comic);text-shadow:0 2px 0 #000a;}
+.aw .campaign-result .campaign-gift {font:700 16px/1.2 var(--aw-comic);}
+
+/* ================= Spiel-HUD (Kampagne + Endlos) ================= */
+.aw .campaign-goal,.aw .campaign-moves,.aw .run-score {
+  border:2px solid transparent;border-radius:16px;color:#fff7e8;font-family:var(--aw-comic);text-shadow:none;
+  background:linear-gradient(180deg,#22305ef0,#111a42f0) padding-box,linear-gradient(160deg,#ffe08a,#f59a1e 45%,#a9480c 75%,#ffcf5a) border-box;
+  box-shadow:0 0 0 1.5px #3a1a05,0 6px 14px #0009,inset 0 2px 0 #ffffff1a;}
+/* Kampagne: Punkte-Box entfällt, Ziel und Züge werden breiter */
+.aw .is-campaign .run-score,.aw .is-campaign .fx-announcement {display:none;}
+.aw .campaign-goal {left:3%;top:30.5cqw;width:63%;min-height:18cqw;padding:1.8cqw 2.6cqw 2cqw;display:flex;flex-direction:column;justify-content:center;}
+.aw .campaign-level {font:700 clamp(10px,3cqw,14px)/1 var(--aw-comic);letter-spacing:.08em;color:#ffd25a;text-shadow:0 1.5px 0 #6a3304;}
+.aw .campaign-goal ul {margin-top:1cqw;gap:1cqw;}
+.aw .campaign-goal li {align-items:center;font:700 clamp(12px,3.8cqw,18px)/1.15 var(--aw-comic);color:#fff;text-shadow:0 2px 0 #0a1130;}
+.aw .campaign-goal li b {padding:.5cqw 2cqw;border-radius:999px;background:#0a1130;box-shadow:inset 0 2px 4px #000a;font:700 clamp(11px,3.4cqw,16px)/1.1 var(--aw-comic);color:#ffd25a;text-shadow:none;}
+.aw .campaign-goal li.is-done {color:#c6f78a;}
+.aw .campaign-goal li.is-done b {background:linear-gradient(180deg,#b4f22e,#2cb500);color:#fff;box-shadow:inset 0 -2px 0 #078a00;text-shadow:0 1px 0 #0f5200;}
+.aw .campaign-moves {left:69%;top:30.5cqw;width:28%;min-height:18cqw;padding:1.4cqw 0 1.6cqw;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.aw .campaign-moves span {font:700 clamp(10px,3cqw,14px)/1 var(--aw-comic);letter-spacing:.08em;color:#ffd25a;text-shadow:0 1.5px 0 #6a3304;}
+.aw .campaign-moves output {margin-top:.6cqw;font:700 clamp(24px,9cqw,42px)/1 var(--aw-comic);color:#fff;
+  text-shadow:2px 0 0 #0a1130,-2px 0 0 #0a1130,0 2px 0 #0a1130,0 -2px 0 #0a1130,0 3.5px 0 #0a1130;}
+.aw .campaign-moves.is-low {background:linear-gradient(180deg,#5a1e2af0,#2e0d1af0) padding-box,linear-gradient(160deg,#ffb08a,#ff4a2a 50%,#9a0c06) border-box;animation:hud-low 1.1s ease-in-out infinite;}
+.aw .campaign-moves.is-low output {color:#ffd0c0;}
+@keyframes hud-low {50%{box-shadow:0 0 0 1.5px #3a0300,0 0 16px #ff4a2a99,0 6px 14px #0009;}}
+/* launch-32: Sterne-Leiste unter den Zügen (Sterne hängen nur an den übrigen Zügen) */
+.campaign-starmeter {display:flex;gap:.5cqw;margin-top:.7cqw;font-style:normal;line-height:1;}
+.campaign-starmeter[hidden] {display:none;}
+.campaign-starmeter b {width:4.4cqw;height:4.4cqw;max-width:20px;max-height:20px;display:block;
+  background:#0a1130;clip-path:polygon(50% 0,61.8% 35.4%,100% 38.2%,69.1% 61.8%,80.9% 100%,50% 76.4%,19.1% 100%,30.9% 61.8%,0 38.2%,38.2% 35.4%);
+  transition:background .25s ease,transform .25s ease;}
+.campaign-starmeter b.is-on {background:linear-gradient(180deg,#fff3a0,#ffc21f 55%,#e08a00);}
+.campaign-moves.is-low .campaign-starmeter b:not(.is-on) {background:#3a0d1a;}
+/* Endlos: Punkte und Rekord im gleichen Stil */
+.aw .run-score {padding:1.2cqw 2.4cqw 1.8cqw;}
+.aw .run-score>span:first-child {font:700 clamp(9px,2.6cqw,12px)/1 var(--aw-comic);letter-spacing:.08em;color:#ffd25a;}
+.aw .run-score output {font:700 clamp(13px,4.4cqw,21px)/1.15 var(--aw-comic);color:#fff;text-shadow:0 2px 0 #0a1130;}
+.aw .score-label {font-family:var(--aw-comic);font-weight:700;color:#ffd25a;text-shadow:0 1.5px 0 #6a3304;}
+
+/* Werkzeug-Kacheln mit Zähler-Badge */
+.aw .campaign-tool {width:17%;gap:.4cqw;border:2px solid #0b0a16;border-radius:18px;color:#fff;
+  background:linear-gradient(180deg,#4d4c7c 0%,#2b2a4c 100%);
+  box-shadow:inset 0 2px 0 #d2cdf599,inset 0 0 0 2px #67669a,inset 0 -5px 0 #1b1a34,0 6px 10px #0008;
+  font:700 clamp(15px,5cqw,24px)/1 var(--aw-comic);}
+.aw .campaign-tool small {font:700 clamp(9px,2.7cqw,13px)/1 var(--aw-comic);letter-spacing:.01em;color:#fff;
+  text-shadow:1.2px 0 0 #141328,-1.2px 0 0 #141328,0 1.2px 0 #141328,0 -1.2px 0 #141328,0 2px 0 #141328;}
+.aw .campaign-tool .ct-ico {display:grid;place-items:center;width:58%;height:48%;filter:drop-shadow(0 2px 2px #0007);}
+.aw .campaign-tool .ct-ico svg {width:100%;height:100%;}
+.aw .campaign-tool .ct-plus {font:700 clamp(18px,6.4cqw,30px)/1 var(--aw-comic);color:#c4f75a;filter:none;
+  text-shadow:1.8px 0 0 #0a3600,-1.8px 0 0 #0a3600,0 1.8px 0 #0a3600,0 -1.8px 0 #0a3600,1.3px 1.3px 0 #0a3600,-1.3px 1.3px 0 #0a3600,1.3px -1.3px 0 #0a3600,-1.3px -1.3px 0 #0a3600,0 3px 0 #0a3600;}
+.aw .campaign-tool b {top:-2.2cqw;right:-2.2cqw;min-width:6.4cqw;height:6.4cqw;padding:0 1.4cqw;border:2px solid #fff;border-radius:99px;
+  background:linear-gradient(180deg,#ff5a48,#d3150c);color:#fff;box-shadow:0 2px 5px #0009;font:700 clamp(11px,3.4cqw,15px)/calc(6.4cqw - 4px) var(--aw-comic);text-shadow:0 1px 0 #7a0a04;}
+.aw .campaign-tool b.is-zero {background:linear-gradient(180deg,#8a8db4,#4f5280);text-shadow:0 1px 0 #1a1b36;}
+.aw .campaign-tool:disabled {opacity:1;filter:saturate(.35) brightness(.72);}
+.aw .campaign-tool:not(:disabled):active {transform:translateY(3px);}
+.aw .campaign-tool.is-armed {border-color:#5a2a00;background:linear-gradient(180deg,#ffe07a,#f59a1e);
+  box-shadow:inset 0 2px 0 #ffffffa0,inset 0 -5px 0 #b45a00,0 0 0 3px #ffd25a,0 0 18px #ffb84dcc;}
+.aw .campaign-tool.is-armed small {text-shadow:1.2px 0 0 #6a3304,-1.2px 0 0 #6a3304,0 1.2px 0 #6a3304,0 -1.2px 0 #6a3304,0 2px 0 #6a3304;}
+#tool-extra {left:3%;}
+
+
+/* Pause-Knopf: blaue Kachel wie das Zahnrad */
+.aw .pause {width:clamp(40px,11cqw,50px);border-radius:14px;border:2px solid #14163e;color:transparent;font-size:0;
+  background:linear-gradient(180deg,#7685ee,#3d47b4);box-shadow:inset 0 2px 0 #ffffff73,inset 0 -4px 0 #2a2e86,0 0 12px #5a6aff4d,0 5px 8px #0007;backdrop-filter:none;}
+.aw .pause::before {content:"";position:absolute;inset:0;margin:auto;width:46%;height:46%;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='%23fffbea' stroke='%23191c58' stroke-width='2.2' paint-order='stroke'%3E%3Crect x='5' y='3.5' width='5' height='17' rx='1.8'/%3E%3Crect x='14' y='3.5' width='5' height='17' rx='1.8'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat;}
+.aw .pause:active {transform:translateY(2px);}
+
+/* Hinweis-Toast */
+.aw .gesture-note {padding:7px 15px 8px;border:2px solid #ffc23d;border-radius:999px;background:#111a42eb;box-shadow:0 0 0 1.5px #3a1a05,0 5px 12px #0009;
+  color:#fff7e8;font:700 14px/1.2 var(--aw-comic);text-shadow:0 1.5px 0 #0a1130;backdrop-filter:none;}
+/* Kombo-/Upgrade-Abzeichen im gleichen Stil */
+.aw .combo-badge,.aw .upgrade-badge {border:2px solid #ffc23d;background:#111a42eb;color:#fff7e8;font-family:var(--aw-comic);font-weight:700;box-shadow:0 0 0 1.5px #3a1a05,0 5px 12px #0009;}
+
+/* ---------- Kleine Bildschirme (iPhone SE) ---------- */
+@media (max-height:700px) {
+  .aw-topbar {padding-top:0;}
+  .aw-stat {height:34px;font-size:17px;padding:0 13px 0 36px;}
+  .aw-stat-ico {width:38px;height:38px;margin-top:-20px;left:-8px;}
+  .aw-topbar .aw-gear {width:42px;height:42px;}
+  .aw-logo-wrap {width:min(70vw,290px);margin-top:2px;}
+  .aw-home[data-screen="campaign"] .aw-logo-wrap,.aw-home[data-screen="endless"] .aw-logo-wrap,.aw-home[data-screen="rules"] .aw-logo-wrap {width:min(42vw,170px);margin-top:0;}
+  .aw-screen {gap:11px;padding:6px 0 20px;}
+  .aw-btn {min-height:56px;font-size:22px;}
+  .aw-btn.aw-big {min-height:62px;font-size:24px;gap:6px;}
+  .aw-btn.aw-big .aw-ico svg {width:30px;height:30px;}
+  #home-play-level {font-size:22px;}
+  .aw-btn .aw-ico svg {width:28px;height:28px;}
+  .aw-btn.aw-small {min-height:46px;font-size:19px;}
+  .aw-tiles {margin-top:4px;gap:14px;}
+  .aw-tile {width:82px;height:80px;border-radius:20px;font-size:13px;}
+  .aw-tile-ico {width:40px;height:40px;}
+  .aw-rules {max-height:40svh;}
+  .aw-home[data-screen="home"] .aw-screen {padding-bottom:12px;}
+  .aw .settings-panel {max-height:calc(100dvh - 12px - env(safe-area-inset-top) - env(safe-area-inset-bottom));overflow-y:auto;overscroll-behavior:contain;}
+}
+@media (prefers-reduced-motion:reduce) {.aw .campaign-moves.is-low {animation:none;}}
+
+/* launch-22: gesperrte Startknöpfe (goldenes Schloss, Wackeln) und Freischalt-Knall. */
+.aw-btn {position:relative;}
+.aw-btn.is-locked {filter:saturate(.5) brightness(.74);}
+.aw-btn.is-locked .aw-label {opacity:.9;}
+.aw-btn .aw-lock {position:absolute;right:8px;top:50%;transform:translateY(-50%);z-index:2;
+  width:34px;height:34px;display:grid;place-items:center;border-radius:50%;
+  background:linear-gradient(180deg,#ffe27a,#e8a318);border:2.5px solid #1a1440;color:#1a1440;
+  box-shadow:0 2px 0 #1a1440,0 4px 10px #0007;}
+.aw-btn .aw-lock svg {width:18px;height:18px;filter:none;}
+.aw-btn.aw-wobble {animation:aw-wobble .42s ease;}
+@keyframes aw-wobble {
+  15%{transform:translateX(-7px) rotate(-2.4deg);}
+  40%{transform:translateX(7px) rotate(2.4deg);}
+  62%{transform:translateX(-4px) rotate(-1deg);}
+  82%{transform:translateX(4px) rotate(1deg);}
+}
+.aw-btn .aw-lock.is-burst {animation:aw-lock-burst .7s ease-in forwards;}
+@keyframes aw-lock-burst {
+  0%{transform:translateY(-50%) scale(1) rotate(0);opacity:1;}
+  35%{transform:translateY(-58%) scale(1.4) rotate(-14deg);opacity:1;}
+  100%{transform:translateY(-90%) scale(.15) rotate(28deg);opacity:0;}
+}
+.aw-btn.is-unlocking {animation:aw-unlock-pop .7s ease;}
+@keyframes aw-unlock-pop {
+  0%{filter:brightness(1);}
+  35%{filter:brightness(1.25) saturate(1.15);}
+  100%{filter:brightness(1);}
+}
+.aw-btn .aw-spark {position:absolute;width:8px;height:8px;border-radius:50%;background:#ffd25a;box-shadow:0 0 8px #ffd25a;
+  pointer-events:none;animation:aw-spark .65s ease-out forwards;}
+@keyframes aw-spark {
+  0%{transform:translate(0,0) scale(1);opacity:1;}
+  100%{transform:translate(var(--sx,0),var(--sy,0)) scale(.2);opacity:0;}
+}
+@media (prefers-reduced-motion:reduce){
+  .aw-btn.aw-wobble,.aw-btn.is-unlocking,.aw-btn .aw-lock.is-burst,.aw-btn .aw-spark {animation:none;}
+  .aw-btn .aw-lock.is-burst {display:none;}
+}

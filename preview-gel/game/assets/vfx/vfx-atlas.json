@@ -1,0 +1,22 @@
+{
+ "bits": {
+  "file": "vfx-bits.webp",
+  "w": 128,
+  "h": 128,
+  "cols": 2,
+  "rows": 2,
+  "frames": 4,
+  "bytes": 14846,
+  "v": "7ed21bbc"
+ },
+ "cushion": {
+  "file": "vfx-cushion.webp",
+  "w": 160,
+  "h": 160,
+  "cols": 5,
+  "rows": 5,
+  "frames": 24,
+  "bytes": 207182,
+  "v": "fa3cc628"
+ }
+}
