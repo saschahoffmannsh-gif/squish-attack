@@ -1,7 +1,7 @@
 // 2D-Comic-Effekte der Hilfsmittel (launch-12): Raketenflug mit Rauchspur,
 // BOOM-Explosion (launch-29: Zauberstab-Funkeln, Hinweis-Pfeil und Zahlen-Auswahl entfernt).
 // Eigene Ebene über allem (position:fixed), Koordinaten = Client-Pixel.
-import {TOOL_ICONS,boomSvg,SPARK_SVG} from './tool-icons.mjs?v=launch-38';
+import {TOOL_ICONS,boomSvg,SPARK_SVG} from './tool-icons.mjs?v=launch-39';
 
 export function createToolFx({reduceMotion,root=document.body,shakeTarget=null}={}){
   const layer=document.createElement('div');layer.className='tool-fx';layer.setAttribute('aria-hidden','true');root.append(layer);
@@ -35,15 +35,18 @@ export function createToolFx({reduceMotion,root=document.body,shakeTarget=null}=
   // BOOM: gezackter Comic-Stern mit Schrift, Funken, leichtes Wackeln des Spielfelds.
   function boom(p,size){
     stats.booms++;
-    const b=add('tfx-boom'+(reduced()?' is-reduced':''),boomSvg());place(b,p,size*2.5);autoRemove(b,700);
-    if(reduced())return;
-    for(let i=0;i<8;i++){
-      const s=add('tfx-spark',SPARK_SVG),a=i/8*Math.PI*2+Math.random()*.4,r=size*(1.1+Math.random()*.5);
-      s.style.setProperty('--dx',`${Math.cos(a)*r}px`);s.style.setProperty('--dy',`${Math.sin(a)*r}px`);
-      place(s,p,size*.34);autoRemove(s,600);
+    const ms=reduced()?450:700;
+    const b=add('tfx-boom'+(reduced()?' is-reduced':''),boomSvg());place(b,p,size*2.5);autoRemove(b,ms);
+    if(!reduced()){
+      for(let i=0;i<8;i++){
+        const s=add('tfx-spark',SPARK_SVG),a=i/8*Math.PI*2+Math.random()*.4,r=size*(1.1+Math.random()*.5);
+        s.style.setProperty('--dx',`${Math.cos(a)*r}px`);s.style.setProperty('--dy',`${Math.sin(a)*r}px`);
+        place(s,p,size*.34);autoRemove(s,600);
+      }
+      const target=shakeTarget?.();
+      if(target){target.classList.remove('tfx-shake');void target.offsetWidth;target.classList.add('tfx-shake');setTimeout(()=>target.classList.remove('tfx-shake'),380);}
     }
-    const target=shakeTarget?.();
-    if(target){target.classList.remove('tfx-shake');void target.offsetWidth;target.classList.add('tfx-shake');setTimeout(()=>target.classList.remove('tfx-shake'),380);}
+    return new Promise(r=>setTimeout(r,ms));
   }
   return {rocket,boom,layer,stats};
 }
