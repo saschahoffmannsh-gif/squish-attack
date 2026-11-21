@@ -1,36 +1,36 @@
-import {apiFetch,hasSaveToken} from './api.mjs?v=launch-38';
-import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-38';
+import {apiFetch,hasSaveToken} from './api.mjs?v=launch-39';
+import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-39';
 import { nextSpawn, spawnProfile } from './balance.mjs';
-import {canContinueRun} from './run-availability.mjs?v=launch-38';
-import { createMergeEffects } from './merge-effects.mjs?v=launch-38';
-import { createGameGraphics } from './graphics-adapter.mjs?v=launch-38';
-import { installDeviceMotion } from './device-motion.mjs?v=launch-38';
-import { createGameSound } from './sound.mjs?v=launch-38';
+import {canContinueRun} from './run-availability.mjs?v=launch-39';
+import { createMergeEffects } from './merge-effects.mjs?v=launch-39';
+import { createGameGraphics } from './graphics-adapter.mjs?v=launch-39';
+import { installDeviceMotion } from './device-motion.mjs?v=launch-39';
+import { createGameSound } from './sound.mjs?v=launch-39';
 import { installSettings } from './settings.mjs?v=woodland-menu-1';
-import { createDuelClient } from './duel-client.mjs?v=launch-38';
+import { createDuelClient } from './duel-client.mjs?v=launch-39';
 import {installFullscreen} from './fullscreen.mjs?v=timed-duel-1';
-import {createHomeMenu} from './home-menu.mjs?v=launch-38';
-import {createConfetti} from './confetti.mjs?v=launch-38';
-import {createHaptics} from './haptics.mjs?v=launch-38';
+import {createHomeMenu} from './home-menu.mjs?v=launch-39';
+import {createConfetti} from './confetti.mjs?v=launch-39';
+import {createHaptics} from './haptics.mjs?v=launch-39';
 import {planMergeRipple} from './merge-ripple.mjs?v=swarm-fx-3';
-import * as Camp from './campaign.mjs?v=launch-38';
-import {createCampaignUI} from './campaign-ui.mjs?v=launch-38';
-import {createToolFx} from './tool-fx.mjs?v=launch-38';
-import {createGhostFinger} from './ghost-finger.mjs?v=launch-38';
-import * as Shop from './shop.mjs?v=launch-38';
-import {createShopUI} from './shop-ui.mjs?v=launch-38';
-import {createGiftFx} from './gift-fx.mjs?v=launch-38';
-import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-38';
-import {createAdUI} from './ad-ui.mjs?v=launch-38';
-import {isOffline} from './native-ads.mjs?v=launch-38';
-import {createStatsUI} from './stats-ui.mjs?v=launch-38';
-import * as ToolLog from './tool-log.mjs?v=launch-38';
-import {createProgressSync} from './progress-sync.mjs?v=launch-38';
-import {epochOf} from './progress-merge.mjs?v=launch-38';
-import {createAdPacing} from './ad-pacing.mjs?v=launch-38';
-import {isAdFree,canOfferAdFree,purchaseAdFree,adFreePriceLabel} from './ad-free.mjs?v=launch-38';
-import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-38';
-import {createExplainer} from './explain.mjs?v=launch-38';
+import * as Camp from './campaign.mjs?v=launch-39';
+import {createCampaignUI} from './campaign-ui.mjs?v=launch-39';
+import {createToolFx} from './tool-fx.mjs?v=launch-39';
+import {createGhostFinger} from './ghost-finger.mjs?v=launch-39';
+import * as Shop from './shop.mjs?v=launch-39';
+import {createShopUI} from './shop-ui.mjs?v=launch-39';
+import {createGiftFx} from './gift-fx.mjs?v=launch-39';
+import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-39';
+import {createAdUI} from './ad-ui.mjs?v=launch-39';
+import {isOffline} from './native-ads.mjs?v=launch-39';
+import {createStatsUI} from './stats-ui.mjs?v=launch-39';
+import * as ToolLog from './tool-log.mjs?v=launch-39';
+import {createProgressSync} from './progress-sync.mjs?v=launch-39';
+import {epochOf} from './progress-merge.mjs?v=launch-39';
+import {createAdPacing} from './ad-pacing.mjs?v=launch-39';
+import {isAdFree,canOfferAdFree,purchaseAdFree,adFreePriceLabel} from './ad-free.mjs?v=launch-39';
+import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-39';
+import {createExplainer} from './explain.mjs?v=launch-39';
 const playfield = document.getElementById('playfield');
 const gameElement = document.querySelector('.game');
 const visual = createGameGraphics(document.getElementById('graphics'));
@@ -145,9 +145,9 @@ const newTile = value => ({ id: nextId++, value });
 // in localStorage unangetastet: während der Kampagne wird nichts davon gespeichert,
 // beim Verlassen wird er wieder geladen.
 const MODE_KEY='squish-mode-v1';
-const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-38',import.meta.url);
+const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-39',import.meta.url);
 // launch-16: Test-Level für die neuen Squishes (Eis, Ketten, Bombe) – eigener kleiner Satz, kein Fortschritt/Protokoll.
-const LAB_URL=new URL('../levels/levels-lab.json?v=launch-38',import.meta.url);
+const LAB_URL=new URL('../levels/levels-lab.json?v=launch-39',import.meta.url);
 let labMode=false,labLevels=null,labLoading=null;
 function loadLab(){
   return labLoading||=fetch(LAB_URL,{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('lab '+r.status);return r.json();})
@@ -195,7 +195,7 @@ const progressSync=createProgressSync({fetch:apiFetch,epoch:epochOf(Camp.PROGRES
   setLocal:(p,inv)=>{campaignProgress=p;Camp.saveProgress(p);if(inv!==inventory){inventory=inv;Camp.saveInventory(inv,undefined,false);}try{renderCampaign();void worldMenu.refresh?.();}catch{}}});
 const cloudSync=()=>{if(!labMode)progressSync.schedule();};
 progressSync.attach(window);
-const BUILD_LABEL='launch-36';
+const BUILD_LABEL='launch-39';
 let toolLog=ToolLog.loadLog(),logAttempt=null;
 // Versuche, die beim letzten Mal offen blieben (Seite geschlossen), gelten als abgebrochen.
 if(toolLog.attempts.some(a=>!a.outcome)){for(const a of toolLog.attempts)if(!a.outcome)ToolLog.endAttempt(toolLog,a.id,{outcome:'quit',moves:a.moves});ToolLog.saveLog(toolLog);}
@@ -220,7 +220,7 @@ const campaignUI=createCampaignUI({
   onRetry:()=>{if(camp)void playLevel(camp.n);},
   onExtra:()=>{void useExtraMoves('result');},
   onMenu:()=>void backToMenu(),
-  onTool:type=>{if(type==='extraMoves')void useExtraMoves();else toggleTool(type);},
+  onTool:type=>{if(type==='extraMoves')void useExtraMoves();else void toggleTool(type);},
   onGift:()=>void openGift(),
   onStar:i=>{sound.play('star',i+1);haptics.pulse(i===2?'big':'merge');},
   reduceMotion,
@@ -440,7 +440,7 @@ async function levelExplainers(){
   if(!campaignMode||!camp||labMode)return;
   const n=camp.n,topic=LEVEL_TOPICS[n];
   if(topic)await explainer.showOnce(topic,topic==='gates'?gatesCtx():undefined);
-  // launch-29: erst benutzen, dann erklären – die Bild-Lektion „kostet einen Stern“ kommt direkt nach dem Einsatz (toolLesson).
+  // launch-39: erste Hilfe-Lektion kommt beim Antippen, vor der Animation, damit das Platzen frei zu sehen ist.
   if(camp?.n===n&&tutorialToolPending()){showNote(t('note.tutorialTool'),0);renderCampaign();}
 }
 async function moveCampaign(direction,line){
@@ -508,10 +508,13 @@ async function finishLevel(){
   if(won&&!labMode){try{dispatchEvent(new CustomEvent('squish:level-won',{detail:{level:n,stars}}));}catch{}}
 }
 async function useExtraMoves(where='tool'){
-  if(!campaignMode||!camp||busy)return;
+  if(!campaignMode||!camp||busy||explainer.isOpen)return;
   const r=camp.run;
   if(r.status==='won'||(r.status==='lost'&&r.lostReason!=='moves')){if(r.status==='lost')showNote(t('note.extraNoHelp'),2600);return;}
   const gold=hasGold('extraMoves'),free=tutorialToolPending();
+  // launch-39: Erklärung zuerst, dann der Einsatz – die +3-Animation bleibt frei.
+  await toolLesson('extraMoves',{free,gold});
+  if(!campaignMode||camp?.run!==r||busy)return;
   if(!gold&&!free&&!await requestToolAd('extraMoves',where==='result'?'result':'tool'))return;
   if(!campaignMode||camp?.run!==r||busy)return;
   const ctx=logCtx(campaignUI.resultOpen?'result':'level');
@@ -526,7 +529,6 @@ async function useExtraMoves(where='tool'){
   renderCampaign();haptics.pulse('merge');sound.play('record');
   showNote(gold?t('note.goldUsed',{tool:Camp.toolName('extraMoves')}):t('note.extraUsed',{n:added}),2800);
   showTutorialFinger();
-  await toolLesson('extraMoves',{free,gold});
 }
 // ---------- Hilfsmittel: Rakete und +3 Züge ----------
 const toolFx=createToolFx({reduceMotion,shakeTarget:()=>document.getElementById('playfield')});
@@ -544,14 +546,27 @@ function showTutorialFinger(afterEntry=false){
 }
 
 function disarmTools(){armedTool=null;}
-function toggleTool(type){
+let toolArmGen=0,armedToolMeta=null;
+async function toggleTool(type){
   if(!campaignMode||!camp)return;
   if(type!=null&&type!=='rocket')return;
   const on=type!=null&&armedTool!==type;
-  if(on&&(camp.run.status!=='playing'||busy))return;
-  if(on&&helpOffline()&&!hasGold(type)&&!tutorialToolPending()){helpUnavailable('offline');return;}   // launch-31: gar nicht erst scharf
-  armedTool=on?type:null;renderCampaign();
-  if(on)showNote(t(hasGold('rocket')?'tool.note.rocketGold':'tool.note.rocket'),0);else if(!tutorialToolPending())note.hidden=true;else showNote(t('note.tutorialTool'),0);
+  if(!on){
+    toolArmGen++;
+    armedTool=null;armedToolMeta=null;renderCampaign();
+    if(!tutorialToolPending())note.hidden=true;else showNote(t('note.tutorialTool'),0);
+    return;
+  }
+  if(camp.run.status!=='playing'||busy||explainer.isOpen)return;
+  if(helpOffline()&&!hasGold(type)&&!tutorialToolPending()){helpUnavailable('offline');return;}   // launch-31: gar nicht erst scharf
+  // Gold/gratis vor der Lektion merken: die Lektion darf diesen Einsatz nicht nachträglich auf Gold umbiegen.
+  const gold=hasGold('rocket'),free=tutorialToolPending();
+  const gen=++toolArmGen;
+  // launch-39: erste Lektion beim Antippen der Rakete, vor dem Scharfstellen und vor dem Platzen.
+  await toolLesson('rocket',{free,gold});
+  if(gen!==toolArmGen||!campaignMode||!camp||camp.run.status!=='playing'||busy)return;
+  armedTool='rocket';armedToolMeta={gold,free};renderCampaign();
+  showNote(t(gold?'tool.note.rocketGold':'tool.note.rocket'),0);
 }
 function cellOf(tileId){let cell=null;board.forEach((row,r)=>row.forEach((t,c)=>{if(t&&t.id===tileId)cell=[r,c];}));return cell;}
 // Bildschirmposition (Client-Pixel) einer Brettzelle.
@@ -564,13 +579,13 @@ async function rocketAt(tileId){
   const cell=cellOf(tileId);
   if(!cell||!camp||busy)return false;
   if(camp.run.board[cell[0]][cell[1]]?.bound){showNote(t('note.chainVsRocket'),2200);return false;}
-  const gold=hasGold('rocket'),free=tutorialToolPending(),run=camp.run;
+  const meta=armedToolMeta,gold=meta?!!meta.gold:hasGold('rocket'),free=meta?!!meta.free:tutorialToolPending(),run=camp.run;
   if(!gold&&!free&&!await requestToolAd('rocket'))return false;
   if(!campaignMode||camp?.run!==run||busy||!cellOf(tileId))return false;
   const ctx=logCtx('level');
   if(!Camp.useRocket(run,cell[0],cell[1],{gift:gold}))return false;
   commitTool('rocket',gold,ctx);if(free)tutorialToolDone();
-  armedTool=null;note.hidden=true;
+  armedTool=null;armedToolMeta=null;note.hidden=true;
   const turn=generation;busy=true;renderCampaign();
   try{
     const target=cellPoint(cell[0],cell[1]);
@@ -579,14 +594,14 @@ async function rocketAt(tileId){
     if(turn!==generation)return true;
     // Einschlag: der echte Stein platzt wie ein Merge-Ballon, dazu der Comic-BOOM.
     visual.popTile?.(tileId);
-    toolFx.boom(target,target.size);sound.play('boom');haptics.pulse('big');
+    const boomDone=toolFx.boom(target,target.size);sound.play('boom');haptics.pulse('big');
     if(!reduceMotion.matches)for(const [dr,dc] of [[0,1],[0,-1],[1,0],[-1,0]]){
       const n=board[cell[0]+dr]?.[cell[1]+dc];if(n)visual.scheduleWobble?.(n.id,.42,.06);
     }
     board=board.map(row=>row.slice());board[cell[0]][cell[1]]=null;
     renderBoard();
+    await boomDone;
   }finally{if(turn===generation){busy=false;renderCampaign();announceToolCap(gold,'rocket');}}
-  if(turn===generation&&camp?.run===run&&run.status==='playing')await toolLesson('rocket',{free,gold});
   // launch-15: „höchstens N Steine übrig“ kann direkt durch die Rakete erfüllt werden
   if(turn===generation&&camp?.run?.status==='won')await finishLevel();
   return true;
