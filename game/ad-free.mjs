@@ -5,7 +5,7 @@
 // Der Kauf entfernt nur die Werbung (Clip vor dem Einsatz, Zwischenwerbung alle
 // 10 Abenteuer-Siege, Werbung alle 15 Minuten im Endlos-Modus). launch-28: Hilfsmittel sind für alle
 // unbegrenzt; launch-32: Hilfen kosten keine Sterne (Sterne = übrige Züge).
-import { fmtPrice } from './i18n.mjs?v=launch-37';
+import { fmtPrice } from './i18n.mjs?v=launch-38';
 
 export const AD_FREE_PRODUCT = Object.freeze({
   id: 'squish.adfree',

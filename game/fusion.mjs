@@ -7,8 +7,8 @@
 // The torn skin is animated on the GPU from a tiny per-shard state texture.
 import {pillowTopHeight} from './original-gel-models.js?v=menu-1';
 import {createHost,capsuleIndex} from './fusion-core.mjs?v=fuse-3';
-import {flags} from './flags.mjs?v=launch-37';
-import {comicOutline,comicColors,toonUniforms,comicBurstTexture,comicSparkTexture,comicRingTexture} from './comic-style.mjs?v=launch-37';
+import {flags} from './flags.mjs?v=launch-38';
+import {comicOutline,comicColors,toonUniforms,comicBurstTexture,comicSparkTexture,comicRingTexture} from './comic-style.mjs?v=launch-38';
 
 export function createFusion({internals:I,graphics}){
   const {THREE}=I,P=I.PARAMETERS,G=I.HUD_PARAMETERS.gel,scene=graphics.scene;
@@ -233,10 +233,10 @@ void main(){
         #endif
         vN=normalize(mat3(w)*normal);gl_Position=projectionMatrix*viewMatrix*w*vec4(position,1.);}`,
       fragmentShader:toonFrag});
-    m.customProgramCacheKey=()=>'comic-drop-1';return m;
+    m.name='Fusion_drop';m.customProgramCacheKey=()=>'comic-drop-1';return m;
   }
   function inkMaterial(){
-    return new THREE.ShaderMaterial({side:THREE.BackSide,toneMapped:false,uniforms:{uC:{value:new THREE.Color('#140a10')}},
+    const m=new THREE.ShaderMaterial({side:THREE.BackSide,toneMapped:false,uniforms:{uC:{value:new THREE.Color('#140a10')}},
       vertexShader:`void main(){
         #ifdef USE_INSTANCING
         mat4 w=modelMatrix*instanceMatrix;
@@ -245,6 +245,7 @@ void main(){
         #endif
         float s=max(length(w[0].xyz),1e-4);gl_Position=projectionMatrix*viewMatrix*w*vec4(position*(1.+max(.2,.035/s)),1.);}`,
       fragmentShader:'uniform vec3 uC;void main(){gl_FragColor=vec4(uC,1.);\n#include <colorspace_fragment>\n}'});
+    m.name='Fusion_ink';return m;
   }
   // Shard pieces are posed in the vertex shader: per shard, texel 0 holds the
   // position and scale, texel 1 the rotation, texel 2 the bend normal and amount.
@@ -260,7 +261,7 @@ vec3 transformed=position*shardP.w-shardN.xyz*(shardN.w*min(dot(position,positio
 transformed=shardTurn(shardQ,transformed)+shardP.xyz;transformed.y=max(uGround,transformed.y);vEdge=aEdge;
 vN=normalize(mat3(modelMatrix)*shardTurn(shardQ,normal));gl_Position=projectionMatrix*viewMatrix*modelMatrix*vec4(transformed,1.);}`,
       fragmentShader:toonFrag});
-    m.customProgramCacheKey=()=>'comic-skin-1';m.userData.shard=uniforms;return m;
+    m.name='Fusion_skin';m.customProgramCacheKey=()=>'comic-skin-1';m.userData.shard=uniforms;return m;
   }
   const debrisSet=new Set();
   // `source`: the tear request (local positions, normals, triangles and the world
@@ -701,8 +702,11 @@ vN=normalize(mat3(modelMatrix)*shardTurn(shardQ,normal));gl_Position=projectionM
       return {n,tier:at,worker:st(work),main:st(main),verts:line.blob.verts};
     },
     // Warm the fused gel, skin, droplet and flash programs inside the game's own
-    // entry render (behind the loading screen): first use links the program, and
-    // that must not happen on the first real merge.
+    // entry render (behind the start screen): first use links the program, and
+    // that must not happen on the first real merge. Materials stay alive after
+    // the holder leaves the scene so Three.js does not free the linked programs.
+    // Phones also call this; only compileAsync and blob prefill stay gated by noprewarm.
+    whenReady(){return tablesReady?Promise.resolve():Promise.race([tablesPromise,new Promise(r=>setTimeout(r,800))]);},
     warm(on){
       if(!warmHolder){
         warmHolder=new THREE.Group();warmHolder.name='Fusion_warm';warmHolder.position.set(0,-80,0);
@@ -710,17 +714,15 @@ vN=normalize(mat3(modelMatrix)*shardTurn(shardQ,normal));gl_Position=projectionM
         blob.s.group.scale.setScalar(1e-3);warmHolder.add(blob.s.group);
         const skin=new THREE.Mesh(dropGeometry,edgeMaterial(1)),drop=new THREE.InstancedMesh(dropGeometry,skinMaterial(1),1),ink=new THREE.InstancedMesh(dropGeometry,inkMaterial(),1);
         drop.setMatrixAt(0,new THREE.Matrix4().makeScale(1e-3,1e-3,1e-3));ink.instanceMatrix=drop.instanceMatrix;
-        const flash=new THREE.Sprite(new THREE.SpriteMaterial({map:flashTexture,depthWrite:false,depthTest:false,transparent:true,opacity:0}));
-        for(const o of [skin,drop,ink,flash]){o.frustumCulled=false;o.scale.multiplyScalar(1e-3);warmHolder.add(o);}
+        const sprite=(map,name)=>{const m=new THREE.SpriteMaterial({map,color:0xffffff,depthWrite:false,depthTest:false,transparent:true,toneMapped:false,opacity:0});m.name=name;return new THREE.Sprite(m);};
+        const flash=sprite(flashTexture,'Fusion_flash'),spark=sprite(sparkTexture,'Fusion_spark'),ring=sprite(ringTexture,'Fusion_ring');
+        for(const o of [skin,drop,ink,flash,spark,ring]){o.frustumCulled=false;o.scale.multiplyScalar(1e-3);warmHolder.add(o);}
         blob.s.body.frustumCulled=false;
+        try{for(const tex of [flashTexture,sparkTexture,ringTexture])graphics.renderer.initTexture?.(tex);}catch{}
       }
       if(on)scene.add(warmHolder);
       else{
         scene.remove(warmHolder);
-        if(warmHolder){
-          warmHolder.traverse(o=>{o.geometry?.dispose?.();if(o.material){const mats=Array.isArray(o.material)?o.material:[o.material];for(const m of mats)m.dispose?.();}});
-          warmHolder=null;
-        }
         prefill();
       }
     },

@@ -1,6 +1,6 @@
 import {THREE} from '../squish/squish-graphics.js?v=play-sharp-1';
 import {getLabelShapes,pillowTopHeight} from './original-gel-models.js?v=menu-1';
-import {comicLabelMaterial} from './comic-style.mjs?v=launch-37';
+import {comicLabelMaterial} from './comic-style.mjs?v=launch-38';
 
 // Keep the accepted typeface and curved placement, but not the 10k–84k
 // extruded vertices per digit. Coverage carries the subpixel glyph edges;
