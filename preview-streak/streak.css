@@ -1,0 +1,176 @@
+/* Login streak preview: comic, Fredoka, navy & gold. Pictorial, little text. */
+#streak-badge, #streak-pop, #streak-debug, #streak-preview-tag {
+  font-family: var(--aw-comic, "AW Comic", Fredoka, ui-rounded, sans-serif);
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+#streak-badge *, #streak-pop *, #streak-debug * { box-sizing: border-box; }
+
+#streak-preview-tag {
+  display: block; width: max-content; margin: 6px auto 2px; padding: 3px 10px;
+  border-radius: 999px; border: 2px solid #1a1638; background: #ffd25a; color: #1a1638;
+  font: 700 11px/1.2 var(--aw-comic, Fredoka, sans-serif); letter-spacing: .02em;
+}
+
+#streak-badge {
+  --ink: #1a1638; --gold: #ffd25a; --navy: #141433;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  max-width: min(72%, 220px); min-height: 36px; margin: 2px auto 0; padding: 5px 12px 6px;
+  border: 2.5px solid var(--ink); border-radius: 999px;
+  background: linear-gradient(180deg, #2c2e6a 0%, var(--navy) 100%);
+  box-shadow: inset 0 2px 0 #ffffff33, 0 3px 0 var(--ink), 0 6px 12px #0006;
+  color: #fff8d8; font: 700 13px/1 var(--aw-comic, Fredoka, sans-serif);
+  letter-spacing: .01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  cursor: pointer; appearance: none;
+}
+#streak-badge.is-gold {
+  background: linear-gradient(180deg, #ffe98a 0%, #f0b000 55%, #e08a00 100%);
+  color: #1a1638;
+  box-shadow: inset 0 2px 0 #fff8, 0 0 0 3px #ffd25a, 0 0 0 5px var(--ink), 0 6px 14px #0006;
+}
+#streak-badge .sb-crown { width: 16px; height: 16px; flex: none; }
+#streak-badge .sb-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+#streak-pop {
+  --ink: #1a1638; --gold: #ffd25a; --navy: #141433;
+  position: fixed; inset: 0; z-index: 1500;
+  display: grid; place-items: center;
+  padding: max(10px, env(safe-area-inset-top)) 10px max(14px, env(safe-area-inset-bottom));
+  background: #07091acc; backdrop-filter: blur(6px);
+}
+#streak-pop .sp-card {
+  width: min(100%, 380px); max-height: min(92svh, 640px);
+  overflow: auto; padding: 16px 14px 14px;
+  border: 3px solid var(--ink); border-radius: 28px;
+  background: linear-gradient(180deg, #1c1e4a 0%, #10122e 100%);
+  box-shadow: inset 0 2px 0 #ffffff22, 0 14px 36px #000a;
+  color: #fff8d8; text-align: center;
+  animation: sp-in .38s cubic-bezier(.2,1.2,.3,1) both;
+}
+@keyframes sp-in { from { transform: translateY(24px) scale(.94); opacity: 0; } to { transform: none; opacity: 1; } }
+#streak-pop .sp-week {
+  display: inline-block; margin: 0 0 8px; padding: 4px 12px;
+  border-radius: 999px; border: 2px solid var(--ink); background: var(--gold); color: var(--ink);
+  font: 800 13px/1 var(--aw-comic, Fredoka, sans-serif);
+}
+#streak-pop .sp-badge {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  max-width: 100%; margin: 4px auto 12px; padding: 8px 14px;
+  border: 2.5px solid var(--ink); border-radius: 999px;
+  background: #141433; color: #fff8d8;
+  font: 800 clamp(15px, 4.8vw, 22px)/1 var(--aw-comic, Fredoka, sans-serif);
+  letter-spacing: .01em; white-space: nowrap;
+  box-shadow: inset 0 2px 0 #fff3, 0 3px 0 #0b0b1c;
+}
+#streak-pop .sp-badge.is-gold {
+  background: linear-gradient(180deg, #ffe98a, #f0b000);
+  color: #1a1638;
+  box-shadow: inset 0 2px 0 #fff8, 0 0 0 3px #ffd25a, 0 0 0 5px var(--ink);
+  animation: sp-shine .9s ease both;
+}
+@keyframes sp-shine { 0%{transform:scale(.8) rotate(-6deg);} 60%{transform:scale(1.08) rotate(3deg);} 100%{transform:none;} }
+#streak-pop .sp-days {
+  display: flex; justify-content: space-between; align-items: flex-end; gap: 4px; margin: 6px 0 10px;
+}
+#streak-pop .sp-day {
+  flex: 1 1 0; min-width: 0; display: grid; justify-items: center; gap: 4px;
+}
+#streak-pop .sp-bubble {
+  position: relative; width: 100%; max-width: 44px; aspect-ratio: 1;
+  border-radius: 32%; border: 2.5px solid var(--ink);
+  background: repeating-linear-gradient(-12deg, #2a2d5a 0 6px, #22254c 6px 12px);
+  box-shadow: inset 0 2px 0 #fff1, 0 3px 0 #0b0b1c;
+}
+#streak-pop .sp-bubble.is-done { background: var(--c, #5ad0ff); box-shadow: inset 0 3px 0 #fff6, 0 3px 0 #0b0b1c; }
+#streak-pop .sp-bubble.is-today { animation: sp-bounce .55s cubic-bezier(.2,1.4,.3,1) both; }
+@keyframes sp-bounce {
+  0% { transform: scale(.2, .2) translateY(12px); }
+  55% { transform: scale(1.18, .82) translateY(0); }
+  75% { transform: scale(.9, 1.14); }
+  100% { transform: scale(1); }
+}
+#streak-pop .sp-face { position: absolute; inset: 18% 16% 28%; }
+#streak-pop .sp-eye {
+  position: absolute; top: 22%; width: 22%; aspect-ratio: 1; border-radius: 50%;
+  background: #1a1638; box-shadow: 4px 0 0 -1px #fff8 inset;
+}
+#streak-pop .sp-eye.l { left: 12%; }
+#streak-pop .sp-eye.r { right: 12%; }
+#streak-pop .sp-mouth {
+  position: absolute; left: 28%; right: 28%; bottom: 8%; height: 28%;
+  border: 2px solid #1a1638; border-top: 0; border-radius: 0 0 12px 12px;
+}
+#streak-pop .sp-gift {
+  position: absolute; right: -4px; top: -8px; width: 46%; aspect-ratio: 1;
+  filter: drop-shadow(0 1px 0 #1a1638);
+}
+#streak-pop .sp-note {
+  min-height: 1.1em; margin: 0 0 8px; font: 700 13px/1.2 var(--aw-comic, Fredoka, sans-serif); color: #ffd25a;
+}
+#streak-pop .sp-slot {
+  display: flex; justify-content: center; gap: 10px; margin: 4px 0 10px;
+}
+#streak-pop .sp-slot.is-empty { display: none; }
+#streak-pop .sp-pocket {
+  width: 52px; height: 52px; border-radius: 16px; border: 2.5px solid var(--ink);
+  background: #0d0f28; display: grid; place-items: center;
+  box-shadow: inset 0 2px 6px #0008, 0 2px 0 #0004;
+}
+#streak-pop .sp-pocket svg { width: 34px; height: 34px; }
+#streak-pop .sp-pocket.is-got { animation: sp-got .5s ease; }
+@keyframes sp-got { 0%,100%{transform:none} 40%{transform:scale(1.18)} }
+#streak-pop .sp-ok {
+  display: block; width: min(100%, 220px); margin: 4px auto 0; padding: 10px 16px 12px;
+  border: 3px solid var(--ink); border-radius: 16px;
+  background: linear-gradient(180deg, #ffe98a, #f0b000);
+  color: var(--ink); font: 800 18px/1 var(--aw-comic, Fredoka, sans-serif);
+  box-shadow: inset 0 2px 0 #fff8, 0 3px 0 var(--ink);
+  cursor: pointer;
+}
+#streak-pop .sp-ok:active { transform: translateY(2px); box-shadow: inset 0 2px 0 #fff8, 0 1px 0 var(--ink); }
+#streak-pop .sp-burst { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+#streak-pop .sp-spark {
+  position: absolute; width: 8px; height: 8px; border-radius: 50%; background: var(--c, #ffd25a);
+  animation: sp-spark .7s ease-out forwards;
+}
+@keyframes sp-spark { to { transform: translate(var(--x), var(--y)) scale(.2); opacity: 0; } }
+
+#streak-fly {
+  position: fixed; z-index: 1510; width: 44px; height: 44px; pointer-events: none;
+  filter: drop-shadow(0 2px 0 #1a1638);
+}
+
+#streak-debug {
+  position: fixed; z-index: 1600;
+  right: max(8px, env(safe-area-inset-right));
+  bottom: max(8px, env(safe-area-inset-bottom));
+}
+#streak-debug .sd-tab {
+  display: block; margin-left: auto; padding: 6px 10px;
+  border: 2px solid #1a1638; border-radius: 12px 12px 4px 12px;
+  background: #ffd25a; color: #1a1638;
+  font: 800 11px/1 var(--aw-comic, Fredoka, sans-serif);
+  box-shadow: 0 2px 0 #1a1638; cursor: pointer;
+}
+#streak-debug .sd-panel {
+  display: none; margin-top: 6px; padding: 8px; width: min(72vw, 230px);
+  border: 2.5px solid #1a1638; border-radius: 14px; background: #141433; color: #fff8d8;
+}
+#streak-debug.is-open .sd-panel { display: grid; gap: 6px; }
+#streak-debug .sd-row { display: flex; flex-wrap: wrap; gap: 5px; }
+#streak-debug .sd-row button, #streak-debug select {
+  flex: 1 1 auto; min-height: 32px; padding: 4px 8px;
+  border: 2px solid #1a1638; border-radius: 10px; background: #ffd25a; color: #1a1638;
+  font: 700 11px/1 var(--aw-comic, Fredoka, sans-serif); cursor: pointer;
+}
+#streak-debug .sd-row button.is-muted { background: #3a3d72; color: #fff8d8; }
+#streak-debug .sd-meta { margin: 0; font: 700 10px/1.3 var(--aw-comic, Fredoka, sans-serif); opacity: .85; }
+
+@media (max-width: 360px) {
+  #streak-pop .sp-card { padding: 12px 10px 12px; border-radius: 22px; }
+  #streak-pop .sp-badge { font-size: clamp(14px, 5vw, 18px); padding: 6px 12px; }
+  #streak-badge { font-size: 12px; padding: 4px 10px 5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #streak-pop .sp-card, #streak-pop .sp-bubble.is-today, #streak-pop .sp-badge.is-gold, #streak-pop .sp-spark { animation: none; }
+}
