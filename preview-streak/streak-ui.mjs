@@ -1,18 +1,40 @@
-import { TOOL_ICONS, GIFT_SVG } from '../game/tool-icons.mjs?v=launch-38';
+import { TOOL_ICONS } from '../game/tool-icons.mjs?v=launch-38';
 import { getLang, onLangChange } from '../game/i18n.mjs?v=launch-38';
 import { addToStock, saveInventory } from '../game/campaign.mjs?v=launch-38';
+import { createConfetti } from '../game/confetti.mjs?v=launch-38';
+import { createHaptics } from '../game/haptics.mjs?v=launch-38';
 import {
   checkIn, loadState, saveState, emptyState, viewOf, copyFor, titleLabel,
-  localDateISO, addDaysISO, prepareForDay, titleById,
+  localDateISO, addDaysISO, prepareForDay, titleById, TITLES,
 } from './streak.mjs';
 
 const CLOCK_KEY = 'shift3-preview-streak-clock';
-const COLORS = ['#5ad0ff', '#ff8ad2', '#7dff7a', '#ffb347', '#c9a0ff', '#fff16a', '#ff7a6e'];
-const CROWN = `<svg class="sb-crown" viewBox="0 0 24 24" aria-hidden="true"><path fill="#ffd25a" stroke="#1a1638" stroke-width="1.6" stroke-linejoin="round" d="M3 16 6 7l6 5 6-5 3 9z"/><rect x="3" y="16" width="18" height="4" rx="1" fill="#ffd25a" stroke="#1a1638" stroke-width="1.6"/></svg>`;
+const sprite = name => new URL(`./sprites/${name}.png`, import.meta.url).href;
+const GEL = [1,2,3,4,5,6,7].map(v => sprite(`gel-${v}`));
+const GEL_GHOST = sprite('gel-ghost');
+const GIFT = sprite('gift');
+const GIFT_OPEN = sprite('gift-open');
+
+const CHECK_SVG = `<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="#2cb500" stroke="#0a3600" stroke-width="2"/><path d="M8.5 16.5 13.5 21.5 23 11.5" fill="none" stroke="#fffbea" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+// Rank emblems (no emoji). Crowns/star use currentColor so they stay visible on gold or navy.
+const EMBLEMS = {
+  noob: `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3.5c0 0-9.5 11.5-9.5 17.5a9.5 9.5 0 0 0 19 0c0-6-9.5-17.5-9.5-17.5z" fill="#7ecbff" stroke="#1a1638" stroke-width="2.2" stroke-linejoin="round"/><path d="M12 20.5c1.6 3.2 6.4 3.2 8 0" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg>`,
+  kneader: `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10.5 13c-2 2.2-2.2 5.4 0 8.2 1.8 2.2 4.2 3.3 5.5 3.3s3.7-1.1 5.5-3.3c2.2-2.8 2-6 0-8.2C19.6 10.6 17.2 9.2 16 9.2s-3.6 1.4-5.5 3.8z" fill="#ffe066" stroke="#1a1638" stroke-width="2" stroke-linejoin="round"/><circle cx="13.6" cy="16.2" r="1.15" fill="#1a1638"/><circle cx="18.4" cy="16.2" r="1.15" fill="#1a1638"/><circle cx="8.2" cy="9.2" r="3.3" fill="#fff0d0" stroke="#1a1638" stroke-width="1.8"/><circle cx="23.8" cy="9.2" r="3.3" fill="#fff0d0" stroke="#1a1638" stroke-width="1.8"/></svg>`,
+  pro: `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3.5 19.6 12.2 29 13.2 22 19.4 24 28.5 16 23.8 8 28.5 10 19.4 3 13.2 12.4 12.2Z" fill="currentColor" stroke="#1a1638" stroke-width="2" stroke-linejoin="round"/></svg>`,
+  master: `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 20 8.2 8.5 16 15l7.8-6.5L27 20H5z" fill="currentColor" stroke="#1a1638" stroke-width="2" stroke-linejoin="round"/><rect x="5" y="20" width="22" height="5" rx="1.2" fill="currentColor" stroke="#1a1638" stroke-width="2"/></svg>`,
+  legend: `<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 3.2v5.2M3.4 5.8h5.2" stroke="#7ecbff" stroke-width="2" stroke-linecap="round"/><path d="M26 3.2v5.2M23.4 5.8h5.2" stroke="#7ecbff" stroke-width="2" stroke-linecap="round"/><path d="M4 20.4 8.2 8.6 16 15.2 23.8 8.6 28 20.4H4z" fill="currentColor" stroke="#1a1638" stroke-width="2" stroke-linejoin="round"/><rect x="4" y="20" width="24" height="5.4" rx="1.2" fill="currentColor" stroke="#1a1638" stroke-width="2"/><circle cx="16" cy="15.4" r="2" fill="#ff4d4d" stroke="#1a1638" stroke-width="1.3"/></svg>`,
+};
+
+const TIER = { noob: 'noob', kneader: 'kneader', pro: 'pro', master: 'master', legend: 'legend' };
+const TIER_BADGE = { noob: '', kneader: 'is-bronze', pro: 'is-silver', master: 'is-gold', legend: 'is-legend' };
 
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 const reduced = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
 const wait = ms => new Promise(r => setTimeout(r, ms));
+
+const haptics = createHaptics();
+const confetti = createConfetti();
 
 export function getClockToday() {
   try {
@@ -48,7 +70,6 @@ function grantGold(type, id) {
   return true;
 }
 
-/** Make inventory match gifted[] (used after jumps, and after a title-up). */
 export function syncGifted(state) {
   const gifted = state?.gifted || [];
   const map = { 'streak-1': 'extraMoves', 'streak-2': 'rocket', 'streak-3': 'extraMoves', 'streak-4': 'rocket' };
@@ -57,26 +78,9 @@ export function syncGifted(state) {
   return n;
 }
 
-function burst(layer) {
-  if (reduced()) return;
-  const box = el('div', 'sp-burst');
-  const colors = ['#ffd25a', '#fff', '#ff8ad2', '#5ad0ff', '#7dff7a'];
-  for (let i = 0; i < 18; i++) {
-    const s = el('i', 'sp-spark');
-    const a = (i / 18) * Math.PI * 2, d = 70 + (i % 3) * 28;
-    s.style.setProperty('--x', `${Math.cos(a) * d}px`);
-    s.style.setProperty('--y', `${Math.sin(a) * d - 20}px`);
-    s.style.setProperty('--c', colors[i % colors.length]);
-    s.style.left = '50%'; s.style.top = '28%';
-    box.append(s);
-  }
-  layer.append(box);
-  setTimeout(() => box.remove(), 800);
-}
-
-function isOnScreen(el) {
-  if (!el) return false;
-  const r = el.getBoundingClientRect();
+function isOnScreen(node) {
+  if (!node) return false;
+  const r = node.getBoundingClientRect();
   return r.width > 8 && r.height > 8 && r.bottom > 0 && r.right > 0 && r.top < innerHeight && r.left < innerWidth;
 }
 
@@ -103,59 +107,136 @@ function flyIcon(type, fromEl, toEl) {
   }).catch(() => { f.remove(); });
 }
 
+function burstConfetti(overlay, card) {
+  if (reduced()) return;
+  const r = card.getBoundingClientRect();
+  const rect = { left: r.left, top: r.top, width: r.width, height: r.height, right: r.right, bottom: r.bottom };
+  try {
+    void confetti.burst(rect, { reduced: false, burstMs: 1100 });
+    const c = document.querySelector('.aw-confetti');
+    if (c && overlay) {
+      c.style.zIndex = '';
+      overlay.insertBefore(c, card);
+    }
+  } catch {}
+}
+
 export function closePopup() {
+  try { confetti.stop(); } catch {}
+  document.getElementById('streak-fly')?.remove();
   document.getElementById('streak-pop')?.remove();
+}
+
+function pathItems(state, eventWeek) {
+  // 4 earned titles: weeks 1..4 → kneader, pro, master, legend
+  const currentWeek = eventWeek || state?.week || 1;
+  const complete = !!state?.complete || !!titleById(state?.title).goldFrame;
+  const earnedRank = titleById(state?.title).rank;
+  return [1, 2, 3, 4].map(week => {
+    const title = TITLES[week];
+    let cls = 'is-todo';
+    if (complete || earnedRank > week) cls = 'is-done';
+    else if (earnedRank === week || (currentWeek === week && eventWeek === week && earnedRank >= week)) cls = 'is-done';
+    else if (currentWeek === week) cls = 'is-now';
+    // During a title-up for this week, the new title is already earned.
+    if (currentWeek === week && earnedRank >= week) cls = 'is-done';
+    // Current week in progress (not yet day 7)
+    if (currentWeek === week && earnedRank < week && !complete) cls = 'is-now';
+    return { week, title, cls };
+  });
 }
 
 export function showPopup(event, { onClose } = {}) {
   closePopup();
   const L = lang(), copy = copyFor(L);
   const titleId = event.titleUp?.id || event.state?.title || 'noob';
-  const gold = !!titleById(titleId).goldFrame || !!event.complete;
-  const overlay = el('div', ''); overlay.id = 'streak-pop';
+  const tier = TIER[titleId] || 'noob';
+  const isUp = !!event.titleUp;
+  const overlay = el('div', isUp ? 'is-titleup' : ''); overlay.id = 'streak-pop';
   overlay.setAttribute('role', 'dialog');
   overlay.setAttribute('aria-modal', 'true');
   overlay.setAttribute('aria-label', titleLabel(titleId, L));
 
-  const card = el('div', 'sp-card');
-  const week = el('div', 'sp-week', `${copy.week} ${event.week}`);
-  const badge = el('div', 'sp-badge' + (gold ? ' is-gold' : ''));
-  badge.innerHTML = CROWN + `<span></span>`;
-  badge.querySelector('span').textContent = titleLabel(titleId, L);
+  const backdrop = el('div', 'sp-backdrop');
+  const rays = el('div', 'sp-rays');
+  const card = el('div', 'sp-card classic-panel');
+
+  const banner = el('h2', `sp-banner is-${tier}`);
+  const emblem = el('span', 'sp-emblem'); emblem.innerHTML = EMBLEMS[titleId] || EMBLEMS.noob;
+  const name = el('span', 'sp-title', titleLabel(titleId, L));
+  banner.append(emblem, name);
+
+  const path = el('ol', 'sp-path');
+  path.setAttribute('aria-label', L === 'en' ? 'Four-week titles' : 'Titel in 4 Wochen');
+  for (const step of pathItems(event.state, event.week)) {
+    const li = el('li', step.cls);
+    const node = el('span', 'sp-node');
+    node.innerHTML = EMBLEMS[step.title.id];
+    node.setAttribute('aria-label', titleLabel(step.title.id, L));
+    li.append(node);
+    path.append(li);
+  }
 
   const days = el('div', 'sp-days');
-  let todayBubble = null, giftMark = null;
+  let giftImg = null;
   for (let i = 1; i <= 7; i++) {
-    const col = el('div', 'sp-day');
-    const b = el('div', 'sp-bubble');
-    b.style.setProperty('--c', COLORS[i - 1]);
     const filled = i <= (event.poppedDay || 0);
-    if (filled) {
-      b.classList.add('is-done');
-      b.innerHTML = `<span class="sp-face"><i class="sp-eye l"></i><i class="sp-eye r"></i><i class="sp-mouth"></i></span>`;
+    const isToday = filled && i === event.poppedDay;
+    const isGiftDay = i === 7;
+    const col = el('div', 'sp-day');
+    if (filled) col.classList.add('is-done');
+    else col.classList.add('is-empty');
+    if (isToday) col.classList.add('is-today');
+    if (isGiftDay) col.classList.add('is-gift');
+    if (isGiftDay && !filled) col.classList.add('is-pending');
+
+    const ring = el('div', 'sp-slot-ring');
+    if (isGiftDay && !filled) {
+      const g = el('img', 'sp-gift');
+      g.src = GIFT; g.alt = '';
+      ring.append(g);
+      if (!filled) giftImg = g;
+    } else if (isGiftDay && filled && isUp) {
+      const g = el('img', 'sp-gift');
+      g.src = GIFT; g.alt = '';
+      ring.append(g);
+      giftImg = g;
+    } else {
+      const img = el('img', 'sp-gel');
+      img.src = filled ? GEL[i - 1] : GEL_GHOST;
+      img.alt = '';
+      ring.append(img);
     }
-    if (i === 7) {
-      const g = el('span', 'sp-gift'); g.innerHTML = GIFT_SVG; b.append(g); giftMark = g;
+    if (filled && !isGiftDay) {
+      const ck = el('span', 'sp-check'); ck.innerHTML = CHECK_SVG; ring.append(ck);
     }
-    if (filled && i === event.poppedDay) { b.classList.add('is-today'); todayBubble = b; }
-    col.append(b);
+    if (filled && isGiftDay && !isUp) {
+      const ck = el('span', 'sp-check'); ck.innerHTML = CHECK_SVG; ring.append(ck);
+    }
+    col.append(ring);
     days.append(col);
   }
 
-  const note = el('p', 'sp-note');
-  if (event.missed && !event.titleUp) note.textContent = copy.missed;
-  else if (event.titleUp) note.textContent = copy.titleUp;
-  else note.textContent = '';
-
-  const slot = el('div', 'sp-slot'+(event.gift?'':' is-empty'));
+  const reward = el('div', 'sp-reward' + (event.gift ? '' : ' is-empty'));
   const pocket = el('div', 'sp-pocket');
-  slot.append(pocket);
+  if (event.gift) pocket.innerHTML = TOOL_ICONS[event.gift.type] || '';
+  reward.append(pocket);
 
-  const ok = el('button', 'sp-ok', copy.close); ok.type = 'button';
-  card.append(week, badge, days, slot, note, ok);
-  overlay.append(card);
+  const ok = el('button', 'sp-ok menu-button primary', copy.close);
+  ok.type = 'button';
+
+  card.append(banner, path, days, reward, ok);
+  overlay.append(backdrop, rays, card);
   document.body.append(overlay);
-  if (event.titleUp) burst(card);
+
+  if (isUp) {
+    try { haptics.pulse?.('big'); } catch { try { haptics.pulse?.('merge'); } catch {} }
+    burstConfetti(overlay, card);
+  } else if (event.missed) {
+    try { haptics.pulse?.('tap'); } catch {}
+  } else {
+    try { haptics.pulse?.('tap'); } catch {}
+  }
 
   const finish = () => { closePopup(); onClose?.(); };
   ok.addEventListener('click', finish);
@@ -163,13 +244,12 @@ export function showPopup(event, { onClose } = {}) {
 
   const playGift = async () => {
     if (!event.gift) return;
-    pocket.innerHTML = TOOL_ICONS[event.gift.type] || '';
-    const from = giftMark || todayBubble || pocket;
-    note.textContent = `${copy.got}: ${copy[event.gift.type] || event.gift.type}`;
     grantGold(event.gift.type, event.gift.id);
     await wait(reduced() ? 80 : 280);
+    if (giftImg) giftImg.src = GIFT_OPEN;
+    const from = giftImg || pocket;
     await flyIcon(event.gift.type, from, pocket);
-    const live = [...document.querySelectorAll(`#home-menu .aw-chip[data-type="${event.gift.type}"], #tool-${event.gift.type === 'extraMoves' ? 'extra' : 'rocket'}`)].find(isOnScreen);
+    const live = [...document.querySelectorAll(`#home-menu .aw-chip[data-type="${event.gift.type}"]`)].find(isOnScreen);
     if (live) await flyIcon(event.gift.type, pocket, live);
   };
   void playGift();
@@ -186,8 +266,9 @@ export function renderBadge(state) {
     wrap.after(b);
   }
   const v = viewOf(state, lang());
-  b.classList.toggle('is-gold', v.goldFrame);
-  b.innerHTML = CROWN + `<span class="sb-name"></span>`;
+  const tier = TIER[v.titleId] || 'noob';
+  b.className = TIER_BADGE[tier] || '';
+  b.innerHTML = `<span class="sb-emblem">${EMBLEMS[v.titleId] || EMBLEMS.noob}</span><span class="sb-name"></span>`;
   b.querySelector('.sb-name').textContent = v.title;
   b.setAttribute('aria-label', v.title);
   return b;
@@ -199,12 +280,9 @@ export function renderPreviewTag() {
   let tag = document.getElementById('streak-preview-tag');
   if (!tag) { tag = el('span', ''); tag.id = 'streak-preview-tag'; }
   tag.textContent = copyFor(lang()).preview;
-  const badge = document.getElementById('streak-badge');
-  if (badge) badge.after(tag);
-  else {
-    const build = document.getElementById('home-build');
-    if (build) build.before(tag); else menu.append(tag);
-  }
+  const build = document.getElementById('home-build');
+  if (build) build.before(tag);
+  else menu.append(tag);
 }
 
 export function installDebug({ onNext, onMiss, onReset, onJump, getState, getToday }) {
@@ -221,7 +299,7 @@ export function installDebug({ onNext, onMiss, onReset, onJump, getState, getTod
   const row2 = el('div', 'sd-row');
   const jump = el('select'); jump.setAttribute('aria-label', 'Tag');
   jump.innerHTML = Array.from({ length: 28 }, (_, i) => `<option value="${i + 1}">${copyFor(lang()).debugJump} ${i + 1}</option>`).join('');
-  const go = el('button', '', '→');
+  const go = el('button', '', 'Go');
   row.append(next, miss, reset);
   row2.append(jump, go);
   panel.append(meta, row, row2);
