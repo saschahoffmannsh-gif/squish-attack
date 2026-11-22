@@ -1,0 +1,41 @@
+:root{
+  color-scheme:dark;
+  --ink:#140a10;
+  --navy:#0b1430;
+  --gold:#f0c14b;
+  --paper:#f7f1e4;
+  --pad:max(16px,env(safe-area-inset-left));
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#07091a;color:var(--paper);
+  font-family:Fredoka,ui-rounded,system-ui,sans-serif;}
+body{padding:calc(12px + env(safe-area-inset-top)) var(--pad) calc(24px + env(safe-area-inset-bottom));}
+@font-face{font-family:Fredoka;font-style:normal;font-weight:400 700;
+  src:url("../game/assets/fonts/fredoka.woff2") format("woff2");font-display:swap;}
+header{max-width:720px;margin:0 auto 16px;}
+h1{margin:0 0 6px;font-size:clamp(1.4rem,5vw,2rem);letter-spacing:.02em;}
+.lede{margin:0;color:#c9c3d8;font-size:.95rem;line-height:1.45;}
+.tag{display:inline-block;margin-top:8px;padding:2px 8px;border-radius:999px;
+  background:#f0c14b22;color:var(--gold);font-size:.75rem;font-weight:700;}
+.hero-wrap,.board-wrap{max-width:720px;margin:0 auto 22px;
+  background:radial-gradient(120% 80% at 50% 0%,#152056 0%,#07091a 70%);
+  border:1px solid #ffffff1a;border-radius:24px;padding:12px 12px 16px;
+  box-shadow:0 12px 40px #0008;}
+#hero-stage,#board-stage{position:relative;width:100%;height:min(58vw,420px);
+  border-radius:18px;overflow:hidden;touch-action:none;background:#0a0d22;}
+#board-stage{height:min(92vw,520px);cursor:grab;}
+#hero-stage canvas,#board-stage canvas{display:block;width:100%;height:100%;}
+.controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.controls h2{flex:1 0 100%;margin:8px 0 0;font-size:.78rem;letter-spacing:.08em;
+  text-transform:uppercase;color:#9aa3c7;}
+button{appearance:none;border:1px solid #ffffff22;background:#1a2150;color:var(--paper);
+  font:inherit;font-weight:650;padding:.45rem .75rem;border-radius:999px;cursor:pointer;}
+button:hover{background:#24306c;}
+button.is-on{background:var(--gold);color:var(--ink);border-color:transparent;}
+#pose-status{margin:8px 0 0;color:#9aa3c7;font-size:.85rem;}
+.board-bar{display:flex;align-items:center;gap:10px;margin:0 0 8px;flex-wrap:wrap;}
+.board-bar strong{font-size:1.15rem;}
+.hint{margin:8px 0 0;color:#9aa3c7;font-size:.85rem;}
+#note{margin:8px 0 0;color:var(--gold);font-weight:700;min-height:1.2em;}
+footer{max-width:720px;margin:8px auto 0;color:#7d84a8;font-size:.8rem;}
+footer a{color:var(--gold);}

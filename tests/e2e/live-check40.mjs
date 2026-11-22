@@ -105,7 +105,7 @@ async function popMetrics(page) {
 {
   const P = await newPage({});
   await P.page.waitForSelector('#streak-pop', { timeout: 20000 });
-  await sleep(400);
+  await sleep(700);
   const m = await popMetrics(P.page);
   ok(`${lang} Build launch-40`, /launch-40/.test(m.build), m.build);
   ok(`${lang} Tag 1: Fenster offen`, m.open);
@@ -136,7 +136,7 @@ async function popMetrics(page) {
 {
   const P = await newPage({}, '?reset=1&day=28&t=' + Date.now());
   await P.page.waitForSelector('#streak-pop', { timeout: 20000 });
-  await sleep(400);
+  await sleep(700);
   const m = await popMetrics(P.page);
   ok(`${lang} ?day/?reset werden ignoriert (Tag 1, nicht 28)`, m.count === `${dayWord} 1` && m.title.toLowerCase().includes('noob'), `${m.count} ${m.title}`);
   await P.ctx.close();
@@ -148,7 +148,7 @@ async function popMetrics(page) {
   const pre = prepareForDay(7, today);
   const P = await newPage({ 'squish-streak-v1': JSON.stringify(pre) });
   await P.page.waitForSelector('#streak-pop', { timeout: 20000 });
-  await sleep(400);
+  await sleep(700);
   const m = await popMetrics(P.page);
   ok(`${lang} Tag 7: Zähler`, m.count === `${dayWord} 7`, m.count);
   ok(`${lang} Tag 7: Zahlen 1–7, 1–6 mit Haken, Geschenk`, m.numbers === '1234567' && m.vals.slice(0, 6).every(v => v.hasCheck) && m.vals[6].isGift && m.vals[6].text === '7', JSON.stringify(m.vals.map(v => [v.text, v.hasCheck, v.isGift])));

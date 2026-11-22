@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#07091a" />
+    <title>Squish Attack · Gesicht-Vorschau</title>
+    <link rel="stylesheet" href="preview-face.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Gesichter-Vorschau</h1>
+      <p class="lede">Ein Squish mit einem modellierten Gesicht — große glänzende Perlenaugen in weichen Höhlen, Rosenwangen, ein kleines w-Mäulchen. Noch ein bisschen niedlicher als Variante A, und die Mimik ist animierbar. Das ist nur eine Vorschau, nicht das Live-Spiel.</p>
+      <span class="tag">preview-face · nicht live</span>
+    </header>
+
+    <section class="hero-wrap">
+      <div id="hero-stage" aria-label="Großer Squish mit Gesicht"></div>
+      <div class="controls" id="expressions"><h2>Ausdruck</h2></div>
+      <div class="controls" id="mouths"><h2>Mund</h2></div>
+      <div class="controls">
+        <button type="button" id="auto-btn">Auto-Vorführung</button>
+        <button type="button" id="wobble-btn">Wackeln</button>
+      </div>
+      <p id="pose-status"></p>
+    </section>
+
+    <section class="board-wrap">
+      <div class="board-bar">
+        <strong>Mini-Brett</strong>
+        <span>Punkte <span id="score">0</span></span>
+        <button type="button" id="restart-board">Neu</button>
+      </div>
+      <div id="board-stage" aria-label="Kleines Spielbrett mit Gesichtern"></div>
+      <p class="hint">Wischen, um eine Reihe oder Spalte einzuschieben. Vor dem Merge werden die Augen groß, danach zwinkern sie glücklich.</p>
+      <p id="note" hidden></p>
+    </section>
+
+    <footer>
+      Live-Spiel unverändert: <a href="../game/">/game/</a>. Kein Konto, kein Service Worker, keine Server-Schreibzugriffe.
+    </footer>
+    <script type="module" src="demo.mjs"></script>
+  </body>
+</html>

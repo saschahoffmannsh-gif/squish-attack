@@ -1,15 +1,115 @@
 // Kampagne: DOM-Teile (Ziel-Anzeige, Züge, Hilfsmittel, Ergebnis-Dialog, Levelauswahl).
 // Reine Darstellung; Spiellogik und Speichern liegen in game.mjs / campaign.mjs.
-import {TOOL_ICONS,GIFT_SVG} from './tool-icons.mjs?v=launch-40';
-import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-40';
-import {fitLabelsSoon} from './fit-labels.mjs?v=launch-40';
-import {goalProgress,goalText,goalShort,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName,starsFor,starMovesUsed} from './campaign.mjs?v=launch-40';
+import {TOOL_ICONS,GIFT_SVG} from './tool-icons.mjs?v=launch-41';
+import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-41';
+import {fitLabelsSoon} from './fit-labels.mjs?v=launch-41';
+import {goalProgress,goalText,goalShort,goalIntro,LONG_STREET,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName,starsFor,starMovesUsed} from './campaign.mjs?v=launch-41';
+import {miniTile} from './explain.mjs?v=launch-41';
 
 const $=id=>document.getElementById(id);
 export const TOOL_ARTICLE=new Proxy({},{get:(_,k)=>t('tool.'+k)});
 export const TOOL_NOM=new Proxy({},{get:(_,k)=>toolName(k)});
 const fmt=n=>fmtNum(n);
+
 const starText=(n,max=3)=>'★'.repeat(n)+'☆'.repeat(Math.max(0,max-n));
+
+function progressLabel(goal,p,run){
+  if(p.done)return '✓';
+  if(goal.type==='tile'){
+    const best=Math.min(p.target,Math.max(p.current,...run.board.flat().filter(Boolean).map(x=>x.value)));
+    return `${best}/${p.target}`;
+  }
+  if(goal.type==='empty')return p.done?'✓':`${p.current} / max. ${p.target}`;
+  return `${fmt(p.current)}/${fmt(p.target)}`;
+}
+
+function tileRow(values, opts={}){
+  const wrap=document.createElement('span');wrap.className='goal-row'+(opts.cls?' '+opts.cls:'');
+  for(const v of values)wrap.append(miniTile(v,{gold:!!opts.gold,ghost:v==null,cls:'goal-tile'}));
+  return wrap;
+}
+
+function tileGrid(rows){
+  const g=document.createElement('span');g.className='goal-grid';
+  g.style.setProperty('--cols', String(Math.max(...rows.map(r=>r.length))));
+  for(const row of rows){
+    const r=document.createElement('span');r.className='goal-grid-row';
+    for(const v of row)r.append(miniTile(v,{ghost:v==null,cls:'goal-tile'}));
+    g.append(r);
+  }
+  return g;
+}
+
+function plusBadge(text){
+  const s=document.createElement('i');s.className='goal-plus';s.textContent=text;return s;
+}
+
+function goalPicture(goal){
+  const pic=document.createElement('span');pic.className='goal-pic';pic.setAttribute('aria-hidden','true');
+  const typ=goal.type, shape=goal.shape;
+  if(typ==='fuse' && shape==='t'){
+    const s=goal.size|0;
+    // T: a triple plus one on the middle (4) or a 5-T if size 5
+    if(s>=5) pic.append(tileGrid([[null,3,null],[3,3,3],[null,3,null]]));
+    else pic.append(tileGrid([[null,3,null],[3,3,3]]));
+  } else if(typ==='fuse'){
+    const n=Math.max(3, Math.min(6, goal.size|0));
+    const v = n>=5 ? 3 : 1;
+    const row=tileRow(Array(n).fill(v));
+    pic.append(row);
+    if(n>=5) pic.append(plusBadge('+2'));
+    else if(n===4) pic.append(plusBadge('+1'));
+  } else if(typ==='street' || typ==='long'){
+    const n = typ==='long' ? (goal.n||LONG_STREET) : 4;
+    const vals=Array.from({length:n},(_,i)=>i+1);
+    pic.append(tileRow(vals));
+    if(n>=4) pic.append(plusBadge('+1'));
+  } else if(typ==='tile'){
+    pic.append(tileRow([goal.value]));
+  } else if(typ==='make'){
+    pic.append(tileRow([goal.value]));
+    pic.append(plusBadge(`${goal.value}+`));
+  } else if(typ==='purge'){
+    const gone=miniTile(goal.value,{cls:'goal-tile is-purge'});
+    pic.append(gone);
+  } else if(typ==='score'){
+    const s=document.createElement('span');s.className='goal-score';s.textContent=fmt(goal.points);pic.append(s);
+  } else if(typ==='clear'){
+    pic.append(tileRow([2,3,1],{cls:'is-faded'}));
+  } else if(typ==='combo'){
+    pic.append(tileRow([1,1,1]));
+    pic.append(plusBadge(`×${goal.chain}`));
+  } else if(typ==='empty'){
+    const s=document.createElement('span');s.className='goal-empty';s.textContent=`max. ${goal.max}`;pic.append(s);
+  } else {
+    const s=document.createElement('span');s.className='goal-fallback';s.textContent=goalShort(goal);pic.append(s);
+  }
+  return pic;
+}
+
+export function renderGoalItem(goal,run){
+  const p=goalProgress(goal,run),li=document.createElement('li');
+  li.className='goal-chip'+(p.done?' is-done':'');li.dataset.type=goal.type;
+  const count=goal.count|0;
+  if((goal.type==='make'||goal.type==='street'||goal.type==='long'||goal.type==='purge'||goal.type==='clear') && count>1){
+    li.dataset.many='1';
+  }
+  const pic=goalPicture(goal);
+  const v=document.createElement('b');v.className='goal-count';v.textContent=progressLabel(goal,p,run);
+  li.append(pic,v);
+  li.setAttribute('aria-label',`${goalText(goal)}, ${v.textContent}`);
+  li.title=goalText(goal);
+  return li;
+}
+function decorateChip(li, goal, many){
+  if(!many)return li;
+  const lbl=document.createElement('span');lbl.className='goal-lbl';lbl.textContent=goalShort(goal);
+  const count=li.querySelector('.goal-count');
+  if(count)count.before(lbl);else li.append(lbl);
+  return li;
+}
+
+
 
 export function lockText(lock){
   if(!lock)return '';
@@ -17,8 +117,162 @@ export function lockText(lock){
   return t('campaign.lockPrev');
 }
 
+
+function composeGoalCopy(run,n){
+  const intro=goalIntro(run.level.goals);
+  const lesson=hasKey('tip.'+n)?t('tip.'+n):'';
+  let tip=lesson;
+  if(!lesson) tip=intro;
+  else if(n>5 && intro && !lesson.includes(intro.slice(0,18))) tip=`${intro} ${lesson}`;
+  if(!lesson && run.level.tool){
+    const extra=run.level.tool==='extraMoves'?t('campaign.hardExtra'):t('campaign.hardTool',{tool:toolName(run.level.tool)});
+    tip=intro?`${intro} ${extra}`:extra;
+  }
+  return (tip||'').trim();
+}
+
 export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,onGift,onCloseSelect,onStar,reduceMotion}={}){
   const hud=$('campaign-hud'),levelEl=$('campaign-level'),goalsEl=$('campaign-goals'),movesEl=$('campaign-moves'),tipEl=$('campaign-tip'),capEl=$('campaign-tool-cap');
+  let introRun=null, introPhase='hidden', introTimer=null, introAnim=null, prevDone=null;
+  function introEls(){
+    let intro=$('goal-intro');
+    if(!intro){
+      intro=document.createElement('div');intro.id='goal-intro';intro.className='goal-intro';intro.hidden=true;
+      intro.setAttribute('role','dialog');intro.setAttribute('aria-modal','true');
+      intro.innerHTML='<div class="goal-intro-card" role="button" tabindex="0"><p class="goal-intro-text"></p><ul class="goal-intro-progress"></ul></div>';
+      (document.querySelector('.game-stage')||document.body).append(intro);
+      const dismiss=()=>collapseIntro();
+      intro.addEventListener('click',dismiss);
+      const card=intro.querySelector('.goal-intro-card');
+      card.addEventListener('click',ev=>{ev.stopPropagation();dismiss();});
+      card.addEventListener('keydown',ev=>{
+        if(ev.key==='Enter'||ev.key===' ' ){ev.preventDefault();dismiss();}
+      });
+    }
+    let hint=$('goal-hint');
+    if(!hint){
+      hint=document.createElement('button');hint.id='goal-hint';hint.type='button';hint.className='goal-task';
+      hint.hidden=true;
+      hint.innerHTML='<span class="goal-task-label"></span><span class="goal-task-bang" aria-hidden="true">!</span>';
+      const level=document.getElementById('campaign-level');
+      const goal=document.querySelector('.campaign-goal');
+      let head=goal?.querySelector('.campaign-goal-head');
+      if(!head){
+        head=document.createElement('div');head.className='campaign-goal-head';
+        if(level){level.before(head);head.append(level);}
+        else goal?.prepend(head);
+      }
+      head.append(hint);
+      hint.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();expandIntro();});
+    }
+    return {
+      intro,hint,
+      card:intro.querySelector('.goal-intro-card'),
+      text:intro.querySelector('.goal-intro-text'),
+      progress:intro.querySelector('.goal-intro-progress'),
+      label:hint.querySelector('.goal-task-label'),
+      bang:hint.querySelector('.goal-task-bang'),
+    };
+  }
+  function setIntroText(copy){
+    const {intro,hint,text,label}=introEls();
+    if(text)text.textContent=copy;
+    if(label)label.textContent=t('goal.task');
+    hint.setAttribute('aria-label',t('goal.hintAria'));
+    hint.title=t('goal.hintAria');
+    intro.setAttribute('aria-label',copy);
+  }
+  function fillIntroProgress(run){
+    const {progress}=introEls();
+    if(!progress||!run?.level?.goals)return;
+    const goals=run.level.goals;
+    progress.classList.toggle('is-pictorial',true);
+    progress.classList.toggle('is-several',goals.length>1);
+    progress.classList.toggle('is-three',goals.length>=3);
+    progress.replaceChildren(...goals.map(goal=>decorateChip(renderGoalItem(goal,run),goal,true)));
+  }
+  function syncTaskFeedback(run){
+    const {hint,bang}=introEls();
+    if(!run?.level?.goals)return;
+    const done=run.level.goals.map(g=>!!goalProgress(g,run).done);
+    const all=done.length>0&&done.every(Boolean);
+    const just=prevDone&&done.some((d,i)=>d&&!prevDone[i]);
+    prevDone=done;
+    hint.classList.toggle('is-complete',all);
+    if(bang)bang.textContent=all?'✓':'!';
+    if(just){
+      hint.classList.remove('is-pulse');
+      void hint.offsetWidth;
+      hint.classList.add('is-pulse');
+    }
+  }
+  function clearIntroTimer(){if(introTimer){clearTimeout(introTimer);introTimer=null;}if(introAnim){try{introAnim.cancel();}catch{}introAnim=null;}}
+  function hideIntro(){
+    clearIntroTimer();
+    const {intro,hint,card}=introEls();
+    intro.getAnimations().forEach(a=>a.cancel());
+    card?.getAnimations().forEach(a=>a.cancel());
+    intro.style.opacity='';intro.hidden=true;intro.classList.remove('is-in','is-out');
+    if(card){card.style.transform='';card.style.opacity='';}
+    hint.hidden=true;hint.classList.remove('is-landed','is-pulse','is-complete');
+    const bang=hint.querySelector('.goal-task-bang');if(bang)bang.textContent='!';
+    introPhase='hidden';introRun=null;prevDone=null;
+  }
+  function showIntro(copy,run){
+    const {intro,hint,card}=introEls();
+    setIntroText(copy);
+    fillIntroProgress(run);
+    clearIntroTimer();
+    introPhase='open';introRun=run;
+    hint.hidden=false;hint.classList.remove('is-landed');
+    intro.getAnimations().forEach(a=>a.cancel());
+    card?.getAnimations().forEach(a=>a.cancel());
+    if(card){card.style.transform='';card.style.opacity='';}
+    intro.style.opacity='';
+    intro.classList.remove('is-out','is-in');intro.hidden=false;
+    void intro.offsetWidth;
+    intro.classList.add('is-in');
+  }
+  function collapseIntro(){
+    if(introPhase!=='open')return;
+    introPhase='closing';
+    clearIntroTimer();
+    const {intro,hint,card}=introEls();
+    hint.hidden=false;
+    let done=false;
+    const finish=()=>{
+      if(done)return;done=true;
+      clearIntroTimer();
+      intro.getAnimations().forEach(a=>a.cancel());
+      card?.getAnimations().forEach(a=>a.cancel());
+      intro.style.opacity='';
+      if(card){card.style.transform='';card.style.opacity='';}
+      intro.hidden=true;intro.classList.remove('is-in','is-out');
+      introPhase='collapsed';
+      hint.classList.remove('is-landed');void hint.offsetWidth;hint.classList.add('is-landed');
+    };
+    if(reduceMotion?.matches||!card||!card.animate){finish();return;}
+    const a=card.getBoundingClientRect(),b=hint.getBoundingClientRect();
+    if(b.width<2||a.width<2){finish();return;}
+    const dx=(b.left+b.width/2)-(a.left+a.width/2);
+    const dy=(b.top+b.height/2)-(a.top+a.height/2);
+    const s=Math.max(.08,Math.min(b.width/a.width,b.height/a.height));
+    intro.classList.add('is-out');
+    introAnim=card.animate([
+      {transform:'translate(0,0) scale(1)',opacity:1},
+      {transform:`translate(${dx}px,${dy}px) scale(${s})`,opacity:.12}
+    ],{duration:420,easing:'cubic-bezier(.2,.7,.2,1)',fill:'forwards'});
+    intro.animate([{opacity:1},{opacity:0}],{duration:420,easing:'linear',fill:'forwards'});
+    introAnim.finished.then(finish).catch(finish);
+    introTimer=setTimeout(finish,520);
+  }
+  function expandIntro(){
+    if(introPhase==='open'||introPhase==='closing')return;
+    const copy=composeGoalCopy(introRun,lastHud?.n)||introEls().text?.textContent||'';
+    if(!copy||!introRun)return;
+    showIntro(copy,introRun);
+  }
+
   // launch-28: im Abenteuer nur +3 Züge und Rakete (beliebig oft).
   const tools=$('campaign-tools'),extraBtn=$('tool-extra'),rocketBtn=$('tool-rocket');
   for(const b of [rocketBtn]){const ico=b.querySelector('[data-icon]');if(ico&&!ico.firstChild)ico.innerHTML=TOOL_ICONS[ico.dataset.icon];}
@@ -40,19 +294,19 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
     lastHud={run,n,label};hud.hidden=false;
     levelEl.textContent=label||(run.level.tool?t('campaign.levelHard',{n}):t('campaign.levelLabel',{n}));
     levelEl.title=levelEl.textContent;
-    const three=run.level.goals.length>=3;
-    goalsEl.classList.toggle('is-three',three);
-    goalsEl.replaceChildren(...run.level.goals.map(goal=>{
-      const p=goalProgress(goal,run),li=document.createElement('li');
-      li.className=p.done?'is-done':'';li.dataset.type=goal.type;
-      const t=document.createElement('span');t.textContent=three?goalShort(goal):goalText(goal);
-      if(three)t.title=goalText(goal);
-      const v=document.createElement('b');v.textContent=p.done?'✓':goal.type==='tile'?`${Math.min(p.target,Math.max(p.current,...run.board.flat().filter(Boolean).map(t=>t.value)))}/${p.target}`:goal.type==='empty'?`${p.current}→${p.target}`:`${fmt(p.current)}/${fmt(p.target)}`;
-      li.append(t,v);return li;
-    }));
-    if(tipEl){
-      const tip=hasKey('tip.'+n)?t('tip.'+n):(run.level.tip||'');
-      tipEl.hidden=!tip;tipEl.textContent=tip;
+    goalsEl.hidden=true;
+    goalsEl.replaceChildren();
+    if(tipEl){tipEl.hidden=true;tipEl.textContent='';}
+    const copy=composeGoalCopy(run,n);
+    if(copy){
+      setIntroText(copy);
+      if(introRun!==run) { prevDone=null; showIntro(copy,run); }
+      else if(introPhase==='open') fillIntroProgress(run);
+      else if(introPhase==='hidden') { const {hint}=introEls(); hint.hidden=false; introPhase='collapsed'; }
+      else fillIntroProgress(run);
+      syncTaskFeedback(run);
+    } else {
+      hideIntro();
     }
     const left=Math.max(0,movesLeft(run));
     if(movesEl.textContent!==String(left))movesEl.textContent=String(left);
@@ -96,7 +350,7 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
     set(rocketBtn,'rocket',!locked||armed==='rocket',t('tool.help.rocket'));
     rocketBtn.classList.toggle('is-armed',armed==='rocket');rocketBtn.setAttribute('aria-pressed',String(armed==='rocket'));
   }
-  function hide(){hud.hidden=true;tools.hidden=true;if(tipEl)tipEl.hidden=true;if(capEl)capEl.hidden=true;hideResult();}
+  function hide(){hud.hidden=true;tools.hidden=true;if(tipEl)tipEl.hidden=true;if(capEl)capEl.hidden=true;hideIntro();hideResult();}
   extraBtn.addEventListener('click',()=>onTool?.('extraMoves'));
   rocketBtn.addEventListener('click',()=>onTool?.('rocket'));
 

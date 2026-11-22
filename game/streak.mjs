@@ -230,8 +230,8 @@ export function copyFor(lang = 'de') {
   return {
     week: de ? 'Woche' : 'Week',
     giftDay: de ? 'Tag 7' : 'Day 7',
-    titleUp: de ? 'Neuer Titel!' : 'New title!',
-    got: de ? 'Geschenkt' : 'Gifted',
+    titleUp: de ? 'Neuer Titel' : 'New title',
+    got: de ? 'Geschenkt' : 'A gift',
     extraMoves: de ? '+3 Züge' : '+3 moves',
     rocket: de ? 'Rakete' : 'Rocket',
     close: de ? 'Weiter' : 'Continue',

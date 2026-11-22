@@ -1,12 +1,12 @@
-import { TOOL_ICONS } from './tool-icons.mjs?v=launch-40';
-import { getLang } from './i18n.mjs?v=launch-40';
-import { addToStock, saveInventory } from './campaign.mjs?v=launch-40';
-import { createConfetti } from './confetti.mjs?v=launch-40';
-import { createHaptics } from './haptics.mjs?v=launch-40';
+import { TOOL_ICONS } from './tool-icons.mjs?v=launch-41';
+import { getLang } from './i18n.mjs?v=launch-41';
+import { addToStock, saveInventory } from './campaign.mjs?v=launch-41';
+import { createConfetti } from './confetti.mjs?v=launch-41';
+import { createHaptics } from './haptics.mjs?v=launch-41';
 import {
   checkIn, loadState, saveState, viewOf, copyFor, titleLabel,
   localDateISO, titleById, TITLES,
-} from './streak.mjs?v=launch-40';
+} from './streak.mjs?v=launch-41';
 
 const sprite = name => new URL(`./streak-sprites/${name}.png`, import.meta.url).href;
 const GEL = [1, 2, 3, 4, 5, 6, 7].map(v => sprite(`gel-${v}`));
