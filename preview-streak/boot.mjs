@@ -3,8 +3,8 @@ import { getLang, onLangChange } from '../game/i18n.mjs?v=launch-38';
 import { emptyState } from './streak.mjs';
 import {
   loadState, saveState, checkIn, prepareForDay, viewOf,
-  getClockToday, setClockToday, advanceClock,
-  showPopup, closePopup, renderBadge, renderPreviewTag, installDebug, syncGifted,
+  getClockToday, setClockToday,
+  showPopup, closePopup, renderBadge, renderPreviewTag, syncGifted,
 } from './streak-ui.mjs';
 
 const params = new URLSearchParams(location.search);
@@ -32,11 +32,10 @@ function paintChrome() {
       const v = viewOf(state, getLang() === 'en' ? 'en' : 'de');
       showPopup({
         state, week: v.week, poppedDay: v.filled || (state.complete ? 7 : 0),
-        titleUp: null, gift: null, missed: false, complete: state.complete,
+        titleUp: null, gift: null, complete: state.complete, totalDays: v.totalDays,
       });
     });
   }
-  debug?.paint?.();
 }
 
 function applyEvent(ev, { popup = true } = {}) {
@@ -62,16 +61,6 @@ function jumpTo(n) {
   return applyEvent(ev, { popup: true });
 }
 
-function onNext() {
-  closePopup();
-  advanceClock(1);
-  checkToday({ forcePopup: true });
-}
-function onMiss() {
-  closePopup();
-  advanceClock(2);
-  checkToday({ forcePopup: true });
-}
 function onReset() {
   closePopup();
   try { sessionStorage.removeItem('shift3-preview-streak-clock'); } catch {}
@@ -81,31 +70,23 @@ function onReset() {
   paintChrome();
 }
 
-let debug;
 async function start() {
   await waitForHome();
   if (params.has('reset')) { state = emptyState(); saveState(state); }
   const dayParam = Number(params.get('day'));
   if (Number.isFinite(dayParam) && dayParam >= 1 && dayParam <= 28) {
     jumpTo(dayParam);
-  } else if (params.has('miss')) {
-    advanceClock(2);
-    checkToday({ forcePopup: true });
   } else {
     checkToday();
   }
   paintChrome();
-  debug = installDebug({
-    onNext, onMiss, onReset, onJump: jumpTo,
-    getState: () => state, getToday: getClockToday,
-  });
   onLangChange(paintChrome);
 }
 
 window.SquishStreakPreview = {
   get state() { return state; },
   today: getClockToday,
-  next: onNext, miss: onMiss, reset: onReset, jump: jumpTo, check: checkToday,
+  reset: onReset, jump: jumpTo, check: checkToday,
 };
 
 void start().catch(err => console.warn('streak preview', err));

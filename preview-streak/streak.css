@@ -123,8 +123,8 @@
 }
 #streak-pop .sp-banner::before { left: -22px; clip-path: polygon(0 0,100% 0,100% 100%,0 100%,32% 50%); }
 #streak-pop .sp-banner::after { right: -22px; clip-path: polygon(0 0,100% 0,68% 50%,100% 100%,0 100%); }
-#streak-pop .sp-banner.is-noob { --r1:#c4a07a; --r2:#8a5a32; --r3:#4a2a12; --r4:#6a3e1c; }
-#streak-pop .sp-banner.is-kneader { --r1:#e0a06a; --r2:#b06a28; --r3:#5a3010; --r4:#7a4214; }
+#streak-pop .sp-banner.is-noob,
+#streak-pop .sp-banner.is-kneader { --r1:#ffcf5a; --r2:#e3860f; --r3:#7a3e06; --r4:#a85a0a; }
 #streak-pop .sp-banner.is-pro { --r1:#e8eef6; --r2:#8b97ab; --r3:#3a4454; --r4:#5a6578; color:#1a1638; text-shadow: 0 1px 0 #fff8; }
 #streak-pop .sp-banner.is-master { --r1:#ffcf5a; --r2:#e3860f; --r3:#7a3e06; --r4:#a85a0a; }
 #streak-pop .sp-banner.is-legend {
@@ -144,6 +144,14 @@
 #streak-pop .sp-banner .sp-title { flex: none; white-space: nowrap; }
 #streak-pop.is-titleup .sp-banner .sp-emblem { animation: sp-stamp .45s cubic-bezier(.15,1.4,.3,1) .15s both; }
 @keyframes sp-stamp { 0% { transform: scale(1.8) rotate(-12deg); opacity: 0; } 100% { transform: none; opacity: 1; } }
+
+#streak-pop .sp-count {
+  margin: -6px 0 10px; text-align: center;
+  color: #fff8d8;
+  font: 800 clamp(18px, 5.6vw, 26px)/1 var(--aw-comic, "AW Comic", Fredoka, sans-serif);
+  letter-spacing: .02em;
+  text-shadow: 0 2px 0 #1a1638, 0 0 12px #ffd25a44;
+}
 
 /* 4-step title path */
 #streak-pop .sp-path {
@@ -204,15 +212,29 @@
   content: ""; position: absolute; inset: 0; border-radius: 36%;
   border: 1.5px dashed #ffd25a66; background: #0a102855;
 }
+#streak-pop .sp-body {
+  position: relative; z-index: 1;
+  width: 100%; height: 100%;
+  display: grid; place-items: center;
+}
 #streak-pop .sp-gel, #streak-pop .sp-gift {
   position: relative; z-index: 1;
   width: 100%; height: auto; display: block;
   filter: drop-shadow(0 3px 2px #0008);
   pointer-events: none; user-select: none;
 }
+#streak-pop .sp-val {
+  position: absolute; z-index: 2;
+  left: 50%; top: 48%;
+  width: 82%; height: 82%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+#streak-pop .sp-val svg { width: 100%; height: 100%; overflow: visible; display: block; }
+#streak-pop .sp-day.is-empty .sp-val { opacity: .62; }
+#streak-pop .sp-day.is-gift .sp-val { top: 58%; width: 72%; height: 72%; }
 #streak-pop .sp-day.is-empty .sp-gel { opacity: .4; filter: drop-shadow(0 2px 1px #0006) saturate(.35); }
-#streak-pop .sp-day.is-today .sp-gel,
-#streak-pop .sp-day.is-today .sp-gift {
+#streak-pop .sp-day.is-today .sp-body {
   animation: sp-bounce .6s cubic-bezier(.2,1.35,.3,1) both;
 }
 #streak-pop .sp-day.is-today .sp-slot-ring::after {
@@ -229,13 +251,13 @@
 }
 @keyframes sp-glow { 50% { box-shadow: 0 0 0 3px #ffd25acc, 0 0 22px #ffd25acc; } }
 #streak-pop .sp-check {
-  position: absolute; z-index: 2; right: -2px; bottom: -2px;
-  width: 42%; aspect-ratio: 1; pointer-events: none;
+  position: absolute; z-index: 3; right: -3px; bottom: -3px;
+  width: 30%; aspect-ratio: 1; pointer-events: none;
   filter: drop-shadow(0 1px 1px #0008);
 }
 #streak-pop .sp-day.is-gift .sp-gift { width: 118%; max-width: none; }
-#streak-pop .sp-day.is-gift.is-pending .sp-gift { animation: sp-shake 1.4s ease-in-out infinite; }
-#streak-pop .sp-day.is-today.is-gift .sp-gift { animation: sp-shake .45s ease-in-out infinite, sp-bounce .6s cubic-bezier(.2,1.35,.3,1) both; }
+#streak-pop .sp-day.is-gift.is-pending .sp-body { animation: sp-shake 1.4s ease-in-out infinite; }
+#streak-pop .sp-day.is-today.is-gift .sp-body { animation: sp-shake .45s ease-in-out infinite, sp-bounce .6s cubic-bezier(.2,1.35,.3,1) both; }
 @keyframes sp-shake {
   0%,100% { transform: rotate(0deg); }
   20% { transform: rotate(-8deg); }
@@ -249,14 +271,14 @@
 }
 #streak-pop .sp-reward.is-empty { display: none; }
 #streak-pop .sp-pocket {
-  width: 58px; height: 58px; border-radius: 18px;
+  width: 76px; height: 76px; border-radius: 20px;
   border: 2.5px solid transparent;
   background: linear-gradient(180deg,#1a2150,#0c1230) padding-box,
               linear-gradient(160deg,#fff0a8,#ffc23d 40%,#a9480c) border-box;
   box-shadow: inset 0 2px 6px #0008, 0 0 0 1.5px #4a2007;
   display: grid; place-items: center;
 }
-#streak-pop .sp-pocket svg { width: 36px; height: 36px; }
+#streak-pop .sp-pocket svg { width: 60px; height: 60px; }
 #streak-pop .sp-pocket.is-got { animation: sp-got .5s ease; }
 @keyframes sp-got { 0%,100%{transform:none} 40%{transform:scale(1.16)} }
 
@@ -317,9 +339,12 @@
 @media (max-height: 600px) {
   #streak-pop .sp-card { padding: 28px 12px 12px; }
   #streak-pop .sp-path { margin-bottom: 8px; }
+  #streak-pop .sp-count { margin: -4px 0 6px; font-size: clamp(16px, 5vw, 22px); }
+  #streak-pop .sp-pocket { width: 68px; height: 68px; }
+  #streak-pop .sp-pocket svg { width: 54px; height: 54px; }
 }
 @media (prefers-reduced-motion: reduce) {
   #streak-pop .sp-card, #streak-pop .sp-banner, #streak-pop .sp-banner .sp-emblem,
-  #streak-pop .sp-day.is-today .sp-gel, #streak-pop .sp-day.is-today .sp-gift,
-  #streak-pop .sp-gift, #streak-pop .sp-rays, #streak-pop .sp-path li.is-now .sp-node { animation: none; }
+  #streak-pop .sp-day.is-today .sp-body, #streak-pop .sp-day.is-gift.is-pending .sp-body,
+  #streak-pop .sp-rays, #streak-pop .sp-path li.is-now .sp-node { animation: none; }
 }

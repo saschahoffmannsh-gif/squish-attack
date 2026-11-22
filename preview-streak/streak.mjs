@@ -1,9 +1,11 @@
-// Daily login streak (4 weeks). Pure logic, no DOM, no network.
+// Login-day progress (4 × 7 days). Pure logic, no DOM, no network.
+// Counts total unique calendar login days — a missed day does not reset progress.
 // Calendar days are always the device-local date (YYYY-MM-DD).
 
 export const STORAGE_KEY = 'squish-streak-v1';
 export const DAYS_PER_WEEK = 7;
 export const WEEK_COUNT = 4;
+export const JOURNEY_DAYS = WEEK_COUNT * DAYS_PER_WEEK;
 
 export const TITLES = Object.freeze([
   { id: 'noob', rank: 0, de: 'Squish-Noob', en: 'Squish Noob' },
@@ -21,7 +23,7 @@ export const titleLabel = (id, lang = 'de') => {
 export const titleForWeek = week => TITLES[Math.max(0, Math.min(WEEK_COUNT, week | 0))];
 
 export function emptyState() {
-  return { v: 1, title: 'noob', week: 1, dayInWeek: 0, lastCheckIn: null, gifted: [], complete: false };
+  return { v: 2, title: 'noob', week: 1, dayInWeek: 0, totalDays: 0, lastCheckIn: null, gifted: [], complete: false };
 }
 
 export function localDateISO(date = new Date()) {
@@ -52,99 +54,127 @@ export function diffDays(fromISO, toISO) {
   return Math.round((b - a) / 86400000);
 }
 
-function clone(s) {
-  return { v: 1, title: s.title, week: s.week, dayInWeek: s.dayInWeek, lastCheckIn: s.lastCheckIn, gifted: [...(s.gifted || [])], complete: !!s.complete };
+function totalFromLegacy(raw) {
+  const week = Math.max(1, Math.min(WEEK_COUNT, raw.week | 0 || 1));
+  const dayInWeek = Math.max(0, Math.min(DAYS_PER_WEEK, raw.dayInWeek | 0));
+  const complete = raw.complete === true || (raw.title === 'legend' && dayInWeek === 7 && week === 4);
+  if (complete) return JOURNEY_DAYS;
+  return (week - 1) * DAYS_PER_WEEK + dayInWeek;
+}
+
+function fromTotal(totalDays, gifted, lastCheckIn) {
+  const total = Math.max(0, totalDays | 0);
+  const complete = total >= JOURNEY_DAYS;
+  const track = Math.min(total, JOURNEY_DAYS);
+  let week, dayInWeek, titleId;
+  if (complete || track >= JOURNEY_DAYS) {
+    week = WEEK_COUNT;
+    dayInWeek = DAYS_PER_WEEK;
+    titleId = 'legend';
+  } else if (track === 0) {
+    week = 1;
+    dayInWeek = 0;
+    titleId = 'noob';
+  } else if (track % DAYS_PER_WEEK === 0) {
+    // Just finished a week: title earned, next week not started yet.
+    week = track / DAYS_PER_WEEK + 1;
+    dayInWeek = 0;
+    titleId = TITLES[track / DAYS_PER_WEEK].id;
+  } else {
+    week = Math.floor((track - 1) / DAYS_PER_WEEK) + 1;
+    dayInWeek = ((track - 1) % DAYS_PER_WEEK) + 1;
+    titleId = TITLES[week - 1].id;
+  }
+  return {
+    v: 2,
+    title: titleId,
+    week,
+    dayInWeek,
+    totalDays: total,
+    lastCheckIn,
+    gifted: [...(gifted || [])],
+    complete,
+  };
 }
 
 export function normalizeState(raw) {
-  const base = emptyState();
-  if (!raw || typeof raw !== 'object') return base;
-  const title = TITLES.some(t => t.id === raw.title) ? raw.title : 'noob';
-  const week = Math.max(1, Math.min(WEEK_COUNT, raw.week | 0 || 1));
-  const dayInWeek = Math.max(0, Math.min(DAYS_PER_WEEK, raw.dayInWeek | 0));
+  if (!raw || typeof raw !== 'object') return emptyState();
   const gifted = Array.isArray(raw.gifted) ? raw.gifted.filter(id => typeof id === 'string') : [];
   const lastCheckIn = parseISO(raw.lastCheckIn) ? raw.lastCheckIn : null;
-  const complete = raw.complete === true || title === 'legend' && dayInWeek === 7 && week === 4;
-  return { v: 1, title, week, dayInWeek, lastCheckIn, gifted, complete };
+  const totalDays = Number.isFinite(raw.totalDays) && raw.totalDays >= 0
+    ? raw.totalDays | 0
+    : totalFromLegacy(raw);
+  return fromTotal(totalDays, gifted, lastCheckIn);
+}
+
+function segmentOf(totalDays) {
+  const track = Math.min(Math.max(0, totalDays | 0), JOURNEY_DAYS);
+  if (track <= 0) return { week: 1, poppedDay: 0 };
+  if (track >= JOURNEY_DAYS) return { week: WEEK_COUNT, poppedDay: DAYS_PER_WEEK };
+  return {
+    week: Math.ceil(track / DAYS_PER_WEEK),
+    poppedDay: ((track - 1) % DAYS_PER_WEEK) + 1,
+  };
+}
+
+function eventOf(state, extra = {}) {
+  const seg = segmentOf(state.totalDays);
+  return {
+    state,
+    already: false,
+    week: seg.week,
+    poppedDay: seg.poppedDay,
+    titleUp: null,
+    gift: null,
+    complete: !!state.complete,
+    totalDays: state.totalDays,
+    ...extra,
+  };
 }
 
 /**
  * Apply one local-calendar check-in.
- * Missing a day resets only the current week (title stays). After day 28 the
- * streak stays at Legend and no further gifts are granted.
+ * Each distinct calendar day counts once toward the total. Gaps do not reset
+ * progress. Titles and gifts land at total days 7, 14, 21 and 28. After 28
+ * the title stays Legend and no further gifts are granted.
  */
 export function checkIn(state, todayISO) {
   const today = parseISO(todayISO) ? todayISO : null;
-  if (!today) return { state: normalizeState(state), already: true, missed: false, week: state?.week || 1, poppedDay: 0, titleUp: null, gift: null, complete: !!state?.complete };
+  if (!today) return eventOf(normalizeState(state), { already: true, week: state?.week || 1, poppedDay: 0 });
 
   const prev = normalizeState(state);
-  if (prev.lastCheckIn === today) {
-    return { state: prev, already: true, missed: false, week: displayWeek(prev), poppedDay: displayDay(prev), titleUp: null, gift: null, complete: prev.complete };
-  }
-
-  const next = clone(prev);
-  let missed = false;
-
-  if (prev.complete) {
-    next.lastCheckIn = today;
-    return { state: next, already: false, missed: false, week: 4, poppedDay: 7, titleUp: null, gift: null, complete: true };
-  }
+  if (prev.lastCheckIn === today) return eventOf(prev, { already: true });
 
   if (prev.lastCheckIn) {
     const gap = diffDays(prev.lastCheckIn, today);
-    if (gap == null || gap < 0) {
-      // Clock moved backwards: ignore, keep state.
-      return { state: prev, already: true, missed: false, week: displayWeek(prev), poppedDay: displayDay(prev), titleUp: null, gift: null, complete: prev.complete };
-    }
-    if (gap > 1) {
-      next.dayInWeek = 0;
-      missed = true;
-    }
+    if (gap == null || gap < 0) return eventOf(prev, { already: true });
   }
 
-  // A title-up leaves week already advanced and dayInWeek = 0 until the next day.
-  next.dayInWeek = Math.min(DAYS_PER_WEEK, (next.dayInWeek | 0) + 1);
-  next.lastCheckIn = today;
+  if (prev.complete) {
+    const next = fromTotal(prev.totalDays + 1, prev.gifted, today);
+    return eventOf(next, { already: false, week: WEEK_COUNT, poppedDay: DAYS_PER_WEEK });
+  }
+
+  const totalDays = prev.totalDays + 1;
+  let next = fromTotal(totalDays, prev.gifted, today);
+  const { week: showWeek, poppedDay } = segmentOf(totalDays);
 
   let titleUp = null, gift = null;
-  const showWeek = next.week;
-  const poppedDay = next.dayInWeek;
-
-  if (next.dayInWeek === DAYS_PER_WEEK) {
-    const earned = titleForWeek(next.week);
+  if (poppedDay === DAYS_PER_WEEK && totalDays <= JOURNEY_DAYS) {
+    const earned = titleForWeek(showWeek);
     if (earned && earned.rank > 0) {
-      next.title = earned.id;
       titleUp = earned;
       if (earned.gift && earned.giftId && !next.gifted.includes(earned.giftId)) {
         gift = { type: earned.gift, id: earned.giftId };
-        next.gifted = [...next.gifted, earned.giftId];
+        next = { ...next, gifted: [...next.gifted, earned.giftId] };
       }
-    }
-    if (next.week >= WEEK_COUNT) {
-      next.complete = true;
-      next.week = WEEK_COUNT;
-      next.dayInWeek = DAYS_PER_WEEK;
-      next.title = 'legend';
-    } else {
-      next.week = next.week + 1;
-      next.dayInWeek = 0;
     }
   }
 
-  return { state: next, already: false, missed, week: showWeek, poppedDay, titleUp, gift, complete: next.complete };
+  return eventOf(next, { already: false, week: showWeek, poppedDay, titleUp, gift });
 }
 
-function displayWeek(s) {
-  if (s.complete) return WEEK_COUNT;
-  if (s.dayInWeek === 0 && s.week > 1) return s.week; // new week not started; badge uses current week
-  return s.week;
-}
-function displayDay(s) {
-  if (s.complete) return DAYS_PER_WEEK;
-  return s.dayInWeek;
-}
-
-/** Snapshot after n consecutive daily check-ins (n = 0..28+). */
+/** Snapshot after n daily check-ins (n = 0..28+), consecutive dates by default. */
 export function stateAfterConsecutive(n, endISO = '2026-01-28') {
   const start = addDaysISO(endISO, 1 - Math.max(0, n | 0)) || endISO;
   let state = emptyState();
@@ -157,9 +187,9 @@ export function stateAfterConsecutive(n, endISO = '2026-01-28') {
   return { state, last };
 }
 
-/** Build a state so a check-in on `todayISO` is the Nth consecutive day (1..28). */
+/** Build a state so a check-in on `todayISO` is the Nth login day (1..28). */
 export function prepareForDay(n, todayISO) {
-  const day = Math.max(1, Math.min(28, n | 0));
+  const day = Math.max(1, Math.min(JOURNEY_DAYS, n | 0));
   const yesterday = addDaysISO(todayISO, -1);
   const { state } = stateAfterConsecutive(day - 1, yesterday);
   if (day === 1) return emptyState();
@@ -185,6 +215,7 @@ export function viewOf(state, lang = 'de') {
   return {
     week,
     filled,
+    totalDays: s.totalDays,
     titleId: s.title,
     title: titleLabel(s.title, lang),
     goldFrame: !!title.goldFrame || s.complete,
@@ -199,16 +230,12 @@ export function copyFor(lang = 'de') {
   return {
     week: de ? 'Woche' : 'Week',
     giftDay: de ? 'Tag 7' : 'Day 7',
-    missed: de ? 'Woche von vorn' : 'Week restarts',
     titleUp: de ? 'Neuer Titel!' : 'New title!',
     got: de ? 'Geschenkt' : 'Gifted',
     extraMoves: de ? '+3 Züge' : '+3 moves',
     rocket: de ? 'Rakete' : 'Rocket',
     close: de ? 'Weiter' : 'Continue',
     preview: de ? 'Vorschau · nicht live' : 'Preview · not live',
-    debugNext: de ? 'Nächster Tag' : 'Next day',
-    debugMiss: de ? 'Tag verpasst' : 'Miss a day',
-    debugReset: de ? 'Reset' : 'Reset',
-    debugJump: de ? 'Tag' : 'Day',
+    dayN: n => (de ? `Tag ${n}` : `Day ${n}`),
   };
 }

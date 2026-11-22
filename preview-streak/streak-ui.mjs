@@ -1,5 +1,5 @@
 import { TOOL_ICONS } from '../game/tool-icons.mjs?v=launch-38';
-import { getLang, onLangChange } from '../game/i18n.mjs?v=launch-38';
+import { getLang } from '../game/i18n.mjs?v=launch-38';
 import { addToStock, saveInventory } from '../game/campaign.mjs?v=launch-38';
 import { createConfetti } from '../game/confetti.mjs?v=launch-38';
 import { createHaptics } from '../game/haptics.mjs?v=launch-38';
@@ -16,6 +16,10 @@ const GIFT = sprite('gift');
 const GIFT_OPEN = sprite('gift-open');
 
 const CHECK_SVG = `<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="#2cb500" stroke="#0a3600" stroke-width="2"/><path d="M8.5 16.5 13.5 21.5 23 11.5" fill="none" stroke="#fffbea" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+function dayNumSvg(n) {
+  return `<svg viewBox="0 0 32 32" aria-hidden="true"><text x="16" y="24" text-anchor="middle" font-family="AW Comic, Fredoka, ui-rounded, sans-serif" font-weight="700" font-size="22" fill="#fff7df" stroke="#1b1030" stroke-width="4.2" stroke-linejoin="round" paint-order="stroke" letter-spacing="-0.5">${n}</text></svg>`;
+}
 
 // Rank emblems (no emoji). Crowns/star use currentColor so they stay visible on gold or navy.
 const EMBLEMS = {
@@ -133,7 +137,8 @@ function pathItems(state, eventWeek) {
   const complete = !!state?.complete || !!titleById(state?.title).goldFrame;
   const earnedRank = titleById(state?.title).rank;
   return [1, 2, 3, 4].map(week => {
-    const title = TITLES[week];
+    // Week 1 in progress: show the current (noob) emblem so the node matches the banner.
+    const title = (week === 1 && earnedRank < 1 && !complete) ? TITLES[0] : TITLES[week];
     let cls = 'is-todo';
     if (complete || earnedRank > week) cls = 'is-done';
     else if (earnedRank === week || (currentWeek === week && eventWeek === week && earnedRank >= week)) cls = 'is-done';
@@ -177,6 +182,11 @@ export function showPopup(event, { onClose } = {}) {
     path.append(li);
   }
 
+  const totalDays = Number.isFinite(event.totalDays)
+    ? event.totalDays
+    : (event.state?.totalDays ?? event.poppedDay ?? 0);
+  const count = el('p', 'sp-count', copy.dayN(totalDays));
+
   const days = el('div', 'sp-days');
   let giftImg = null;
   for (let i = 1; i <= 7; i++) {
@@ -189,24 +199,30 @@ export function showPopup(event, { onClose } = {}) {
     if (isToday) col.classList.add('is-today');
     if (isGiftDay) col.classList.add('is-gift');
     if (isGiftDay && !filled) col.classList.add('is-pending');
+    col.setAttribute('aria-label', copy.dayN(i));
 
     const ring = el('div', 'sp-slot-ring');
+    const body = el('div', 'sp-body');
     if (isGiftDay && !filled) {
       const g = el('img', 'sp-gift');
       g.src = GIFT; g.alt = '';
-      ring.append(g);
+      body.append(g);
       if (!filled) giftImg = g;
     } else if (isGiftDay && filled && isUp) {
       const g = el('img', 'sp-gift');
       g.src = GIFT; g.alt = '';
-      ring.append(g);
+      body.append(g);
       giftImg = g;
     } else {
       const img = el('img', 'sp-gel');
       img.src = filled ? GEL[i - 1] : GEL_GHOST;
       img.alt = '';
-      ring.append(img);
+      body.append(img);
     }
+    const val = el('span', 'sp-val');
+    val.innerHTML = dayNumSvg(i);
+    body.append(val);
+    ring.append(body);
     if (filled && !isGiftDay) {
       const ck = el('span', 'sp-check'); ck.innerHTML = CHECK_SVG; ring.append(ck);
     }
@@ -225,32 +241,36 @@ export function showPopup(event, { onClose } = {}) {
   const ok = el('button', 'sp-ok menu-button primary', copy.close);
   ok.type = 'button';
 
-  card.append(banner, path, days, reward, ok);
+  card.append(banner, count, path, days, reward, ok);
   overlay.append(backdrop, rays, card);
   document.body.append(overlay);
 
   if (isUp) {
     try { haptics.pulse?.('big'); } catch { try { haptics.pulse?.('merge'); } catch {} }
     burstConfetti(overlay, card);
-  } else if (event.missed) {
-    try { haptics.pulse?.('tap'); } catch {}
   } else {
     try { haptics.pulse?.('tap'); } catch {}
   }
 
-  const finish = () => { closePopup(); onClose?.(); };
-  ok.addEventListener('click', finish);
-  overlay.addEventListener('click', ev => { if (ev.target === overlay) finish(); });
+  let busy = false;
+  const finish = () => { if (busy) return; closePopup(); onClose?.(); };
+  ok.addEventListener('click', ev => { ev.stopPropagation(); finish(); });
+  overlay.addEventListener('click', finish);
 
   const playGift = async () => {
     if (!event.gift) return;
-    grantGold(event.gift.type, event.gift.id);
-    await wait(reduced() ? 80 : 280);
-    if (giftImg) giftImg.src = GIFT_OPEN;
-    const from = giftImg || pocket;
-    await flyIcon(event.gift.type, from, pocket);
-    const live = [...document.querySelectorAll(`#home-menu .aw-chip[data-type="${event.gift.type}"]`)].find(isOnScreen);
-    if (live) await flyIcon(event.gift.type, pocket, live);
+    busy = true;
+    try {
+      grantGold(event.gift.type, event.gift.id);
+      await wait(reduced() ? 80 : 280);
+      if (giftImg) giftImg.src = GIFT_OPEN;
+      const from = giftImg || pocket;
+      await flyIcon(event.gift.type, from, pocket);
+      const live = [...document.querySelectorAll(`#home-menu .aw-chip[data-type="${event.gift.type}"]`)].find(isOnScreen);
+      if (live) await flyIcon(event.gift.type, pocket, live);
+    } finally {
+      busy = false;
+    }
   };
   void playGift();
   return overlay;
@@ -283,43 +303,6 @@ export function renderPreviewTag() {
   const build = document.getElementById('home-build');
   if (build) build.before(tag);
   else menu.append(tag);
-}
-
-export function installDebug({ onNext, onMiss, onReset, onJump, getState, getToday }) {
-  let box = document.getElementById('streak-debug');
-  if (box) box.remove();
-  box = el('div', ''); box.id = 'streak-debug';
-  const tab = el('button', 'sd-tab', 'Tage'); tab.type = 'button';
-  const panel = el('div', 'sd-panel');
-  const meta = el('p', 'sd-meta');
-  const row = el('div', 'sd-row');
-  const next = el('button', '', copyFor(lang()).debugNext);
-  const miss = el('button', '', copyFor(lang()).debugMiss);
-  const reset = el('button', 'is-muted', copyFor(lang()).debugReset);
-  const row2 = el('div', 'sd-row');
-  const jump = el('select'); jump.setAttribute('aria-label', 'Tag');
-  jump.innerHTML = Array.from({ length: 28 }, (_, i) => `<option value="${i + 1}">${copyFor(lang()).debugJump} ${i + 1}</option>`).join('');
-  const go = el('button', '', 'Go');
-  row.append(next, miss, reset);
-  row2.append(jump, go);
-  panel.append(meta, row, row2);
-  box.append(tab, panel);
-  document.body.append(box);
-  const paint = () => {
-    const L = lang(), c = copyFor(L), s = getState(), t = getToday();
-    tab.textContent = L === 'en' ? 'Days' : 'Tage';
-    next.textContent = c.debugNext; miss.textContent = c.debugMiss; reset.textContent = c.debugReset;
-    const v = viewOf(s, L);
-    meta.textContent = `${t} · ${v.title} · ${c.week} ${v.week} · ${v.filled}/7`;
-  };
-  tab.addEventListener('click', () => { box.classList.toggle('is-open'); paint(); });
-  next.addEventListener('click', () => onNext());
-  miss.addEventListener('click', () => onMiss());
-  reset.addEventListener('click', () => onReset());
-  go.addEventListener('click', () => onJump(Number(jump.value)));
-  paint();
-  onLangChange(paint);
-  return { paint, el: box };
 }
 
 export { grantGold, lang };
