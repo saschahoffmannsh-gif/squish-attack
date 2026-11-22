@@ -1,4 +1,3 @@
 User-agent: *
 Disallow: /lab/
-Disallow: /preview-copy/
 Disallow: /preview-face/
