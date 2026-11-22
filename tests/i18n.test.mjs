@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test, describe } from 'node:test';
-import { LANGS, LANG_KEY, detectLang, loadLang, saveLang, t, setLang, getLang, hasKey, fmtNum, fmtCompact } from '../game/i18n.mjs?v=launch-40';
-import { STRINGS } from '../game/locales.mjs?v=launch-40';
+import { LANGS, LANG_KEY, detectLang, loadLang, saveLang, t, setLang, getLang, hasKey, fmtNum, fmtCompact } from '../game/i18n.mjs?v=launch-41';
+import { STRINGS } from '../game/locales.mjs?v=launch-41';
 import * as Camp from '../game/campaign.mjs';
 
 test('Sprachen de und en, Schlüssel vollständig', () => {
@@ -52,15 +52,15 @@ test('t: Interpolation und Mehrzahl, Wechsel der Sprache', () => {
   setLang('en', { persist: false });
   assert.equal(getLang(), 'en');
   assert.equal(t('menu.adventure'), 'Adventure');
-  assert.equal(t('menu.playLevel', { n: 7 }), 'Play Level 7');
+  assert.equal(t('menu.playLevel', { n: 7 }), 'Play level 7');
   assert.equal(t('result.giftAria', { n: 1 }), 'Open 1 gift');
   assert.equal(t('result.giftAria', { n: 3 }), 'Open 3 gifts');
-  assert.equal(t('lock.hint'), 'Unlock: clear Adventure 1–5');
+  assert.equal(t('lock.hint'), 'Clear the first 5 levels and these open.');
   assert.equal(hasKey('no.such'), false);
   assert.equal(t('no.such'), 'no.such');
 });
 
-test('goalShort bleibt in beiden Sprachen kurz (drei Ziele auf 375 px)', () => {
+test('goalShort bleibt in beiden Sprachen kurz (in der Aufgabenkarte)', () => {
   const samples = [
     { type: 'tile', value: 12 }, { type: 'make', count: 3, value: 8 },
     { type: 'score', points: 12000 }, { type: 'clear', tiles: 20 },
@@ -74,7 +74,7 @@ test('goalShort bleibt in beiden Sprachen kurz (drei Ziele auf 375 px)', () => {
     setLang(lang, { persist: false });
     for (const g of samples) {
       const s = Camp.goalShort(g);
-      assert.ok(s.length <= 18, `${lang} ${JSON.stringify(g)} → "${s}" (${s.length})`);
+      assert.ok(s.length <= 24, `${lang} ${JSON.stringify(g)} → "${s}" (${s.length})`);
     }
   }
 });
@@ -82,7 +82,7 @@ test('goalShort bleibt in beiden Sprachen kurz (drei Ziele auf 375 px)', () => {
 test('toolName und goalText folgen der Sprache', () => {
   setLang('de', { persist: false });
   assert.equal(Camp.toolName('rocket'), 'Rakete');
-  assert.match(Camp.goalText({ type: 'fuse', size: 4, shape: 't' }), /T-Form/);
+  assert.match(Camp.goalText({ type: 'fuse', size: 4, shape: 't' }), /zu einem T/);
   setLang('en', { persist: false });
   assert.equal(Camp.toolName('rocket'), 'Rocket');
   assert.equal(Camp.toolName('extraMoves'), '+3 Moves');

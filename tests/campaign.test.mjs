@@ -1,6 +1,6 @@
 import test, { beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { setLang } from '../game/i18n.mjs?v=launch-40';
+import { setLang } from '../game/i18n.mjs?v=launch-41';
 beforeEach(() => setLang('de', { persist: false }));
 import {
   createLevelRun, applyLevelMove, starsFor, replaySolution, goalProgress, queueOf, movesLeft,
@@ -517,7 +517,7 @@ test('launch-15: neue Zieltypen empty/long/purge – gültig, Text, Kurztext', (
   assert.throws(() => validateLevel(base({ goals: [{ type: 'fuse', size: 2 }] })));
   assert.throws(() => validateLevel(base({ goals: [{ type: 'fuse', size: 4, shape: 'L' }] })));
   assert.match(goalText({ type: 'fuse', size: 3 }), /3 gleiche/);
-  assert.match(goalText({ type: 'fuse', size: 4, shape: 't' }), /T-Form/);
+  assert.match(goalText({ type: 'fuse', size: 4, shape: 't' }), /zu einem T/);
   assert.ok(goalShort({ type: 'fuse', size: 4, shape: 't' }).length <= 18);
   validateLevel(base({ goals: [{ type: 'empty', max: 4 }] }));
   validateLevel(base({ goals: [{ type: 'long', count: 1 }] }));

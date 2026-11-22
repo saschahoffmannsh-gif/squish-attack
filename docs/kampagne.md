@@ -728,3 +728,10 @@ Beim ersten Einsatz einer Hilfe (Rakete, +3 Züge) erschien das Erklär-Fenster 
 - **Gesamt-Logins:** Jeder Kalendertag mit Spielstart zählt einmal. Ein verpasster Tag setzt nichts zurück. Kein Cloud-Feld, nur lokal (`squish-streak-v1`).
 - **Titel und Geschenke** nach insgesamt 7 / 14 / 21 / 28 Tagen: Squish-Noob → Kneter (+3 Züge) → Profi (Rakete) → Meister (+3 Züge) → Legende (Rakete, goldener Rahmen). Die Werkzeuge gehen in den normalen Vorrat (gleiche `gifts`-Liste), nicht in die Cloud als Streak-Stand.
 - **Fenster:** Einmal je neuem Logintag auf dem Startbildschirm, nicht über Tutorials, Hilfe-Erklärung, ATT-Vorfrage, UMP oder Gold-Geschenken. Zeigt „Tag N“ / „Day N“, die Squishes tragen 1–7 im Spiel-Look, Tippen schließt (nicht während der Belohnung). Das Abzeichen unter dem Logo öffnet die Übersicht erneut.
+
+## Aufgabenkarte und klare Ziele (launch-41)
+
+- **Texte:** Tutorials, Ziele und Gewinntexte sind vollständige DE-du- und EN-Sätze, ohne Tipp-Etikett und ohne Ausrufe-Spam. Die Zieltypen (tile/make, street/long, clear/empty/purge) sind eindeutig formuliert.
+- **Startkarte:** Am Levelstart erscheint die Aufgabe groß über dem Brett und bleibt, bis man auf die Karte oder den abgedunkelten Hintergrund tippt; dann fliegt sie in den HUD-Knopf. Solange sie offen ist, sind Brett, Schlange und Hilfen gesperrt.
+- **HUD:** Die Zielkarte neben den Zügen zeigt nur `LEVEL N` und den Knopf „Aufgabe“ (EN: „Goal“) mit goldenem Ausrufezeichen. Chips und Zähler (z. B. 3/5) stehen in der Karte, auch beim erneuten Öffnen. Wird ein Ziel erfüllt, pulsiert der Knopf und das Zeichen wird zum Haken.
+- **Brett** bleibt in der Live-Größe und -Lage. Spielstand, Sterne und Epoche `PROGRESS_EPOCH = launch-30` unverändert.

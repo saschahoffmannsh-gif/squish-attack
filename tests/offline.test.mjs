@@ -54,7 +54,7 @@ test('Werbung offline: Zwischenwerbung still übersprungen, Belohnungsclip „ni
 
 test('launch-31: Hilfe ohne Clip gesperrt – kurzer Hinweis DE/EN, Werbefrei/Gold/Tutorial bleiben frei', async () => {
   const { STRINGS } = await import('../game/locales.mjs');
-  assert.equal(STRINGS['tool.offline'].de, 'Keine Verbindung – Hilfe gerade nicht verfügbar');
+  assert.equal(STRINGS['tool.offline'].de, 'Ohne Netz kein Clip. Später nochmal.');
   assert.ok(STRINGS['tool.offline'].en && STRINGS['tool.noAd'].de && STRINGS['tool.noAd'].en && STRINGS['tool.offlineAria'].en);
   const src = readFileSync(new URL('../game/game.mjs', import.meta.url), 'utf8');
   const req = src.slice(src.indexOf('function requestToolAd'), src.indexOf('function requestToolAd') + 260);
