@@ -9,14 +9,12 @@
 
 /* Bildhafte Ziel-Chips im bestehenden Navy/Gold-HUD */
 .aw .campaign-goal ul.is-pictorial {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 1.2cqw 2cqw; margin-top: .6cqw;
+  display: flex; flex-wrap: wrap; align-items: flex-start; gap: 1.2cqw 2cqw; margin-top: .6cqw;
 }
-.aw .campaign-goal ul.is-pictorial.is-three { gap: .8cqw 1.4cqw; }
 .aw .campaign-goal li.goal-chip {
   display: flex; align-items: center; gap: 1.4cqw; min-width: 0; flex: 1 1 auto;
   font: 700 clamp(11px, 3.2cqw, 15px)/1 var(--aw-comic);
 }
-.aw .campaign-goal ul.is-three li.goal-chip { flex: 1 1 28%; }
 .goal-pic {
   display: inline-flex; align-items: center; gap: .5cqw; min-height: 7.2cqw;
 }
@@ -81,22 +79,73 @@
 .goal-gallery .mock-card h2 { margin: 0 0 8px; font: 700 14px/1.2 var(--aw-comic); color: #ffd25a; letter-spacing: .06em; }
 
 
-/* Klare, kurze Bezeichnung unter den Symbolen, wenn mehrere Ziele gelten */
-.aw .campaign-goal li.goal-chip { flex-wrap: wrap; }
+/* Mehrere Ziele: Chips dürfen umbrechen, Symbole nie ineinander geschoben werden */
+.aw .campaign-goal { justify-content: flex-start; height: auto; }
+.aw .campaign-goal ul.is-pictorial {
+  display: flex; flex-wrap: wrap; align-items: flex-start; align-content: flex-start;
+  gap: 1.4cqw 2.2cqw; margin-top: .6cqw;
+}
+.aw .campaign-goal ul.is-pictorial.is-three,
+.aw .campaign-goal ul.is-pictorial.is-several { gap: 1.6cqw 2cqw; }
+.aw .campaign-goal li.goal-chip {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .6cqw 1.2cqw;
+  flex: 1 1 auto; min-width: 0; overflow: visible;
+}
+.aw .campaign-goal ul.is-several li.goal-chip[data-type="street"],
+.aw .campaign-goal ul.is-several li.goal-chip[data-type="long"],
+.aw .campaign-goal ul.is-several li.goal-chip[data-type="clear"],
+.aw .campaign-goal ul.is-several li.goal-chip[data-type="fuse"] {
+  flex: 1 1 100%;
+}
+.aw .campaign-goal .goal-pic,
+.aw .campaign-goal .goal-row,
+.aw .campaign-goal .goal-grid-row {
+  display: inline-flex; flex-wrap: nowrap; align-items: center; flex: none;
+}
+.aw .campaign-goal .goal-pic { gap: .5cqw; min-height: 0; }
+.aw .campaign-goal .goal-row { gap: .5cqw; }
+.aw .campaign-goal .ex-tile.goal-tile {
+  flex: none; min-width: var(--s); min-height: var(--s);
+  width: var(--s); height: var(--s);
+}
+.aw .campaign-goal ul.is-several .goal-pic .ex-tile.goal-tile { --s: clamp(14px, 5cqw, 22px); }
 .aw .campaign-goal .goal-lbl {
   flex: 1 1 100%; order: 3; margin: 0; padding: 0;
   font: 600 clamp(9px, 2.5cqw, 12px)/1.15 var(--aw-comic), Fredoka, system-ui, sans-serif;
   color: #fff7e0; text-shadow: 0 1px 0 #0a1130; letter-spacing: .01em;
 }
 .aw .campaign-goal ul.is-three .goal-lbl { font-size: clamp(8px, 2.2cqw, 11px); }
-.aw .campaign-goal .goal-count { order: 2; }
+.aw .campaign-goal .goal-count { order: 2; margin-left: auto; }
 .aw .campaign-goal .goal-pic { order: 1; }
+.aw .campaign-goal .goal-plus { flex: none; }
 
-/* Aufgaben-Satz unter dem Brett, 1–2 Sätze, passt in den Streifen über den Werkzeugen */
+/* Aufgaben-Satz zwischen Brett und Ablage, in einem reservierten Streifen */
 .aw .campaign-tip {
   padding: 1cqw 2.2cqw;
   font: 700 clamp(11px, 3cqw, 15px)/1.2 var(--aw-comic), Fredoka, system-ui, sans-serif;
+  z-index: 5;
 }
 @media (max-width: 360px) {
   .aw .campaign-tip { font-size: clamp(10.5px, 3.2cqw, 13px); padding: 0.8cqw 2cqw; }
+}
+
+/* Reservierter Streifen: HUD darf nach unten wachsen, Aufgabensatz sitzt zwischen Brett und Ablage. */
+.board-slot {
+  inset: auto;
+  top: 70cqw;
+  left: 17cqw;
+  right: 17cqw;
+  bottom: auto;
+  width: auto;
+  height: 66cqw;
+}
+.campaign-tip {
+  top: 137cqw;
+}
+.campaign-tool-cap {
+  top: 141cqw;
+}
+.campaign-tip:not([hidden]) ~ .campaign-tool-cap,
+.campaign-hud:has(.campaign-tip:not([hidden])) .campaign-tool-cap {
+  top: 154cqw;
 }
