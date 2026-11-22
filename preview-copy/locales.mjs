@@ -454,6 +454,7 @@ export const STRINGS = {
   "goal.fuseLine": { de: "Verschmelze {size} gleiche Squishes in einer Reihe.", en: "Merge {size} matching squishes in a line." },
   "goal.and": { de: "und", en: "and" },
   "goalShort.fuseLine": { de: "{size} in einer Reihe", en: "{size} in a line" },
+  "goal.hintAria": { de: "Aufgabe nochmal anzeigen", en: "Show the goal again" },
   "campaign.hardExtra": { de: "Das Brett ist schwer, +3 Züge können helfen.", en: "It’s a tough board, and +3 moves can help." },
   "campaign.hardTool": { de: "Das Brett ist schwer, eine {tool} kann helfen.", en: "It’s a tough board, and a {tool} can help." },
 };

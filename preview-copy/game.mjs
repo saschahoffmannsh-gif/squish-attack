@@ -1381,8 +1381,6 @@ export const menuActions={
     await enterGame();
     if(campaignMode&&camp){
       if(labMode)showNote(levelNote(),5200);
-      else if(camp.level.tool)showNote(levelNote(),4200);
-      else if(!camp.level.tip)showNote(levelNote(),2600);
       scheduleBombTick();
       await levelExplainers();
       showTutorialFinger(true);

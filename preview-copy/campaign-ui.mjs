@@ -117,8 +117,124 @@ export function lockText(lock){
   return t('campaign.lockPrev');
 }
 
+
+function composeGoalCopy(run,n){
+  const intro=goalIntro(run.level.goals);
+  const lesson=hasKey('tip.'+n)?t('tip.'+n):'';
+  let tip=lesson;
+  if(!lesson) tip=intro;
+  else if(n>5 && intro && !lesson.includes(intro.slice(0,18))) tip=`${intro} ${lesson}`;
+  if(!lesson && run.level.tool){
+    const extra=run.level.tool==='extraMoves'?t('campaign.hardExtra'):t('campaign.hardTool',{tool:toolName(run.level.tool)});
+    tip=intro?`${intro} ${extra}`:extra;
+  }
+  return (tip||'').trim();
+}
+
 export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,onGift,onCloseSelect,onStar,reduceMotion}={}){
   const hud=$('campaign-hud'),levelEl=$('campaign-level'),goalsEl=$('campaign-goals'),movesEl=$('campaign-moves'),tipEl=$('campaign-tip'),capEl=$('campaign-tool-cap');
+  let introRun=null, introPhase='hidden', introTimer=null, introAnim=null;
+  function introEls(){
+    let intro=$('goal-intro');
+    if(!intro){
+      intro=document.createElement('div');intro.id='goal-intro';intro.className='goal-intro';intro.hidden=true;
+      intro.innerHTML='<button type="button" class="goal-intro-card"><p class="goal-intro-text"></p></button>';
+      (document.querySelector('.game-stage')||document.body).append(intro);
+      const dismiss=()=>collapseIntro();
+      intro.addEventListener('click',dismiss);
+      intro.querySelector('.goal-intro-card').addEventListener('click',ev=>{ev.stopPropagation();dismiss();});
+    }
+    let hint=$('goal-hint');
+    if(!hint){
+      hint=document.createElement('button');hint.id='goal-hint';hint.type='button';hint.className='goal-hint';
+      hint.hidden=true;hint.textContent='i';
+      const level=document.getElementById('campaign-level');
+      const goal=document.querySelector('.campaign-goal');
+      let head=goal?.querySelector('.campaign-goal-head');
+      if(!head){
+        head=document.createElement('div');head.className='campaign-goal-head';
+        if(level){level.before(head);head.append(level);}
+        else goal?.prepend(head);
+      }
+      head.append(hint);
+      hint.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();expandIntro();});
+    }
+    return {intro,hint,card:intro.querySelector('.goal-intro-card'),text:intro.querySelector('.goal-intro-text')};
+  }
+  function setIntroText(copy){
+    const {intro,hint,text}=introEls();
+    if(text)text.textContent=copy;
+    hint.setAttribute('aria-label',t('goal.hintAria'));
+    hint.title=copy;
+    intro.setAttribute('aria-label',copy);
+  }
+  function clearIntroTimer(){if(introTimer){clearTimeout(introTimer);introTimer=null;}if(introAnim){try{introAnim.cancel();}catch{}introAnim=null;}}
+  function hideIntro(){
+    clearIntroTimer();
+    const {intro,hint}=introEls();
+    intro.getAnimations().forEach(a=>a.cancel());
+    intro.querySelector('.goal-intro-card')?.getAnimations().forEach(a=>a.cancel());
+    intro.style.opacity='';intro.hidden=true;intro.classList.remove('is-in','is-out');
+    hint.hidden=true;hint.classList.remove('is-landed');
+    introPhase='hidden';introRun=null;
+  }
+  function showIntro(copy,run){
+    const {intro,hint,card}=introEls();
+    setIntroText(copy);
+    clearIntroTimer();
+    introPhase='open';introRun=run;
+    hint.hidden=false;hint.classList.remove('is-landed');
+    intro.getAnimations().forEach(a=>a.cancel());
+    card?.getAnimations().forEach(a=>a.cancel());
+    if(card){card.style.transform='';card.style.opacity='';}
+    intro.style.opacity='';
+    intro.classList.remove('is-out','is-in');intro.hidden=false;
+    void intro.offsetWidth;
+    intro.classList.add('is-in');
+    const wait=reduceMotion?.matches?200:2400;
+    introTimer=setTimeout(()=>collapseIntro(),wait);
+  }
+  function collapseIntro(){
+    if(introPhase!=='open')return;
+    introPhase='closing';
+    clearIntroTimer();
+    const {intro,hint,card}=introEls();
+    hint.hidden=false;
+    let done=false;
+    const finish=()=>{
+      if(done)return;done=true;
+      clearIntroTimer();
+      intro.getAnimations().forEach(a=>a.cancel());
+      card?.getAnimations().forEach(a=>a.cancel());
+      intro.style.opacity='';
+      if(card){card.style.transform='';card.style.opacity='';}
+      intro.hidden=true;intro.classList.remove('is-in','is-out');
+      introPhase='collapsed';
+      hint.classList.remove('is-landed');void hint.offsetWidth;hint.classList.add('is-landed');
+    };
+    if(reduceMotion?.matches||!card||!card.animate){finish();return;}
+    const a=card.getBoundingClientRect(),b=hint.getBoundingClientRect();
+    if(b.width<2||a.width<2){finish();return;}
+    const dx=(b.left+b.width/2)-(a.left+a.width/2);
+    const dy=(b.top+b.height/2)-(a.top+a.height/2);
+    const s=Math.max(.08,Math.min(b.width/a.width,b.height/a.height));
+    intro.classList.add('is-out');
+    introAnim=card.animate([
+      {transform:'translate(0,0) scale(1)',opacity:1},
+      {transform:`translate(${dx}px,${dy}px) scale(${s})`,opacity:.12}
+    ],{duration:420,easing:'cubic-bezier(.2,.7,.2,1)',fill:'forwards'});
+    intro.animate([{opacity:1},{opacity:0}],{duration:420,easing:'linear',fill:'forwards'});
+    introAnim.finished.then(finish).catch(finish);
+    introTimer=setTimeout(finish,520);
+  }
+  function expandIntro(){
+    if(introPhase==='open'||introPhase==='closing')return;
+    const {hint}=introEls();
+    const copy=hint.title||'';
+    if(!copy)return;
+    showIntro(copy,introRun);
+  }
+
   // launch-28: im Abenteuer nur +3 Züge und Rakete (beliebig oft).
   const tools=$('campaign-tools'),extraBtn=$('tool-extra'),rocketBtn=$('tool-rocket');
   for(const b of [rocketBtn]){const ico=b.querySelector('[data-icon]');if(ico&&!ico.firstChild)ico.innerHTML=TOOL_ICONS[ico.dataset.icon];}
@@ -146,18 +262,14 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
     goalsEl.classList.toggle('is-pictorial',true);
     goalsEl.classList.toggle('is-several',several);
     goalsEl.replaceChildren(...run.level.goals.map(goal=>decorateChip(renderGoalItem(goal,run),goal,several)));
-    const intro=goalIntro(run.level.goals);
-    if(tipEl){
-      const lesson=hasKey('tip.'+n)?t('tip.'+n):'';
-      // L1–5 erklären das Ziel schon im Lehrsatz. Ab L6 gehört die Aufgabe immer in den Satz, auch wenn es einen Hilfs-Tipp gibt.
-      let tip=lesson;
-      if(!lesson) tip=intro;
-      else if(n>5 && intro && !lesson.includes(intro.slice(0,18))) tip=`${intro} ${lesson}`;
-      if(!lesson && run.level.tool){
-        const extra=run.level.tool==='extraMoves'?t('campaign.hardExtra'):t('campaign.hardTool',{tool:toolName(run.level.tool)});
-        tip=intro?`${intro} ${extra}`:extra;
-      }
-      tipEl.hidden=!tip;tipEl.textContent=tip;
+    if(tipEl){tipEl.hidden=true;tipEl.textContent='';}
+    const copy=composeGoalCopy(run,n);
+    if(copy){
+      setIntroText(copy);
+      if(introRun!==run) showIntro(copy,run);
+      else if(introPhase==='hidden') { const {hint}=introEls(); hint.hidden=false; introPhase='collapsed'; }
+    } else {
+      hideIntro();
     }
     const left=Math.max(0,movesLeft(run));
     if(movesEl.textContent!==String(left))movesEl.textContent=String(left);
@@ -201,7 +313,7 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
     set(rocketBtn,'rocket',!locked||armed==='rocket',t('tool.help.rocket'));
     rocketBtn.classList.toggle('is-armed',armed==='rocket');rocketBtn.setAttribute('aria-pressed',String(armed==='rocket'));
   }
-  function hide(){hud.hidden=true;tools.hidden=true;if(tipEl)tipEl.hidden=true;if(capEl)capEl.hidden=true;hideResult();}
+  function hide(){hud.hidden=true;tools.hidden=true;if(tipEl)tipEl.hidden=true;if(capEl)capEl.hidden=true;hideIntro();hideResult();}
   extraBtn.addEventListener('click',()=>onTool?.('extraMoves'));
   rocketBtn.addEventListener('click',()=>onTool?.('rocket'));
 

@@ -86,7 +86,7 @@
   gap: 1.4cqw 2.2cqw; margin-top: .6cqw;
 }
 .aw .campaign-goal ul.is-pictorial.is-three,
-.aw .campaign-goal ul.is-pictorial.is-several { gap: 1.6cqw 2cqw; }
+.aw .campaign-goal ul.is-pictorial.is-several { gap: .8cqw 2cqw; margin-top: .4cqw; }
 .aw .campaign-goal li.goal-chip {
   display: flex; flex-wrap: wrap; align-items: center; gap: .6cqw 1.2cqw;
   flex: 1 1 auto; min-width: 0; overflow: visible;
@@ -108,7 +108,7 @@
   flex: none; min-width: var(--s); min-height: var(--s);
   width: var(--s); height: var(--s);
 }
-.aw .campaign-goal ul.is-several .goal-pic .ex-tile.goal-tile { --s: clamp(14px, 5cqw, 22px); }
+.aw .campaign-goal ul.is-several .goal-pic .ex-tile.goal-tile { --s: clamp(13px, 4.6cqw, 20px); }
 .aw .campaign-goal .goal-lbl {
   flex: 1 1 100%; order: 3; margin: 0; padding: 0;
   font: 600 clamp(9px, 2.5cqw, 12px)/1.15 var(--aw-comic), Fredoka, system-ui, sans-serif;
@@ -119,33 +119,77 @@
 .aw .campaign-goal .goal-pic { order: 1; }
 .aw .campaign-goal .goal-plus { flex: none; }
 
-/* Aufgaben-Satz zwischen Brett und Ablage, in einem reservierten Streifen */
-.aw .campaign-tip {
-  padding: 1cqw 2.2cqw;
-  font: 700 clamp(11px, 3cqw, 15px)/1.2 var(--aw-comic), Fredoka, system-ui, sans-serif;
-  z-index: 5;
+
+/* Volle Aufgabe kurz groß am Levelstart, dann in den Hinweis in der Zielkarte. */
+.goal-intro {
+  position: absolute; left: 0; right: 0; top: 54cqw; height: 99.6cqw; z-index: 9;
+  display: grid; place-items: center; padding: 3cqw 5%; box-sizing: border-box;
+  background: #08080a59; pointer-events: auto;
 }
-@media (max-width: 360px) {
-  .aw .campaign-tip { font-size: clamp(10.5px, 3.2cqw, 13px); padding: 0.8cqw 2cqw; }
+.goal-intro[hidden] { display: none !important; }
+.goal-intro.is-out { pointer-events: none; }
+.goal-intro-card {
+  width: min(92%, 22em); margin: 0; padding: 4.2cqw 4.6cqw;
+  border: 3px solid #0b0a16; border-radius: 18px;
+  background: linear-gradient(180deg, #2c2b5c, #1a1938);
+  box-shadow: inset 0 0 0 2px #ffd25a, 0 8px 22px #000a;
+  color: #fff7e0; text-align: center; cursor: pointer;
+  font: 700 clamp(15px, 4.4cqw, 20px)/1.28 var(--aw-comic), Fredoka, system-ui, sans-serif;
+  text-shadow: 0 1px 0 #0a1130;
+  -webkit-tap-highlight-color: transparent;
+}
+.goal-intro-text { margin: 0; }
+.goal-intro.is-in .goal-intro-card {
+  animation: goal-intro-pop .32s cubic-bezier(.2,1.25,.3,1) both;
+}
+@keyframes goal-intro-pop {
+  from { transform: scale(.84); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .goal-intro.is-in .goal-intro-card { animation: none; }
 }
 
-/* Reservierter Streifen: HUD darf nach unten wachsen, Aufgabensatz sitzt zwischen Brett und Ablage. */
-.board-slot {
-  inset: auto;
-  top: 70cqw;
-  left: 17cqw;
-  right: 17cqw;
-  bottom: auto;
-  width: auto;
-  height: 66cqw;
+.aw .campaign-goal { position: relative; justify-content: flex-start; height: auto; }
+.campaign-goal-head { display: flex; align-items: center; gap: 1.4cqw; flex: none; min-width: 0; }
+.aw .campaign-level { display: block; margin: 0; }
+.goal-hint {
+  pointer-events: auto; position: relative; display: inline-flex; align-items: center; justify-content: center;
+  flex: none; margin: 0;
+  width: clamp(18px, 5.2cqw, 22px); height: clamp(18px, 5.2cqw, 22px); padding: 0;
+  border: 2px solid #0b0a16; border-radius: 50%;
+  background: linear-gradient(180deg, #ffe78a, #ffc21f);
+  color: #3a2405; font: 800 clamp(11px, 3.2cqw, 14px)/1 var(--aw-comic), Fredoka, system-ui, sans-serif;
+  box-shadow: 0 1px 0 #0b0a16; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
-.campaign-tip {
-  top: 137cqw;
+.goal-hint[hidden] { display: none !important; }
+.goal-hint.is-landed { animation: goal-hint-land .35s cubic-bezier(.2,1.2,.3,1); }
+@keyframes goal-hint-land {
+  0% { transform: scale(.6); }
+  60% { transform: scale(1.12); }
+  100% { transform: none; }
 }
-.campaign-tool-cap {
-  top: 141cqw;
+@media (prefers-reduced-motion: reduce) {
+  .goal-hint.is-landed { animation: none; }
 }
-.campaign-tip:not([hidden]) ~ .campaign-tool-cap,
-.campaign-hud:has(.campaign-tip:not([hidden])) .campaign-tool-cap {
-  top: 154cqw;
+
+/* Mehrere Ziele: eine Zeile pro Chip, damit die Karte über dem Live-Brett bleibt */
+.aw .campaign-goal:has(ul.is-several) { padding-top: 1cqw; padding-bottom: 1cqw; }
+.aw .campaign-goal ul.is-several li.goal-chip {
+  flex-wrap: nowrap; flex: 1 1 100%; gap: 1cqw;
 }
+.aw .campaign-goal ul.is-several .goal-lbl {
+  flex: 1 1 auto; order: 2; margin: 0; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: clamp(8px, 2.3cqw, 11px);
+}
+.aw .campaign-goal ul.is-several .goal-count { order: 3; margin-left: 0; }
+.aw .campaign-goal ul.is-several .goal-pic { order: 1; }
+
+@media (max-width: 360px) {
+  .goal-intro-card { font-size: clamp(14px, 4.2cqw, 17px); padding: 3.4cqw 3.8cqw; }
+}
+
+/* Zielkarte bleibt über dem unverkleinerten Live-Brett */
+.aw .campaign-goal, .aw .campaign-moves { top: 24cqw; }
