@@ -133,21 +133,27 @@ function composeGoalCopy(run,n){
 
 export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,onGift,onCloseSelect,onStar,reduceMotion}={}){
   const hud=$('campaign-hud'),levelEl=$('campaign-level'),goalsEl=$('campaign-goals'),movesEl=$('campaign-moves'),tipEl=$('campaign-tip'),capEl=$('campaign-tool-cap');
-  let introRun=null, introPhase='hidden', introTimer=null, introAnim=null;
+  let introRun=null, introPhase='hidden', introTimer=null, introAnim=null, prevDone=null;
   function introEls(){
     let intro=$('goal-intro');
     if(!intro){
       intro=document.createElement('div');intro.id='goal-intro';intro.className='goal-intro';intro.hidden=true;
-      intro.innerHTML='<button type="button" class="goal-intro-card"><p class="goal-intro-text"></p></button>';
+      intro.setAttribute('role','dialog');intro.setAttribute('aria-modal','true');
+      intro.innerHTML='<div class="goal-intro-card" role="button" tabindex="0"><p class="goal-intro-text"></p><ul class="goal-intro-progress"></ul></div>';
       (document.querySelector('.game-stage')||document.body).append(intro);
       const dismiss=()=>collapseIntro();
       intro.addEventListener('click',dismiss);
-      intro.querySelector('.goal-intro-card').addEventListener('click',ev=>{ev.stopPropagation();dismiss();});
+      const card=intro.querySelector('.goal-intro-card');
+      card.addEventListener('click',ev=>{ev.stopPropagation();dismiss();});
+      card.addEventListener('keydown',ev=>{
+        if(ev.key==='Enter'||ev.key===' ' ){ev.preventDefault();dismiss();}
+      });
     }
     let hint=$('goal-hint');
     if(!hint){
-      hint=document.createElement('button');hint.id='goal-hint';hint.type='button';hint.className='goal-hint';
-      hint.hidden=true;hint.textContent='i';
+      hint=document.createElement('button');hint.id='goal-hint';hint.type='button';hint.className='goal-task';
+      hint.hidden=true;
+      hint.innerHTML='<span class="goal-task-label"></span><span class="goal-task-bang" aria-hidden="true">!</span>';
       const level=document.getElementById('campaign-level');
       const goal=document.querySelector('.campaign-goal');
       let head=goal?.querySelector('.campaign-goal-head');
@@ -159,28 +165,63 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
       head.append(hint);
       hint.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();expandIntro();});
     }
-    return {intro,hint,card:intro.querySelector('.goal-intro-card'),text:intro.querySelector('.goal-intro-text')};
+    return {
+      intro,hint,
+      card:intro.querySelector('.goal-intro-card'),
+      text:intro.querySelector('.goal-intro-text'),
+      progress:intro.querySelector('.goal-intro-progress'),
+      label:hint.querySelector('.goal-task-label'),
+      bang:hint.querySelector('.goal-task-bang'),
+    };
   }
   function setIntroText(copy){
-    const {intro,hint,text}=introEls();
+    const {intro,hint,text,label}=introEls();
     if(text)text.textContent=copy;
+    if(label)label.textContent=t('goal.task');
     hint.setAttribute('aria-label',t('goal.hintAria'));
-    hint.title=copy;
+    hint.title=t('goal.hintAria');
     intro.setAttribute('aria-label',copy);
+  }
+  function fillIntroProgress(run){
+    const {progress}=introEls();
+    if(!progress||!run?.level?.goals)return;
+    const goals=run.level.goals;
+    progress.classList.toggle('is-pictorial',true);
+    progress.classList.toggle('is-several',goals.length>1);
+    progress.classList.toggle('is-three',goals.length>=3);
+    progress.replaceChildren(...goals.map(goal=>decorateChip(renderGoalItem(goal,run),goal,true)));
+  }
+  function syncTaskFeedback(run){
+    const {hint,bang}=introEls();
+    if(!run?.level?.goals)return;
+    const done=run.level.goals.map(g=>!!goalProgress(g,run).done);
+    const all=done.length>0&&done.every(Boolean);
+    const just=prevDone&&done.some((d,i)=>d&&!prevDone[i]);
+    prevDone=done;
+    hint.classList.toggle('is-complete',all);
+    if(bang)bang.textContent=all?'✓':'!';
+    if(just){
+      hint.classList.remove('is-pulse');
+      void hint.offsetWidth;
+      hint.classList.add('is-pulse');
+    }
   }
   function clearIntroTimer(){if(introTimer){clearTimeout(introTimer);introTimer=null;}if(introAnim){try{introAnim.cancel();}catch{}introAnim=null;}}
   function hideIntro(){
     clearIntroTimer();
-    const {intro,hint}=introEls();
+    const {intro,hint,card}=introEls();
     intro.getAnimations().forEach(a=>a.cancel());
-    intro.querySelector('.goal-intro-card')?.getAnimations().forEach(a=>a.cancel());
+    card?.getAnimations().forEach(a=>a.cancel());
     intro.style.opacity='';intro.hidden=true;intro.classList.remove('is-in','is-out');
-    hint.hidden=true;hint.classList.remove('is-landed');
-    introPhase='hidden';introRun=null;
+    if(card){card.style.transform='';card.style.opacity='';}
+    hint.hidden=true;hint.classList.remove('is-landed','is-pulse','is-complete');
+    const bang=hint.querySelector('.goal-task-bang');if(bang)bang.textContent='!';
+    introPhase='hidden';introRun=null;prevDone=null;
   }
   function showIntro(copy,run){
     const {intro,hint,card}=introEls();
     setIntroText(copy);
+    fillIntroProgress(run);
     clearIntroTimer();
     introPhase='open';introRun=run;
     hint.hidden=false;hint.classList.remove('is-landed');
@@ -191,8 +232,6 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
     intro.classList.remove('is-out','is-in');intro.hidden=false;
     void intro.offsetWidth;
     intro.classList.add('is-in');
-    const wait=reduceMotion?.matches?200:2400;
-    introTimer=setTimeout(()=>collapseIntro(),wait);
   }
   function collapseIntro(){
     if(introPhase!=='open')return;
@@ -229,9 +268,8 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
   }
   function expandIntro(){
     if(introPhase==='open'||introPhase==='closing')return;
-    const {hint}=introEls();
-    const copy=hint.title||'';
-    if(!copy)return;
+    const copy=composeGoalCopy(introRun,lastHud?.n)||introEls().text?.textContent||'';
+    if(!copy||!introRun)return;
     showIntro(copy,introRun);
   }
 
@@ -256,18 +294,17 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
     lastHud={run,n,label};hud.hidden=false;
     levelEl.textContent=label||(run.level.tool?t('campaign.levelHard',{n}):t('campaign.levelLabel',{n}));
     levelEl.title=levelEl.textContent;
-    const three=run.level.goals.length>=3;
-    const several=run.level.goals.length>1;
-    goalsEl.classList.toggle('is-three',three);
-    goalsEl.classList.toggle('is-pictorial',true);
-    goalsEl.classList.toggle('is-several',several);
-    goalsEl.replaceChildren(...run.level.goals.map(goal=>decorateChip(renderGoalItem(goal,run),goal,several)));
+    goalsEl.hidden=true;
+    goalsEl.replaceChildren();
     if(tipEl){tipEl.hidden=true;tipEl.textContent='';}
     const copy=composeGoalCopy(run,n);
     if(copy){
       setIntroText(copy);
-      if(introRun!==run) showIntro(copy,run);
+      if(introRun!==run) { prevDone=null; showIntro(copy,run); }
+      else if(introPhase==='open') fillIntroProgress(run);
       else if(introPhase==='hidden') { const {hint}=introEls(); hint.hidden=false; introPhase='collapsed'; }
+      else fillIntroProgress(run);
+      syncTaskFeedback(run);
     } else {
       hideIntro();
     }
