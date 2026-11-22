@@ -105,9 +105,9 @@ async function popMetrics(page) {
 {
   const P = await newPage({});
   await P.page.waitForSelector('#streak-pop', { timeout: 20000 });
-  await sleep(700);
+  await sleep(1200);
   const m = await popMetrics(P.page);
-  ok(`${lang} Build launch-40`, /launch-40/.test(m.build), m.build);
+  ok(`${lang} Build launch-41`, /launch-41/.test(m.build), m.build);
   ok(`${lang} Tag 1: Fenster offen`, m.open);
   ok(`${lang} kein Debug / keine Vorschau-Markierung`, !m.debug && !m.previewTag);
   ok(`${lang} Zähler ${dayWord} 1`, m.count === `${dayWord} 1`, m.count);
