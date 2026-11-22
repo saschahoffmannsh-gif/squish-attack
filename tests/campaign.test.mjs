@@ -1,6 +1,6 @@
 import test, { beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { setLang } from '../game/i18n.mjs?v=launch-39';
+import { setLang } from '../game/i18n.mjs?v=launch-40';
 beforeEach(() => setLang('de', { persist: false }));
 import {
   createLevelRun, applyLevelMove, starsFor, replaySolution, goalProgress, queueOf, movesLeft,

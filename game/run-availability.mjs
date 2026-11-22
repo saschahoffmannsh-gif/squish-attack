@@ -1,4 +1,4 @@
-import {isGameOver} from './game-logic.mjs?v=launch-39';
+import {isGameOver} from './game-logic.mjs?v=launch-40';
 
 // Finished saves retain their record, but must not launch straight back into
 // the game-over dialog as if that were a second start menu.
