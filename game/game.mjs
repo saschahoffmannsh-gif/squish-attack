@@ -1,36 +1,37 @@
-import {apiFetch,hasSaveToken} from './api.mjs?v=launch-39';
-import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-39';
+import {apiFetch,hasSaveToken} from './api.mjs?v=launch-40';
+import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-40';
 import { nextSpawn, spawnProfile } from './balance.mjs';
-import {canContinueRun} from './run-availability.mjs?v=launch-39';
-import { createMergeEffects } from './merge-effects.mjs?v=launch-39';
-import { createGameGraphics } from './graphics-adapter.mjs?v=launch-39';
-import { installDeviceMotion } from './device-motion.mjs?v=launch-39';
-import { createGameSound } from './sound.mjs?v=launch-39';
+import {canContinueRun} from './run-availability.mjs?v=launch-40';
+import { createMergeEffects } from './merge-effects.mjs?v=launch-40';
+import { createGameGraphics } from './graphics-adapter.mjs?v=launch-40';
+import { installDeviceMotion } from './device-motion.mjs?v=launch-40';
+import { createGameSound } from './sound.mjs?v=launch-40';
 import { installSettings } from './settings.mjs?v=woodland-menu-1';
-import { createDuelClient } from './duel-client.mjs?v=launch-39';
+import { createDuelClient } from './duel-client.mjs?v=launch-40';
 import {installFullscreen} from './fullscreen.mjs?v=timed-duel-1';
-import {createHomeMenu} from './home-menu.mjs?v=launch-39';
-import {createConfetti} from './confetti.mjs?v=launch-39';
-import {createHaptics} from './haptics.mjs?v=launch-39';
+import {createHomeMenu} from './home-menu.mjs?v=launch-40';
+import {createConfetti} from './confetti.mjs?v=launch-40';
+import {createHaptics} from './haptics.mjs?v=launch-40';
 import {planMergeRipple} from './merge-ripple.mjs?v=swarm-fx-3';
-import * as Camp from './campaign.mjs?v=launch-39';
-import {createCampaignUI} from './campaign-ui.mjs?v=launch-39';
-import {createToolFx} from './tool-fx.mjs?v=launch-39';
-import {createGhostFinger} from './ghost-finger.mjs?v=launch-39';
-import * as Shop from './shop.mjs?v=launch-39';
-import {createShopUI} from './shop-ui.mjs?v=launch-39';
-import {createGiftFx} from './gift-fx.mjs?v=launch-39';
-import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-39';
-import {createAdUI} from './ad-ui.mjs?v=launch-39';
-import {isOffline} from './native-ads.mjs?v=launch-39';
-import {createStatsUI} from './stats-ui.mjs?v=launch-39';
-import * as ToolLog from './tool-log.mjs?v=launch-39';
-import {createProgressSync} from './progress-sync.mjs?v=launch-39';
-import {epochOf} from './progress-merge.mjs?v=launch-39';
-import {createAdPacing} from './ad-pacing.mjs?v=launch-39';
-import {isAdFree,canOfferAdFree,purchaseAdFree,adFreePriceLabel} from './ad-free.mjs?v=launch-39';
-import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-39';
-import {createExplainer} from './explain.mjs?v=launch-39';
+import * as Camp from './campaign.mjs?v=launch-40';
+import {createCampaignUI} from './campaign-ui.mjs?v=launch-40';
+import {createToolFx} from './tool-fx.mjs?v=launch-40';
+import {createGhostFinger} from './ghost-finger.mjs?v=launch-40';
+import * as Shop from './shop.mjs?v=launch-40';
+import {createShopUI} from './shop-ui.mjs?v=launch-40';
+import {createGiftFx} from './gift-fx.mjs?v=launch-40';
+import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-40';
+import {createAdUI} from './ad-ui.mjs?v=launch-40';
+import {isOffline} from './native-ads.mjs?v=launch-40';
+import {createStatsUI} from './stats-ui.mjs?v=launch-40';
+import * as ToolLog from './tool-log.mjs?v=launch-40';
+import {createProgressSync} from './progress-sync.mjs?v=launch-40';
+import {epochOf} from './progress-merge.mjs?v=launch-40';
+import {createAdPacing} from './ad-pacing.mjs?v=launch-40';
+import {isAdFree,canOfferAdFree,purchaseAdFree,adFreePriceLabel} from './ad-free.mjs?v=launch-40';
+import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-40';
+import {createExplainer} from './explain.mjs?v=launch-40';
+import {installStreak,isOpen as streakOpen} from './streak-ui.mjs?v=launch-40';
 const playfield = document.getElementById('playfield');
 const gameElement = document.querySelector('.game');
 const visual = createGameGraphics(document.getElementById('graphics'));
@@ -145,9 +146,9 @@ const newTile = value => ({ id: nextId++, value });
 // in localStorage unangetastet: während der Kampagne wird nichts davon gespeichert,
 // beim Verlassen wird er wieder geladen.
 const MODE_KEY='squish-mode-v1';
-const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-39',import.meta.url);
+const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-40',import.meta.url);
 // launch-16: Test-Level für die neuen Squishes (Eis, Ketten, Bombe) – eigener kleiner Satz, kein Fortschritt/Protokoll.
-const LAB_URL=new URL('../levels/levels-lab.json?v=launch-39',import.meta.url);
+const LAB_URL=new URL('../levels/levels-lab.json?v=launch-40',import.meta.url);
 let labMode=false,labLevels=null,labLoading=null;
 function loadLab(){
   return labLoading||=fetch(LAB_URL,{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('lab '+r.status);return r.json();})
@@ -195,7 +196,7 @@ const progressSync=createProgressSync({fetch:apiFetch,epoch:epochOf(Camp.PROGRES
   setLocal:(p,inv)=>{campaignProgress=p;Camp.saveProgress(p);if(inv!==inventory){inventory=inv;Camp.saveInventory(inv,undefined,false);}try{renderCampaign();void worldMenu.refresh?.();}catch{}}});
 const cloudSync=()=>{if(!labMode)progressSync.schedule();};
 progressSync.attach(window);
-const BUILD_LABEL='launch-39';
+const BUILD_LABEL='launch-40';
 let toolLog=ToolLog.loadLog(),logAttempt=null;
 // Versuche, die beim letzten Mal offen blieben (Seite geschlossen), gelten als abgebrochen.
 if(toolLog.attempts.some(a=>!a.outcome)){for(const a of toolLog.attempts)if(!a.outcome)ToolLog.endAttempt(toolLog,a.id,{outcome:'quit',moves:a.moves});ToolLog.saveLog(toolLog);}
@@ -354,7 +355,7 @@ function openShop(type){
 const giftFx=createGiftFx({reduceMotion,sound,haptics});
 /** Ältestes offenes Geschenk öffnen: Blase → Platzen → Gutschrift → Symbole fliegen in Leiste/Karte. */
 async function openGift(){
-  if(!Camp.TOOL_GIFTS||giftFx.active||explainer.isOpen||!inventory.pending.length)return false;
+  if(!Camp.TOOL_GIFTS||giftFx.active||explainer.isOpen||streakOpen()||!inventory.pending.length)return false;
   const gift=inventory.pending[0];
   // launch-29: keine Erklärung beim Öffnen – „Gold kostet keinen Stern“ kommt beim ersten Gold-Einsatz (toolLesson).
   if(giftFx.active||!inventory.pending.some(g=>g.id===gift.id))return false;
@@ -373,6 +374,28 @@ async function openGift(){
   void worldMenu.refresh?.();
   return true;
 }
+const streak=installStreak({
+  getInventory:()=>inventory,
+  applyInventory:next=>{inventory=next;Camp.saveInventory(inventory);cloudSync();void worldMenu.refresh?.();},
+  isBlocked:()=>{
+    if(explainer.isOpen||giftFx.active||adUI.isOpen||shopUI.isOpen||statsUI.isOpen||campaignUI.resultOpen||celebrating)return true;
+    if(started&&!worldMenu.active)return true;
+    const ex=document.getElementById('explain-dialog');
+    if(ex&&!ex.hidden)return true;
+    if(document.getElementById('att-preprompt')||document.querySelector('.att-veil,.ad-veil,.gift-fx,.shop-veil'))return true;
+    if(document.querySelector('iframe[src*="fundingchoices"],iframe[src*="consent"],.fc-consent-root'))return true;
+    return false;
+  },
+});
+{
+  const open=worldMenu.open.bind(worldMenu);
+  worldMenu.open=async function(opts){
+    const r=await open(opts);
+    setTimeout(()=>void streak.offer(),450);
+    return r;
+  };
+}
+onLangChange(()=>streak.paint());
 // launch-31: Verbindung weg/da → Hilfe-Knöpfe neu zeichnen (Sperr-Abzeichen).
 for(const ev of ['online','offline'])addEventListener(ev,()=>{try{if(campaignMode&&camp)renderCampaign();}catch{}});
 function renderCampaign(){
@@ -873,7 +896,7 @@ function renderBoard(incoming) {
 // Anzeige: kleine DOM-Abzeichen über den Bomben (Text ändert sich 1×/s) – kein WebGL-Frame nötig.
 const bombBadges=new Map();let bombLayer=null,bombTimer=0,bombLast=0,bombBlast=false;
 function bombPaused(){
-  return paused||document.hidden||busy||celebrating||!started||explainer.isOpen||campaignUI.resultOpen||shopUI.isOpen||adUI.isOpen||giftFx.active||statsUI.isOpen||worldMenu.active;
+  return paused||document.hidden||busy||celebrating||!started||explainer.isOpen||campaignUI.resultOpen||shopUI.isOpen||adUI.isOpen||giftFx.active||statsUI.isOpen||worldMenu.active||streakOpen();
 }
 function renderBombBadges(){
   const list=[];
@@ -1324,7 +1347,7 @@ window.addEventListener('pagehide', event => {
 });
 window.addEventListener('online', () => void flushPending());
 // Read-only inspection for integration checks; game state still belongs here.
-window.SquishGame={graphics,move,restart,get state(){return {board,queue,score,best,bestTile,moves,peak,busy,paused,booting,started,hasSavedGame,duelMode,duelRevision};},get effects(){return mergeEffects.stats;},get sound(){return sound.stats;},get menu(){return worldMenu.stats;},get fusion(){return visual.fusion?.stats||null;},
+window.SquishGame={graphics,move,restart,get streak(){return {state:streak.state,open:streak.open,title:streak.state?.title,totalDays:streak.state?.totalDays,inventory};},get state(){return {board,queue,score,best,bestTile,moves,peak,busy,paused,booting,started,hasSavedGame,duelMode,duelRevision};},get effects(){return mergeEffects.stats;},get sound(){return sound.stats;},get menu(){return worldMenu.stats;},get fusion(){return visual.fusion?.stats||null;},
   get campaign(){return {mode:campaignMode,lab:labMode,bombMs:camp?Camp.nextBombMs(camp.run):null,bombClock:!!camp?.run.bombClock,exploded:camp?.run.exploded??0,specials:camp?camp.run.board.flatMap((row,r)=>row.map((t,c)=>t&&Camp.specialOf(t)?{kind:Camp.specialOf(t),r,c,value:t.value,id:t.id}:null)).filter(Boolean):[],bombBadges:[...bombBadges.values()].map(e=>e.textContent),level:camp?.n??null,status:camp?.run.status??null,moves:camp?.run.moves??0,movesLeft:camp?Camp.movesLeft(camp.run):null,
     toolsUsed:camp?.run.toolsUsed.slice()??[],progress:campaignProgress,inventory,sync:progressSync.stats,shopOpen:shopUI.isOpen,shopStats:shopUI.stats,gift:{active:giftFx.active,phase:giftFx.phase,...giftFx.stats},lastPurchase,adOpen:adUI.isOpen,adType:adUI.type,adStats:adUI.stats,lastAd,adFree:isAdFree(),adFreeOffer:canOfferAdFree(),statsOpen:statsUI.isOpen,statsStats:{opens:statsUI.stats.opens,exports:statsUI.stats.exports,resets:statsUI.stats.resets,lastExportMode:statsUI.stats.lastExportMode},toolLog:{attempts:toolLog.attempts.length,events:toolLog.events.length,current:logAttempt?{...logAttempt}:null,summary:ToolLog.summarize(toolLog)},gold:goldNow(),giftsUsed:camp?.run.giftsUsed?.slice()??[],tutorialTool:tutorialToolPending(),explain:{open:explainer.isOpen,topic:explainer.topic,seen:explainer.topics().map(x=>x.topic).filter(x=>explainer.seen(x))},levelsLoaded:!!levels,resultOpen:campaignUI.resultOpen,armedTool,toolFx:toolFx.stats,celebrating,timeline:campaignUI.timeline.slice()};},
   // Screen point of a board cell (for input tests).

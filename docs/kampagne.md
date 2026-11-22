@@ -722,3 +722,9 @@ Nachtrag launch-32: Für die Sterne zählt jede Rakete wie ein Zug (übrig = Lim
 
 ## Erste Hilfe-Erklärung vor der Animation (launch-39)
 Beim ersten Einsatz einer Hilfe (Rakete, +3 Züge) erschien das Erklär-Fenster noch während der Animation und verdeckte vor allem das Raketen-Platzen. Die Bild-Lektion kommt jetzt beim Antippen, vor dem Einsatz; das Platzen und die +3-Animation laufen danach frei sichtbar. Das Fenster selbst ist unverändert. Gold-Lektion und Tutorial-Hilfe ebenso.
+
+## Anmeldestreak (launch-40)
+
+- **Gesamt-Logins:** Jeder Kalendertag mit Spielstart zählt einmal. Ein verpasster Tag setzt nichts zurück. Kein Cloud-Feld, nur lokal (`squish-streak-v1`).
+- **Titel und Geschenke** nach insgesamt 7 / 14 / 21 / 28 Tagen: Squish-Noob → Kneter (+3 Züge) → Profi (Rakete) → Meister (+3 Züge) → Legende (Rakete, goldener Rahmen). Die Werkzeuge gehen in den normalen Vorrat (gleiche `gifts`-Liste), nicht in die Cloud als Streak-Stand.
+- **Fenster:** Einmal je neuem Logintag auf dem Startbildschirm, nicht über Tutorials, Hilfe-Erklärung, ATT-Vorfrage, UMP oder Gold-Geschenken. Zeigt „Tag N“ / „Day N“, die Squishes tragen 1–7 im Spiel-Look, Tippen schließt (nicht während der Belohnung). Das Abzeichen unter dem Logo öffnet die Übersicht erneut.
