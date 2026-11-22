@@ -160,7 +160,7 @@ const levelList=()=>labMode?labLevels:levels;
 const labHudLabel=()=>{const title=hasKey('lab.title.'+camp.n)?t('lab.title.'+camp.n):(camp.level.title||'');return t('campaign.hudLab',{n:camp.n,title:title.toUpperCase()});};
 function levelNote(){
   if(!camp)return '';
-  const goals=camp.level.goals.map(Camp.goalText).join(' + ');
+  const goals=Camp.goalIntro(camp.level.goals);
   if(labMode){
     const title=hasKey('lab.title.'+camp.n)?t('lab.title.'+camp.n):(camp.level.title||'');
     const note=hasKey('lab.note.'+camp.n)?t('lab.note.'+camp.n):(camp.level.meta?.note??'');
@@ -453,8 +453,7 @@ async function playLevel(n){
   await prepareLevel(n);
   await enterGame();
   if(labMode)showNote(levelNote(),5200);
-  else if(camp.level.tool)showNote(levelNote(),4200);
-  else if(!camp.level.tip)showNote(levelNote(),2600);
+  // Aufgaben stehen dauerhaft unter dem Brett (und im HUD). Nur Test-Level behalten den kurzen Hinweis oben.
   scheduleBombTick();
   await levelExplainers();
   showTutorialFinger(true);

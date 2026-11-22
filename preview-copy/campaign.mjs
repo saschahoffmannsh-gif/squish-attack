@@ -392,7 +392,7 @@ export function goalShort(goal) {
     case 'empty': return t('goalShort.empty', { max: goal.max });
     case 'long': return goal.count === 1 ? t('goalShort.long.one', { n: LONG_STREET }) : t('goalShort.long.other', { count: goal.count, n: LONG_STREET });
     case 'purge': return t('goalShort.purge', { tiles: goal.tiles, value: goal.value });
-    case 'fuse': return goal.shape === 't' ? t('goalShort.fuseT', { size: goal.size }) : t('goalShort.fuse', { size: goal.size });
+    case 'fuse': return goal.shape === 't' ? t('goalShort.fuseT', { size: goal.size }) : goal.shape === 'line' ? t('goalShort.fuseLine', { size: goal.size }) : t('goalShort.fuse', { size: goal.size });
   }
   return '';
 }
@@ -410,10 +410,30 @@ export function goalText(goal) {
     case 'purge': return t('goal.purge', { tiles: goal.tiles, value: goal.value });
     case 'fuse':
       if (goal.shape === 't') return t('goal.fuseT', { size: goal.size });
+      if (goal.shape === 'line') return t('goal.fuseLine', { size: goal.size });
       if (goal.size === 5) return t('goal.fuse5');
       return t('goal.fuse', { size: goal.size });
   }
   return '';
+}
+
+/** Alle Ziele eines Levels als ein klarer Satz (für Start und HUD). */
+function asClause(s, first) {
+  let out = String(s || '').trim().replace(/\.+$/, '');
+  if (!first && out && !/^[0-9]/.test(out)) out = out.charAt(0).toLowerCase() + out.slice(1);
+  return out;
+}
+export function goalIntro(goals = []) {
+  const raw = (goals || []).map(goalText).filter(Boolean);
+  if (!raw.length) return '';
+  if (raw.length === 1) {
+    const one = raw[0].trim();
+    return /[.!?]$/.test(one) ? one : `${one}.`;
+  }
+  const parts = raw.map((s, i) => asClause(s, i === 0));
+  const and = t('goal.and');
+  const body = parts.length === 2 ? `${parts[0]} ${and} ${parts[1]}` : `${parts.slice(0, -1).join(', ')} ${and} ${parts[parts.length - 1]}`;
+  return `${body}.`;
 }
 
 // ---------------- Fortschritt (lokal) ----------------

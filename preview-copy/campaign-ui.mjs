@@ -3,7 +3,7 @@
 import {TOOL_ICONS,GIFT_SVG} from './tool-icons.mjs?v=launch-40';
 import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-40';
 import {fitLabelsSoon} from './fit-labels.mjs?v=launch-40';
-import {goalProgress,goalText,goalShort,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName,starsFor,starMovesUsed} from './campaign.mjs?v=launch-40';
+import {goalProgress,goalText,goalShort,goalIntro,LONG_STREET,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName,starsFor,starMovesUsed} from './campaign.mjs?v=launch-40';
 import {miniTile} from './explain.mjs?v=launch-40';
 
 const $=id=>document.getElementById(id);
@@ -19,7 +19,7 @@ function progressLabel(goal,p,run){
     const best=Math.min(p.target,Math.max(p.current,...run.board.flat().filter(Boolean).map(x=>x.value)));
     return `${best}/${p.target}`;
   }
-  if(goal.type==='empty')return `${p.current}→${p.target}`;
+  if(goal.type==='empty')return p.done?'✓':`${p.current} / max. ${p.target}`;
   return `${fmt(p.current)}/${fmt(p.target)}`;
 }
 
@@ -60,7 +60,7 @@ function goalPicture(goal){
     if(n>=5) pic.append(plusBadge('+2'));
     else if(n===4) pic.append(plusBadge('+1'));
   } else if(typ==='street' || typ==='long'){
-    const n = typ==='long' ? (goal.n||5) : 4;
+    const n = typ==='long' ? (goal.n||LONG_STREET) : 4;
     const vals=Array.from({length:n},(_,i)=>i+1);
     pic.append(tileRow(vals));
     if(n>=4) pic.append(plusBadge('+1'));
@@ -80,7 +80,7 @@ function goalPicture(goal){
     pic.append(tileRow([1,1,1]));
     pic.append(plusBadge(`×${goal.chain}`));
   } else if(typ==='empty'){
-    const s=document.createElement('span');s.className='goal-empty';s.textContent=`≤${goal.max}`;pic.append(s);
+    const s=document.createElement('span');s.className='goal-empty';s.textContent=`max. ${goal.max}`;pic.append(s);
   } else {
     const s=document.createElement('span');s.className='goal-fallback';s.textContent=goalShort(goal);pic.append(s);
   }
@@ -101,6 +101,14 @@ export function renderGoalItem(goal,run){
   li.title=goalText(goal);
   return li;
 }
+function decorateChip(li, goal, many){
+  if(!many)return li;
+  const lbl=document.createElement('span');lbl.className='goal-lbl';lbl.textContent=goalShort(goal);
+  const count=li.querySelector('.goal-count');
+  if(count)count.before(lbl);else li.append(lbl);
+  return li;
+}
+
 
 
 export function lockText(lock){
@@ -132,12 +140,23 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
     lastHud={run,n,label};hud.hidden=false;
     levelEl.textContent=label||(run.level.tool?t('campaign.levelHard',{n}):t('campaign.levelLabel',{n}));
     levelEl.title=levelEl.textContent;
-    const many=run.level.goals.length>=3;
-    goalsEl.classList.toggle('is-three',many);
+    const three=run.level.goals.length>=3;
+    const several=run.level.goals.length>1;
+    goalsEl.classList.toggle('is-three',three);
     goalsEl.classList.toggle('is-pictorial',true);
-    goalsEl.replaceChildren(...run.level.goals.map(goal=>renderGoalItem(goal,run)));
+    goalsEl.classList.toggle('is-several',several);
+    goalsEl.replaceChildren(...run.level.goals.map(goal=>decorateChip(renderGoalItem(goal,run),goal,several)));
+    const intro=goalIntro(run.level.goals);
     if(tipEl){
-      const tip=hasKey('tip.'+n)?t('tip.'+n):(run.level.tip||'');
+      const lesson=hasKey('tip.'+n)?t('tip.'+n):'';
+      // L1–5 erklären das Ziel schon im Lehrsatz. Ab L6 gehört die Aufgabe immer in den Satz, auch wenn es einen Hilfs-Tipp gibt.
+      let tip=lesson;
+      if(!lesson) tip=intro;
+      else if(n>5 && intro && !lesson.includes(intro.slice(0,18))) tip=`${intro} ${lesson}`;
+      if(!lesson && run.level.tool){
+        const extra=run.level.tool==='extraMoves'?t('campaign.hardExtra'):t('campaign.hardTool',{tool:toolName(run.level.tool)});
+        tip=intro?`${intro} ${extra}`:extra;
+      }
       tipEl.hidden=!tip;tipEl.textContent=tip;
     }
     const left=Math.max(0,movesLeft(run));
