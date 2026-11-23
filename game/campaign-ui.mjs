@@ -1,10 +1,10 @@
 // Kampagne: DOM-Teile (Ziel-Anzeige, Züge, Hilfsmittel, Ergebnis-Dialog, Levelauswahl).
 // Reine Darstellung; Spiellogik und Speichern liegen in game.mjs / campaign.mjs.
-import {TOOL_ICONS,GIFT_SVG} from './tool-icons.mjs?v=launch-41';
-import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-41';
-import {fitLabelsSoon} from './fit-labels.mjs?v=launch-41';
-import {goalProgress,goalText,goalShort,goalIntro,LONG_STREET,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName,starsFor,starMovesUsed} from './campaign.mjs?v=launch-41';
-import {miniTile} from './explain.mjs?v=launch-41';
+import {TOOL_ICONS,GIFT_SVG} from './tool-icons.mjs?v=launch-42';
+import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-42';
+import {fitLabelsSoon} from './fit-labels.mjs?v=launch-42';
+import {goalProgress,goalText,goalShort,goalIntro,LONG_STREET,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName,starsFor,starMovesUsed} from './campaign.mjs?v=launch-42';
+import {miniTile} from './explain.mjs?v=launch-42';
 
 const $=id=>document.getElementById(id);
 export const TOOL_ARTICLE=new Proxy({},{get:(_,k)=>t('tool.'+k)});
@@ -328,22 +328,20 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
     if(g<=0){capEl.hidden=true;capEl.textContent='';delete capEl.dataset.cap;return;}
     capEl.hidden=false;capEl.textContent=t('campaign.goldCap',{n:g});capEl.dataset.cap='gold';
   }
-  // gold = {extraMoves, rocket}: Gold-Geschenke (sternneutral, ohne Werbung). Sonst unbegrenzt;
-  // needsAd: vor dem Einsatz kommt ein Belohnungsclip (kein Werbefrei).
-  function renderTools(gold={},opts={}){
-    const {canExtra=true,armed=null,locked=false,needsAd=false,offline=false,toolsUsed=0,giftsUsed=0,freeTry=null}=opts;   // freeTry: Typ oder true (alle)
-    lastTools={inv:gold,opts:{canExtra,armed,locked,needsAd,offline,toolsUsed,giftsUsed,freeTry}};tools.hidden=false;
+  // stock = {extraMoves, rocket}: Vorrat, höchstens 1 je Typ (launch-42). Leere Knöpfe sind ausgegraut.
+  function renderTools(stock={},opts={}){
+    const {canExtra=true,armed=null,locked=false,toolsUsed=0,giftsUsed=0,freeTry=null}=opts;   // freeTry: Typ oder true (alle)
+    lastTools={inv:stock,opts:{canExtra,armed,locked,toolsUsed,giftsUsed,freeTry}};tools.hidden=false;
     renderToolCap(toolsUsed,giftsUsed);
-    const set=(btn,type,enabled,label)=>{
-      const g=Math.max(0,gold?.[type]|0),free=freeTry===true||freeTry===type;
+    const set=(btn,type,canUse,label)=>{
+      const g=Math.max(0,stock?.[type]|0),free=freeTry===true||freeTry===type,have=g>0||free;
       const c=btn.querySelector('[data-count]');
       c.textContent=g>0?String(g):'';c.hidden=!(g>0);c.classList.remove('is-zero');
-      btn.classList.toggle('is-gold',g>0);btn.classList.remove('is-empty');btn.dataset.shop='';btn.dataset.refill='';
-      btn.dataset.ad=(g<=0&&needsAd&&!free)?'1':'';
+      btn.classList.toggle('is-gold',g>0);btn.classList.toggle('is-empty',!have);
+      btn.dataset.shop='';btn.dataset.refill='';btn.dataset.ad='';btn.dataset.offline='';
       btn.dataset.free=free&&g<=0?'1':'';btn.dataset.freeLabel=t('tool.freeBadge');
-      const off=g<=0&&needsAd&&!free&&offline;btn.dataset.offline=off?'1':'';   // launch-31: ohne Verbindung gesperrt (Tippen → Hinweis)
-      btn.disabled=!enabled;
-      const aria=g>0?t('tool.goldAria',{label,n:g}):free?t('tool.freeTryAria',{label}):off?t('tool.offlineAria',{label}):needsAd?t('tool.adAria',{label}):t('tool.freeAria',{label});
+      btn.disabled=!canUse||!have;
+      const aria=g>0?t('tool.goldAria',{label,n:g}):free?t('tool.freeTryAria',{label}):t('tool.emptyAria',{label});
       btn.setAttribute('aria-label',aria);
     };
     set(extraBtn,'extraMoves',canExtra&&!locked,t('tool.help.extra'));

@@ -1,11 +1,10 @@
 // Werbefrei-Kauf (launch-26). Einmalig, nur in der nativen App (StoreKit-Produkt
-// `squish.adfree`, launch-32: 4,99 €). Im Web gibt es keinen Kauf: isAdFree() ist immer false,
-// jeder Hilfsmitteleinsatz im Abenteuer verlangt einen Belohnungsclip (Dummy-Werbung).
+// `squish.adfree`, launch-32: 4,99 €). Im Web gibt es keinen Kauf: isAdFree() ist immer false.
 //
-// Der Kauf entfernt nur die Werbung (Clip vor dem Einsatz, Zwischenwerbung alle
-// 10 Abenteuer-Siege, Werbung alle 15 Minuten im Endlos-Modus). launch-28: Hilfsmittel sind für alle
-// unbegrenzt; launch-32: Hilfen kosten keine Sterne (Sterne = übrige Züge).
-import { fmtPrice } from './i18n.mjs?v=launch-41';
+// launch-42: Der Kauf entfernt die Zwischenwerbung (Abenteuer nach den ersten 5 Leveln
+// alle 3 gelösten Level, Endlos alle 15 Minuten). Hilfsmittel kommen aus dem Vorrat
+// (Geschenke nach festgelegten Leveln), nicht aus Clips – Werbefrei schaltet sie nicht frei.
+import { fmtPrice } from './i18n.mjs?v=launch-42';
 
 export const AD_FREE_PRODUCT = Object.freeze({
   id: 'squish.adfree',

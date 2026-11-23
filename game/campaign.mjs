@@ -2,8 +2,8 @@
 // Ein Level = feste Startaufstellung + feste Steinfolge + Ziele + Zuglimit.
 // Dieses Modul ist reine Logik (kein DOM). Es wird von der UI, dem Solver,
 // dem Generator und den Tests gemeinsam benutzt, damit alle exakt gleich zählen.
-import { SIZE, insertTile, settle, isGameOver, tickBombs, BOMB_MS, BOMB_UNIT_MS } from './game-logic.mjs?v=launch-41';
-import { t, fmtNum } from './i18n.mjs?v=launch-41';
+import { SIZE, insertTile, settle, isGameOver, tickBombs, BOMB_MS, BOMB_UNIT_MS } from './game-logic.mjs?v=launch-42';
+import { t, fmtNum } from './i18n.mjs?v=launch-42';
 
 export const DIRECTIONS = ['left', 'right', 'up', 'down'];
 export const QUEUE_PREVIEW = 3;
@@ -584,10 +584,10 @@ export function loadInventory(storage = globalThis.localStorage) {
     const v = JSON.parse(storage?.getItem(TOOLS_KEY) ?? 'null');
     if (v && [1, 2, 3].includes(v.version) && Array.isArray(v.gifts)) {
       const n = x => Math.max(0, x | 0);
-      const pending = Array.isArray(v.pending) ? v.pending.filter(g => g && typeof g.id === 'string' && TOOL_TYPES.includes(g.type) && !g.id.startsWith('stars-')).map(g => ({ id: g.id, type: g.type })) : [];
-      return { ...emptyInventory(), gifts: v.gifts.slice(), pending, extraMoves: n(v.extraMoves),
+      const pending = Array.isArray(v.pending) ? v.pending.filter(g => g && typeof g.id === 'string' && TOOL_TYPES.includes(g.type) && !g.id.startsWith('stars-')).map(g => ({ id: g.id, type: g.type, ...(g.wanted ? { wanted: g.wanted } : {}), ...(g.status ? { status: g.status } : {}) })) : [];
+      return capStock({ ...emptyInventory(), gifts: v.gifts.slice(), pending, extraMoves: n(v.extraMoves),
         rocket: n(v.rocket) + (v.version === 1 ? n(v.hammer) : 0), hint: n(v.hint), wand: n(v.wand),
-        ...(Number.isSafeInteger(v.at) && v.at > 0 ? { at: v.at } : {}) };
+        ...(Number.isSafeInteger(v.at) && v.at > 0 ? { at: v.at } : {}) });
     }
   } catch {}
   return emptyInventory();
@@ -599,23 +599,31 @@ export function loadInventory(storage = globalThis.localStorage) {
  * Gerät den Cloud-Vorrat nicht mit einem leeren überschreibt.
  */
 export function saveInventory(inv, storage = globalThis.localStorage, touch = true) {
-  if (touch && inv && typeof inv === 'object') inv.at = Date.now();
+  if (inv && typeof inv === 'object') {
+    const capped = capStock(inv);
+    inv.rocket = capped.rocket;
+    inv.extraMoves = capped.extraMoves;
+    if (touch) inv.at = Date.now();
+  }
   try { storage?.setItem(TOOLS_KEY, JSON.stringify(inv)); return true; } catch { return false; }
 }
 /**
- * Hilfsmittel-Einstellungen (launch-28):
- *  - UNLIMITED_TOOLS: Rakete und +3 Züge beliebig oft je Versuch (kein 1×-Limit mehr).
- *    Ohne Werbefrei verlangt jeder Einsatz einen Belohnungsclip (game.mjs), mit Werbefrei nicht.
- *  - TOOL_STOCK = false: kein gekaufter Abenteuer-Vorrat, kein Shop.
- *  - TOOL_GIFTS = true: seltene Gold-Geschenke (LEVEL_GIFTS). Sie liegen als Gold-Vorrat in
- *    inv.extraMoves / inv.rocket, sind in jedem Abenteuer-Level nutzbar und kosten keine Sterne.
+ * Hilfsmittel-Einstellungen (launch-42):
+ *  - UNLIMITED_TOOLS = false: Rakete und +3 Züge kommen aus dem Vorrat, höchstens 1 je Typ.
+ *  - TOOL_STOCK = true: Vorrat über Level hinweg, ohne zu stapeln (TOOL_CAP).
+ *  - AD_TOOLS = false: keine Belohnungsclips mehr für Hilfen.
+ *  - TOOL_GIFTS = true: nach festgelegten Abenteuer-Leveln ein Werkzeug (LEVEL_GIFTS).
  * Der Endlos-Vorrat (App-Hülle) ist unabhängig.
  */
-export const UNLIMITED_TOOLS = true;
-export const FREE_TOOLS_PER_LEVEL = Infinity;   // historisch 1 (launch-26)
-export const TOOL_STOCK = false;
+export const UNLIMITED_TOOLS = false;
+export const FREE_TOOLS_PER_LEVEL = 0;          // historisch Infinity (launch-28)
+export const TOOL_STOCK = true;
 export const AD_TOOLS = false;
 export const TOOL_GIFTS = true;
+export const TOOL_CAP = 1;
+export const OTHER_TOOL = Object.freeze({ rocket: 'extraMoves', extraMoves: 'rocket' });
+export const TOOL_REWARD_KEY = 'squish-campaign-tool-rewards-42';
+export const TOOL_REWARD_MARKER = 'launch-42';
 export const TOOL_STOCK_RESET = 'launch-13';
 export const TOOL_RESET_KEY = 'squish-campaign-tools-reset';
 /**
@@ -644,22 +652,77 @@ export function spendTool(inv, type) {
   if (!TOOL_TYPES.includes(type) || !(inv[type] > 0)) return null;
   return { ...inv, [type]: inv[type] - 1 };
 }
-/** Hilfsmittel zum Vorrat hinzufügen (Shop/Geschenk), items = {rocket: 3, …}. Unbekanntes wird ignoriert. */
-export function addToStock(inv, items) {
-  const out = { ...emptyInventory(), ...inv, gifts: [...(inv.gifts || [])], pending: [...(inv.pending || [])] };
-  for (const [t, k] of Object.entries(items || {})) if (TOOL_TYPES.includes(t) && k > 0) out[t] = (out[t] | 0) + (k | 0);
+/** Vorrat auf TOOL_CAP je Typ kürzen (launch-42: kein Stapeln). */
+export function capStock(inv) {
+  const out = { ...emptyInventory(), ...inv, gifts: [...(inv?.gifts || [])], pending: [...(inv?.pending || [])] };
+  for (const typ of ADVENTURE_TOOLS) out[typ] = Math.min(TOOL_CAP, Math.max(0, out[typ] | 0));
   return out;
+}
+export function heldCount(inv, typ) { return Math.min(TOOL_CAP, Math.max(0, inv?.[typ] | 0)); }
+export function heldOrPending(inv, typ) {
+  return heldCount(inv, typ) + (inv?.pending || []).filter(g => g.type === typ && g.status !== 'full').length;
+}
+/** typ gewünscht → typ/status (granted | converted | full). Zählt Vorrat und offene Gaben. */
+export function resolveToolGrant(inv, wanted) {
+  const typ = ADVENTURE_TOOLS.includes(wanted) ? wanted : 'rocket';
+  if (heldOrPending(inv, typ) < TOOL_CAP) return { type: typ, status: 'granted', wanted: typ };
+  const other = OTHER_TOOL[typ];
+  if (other && heldOrPending(inv, other) < TOOL_CAP) return { type: other, status: 'converted', wanted: typ };
+  return { type: typ, status: 'full', wanted: typ };
+}
+/** Hilfsmittel zum Vorrat hinzufügen, höchstens TOOL_CAP je Typ. Unbekanntes wird ignoriert. */
+export function addToStock(inv, items) {
+  const out = capStock(inv);
+  for (const [t, k] of Object.entries(items || {})) if (TOOL_TYPES.includes(t) && k > 0) out[t] = Math.min(TOOL_CAP, (out[t] | 0) + (k | 0));
+  return out;
+}
+/** Ein Werkzeug gutschreiben: bei vollem Typ das andere, wenn beide voll kein Zuwachs (status=full). */
+export function grantTool(inv, wanted) {
+  const r = resolveToolGrant(inv, wanted);
+  if (r.status === 'full') return { inventory: capStock(inv), ...r };
+  return { inventory: addToStock(inv, { [r.type]: 1 }), ...r };
+}
+/**
+ * launch-42: bereits gelöste Belohnungslevel einmalig als erhalten merken, ohne nachzutragen
+ * (bis dahin gab es Hilfen unbegrenzt über Werbung). Vorhandener Vorrat wird auf TOOL_CAP gekürzt,
+ * offene alte Gold-Gaben werden nicht nachträglich ausgezahlt.
+ */
+export function markPastToolRewards(progress, inv, storage = globalThis.localStorage) {
+  let done = null;
+  try { done = storage?.getItem(TOOL_REWARD_KEY); } catch {}
+  if (done === TOOL_REWARD_MARKER) return { inventory: capStock(inv), marked: false };
+  const out = capStock(inv);
+  out.pending = [];
+  for (const [n] of LEVEL_GIFTS) {
+    const id = `${GIFT_PREFIX}-${n}`;
+    if (progress?.levels?.[String(n)] && !out.gifts.includes(id)) out.gifts.push(id);
+  }
+  saveInventory(out, storage, false);
+  try { storage?.setItem(TOOL_REWARD_KEY, TOOL_REWARD_MARKER); } catch {}
+  return { inventory: out, marked: true };
 }
 
 /**
- * launch-28: Gold-Geschenke, sehr selten und nur im Abenteuer, jedes nur einmal (auch nicht beim
- * Nachspielen): nach Level 3, 10, 20, 30, 50, 75 und 100. Neue ids `gold-<n>`, damit alte
- * Geschenk-Merker (level-3 …) nicht stören. Ein Gold-Werkzeug kostet keine Sterne.
+ * launch-42: Hilfsmittel nach festgelegten Leveln, kurz vor Schwierigkeitssprüngen.
+ * Nach dem genannten Level landet das Werkzeug im Vorrat. Neue ids `tool-<n>`, damit
+ * alte Gold-Merker (gold-3 …) nicht stören. Kein Stapeln (siehe resolveToolGrant).
  */
-export const LEVEL_GIFTS = Object.freeze([[3, 'rocket'], [10, 'extraMoves'], [20, 'rocket'], [30, 'extraMoves'], [50, 'rocket'], [75, 'extraMoves'], [100, 'rocket']]);
-export const GIFT_PREFIX = 'gold';
-/** Level, für das ein Geschenk vergeben wird ('level-3' → 3), sonst null. */
-export const giftLevel = id => { const m = /^(?:level|gold)-(\d+)$/.exec(String(id)); return m ? Number(m[1]) : null; };
+export const LEVEL_GIFTS = Object.freeze([
+  [14, 'extraMoves'], // vor dem ersten +3-Pflicht-Level 15
+  [16, 'rocket'],     // vor Level 17 (Stein 5)
+  [22, 'extraMoves'], // vor Level 23 / +3-Sprung 25
+  [34, 'rocket'],     // vor Level 35
+  [43, 'extraMoves'], // vor dem engen Level 44 / +3-Sprung 45
+  [49, 'rocket'],     // vor dem Zwischenboss 50
+  [59, 'extraMoves'], // vor Level 60 / +3-Sprung 65
+  [65, 'rocket'],     // vor Level 66
+  [74, 'rocket'],     // vor dem Raketen-Sprung 75
+  [81, 'extraMoves'], // vor Level 82
+  [91, 'rocket'],     // vor Level 92
+]);
+export const GIFT_PREFIX = 'tool';
+/** Level, für das ein Geschenk vergeben wird ('tool-14' → 14), sonst null. */
+export const giftLevel = id => { const m = /^(?:level|gold|tool)-(\d+)$/.exec(String(id)); return m ? Number(m[1]) : null; };
 function dueGifts(inv, progress) {
   const due = [], seen = new Set(inv.gifts || []);
   const add = (id, type) => { if (!seen.has(id)) { seen.add(id); due.push({ id, type }); } };
@@ -668,9 +731,14 @@ function dueGifts(inv, progress) {
 }
 /** Sofort gutschreiben (alt, launch-10). Rückgabe {inventory, granted:[{id, type}]}. */
 export function grantGifts(inv, progress) {
-  const granted = dueGifts(inv, progress);
-  let out = addToStock(inv, {});
-  for (const g of granted) { out.gifts.push(g.id); out[g.type] += 1; }
+  const due = dueGifts(inv, progress);
+  let out = capStock(inv);
+  const granted = [];
+  for (const g of due) {
+    const r = grantTool(out, g.type);
+    out = { ...r.inventory, gifts: r.inventory.gifts.includes(g.id) ? r.inventory.gifts : [...r.inventory.gifts, g.id] };
+    granted.push({ ...g, type: r.type, wanted: r.wanted, status: r.status });
+  }
   return { inventory: out, granted };
 }
 /**
@@ -678,9 +746,16 @@ export function grantGifts(inv, progress) {
  * beim Antippen (Blase platzen lassen) gutgeschrieben. Rückgabe {inventory, queued:[{id, type}]}.
  */
 export function queueGifts(inv, progress) {
-  const queued = dueGifts(inv, progress);
-  const out = addToStock(inv, {});
-  for (const g of queued) { out.gifts.push(g.id); out.pending.push(g); }
+  const due = dueGifts(inv, progress);
+  const out = capStock(inv);
+  const queued = [];
+  for (const g of due) {
+    const r = resolveToolGrant(out, g.type);
+    out.gifts.push(g.id);
+    const item = { ...g, type: r.type, wanted: r.wanted, status: r.status };
+    if (r.status !== 'full') out.pending.push(item);
+    queued.push(item);
+  }
   return { inventory: out, queued };
 }
 /**
@@ -779,9 +854,15 @@ export function collectGift(inv, id) {
   const i = (inv.pending || []).findIndex(g => id == null || g.id === id);
   if (i >= 0 && !ADVENTURE_TOOLS.includes(inv.pending[i].type)) return null;
   if (i < 0) return null;
-  const gift = inv.pending[i];
-  const out = addToStock(inv, { [gift.type]: 1 });
-  out.pending.splice(i, 1);
+  const gift = { ...inv.pending[i] };
+  const rest = inv.pending.filter((_, j) => j !== i);
+  let out = { ...capStock(inv), pending: rest };
+  if (gift.status !== 'full') {
+    const r = resolveToolGrant(out, gift.type);
+    gift.status = r.status === 'granted' && gift.status === 'converted' ? 'converted' : r.status;
+    if (r.status === 'full') gift.status = 'full';
+    else { gift.type = r.type; out = addToStock(out, { [gift.type]: 1 }); }
+  }
   return { inventory: out, gift };
 }
 export const toolName = type => ({ extraMoves: t('tool.extraMoves'), rocket: t('tool.rocket'), hammer: t('tool.rocket') })[type] ?? type;
@@ -821,7 +902,7 @@ export function migrateRules28Once(progress, inv, storage = globalThis.localStor
   }
   const p = { ...progress, levels, updatedAt: Date.now() };
   if (open.size) p.openChapters = [...open].sort((a, b) => a - b);
-  const out = { ...emptyInventory(), gifts: [...(inv?.gifts || [])], pending: (inv?.pending || []).filter(g => g && String(g.id).startsWith(GIFT_PREFIX + '-') && ADVENTURE_TOOLS.includes(g.type)), at: inv?.at || 0 };
+  const out = { ...emptyInventory(), gifts: [...(inv?.gifts || [])], pending: (inv?.pending || []).filter(g => g && /^(?:gold|tool)-/.test(String(g.id)) && ADVENTURE_TOOLS.includes(g.type)), at: inv?.at || 0 };
   saveProgress(p, storage);
   saveInventory(out, storage, false);
   try { storage?.setItem(RULES28_KEY, tag); } catch {}
