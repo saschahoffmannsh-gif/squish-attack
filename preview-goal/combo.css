@@ -1,0 +1,13 @@
+/* Combo meter between the logo and the score row. */
+.combo-meter {position:absolute;z-index:6;isolation:isolate;left:50%;top:28.2cqw;width:46%;height:9cqw;transform:translate(-50%,-50%) scale(var(--combo-scale,1));pointer-events:none;
+  filter:drop-shadow(0 0 calc(1.2cqw + var(--combo-glow,0) * 2.2cqw) color-mix(in srgb,var(--combo-tint) 70%,transparent));}
+.combo-meter[hidden] {display:none;}
+.combo-meter::before {content:"";position:absolute;inset:-18% -8%;border-radius:50%;background:radial-gradient(closest-side,rgb(0 0 0 / .55),rgb(0 0 0 / .25) 60%,transparent);z-index:-1;}
+.combo-meter[data-tier="5"],.combo-meter[data-tier="6"] {--combo-glow:.6;}
+.combo-meter[data-tier="7"] {--combo-glow:1;}
+.combo-svg {display:block;width:100%;height:100%;overflow:visible;}
+.combo-depth path {fill:var(--combo-deep);stroke:var(--combo-deep);stroke-width:.07px;stroke-linejoin:round;}
+.combo-face path {fill:url(#combo-fill);stroke:color-mix(in srgb,var(--combo-deep) 85%,#000);stroke-width:.045px;stroke-linejoin:round;paint-order:stroke fill;}
+.combo-shine path {fill:#fff;opacity:.22;clip-path:inset(0 0 58% 0);}
+.is-start .combo-meter {display:none;}
+.haptic-switch {position:fixed;left:0;top:0;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;clip-path:inset(50%);}

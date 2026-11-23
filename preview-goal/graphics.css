@@ -1,0 +1,22 @@
+/* The single accepted renderer supplies water, board, bodies and all lighting. */
+body {background:#136f7b;}
+.game {position:relative;width:min(100%,980px);height:100svh;min-height:650px;padding:24px 18px;display:block;}
+.topbar {position:absolute;z-index:3;left:22px;right:22px;top:max(24px,env(safe-area-inset-top));pointer-events:none;}
+.topbar>* {pointer-events:auto;}
+.playfield {position:absolute;inset:0;width:100%;height:100%;margin:0;filter:none;}
+#graphics {position:absolute;inset:0;}
+#graphics canvas {width:100%;height:100%;display:block;touch-action:none;}
+.preview {position:absolute;z-index:2;bottom:max(22px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:inset 0 1px 1px #ffffff40,0 8px 24px #06384030;pointer-events:none;}
+.queue {padding:3%;gap:5%;}
+.preview-tile {width:28%;aspect-ratio:1;height:auto;}
+.best-tile {aspect-ratio:1;height:auto;}
+.scores {background:transparent;backdrop-filter:none;}
+.score-label {font-size:14px;}
+.gesture-note {z-index:3;bottom:calc(max(22px,env(safe-area-inset-bottom)) + clamp(104px,20vw,178px));font-size:14px;}
+.motto {font-size:12px;letter-spacing:.13em;}
+@media(min-width:700px) {.game{max-width:710px;}.preview{width:340px;}.wordmark{font-size:3rem;}.scores{width:150px;}}
+@media(max-width:380px) {.topbar{left:12px;right:12px;}.wordmark{font-size:1.8rem;}.motto{font-size:12px;letter-spacing:0;}}
+.topbar {grid-template-columns:minmax(0,1fr) 100px 44px;gap:10px;}
+.scores {width:100%;}
+.wordmark {font-size:clamp(28px,7vw,40px);letter-spacing:.05em;}
+.motto {white-space:normal;max-width:160px;font-size:12px;letter-spacing:.06em;line-height:1.4;}
