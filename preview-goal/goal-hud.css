@@ -1,21 +1,61 @@
-/* Aufgabenkarte und HUD-Knopf (launch-41). Comic/Navy-Gold, über dem unverkleinerten Brett. */
-/* Bildhafte Ziel-Chips im bestehenden Navy/Gold-HUD */
-.aw .campaign-goal ul.is-pictorial {
-  display: flex; flex-wrap: wrap; align-items: flex-start; gap: 1.2cqw 2cqw; margin-top: .6cqw;
+/* Preview-goal: Aufgaben dauerhaft in der oberen Ziel-Karte, ohne Start-Popup und ohne Aufgabe-Knopf. */
+/* Geometrie der Karte und des Bretts bleibt wie live (campaign.css / board-slot). */
+
+#goal-intro, #goal-hint, .goal-task, .campaign-goal-head { display: none !important; }
+
+.aw .campaign-goal > ul.is-pictorial {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  align-items: start;
+  gap: .45cqw;
+  margin: .4cqw 0 0;
+  padding: 0;
+  min-width: 0;
 }
-.aw .campaign-goal li.goal-chip {
-  display: flex; align-items: center; gap: 1.4cqw; min-width: 0; flex: 1 1 auto;
-  font: 700 clamp(11px, 3.2cqw, 15px)/1 var(--aw-comic);
+
+.aw .campaign-goal li.goal-hud {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: .8cqw;
+  min-width: 0;
+  min-height: 0;
+  font: 700 clamp(9px, 2.4cqw, 12px)/1 var(--aw-comic), Fredoka, ui-rounded, system-ui, sans-serif;
+  color: #302b25;
 }
+
+.aw .campaign-goal ul.is-several { gap: .35cqw; }
+.aw .campaign-goal ul.is-three { gap: .2cqw; }
+.aw .campaign-goal ul.is-three li.goal-hud { font-size: clamp(8px, 2.15cqw, 11px); }
+
 .goal-pic {
-  display: inline-flex; align-items: center; gap: .5cqw; min-height: 7.2cqw;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .25cqw;
+  flex: none;
+  min-height: 0;
+  min-width: 0;
+  max-width: 46%;
 }
-.goal-row { display: inline-flex; align-items: center; gap: .35cqw; }
+.goal-row { display: inline-flex; align-items: center; gap: .2cqw; }
 .goal-row.is-faded { opacity: .72; }
-.goal-grid { display: flex; flex-direction: column; align-items: center; gap: .25cqw; }
-.goal-grid-row { display: flex; gap: .25cqw; justify-content: center; }
-.goal-pic .ex-tile.goal-tile { --s: clamp(16px, 6.2cqw, 26px); border-width: 1.8px; border-radius: 30%; }
-.aw .campaign-goal ul.is-three .goal-pic .ex-tile.goal-tile { --s: clamp(14px, 5.2cqw, 22px); }
+.goal-grid { display: flex; flex-direction: column; align-items: center; gap: .12cqw; }
+.goal-grid-row { display: flex; gap: .12cqw; justify-content: center; }
+
+.aw .campaign-goal .goal-pic .ex-tile.goal-tile {
+  --s: clamp(11px, 4.2cqw, 18px);
+  flex: none;
+  min-width: var(--s); min-height: var(--s);
+  width: var(--s); height: var(--s);
+  border-width: 1.4px;
+  border-radius: 30%;
+}
+.aw .campaign-goal ul.is-several .goal-pic .ex-tile.goal-tile { --s: clamp(10px, 3.6cqw, 16px); }
+.aw .campaign-goal ul.is-three .goal-pic .ex-tile.goal-tile { --s: clamp(9px, 3.2cqw, 14px); }
+
 .ex-tile.goal-tile.is-purge { filter: grayscale(.15); }
 .ex-tile.goal-tile.is-purge::after {
   content: ""; position: absolute; inset: 18%; border-radius: 50%;
@@ -24,219 +64,101 @@
               linear-gradient(-45deg, transparent 44%, #fff 44%, #fff 56%, transparent 56%);
   opacity: .9;
 }
-.goal-plus, .goal-score, .goal-empty, .goal-fallback {
-  font: 700 clamp(10px, 3.1cqw, 14px)/1 var(--aw-comic); color: #ffd25a;
-  text-shadow: 1px 0 0 #6a3304, -1px 0 0 #6a3304, 0 1px 0 #6a3304, 0 -1px 0 #6a3304;
-  padding: 0 .2cqw;
-}
-.goal-score, .goal-empty { letter-spacing: .01em; }
-.aw .campaign-goal li.goal-chip b.goal-count {
-  margin-left: auto; flex: none;
-}
-.aw .campaign-goal li.goal-chip.is-done .goal-pic { opacity: .72; filter: saturate(.7); }
 
-/* Aufgabe-Karte über dem Live-Brett, bis man tippt; Fortschritt steht in der Karte. */
-.goal-intro {
-  position: absolute; left: 0; right: 0; top: 54cqw; bottom: 0; z-index: 9;
-  display: grid; place-items: center; padding: 3cqw 4%; box-sizing: border-box;
-  background: #08080a73; pointer-events: auto;
+.goal-plus, .goal-score, .goal-empty, .goal-fallback, .goal-score-mark {
+  font: 800 clamp(9px, 2.6cqw, 13px)/1 var(--aw-comic), Fredoka, system-ui, sans-serif;
+  color: #b07a12;
+  padding: 0 .15cqw;
 }
-.goal-intro[hidden] { display: none !important; }
-.goal-intro.is-out { pointer-events: none; }
-.goal-intro-card {
-  width: min(94%, 24em); max-height: 96%; overflow: auto; margin: 0;
-  padding: 3.6cqw 4.2cqw 3.2cqw; box-sizing: border-box;
-  border: 3px solid #0b0a16; border-radius: 18px;
-  background: linear-gradient(180deg, #2c2b5c, #1a1938);
-  box-shadow: inset 0 0 0 2px #ffd25a, 0 8px 22px #000a;
-  color: #fff7e0; text-align: center; cursor: pointer;
-  font: 700 clamp(15px, 4.2cqw, 19px)/1.28 var(--aw-comic), Fredoka, system-ui, sans-serif;
-  text-shadow: 0 1px 0 #0a1130;
-  -webkit-tap-highlight-color: transparent;
-}
-.goal-intro-text { margin: 0 0 2.2cqw; }
-.goal-intro-text[hidden] { display: none !important; }
-.goal-intro-progress {
-  list-style: none; margin: 0; padding: 0;
-  display: flex; flex-direction: column; gap: 1.8cqw;
-  text-align: center;
-}
-.goal-row-card {
-  display: flex; flex-direction: column; align-items: center; gap: 1.2cqw;
-  margin: 0; padding: 0; min-width: 0;
-}
-.goal-intro-progress.is-several .goal-row-card {
-  padding: 1.4cqw 1.2cqw 1.6cqw;
-  border-radius: 14px;
-  background: #0a11308c; box-shadow: inset 0 0 0 1px #ffd25a33;
-}
-.goal-row-text {
-  margin: 0; width: 100%;
-  font: 700 clamp(13px, 3.6cqw, 17px)/1.25 var(--aw-comic), Fredoka, system-ui, sans-serif;
-  color: #fff7e0; text-shadow: 0 1px 0 #0a1130;
-  text-wrap: pretty;
-}
-.goal-row-track {
-  display: flex; align-items: center; justify-content: center; gap: 1.4cqw;
-  width: 100%; min-width: 0;
-}
-.goal-slots, .goal-units {
-  display: flex; flex-wrap: nowrap; align-items: center; justify-content: center;
-  gap: 1.1cqw; margin: 0; padding: 0; list-style: none;
-}
-.goal-slot { display: grid; place-items: center; margin: 0; padding: 0; }
-.goal-intro-progress .ex-tile.goal-tile {
-  flex: none; min-width: var(--s); min-height: var(--s);
-  width: var(--s); height: var(--s);
-  --s: clamp(22px, 7.2cqw, 32px);
-  border-width: 2px; border-radius: 30%;
-}
-.goal-intro-progress.is-several .ex-tile.goal-tile,
-.goal-intro-progress.is-three .ex-tile.goal-tile { --s: clamp(18px, 6cqw, 26px); }
-/* Leere Slots: Umriss der Zielform, ohne Ziffer. */
-.goal-slot.is-empty .ex-tile,
-.goal-unit.is-empty .ex-tile {
-  background: color-mix(in srgb, var(--mid, #6ec8ff) 26%, transparent) !important;
-  box-shadow: inset 0 0 0 2px #ffd25acc, 0 0 0 2px #0b0a16;
-  filter: none;
-}
-.goal-slot.is-empty .ex-tile::before,
-.goal-unit.is-empty .ex-tile::before { opacity: .2; }
-.goal-slot.is-empty .ex-tile b,
-.goal-unit.is-empty .ex-tile b { opacity: 0; }
-.goal-slot.is-filled .ex-tile {
-  transform-origin: center;
-  animation: goal-slot-fill .28s cubic-bezier(.2,1.3,.3,1) both;
-}
-@keyframes goal-slot-fill {
-  from { transform: scale(.72); opacity: .4; }
-  to { transform: none; opacity: 1; }
-}
-.goal-slots.is-clear .ex-tile {
-  --hi: #9be7ff; --mid: #3aa0d8; --lo: #15608a;
-}
-.goal-unit {
-  display: inline-flex; align-items: center; justify-content: center;
-  padding: .6cqw .8cqw; border-radius: 12px;
-  box-shadow: inset 0 0 0 1px #ffd25a44;
-}
-.goal-unit.is-filled { box-shadow: inset 0 0 0 2px #ffd25a; background: #ffd25a14; }
-.goal-bar {
-  position: relative; flex: 1 1 auto; width: min(100%, 18em);
-  height: clamp(22px, 6.6cqw, 28px);
-  border: 2px solid #0b0a16; border-radius: 999px;
-  background: #0a1130; box-shadow: inset 0 2px 6px #0008, 0 1px 0 #ffd25a44;
-  overflow: hidden;
-}
-.goal-bar-fill {
-  display: block; height: 100%; width: 0;
-  border-radius: inherit;
-  background: linear-gradient(180deg, #ffe78a, #ffc21f 70%, #e09a10);
-  box-shadow: inset 0 1px 0 #fff8, inset 0 -2px 0 #b07a00;
-  transition: width .28s ease;
-}
-.goal-bar-label {
-  position: absolute; inset: 0;
-  display: grid; place-items: center;
-  font: 800 clamp(11px, 3.2cqw, 14px)/1 var(--aw-comic), Fredoka, system-ui, sans-serif;
-  color: #fff7e0; text-shadow: 0 1px 0 #0a1130, 0 0 4px #0a1130;
-  pointer-events: none;
-}
-.goal-row-check {
+.goal-score-mark { color: #c49214; font-size: clamp(12px, 4cqw, 16px); }
+
+.goal-hud-cue {
   flex: none;
-  display: inline-flex; align-items: center; justify-content: center;
-  width: clamp(18px, 5.4cqw, 22px); height: clamp(18px, 5.4cqw, 22px);
-  border: 2px solid #0b0a16; border-radius: 50%;
-  background: linear-gradient(180deg, #b4f22e, #2cb500);
-  color: #fff; font: 800 clamp(11px, 3.4cqw, 14px)/1 var(--aw-comic), Fredoka, system-ui, sans-serif;
-  text-shadow: 0 1px 0 #0f5200;
-  box-shadow: 0 1px 0 #0b0a16;
-}
-.goal-row-card.is-done .goal-row-text { color: #e8ffc4; }
-@media (prefers-reduced-motion: reduce) {
-  .goal-slot.is-filled .ex-tile { animation: none; }
-  .goal-bar-fill { transition: none; }
-}
-.goal-intro.is-in .goal-intro-card {
-  animation: goal-intro-pop .32s cubic-bezier(.2,1.25,.3,1) both;
-}
-@keyframes goal-intro-pop {
-  from { transform: scale(.84); opacity: 0; }
-  to { transform: none; opacity: 1; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .goal-intro.is-in .goal-intro-card { animation: none; }
+  max-width: 38%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #5a5046;
+  font-weight: 750;
+  letter-spacing: .01em;
 }
 
-/* HUD: nur Level und Aufgabe-Knopf, Fortschritt nicht mehr in der Karte. */
-.aw .campaign-goal {
-  position: relative; justify-content: center; height: auto;
+.goal-hud-track {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: .45cqw;
+  margin-left: auto;
+  flex: none;
+  min-width: 0;
 }
-.aw .campaign-goal > ul { display: none !important; }
-.campaign-goal-head {
-  display: flex; flex-direction: column; align-items: stretch;
-  gap: 1.6cqw; width: 100%; min-width: 0;
+
+/* Höhere Spezifität als .campaign-goal ul/li aus campaign.css, damit Slots nicht als Zielzeilen gestapelt werden. */
+.aw .campaign-goal ul.goal-slots {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: .35cqw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
-.aw .campaign-level { display: block; margin: 0; }
-.goal-task {
-  pointer-events: auto; position: relative; display: flex; align-items: center; justify-content: center;
-  gap: 1.8cqw; width: 100%; margin: 0; padding: 1.6cqw 2cqw;
-  border: 2px solid #0b0a16; border-radius: 999px;
-  background: linear-gradient(180deg, #3a3970, #1e1d44);
-  box-shadow: inset 0 1px 0 #b8b4e059, inset 0 -3px 0 #12102a, 0 2px 0 #0b0a16;
-  color: #fff7e0; cursor: pointer;
-  font: 700 clamp(14px, 4.2cqw, 18px)/1 var(--aw-comic), Fredoka, system-ui, sans-serif;
-  text-shadow: 0 1.5px 0 #0a1130;
-  -webkit-tap-highlight-color: transparent;
+.aw .campaign-goal li.goal-slot {
+  display: block;
+  flex: none;
+  width: clamp(7px, 2.6cqw, 11px);
+  height: clamp(7px, 2.6cqw, 11px);
+  min-width: clamp(7px, 2.6cqw, 11px);
+  min-height: clamp(7px, 2.6cqw, 11px);
+  margin: 0;
+  padding: 0;
+  font-size: 0;
+  line-height: 0;
+  border-radius: 50%;
+  box-sizing: border-box;
+  border: 1.5px solid #8a7b68;
+  background: #efe8dc;
 }
-.goal-task-label { min-width: 0; }
-.goal-task-bang {
-  display: inline-flex; align-items: center; justify-content: center; flex: none;
-  position: relative;
-  width: clamp(20px, 6.2cqw, 26px); height: clamp(20px, 6.2cqw, 26px); padding: 0;
-  border: 2px solid #0b0a16; border-radius: 50%;
-  background: linear-gradient(180deg, #ffe78a, #ffc21f);
-  color: #3a2405; font-size: 0; line-height: 0;
-  box-shadow: 0 1px 0 #0b0a16;
-}
-.goal-task-bang::before {
-  content: ""; position: absolute; left: 50%; top: 17%;
-  width: 3px; height: 45%; transform: translateX(-50%);
-  border-radius: 2px; background: #3a2405;
-}
-.goal-task-bang::after {
-  content: ""; position: absolute; left: 50%; bottom: 15%;
-  width: 3.5px; height: 3.5px; transform: translateX(-50%);
-  border-radius: 50%; background: #3a2405;
-}
-.goal-task.is-complete .goal-task-bang::before,
-.goal-task.is-complete .goal-task-bang::after { content: none; }
-.goal-task.is-complete .goal-task-bang {
-  font: 800 clamp(12px, 3.8cqw, 16px)/1 var(--aw-comic), Fredoka, system-ui, sans-serif;
-}
-.goal-task[hidden] { display: none !important; }
-.goal-task.is-landed { animation: goal-hint-land .35s cubic-bezier(.2,1.2,.3,1); }
-.goal-task.is-complete .goal-task-bang {
+.aw .campaign-goal li.goal-slot.is-filled {
+  border-color: #2a7a34;
   background: linear-gradient(180deg, #b4f22e, #2cb500);
-  color: #fff; text-shadow: 0 1px 0 #0f5200;
+  box-shadow: inset 0 -1px 0 #078a00;
 }
-.goal-task.is-pulse { animation: goal-task-pulse .55s cubic-bezier(.2,1.2,.3,1); }
-@keyframes goal-hint-land {
-  0% { transform: scale(.86); }
-  60% { transform: scale(1.06); }
-  100% { transform: none; }
+.aw .campaign-goal ul.is-three li.goal-slot {
+  width: clamp(6px, 2.2cqw, 9px);
+  height: clamp(6px, 2.2cqw, 9px);
+  min-width: clamp(6px, 2.2cqw, 9px);
+  min-height: clamp(6px, 2.2cqw, 9px);
 }
-@keyframes goal-task-pulse {
+
+.goal-hud-count {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+  font-weight: 850;
+  color: #7a4b16;
+  letter-spacing: .01em;
+}
+
+.aw .campaign-goal li.goal-hud.is-done { color: #2f7b3b; }
+.aw .campaign-goal li.goal-hud.is-done .goal-pic { opacity: .78; filter: saturate(.75); }
+.aw .campaign-goal li.goal-hud.is-done .goal-hud-cue { color: #2f7b3b; }
+.goal-hud-check {
+  flex: none;
+  font-weight: 900;
+  color: #2f9b45;
+}
+
+.aw .campaign-goal li.goal-hud.is-pulse,
+.aw .campaign-goal ul.is-pulse {
+  animation: goal-hud-pulse .55s cubic-bezier(.2,1.2,.3,1);
+}
+@keyframes goal-hud-pulse {
   0% { transform: scale(1); }
   40% { transform: scale(1.06); }
   100% { transform: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .goal-task.is-landed, .goal-task.is-pulse { animation: none; }
-}
-
-@media (max-width: 360px) {
-  .goal-intro-card { font-size: clamp(14px, 4cqw, 17px); padding: 3cqw 3.4cqw 2.8cqw; }
-  .goal-row-text { font-size: clamp(12px, 3.4cqw, 15px); }
-  .goal-intro-progress .ex-tile.goal-tile { --s: clamp(18px, 6.2cqw, 24px); }
+  .aw .campaign-goal li.goal-hud.is-pulse,
+  .aw .campaign-goal ul.is-pulse { animation: none; }
 }

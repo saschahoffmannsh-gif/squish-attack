@@ -2,7 +2,7 @@
 // and drawn straight into the canvas: no HDR target, no gel bloom mask and no
 // refraction pass any more. That budget goes into native resolution: iPhones
 // render at their full 3x, with the canvas' own multisampling (antialias).
-const LOST_KEY='preview-goal-squish-render-cap';
+const LOST_KEY='squish-render-cap';
 export function renderCaps({dpr=globalThis.devicePixelRatio||1,ios=false,mobile=false,lostCap=null}={}){
   // A lost WebGL context once on this device: stay one notch lower next time.
   const cap=lostCap??(ios?3:mobile?3:2);

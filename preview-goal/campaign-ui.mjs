@@ -1,9 +1,9 @@
 // Kampagne: DOM-Teile (Ziel-Anzeige, Züge, Hilfsmittel, Ergebnis-Dialog, Levelauswahl).
 // Reine Darstellung; Spiellogik und Speichern liegen in game.mjs / campaign.mjs.
 import {TOOL_ICONS,GIFT_SVG} from './tool-icons.mjs?v=preview-goal';
-import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=preview-goal';
+import {t, fmtNum, hasKey, onLangChange, getLang} from './i18n.mjs?v=preview-goal';
 import {fitLabelsSoon} from './fit-labels.mjs?v=preview-goal';
-import {goalProgress,goalText,goalShort,goalIntro,LONG_STREET,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName,starsFor,starMovesUsed,goalUsesBar} from './campaign.mjs?v=preview-goal';
+import {goalProgress,goalText,LONG_STREET,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName,starsFor,starMovesUsed} from './campaign.mjs?v=preview-goal';
 import {miniTile} from './explain.mjs?v=preview-goal';
 
 const $=id=>document.getElementById(id);
@@ -13,28 +13,18 @@ const fmt=n=>fmtNum(n);
 
 const starText=(n,max=3)=>'★'.repeat(n)+'☆'.repeat(Math.max(0,max-n));
 
-function progressLabel(goal,p,run){
-  if(p.done)return '✓';
-  if(goal.type==='tile'){
-    const best=Math.min(p.target,Math.max(p.current,...run.board.flat().filter(Boolean).map(x=>x.value)));
-    return `${best}/${p.target}`;
-  }
-  if(goal.type==='empty')return p.done?'✓':`${p.current} / max. ${p.target}`;
-  return `${fmt(p.current)}/${fmt(p.target)}`;
-}
-
 function tileRow(values, opts={}){
   const wrap=document.createElement('span');wrap.className='goal-row'+(opts.cls?' '+opts.cls:'');
-  for(const v of values)wrap.append(miniTile(v,{gold:!!opts.gold,ghost:!!opts.ghost||v==null,cls:'goal-tile'}));
+  for(const v of values)wrap.append(miniTile(v,{gold:!!opts.gold,ghost:v==null,cls:'goal-tile'}));
   return wrap;
 }
 
-function tileGrid(rows, opts={}){
+function tileGrid(rows){
   const g=document.createElement('span');g.className='goal-grid';
   g.style.setProperty('--cols', String(Math.max(...rows.map(r=>r.length))));
   for(const row of rows){
     const r=document.createElement('span');r.className='goal-grid-row';
-    for(const v of row)r.append(miniTile(v,{ghost:!!opts.ghost||v==null,cls:'goal-tile'}));
+    for(const v of row)r.append(miniTile(v,{ghost:v==null,cls:'goal-tile'}));
     g.append(r);
   }
   return g;
@@ -87,29 +77,120 @@ function goalPicture(goal){
   return pic;
 }
 
-export function renderGoalItem(goal,run){
-  const p=goalProgress(goal,run),li=document.createElement('li');
-  li.className='goal-chip'+(p.done?' is-done':'');li.dataset.type=goal.type;
-  const count=goal.count|0;
-  if((goal.type==='make'||goal.type==='street'||goal.type==='long'||goal.type==='purge'||goal.type==='clear') && count>1){
-    li.dataset.many='1';
+const SLOT_MAX=6;
+
+function goalSlotNeed(goal){
+  const typ=goal.type;
+  if(typ==='score'||typ==='empty') return 0;
+  if(typ==='tile'||typ==='fuse') return 1;
+  if(typ==='combo') return goal.chain|0;
+  if(typ==='clear'||typ==='purge') return goal.tiles|0;
+  return goal.count|0;
+}
+
+function usesSlots(goal){
+  const n=goalSlotNeed(goal);
+  return n>0 && n<=SLOT_MAX;
+}
+
+function goalCue(goal){
+  const de=getLang()!=='en';
+  switch(goal.type){
+    case 'street': return de?'Straße':'Street';
+    case 'long': return de?'lang':'long';
+    case 'clear':
+    case 'purge': return de?'weg':'clear';
+    case 'empty': return 'max';
+    default: return '';
+  }
+}
+
+function hudPicture(goal){
+  const typ=goal.type;
+  if(typ==='score'){
+    const pic=document.createElement('span');pic.className='goal-pic';pic.setAttribute('aria-hidden','true');
+    const s=document.createElement('span');s.className='goal-score-mark';s.textContent='★';pic.append(s);
+    return pic;
+  }
+  if(typ==='empty'){
+    const pic=document.createElement('span');pic.className='goal-pic is-empty-pic';pic.setAttribute('aria-hidden','true');
+    pic.append(tileRow([1,null],{cls:'is-faded'}));
+    return pic;
   }
   const pic=goalPicture(goal);
-  const v=document.createElement('b');v.className='goal-count';v.textContent=progressLabel(goal,p,run);
-  li.append(pic,v);
-  li.setAttribute('aria-label',`${goalText(goal)}, ${v.textContent}`);
+  if(typ==='make'||typ==='combo') pic.querySelectorAll('.goal-plus').forEach(el=>el.remove());
+  return pic;
+}
+
+function renderSlots(n, filled){
+  const ul=document.createElement('ul');
+  ul.className='goal-slots';
+  ul.setAttribute('aria-hidden','true');
+  const need=Math.max(0, Math.min(SLOT_MAX, n|0));
+  const have=Math.max(0, Math.min(need, filled|0));
+  for(let i=0;i<need;i++){
+    const li=document.createElement('li');
+    li.className='goal-slot'+(i<have?' is-filled':' is-empty');
+    ul.append(li);
+  }
+  return ul;
+}
+
+function hudTrack(goal, run){
+  const p=goalProgress(goal,run);
+  const wrap=document.createElement('span');
+  wrap.className='goal-hud-track';
+  if(usesSlots(goal)){
+    const need=goalSlotNeed(goal);
+    const typ=goal.type;
+    const filled=p.done?need:(typ==='tile'||typ==='fuse'?(p.done?1:0):p.current);
+    wrap.append(renderSlots(need, filled));
+  } else if(!p.done){
+    const b=document.createElement('b');
+    b.className='goal-hud-count';
+    b.textContent=`${fmt(p.current)}/${fmt(p.target)}`;
+    wrap.append(b);
+  }
+  if(p.done){
+    const ok=document.createElement('span');
+    ok.className='goal-hud-check';
+    ok.setAttribute('aria-hidden','true');
+    ok.textContent='✓';
+    wrap.append(ok);
+  }
+  return wrap;
+}
+
+function spokenProgress(goal, run){
+  const p=goalProgress(goal,run);
+  if(p.done) return '✓';
+  if(usesSlots(goal)) return `${Math.min(goalSlotNeed(goal), typCurrent(goal,p))}/${goalSlotNeed(goal)}`;
+  return `${fmt(p.current)}/${fmt(p.target)}`;
+}
+
+function typCurrent(goal,p){
+  const typ=goal.type;
+  if(typ==='tile'||typ==='fuse') return p.done?1:0;
+  return p.current;
+}
+
+export function renderGoalItem(goal,run){
+  const p=goalProgress(goal,run),li=document.createElement('li');
+  li.className='goal-hud'+(p.done?' is-done':'');
+  li.dataset.type=goal.type;
+  li.append(hudPicture(goal));
+  const cue=goalCue(goal);
+  if(cue){
+    const lbl=document.createElement('span');
+    lbl.className='goal-hud-cue';
+    lbl.textContent=cue;
+    li.append(lbl);
+  }
+  li.append(hudTrack(goal,run));
+  li.setAttribute('aria-label',`${goalText(goal)}, ${spokenProgress(goal,run)}`);
   li.title=goalText(goal);
   return li;
 }
-function decorateChip(li, goal, many){
-  if(!many)return li;
-  const lbl=document.createElement('span');lbl.className='goal-lbl';lbl.textContent=goalShort(goal);
-  const count=li.querySelector('.goal-count');
-  if(count)count.before(lbl);else li.append(lbl);
-  return li;
-}
-
-
 
 export function lockText(lock){
   if(!lock)return '';
@@ -117,274 +198,40 @@ export function lockText(lock){
   return t('campaign.lockPrev');
 }
 
-
-
-function renderSlots(n, filled, tileValue, {purge=false, kind=''}={}){
-  const ul=document.createElement('ul');
-  ul.className='goal-slots'+(kind?' is-'+kind:'');
-  ul.setAttribute('aria-hidden','true');
-  const need=Math.max(0, Math.min(6, n|0));
-  const have=Math.max(0, Math.min(need, filled|0));
-  for(let i=0;i<need;i++){
-    const li=document.createElement('li');
-    const on=i<have;
-    li.className='goal-slot'+(on?' is-filled':' is-empty');
-    const tile=miniTile(tileValue,{ghost:!on,cls:'goal-tile'+(purge&&on?' is-purge':'')+(kind==='clear'?' is-clear':'')});
-    li.append(tile);
-    ul.append(li);
-  }
-  return ul;
-}
-
-function renderBar(current, target){
-  const wrap=document.createElement('div');
-  wrap.className='goal-bar';
-  const tot=Math.max(0, target|0), now=Math.max(0, Math.min(tot, current|0));
-  wrap.setAttribute('role','progressbar');
-  wrap.setAttribute('aria-valuemin','0');
-  wrap.setAttribute('aria-valuemax',String(tot));
-  wrap.setAttribute('aria-valuenow',String(now));
-  const fill=document.createElement('span');fill.className='goal-bar-fill';
-  fill.style.width=(tot>0?Math.max(0,Math.min(100, now/tot*100)):0)+'%';
-  const lbl=document.createElement('span');lbl.className='goal-bar-label';
-  lbl.textContent=`${fmt(now)} / ${fmt(tot)}`;
-  wrap.append(fill,lbl);
-  return wrap;
-}
-
-function streetUnit(filled, {long=false}={}){
-  const n=long?LONG_STREET:4;
-  const vals=Array.from({length:n},(_,i)=>i+1);
-  const wrap=document.createElement('span');
-  wrap.className='goal-unit'+(filled?' is-filled':' is-empty');
-  wrap.append(tileRow(vals,{ghost:!filled}));
-  return wrap;
-}
-
-function fuseUnit(goal, filled){
-  const wrap=document.createElement('span');
-  wrap.className='goal-unit is-fuse'+(filled?' is-filled':' is-empty');
-  const shape=goal.shape, s=goal.size|0;
-  if(shape==='t'){
-    if(s>=5) wrap.append(tileGrid([[null,3,null],[3,3,3],[null,3,null]],{ghost:!filled}));
-    else wrap.append(tileGrid([[null,3,null],[3,3,3]],{ghost:!filled}));
-  } else {
-    const n=Math.max(3, Math.min(6, s||3));
-    const v=n>=5?3:1;
-    wrap.append(tileRow(Array(n).fill(v),{ghost:!filled}));
-  }
-  return wrap;
-}
-
-function renderTrack(goal, run){
-  const p=goalProgress(goal,run);
-  if(goalUsesBar(goal)) return renderBar(p.current, p.target);
-  switch(goal.type){
-    case 'make': return renderSlots(goal.count, p.current, goal.value);
-    case 'tile': return renderSlots(1, p.done?1:0, goal.value);
-    case 'clear': return renderSlots(goal.tiles, p.current, 2, {kind:'clear'});
-    case 'purge': return renderSlots(goal.tiles, p.current, goal.value, {purge:true});
-    case 'combo': return renderSlots(goal.chain, p.current, 1, {kind:'combo'});
-    case 'street': {
-      const row=document.createElement('div');row.className='goal-units';
-      for(let i=0;i<(goal.count|0);i++) row.append(streetUnit(i<p.current));
-      return row;
-    }
-    case 'long': {
-      const row=document.createElement('div');row.className='goal-units';
-      for(let i=0;i<(goal.count|0);i++) row.append(streetUnit(i<p.current,{long:true}));
-      return row;
-    }
-    case 'empty': {
-      const track=renderSlots(goal.max, p.done?(goal.max|0):0, 1, {kind:'empty'});
-      track.classList.toggle('is-met', p.done);
-      return track;
-    }
-    case 'fuse': return fuseUnit(goal, p.done);
-    default: return renderBar(p.current, p.target);
-  }
-}
-
-function renderGoalRow(goal, run, {withText=true}={}){
-  const p=goalProgress(goal,run);
-  const li=document.createElement('li');
-  li.className='goal-row-card'+(p.done?' is-done':'');
-  li.dataset.type=goal.type;
-  if(withText){
-    const s=document.createElement('p');s.className='goal-row-text';s.textContent=goalText(goal);
-    li.append(s);
-  }
-  const track=document.createElement('div');track.className='goal-row-track';
-  track.append(renderTrack(goal,run));
-  if(p.done){
-    const ok=document.createElement('span');ok.className='goal-row-check';ok.setAttribute('aria-hidden','true');ok.textContent='✓';
-    track.append(ok);
-  }
-  li.append(track);
-  const spoken=goalText(goal)+(p.done?', ✓':goalUsesBar(goal)?`, ${fmt(p.current)} / ${fmt(p.target)}`:'');
-  li.setAttribute('aria-label',spoken);
-  return li;
-}
-
-function composeGoalCopy(run,n){
-  const intro=goalIntro(run.level.goals);
-  const lesson=hasKey('tip.'+n)?t('tip.'+n):'';
-  let tip=lesson;
-  if(!lesson) tip=intro;
-  else if(n>5 && intro && !lesson.includes(intro.slice(0,18))) tip=`${intro} ${lesson}`;
-  if(!lesson && run.level.tool){
-    const extra=run.level.tool==='extraMoves'?t('campaign.hardExtra'):t('campaign.hardTool',{tool:toolName(run.level.tool)});
-    tip=intro?`${intro} ${extra}`:extra;
-  }
-  return (tip||'').trim();
-}
-
 export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,onGift,onCloseSelect,onStar,reduceMotion}={}){
   const hud=$('campaign-hud'),levelEl=$('campaign-level'),goalsEl=$('campaign-goals'),movesEl=$('campaign-moves'),tipEl=$('campaign-tip'),capEl=$('campaign-tool-cap');
-  let introRun=null, introPhase='hidden', introTimer=null, introAnim=null, prevDone=null;
-  function introEls(){
-    let intro=$('goal-intro');
-    if(!intro){
-      intro=document.createElement('div');intro.id='goal-intro';intro.className='goal-intro';intro.hidden=true;
-      intro.setAttribute('role','dialog');intro.setAttribute('aria-modal','true');
-      intro.innerHTML='<div class="goal-intro-card" role="button" tabindex="0"><p class="goal-intro-text"></p><ul class="goal-intro-progress"></ul></div>';
-      (document.querySelector('.game-stage')||document.body).append(intro);
-      const dismiss=()=>collapseIntro();
-      intro.addEventListener('click',dismiss);
-      const card=intro.querySelector('.goal-intro-card');
-      card.addEventListener('click',ev=>{ev.stopPropagation();dismiss();});
-      card.addEventListener('keydown',ev=>{
-        if(ev.key==='Enter'||ev.key===' ' ){ev.preventDefault();dismiss();}
-      });
-    }
-    let hint=$('goal-hint');
-    if(!hint){
-      hint=document.createElement('button');hint.id='goal-hint';hint.type='button';hint.className='goal-task';
-      hint.hidden=true;
-      hint.innerHTML='<span class="goal-task-label"></span><span class="goal-task-bang" aria-hidden="true">!</span>';
-      const level=document.getElementById('campaign-level');
-      const goal=document.querySelector('.campaign-goal');
-      let head=goal?.querySelector('.campaign-goal-head');
-      if(!head){
-        head=document.createElement('div');head.className='campaign-goal-head';
-        if(level){level.before(head);head.append(level);}
-        else goal?.prepend(head);
-      }
-      head.append(hint);
-      hint.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();expandIntro();});
-    }
-    return {
-      intro,hint,
-      card:intro.querySelector('.goal-intro-card'),
-      text:intro.querySelector('.goal-intro-text'),
-      progress:intro.querySelector('.goal-intro-progress'),
-      label:hint.querySelector('.goal-task-label'),
-      bang:hint.querySelector('.goal-task-bang'),
-    };
+  let prevDone=null;
+  function dropGoalPopups(){
+    $('goal-intro')?.remove();
+    $('goal-hint')?.remove();
+    document.querySelectorAll('.campaign-goal-head').forEach(head=>{
+      const level=head.querySelector('#campaign-level, .campaign-level');
+      if(level) head.before(level);
+      head.remove();
+    });
   }
-  function setIntroText(copy){
-    const {intro,hint,text,label}=introEls();
-    if(text)text.textContent=copy;
-    if(label)label.textContent=t('goal.task');
-    hint.setAttribute('aria-label',t('goal.hintAria'));
-    hint.title=t('goal.hintAria');
-    intro.setAttribute('aria-label',copy);
-  }
-  function fillIntroProgress(run){
-    const {progress,text,intro}=introEls();
-    if(!progress||!run?.level?.goals)return;
-    const goals=run.level.goals;
-    const many=goals.length>1;
-    progress.classList.toggle('is-pictorial',true);
-    progress.classList.toggle('is-several',many);
-    progress.classList.toggle('is-three',goals.length>=3);
-    if(text){
-      text.textContent=many?'':(goalText(goals[0])||'');
-      text.hidden=!text.textContent;
-    }
-    intro.setAttribute('aria-label', goals.map(goalText).filter(Boolean).join(' '));
-    progress.replaceChildren(...goals.map(goal=>renderGoalRow(goal,run,{withText:many})));
-  }
-  function syncTaskFeedback(run){
-    const {hint,bang}=introEls();
-    if(!run?.level?.goals)return;
+  function syncHudFeedback(run){
+    if(!run?.level?.goals||!goalsEl)return;
     const done=run.level.goals.map(g=>!!goalProgress(g,run).done);
+    const just=!!(prevDone&&done.some((d,i)=>d&&!prevDone[i]));
     const all=done.length>0&&done.every(Boolean);
-    const just=prevDone&&done.some((d,i)=>d&&!prevDone[i]);
-    prevDone=done;
-    hint.classList.toggle('is-complete',all);
-    if(bang)bang.textContent=all?'✓':'!';
-    if(just){
-      hint.classList.remove('is-pulse');
-      void hint.offsetWidth;
-      hint.classList.add('is-pulse');
+    const rows=[...goalsEl.children];
+    rows.forEach((li,i)=>{
+      const now=!!done[i];
+      const was=!!(prevDone&&prevDone[i]);
+      if(just&&now&&!was){
+        li.classList.remove('is-pulse');
+        void li.offsetWidth;
+        li.classList.add('is-pulse');
+      }
+    });
+    goalsEl.classList.toggle('is-all-done', all);
+    if(just&&all){
+      goalsEl.classList.remove('is-pulse');
+      void goalsEl.offsetWidth;
+      goalsEl.classList.add('is-pulse');
     }
-  }
-  function clearIntroTimer(){if(introTimer){clearTimeout(introTimer);introTimer=null;}if(introAnim){try{introAnim.cancel();}catch{}introAnim=null;}}
-  function hideIntro(){
-    clearIntroTimer();
-    const {intro,hint,card}=introEls();
-    intro.getAnimations().forEach(a=>a.cancel());
-    card?.getAnimations().forEach(a=>a.cancel());
-    intro.style.opacity='';intro.hidden=true;intro.classList.remove('is-in','is-out');
-    if(card){card.style.transform='';card.style.opacity='';}
-    hint.hidden=true;hint.classList.remove('is-landed','is-pulse','is-complete');
-    const bang=hint.querySelector('.goal-task-bang');if(bang)bang.textContent='!';
-    introPhase='hidden';introRun=null;prevDone=null;
-  }
-  function showIntro(copy,run){
-    const {intro,hint,card}=introEls();
-    setIntroText(copy);
-    fillIntroProgress(run);
-    clearIntroTimer();
-    introPhase='open';introRun=run;
-    hint.hidden=false;hint.classList.remove('is-landed');
-    intro.getAnimations().forEach(a=>a.cancel());
-    card?.getAnimations().forEach(a=>a.cancel());
-    if(card){card.style.transform='';card.style.opacity='';}
-    intro.style.opacity='';
-    intro.classList.remove('is-out','is-in');intro.hidden=false;
-    void intro.offsetWidth;
-    intro.classList.add('is-in');
-  }
-  function collapseIntro(){
-    if(introPhase!=='open')return;
-    introPhase='closing';
-    clearIntroTimer();
-    const {intro,hint,card}=introEls();
-    hint.hidden=false;
-    let done=false;
-    const finish=()=>{
-      if(done)return;done=true;
-      clearIntroTimer();
-      intro.getAnimations().forEach(a=>a.cancel());
-      card?.getAnimations().forEach(a=>a.cancel());
-      intro.style.opacity='';
-      if(card){card.style.transform='';card.style.opacity='';}
-      intro.hidden=true;intro.classList.remove('is-in','is-out');
-      introPhase='collapsed';
-      hint.classList.remove('is-landed');void hint.offsetWidth;hint.classList.add('is-landed');
-    };
-    if(reduceMotion?.matches||!card||!card.animate){finish();return;}
-    const a=card.getBoundingClientRect(),b=hint.getBoundingClientRect();
-    if(b.width<2||a.width<2){finish();return;}
-    const dx=(b.left+b.width/2)-(a.left+a.width/2);
-    const dy=(b.top+b.height/2)-(a.top+a.height/2);
-    const s=Math.max(.08,Math.min(b.width/a.width,b.height/a.height));
-    intro.classList.add('is-out');
-    introAnim=card.animate([
-      {transform:'translate(0,0) scale(1)',opacity:1},
-      {transform:`translate(${dx}px,${dy}px) scale(${s})`,opacity:.12}
-    ],{duration:420,easing:'cubic-bezier(.2,.7,.2,1)',fill:'forwards'});
-    intro.animate([{opacity:1},{opacity:0}],{duration:420,easing:'linear',fill:'forwards'});
-    introAnim.finished.then(finish).catch(finish);
-    introTimer=setTimeout(finish,520);
-  }
-  function expandIntro(){
-    if(introPhase==='open'||introPhase==='closing')return;
-    const copy=composeGoalCopy(introRun,lastHud?.n)||introEls().text?.textContent||'';
-    if(!copy||!introRun)return;
-    showIntro(copy,introRun);
+    prevDone=done;
   }
 
   // launch-28: im Abenteuer nur +3 Züge und Rakete (beliebig oft).
@@ -406,22 +253,20 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
 
   function renderHud(run,n,label=null){
     lastHud={run,n,label};hud.hidden=false;
+    dropGoalPopups();
     levelEl.textContent=label||(run.level.tool?t('campaign.levelHard',{n}):t('campaign.levelLabel',{n}));
     levelEl.title=levelEl.textContent;
-    goalsEl.hidden=true;
-    goalsEl.replaceChildren();
-    if(tipEl){tipEl.hidden=true;tipEl.textContent='';}
-    const copy=composeGoalCopy(run,n);
-    if(copy){
-      setIntroText(copy);
-      if(introRun!==run) { prevDone=null; showIntro(copy,run); }
-      else if(introPhase==='open') fillIntroProgress(run);
-      else if(introPhase==='hidden') { const {hint}=introEls(); hint.hidden=false; introPhase='collapsed'; }
-      else fillIntroProgress(run);
-      syncTaskFeedback(run);
-    } else {
-      hideIntro();
+    const goals=run.level.goals||[];
+    goalsEl.hidden=false;
+    goalsEl.classList.add('is-pictorial');
+    goalsEl.classList.toggle('is-several',goals.length>1);
+    goalsEl.classList.toggle('is-three',goals.length>=3);
+    goalsEl.replaceChildren(...goals.map(goal=>renderGoalItem(goal,run)));
+    if(tipEl){
+      if(n>=1&&n<=5&&hasKey('tip.'+n)){tipEl.hidden=false;tipEl.textContent=t('tip.'+n);}
+      else {tipEl.hidden=true;tipEl.textContent='';}
     }
+    syncHudFeedback(run);
     const left=Math.max(0,movesLeft(run));
     if(movesEl.textContent!==String(left))movesEl.textContent=String(left);
     const box=movesEl.closest('.campaign-moves');
@@ -442,29 +287,27 @@ export function createCampaignUI({onPlay,onNext,onRetry,onExtra,onMenu,onTool,on
     if(g<=0){capEl.hidden=true;capEl.textContent='';delete capEl.dataset.cap;return;}
     capEl.hidden=false;capEl.textContent=t('campaign.goldCap',{n:g});capEl.dataset.cap='gold';
   }
-  // gold = {extraMoves, rocket}: Gold-Geschenke (sternneutral, ohne Werbung). Sonst unbegrenzt;
-  // needsAd: vor dem Einsatz kommt ein Belohnungsclip (kein Werbefrei).
-  function renderTools(gold={},opts={}){
-    const {canExtra=true,armed=null,locked=false,needsAd=false,offline=false,toolsUsed=0,giftsUsed=0,freeTry=null}=opts;   // freeTry: Typ oder true (alle)
-    lastTools={inv:gold,opts:{canExtra,armed,locked,needsAd,offline,toolsUsed,giftsUsed,freeTry}};tools.hidden=false;
+  // stock = {extraMoves, rocket}: Vorrat, höchstens 1 je Typ (launch-42). Leere Knöpfe sind ausgegraut.
+  function renderTools(stock={},opts={}){
+    const {canExtra=true,armed=null,locked=false,toolsUsed=0,giftsUsed=0,freeTry=null}=opts;   // freeTry: Typ oder true (alle)
+    lastTools={inv:stock,opts:{canExtra,armed,locked,toolsUsed,giftsUsed,freeTry}};tools.hidden=false;
     renderToolCap(toolsUsed,giftsUsed);
-    const set=(btn,type,enabled,label)=>{
-      const g=Math.max(0,gold?.[type]|0),free=freeTry===true||freeTry===type;
+    const set=(btn,type,canUse,label)=>{
+      const g=Math.max(0,stock?.[type]|0),free=freeTry===true||freeTry===type,have=g>0||free;
       const c=btn.querySelector('[data-count]');
       c.textContent=g>0?String(g):'';c.hidden=!(g>0);c.classList.remove('is-zero');
-      btn.classList.toggle('is-gold',g>0);btn.classList.remove('is-empty');btn.dataset.shop='';btn.dataset.refill='';
-      btn.dataset.ad=(g<=0&&needsAd&&!free)?'1':'';
+      btn.classList.toggle('is-gold',g>0);btn.classList.toggle('is-empty',!have);
+      btn.dataset.shop='';btn.dataset.refill='';btn.dataset.ad='';btn.dataset.offline='';
       btn.dataset.free=free&&g<=0?'1':'';btn.dataset.freeLabel=t('tool.freeBadge');
-      const off=g<=0&&needsAd&&!free&&offline;btn.dataset.offline=off?'1':'';   // launch-31: ohne Verbindung gesperrt (Tippen → Hinweis)
-      btn.disabled=!enabled;
-      const aria=g>0?t('tool.goldAria',{label,n:g}):free?t('tool.freeTryAria',{label}):off?t('tool.offlineAria',{label}):needsAd?t('tool.adAria',{label}):t('tool.freeAria',{label});
+      btn.disabled=!canUse||!have;
+      const aria=g>0?t('tool.goldAria',{label,n:g}):free?t('tool.freeTryAria',{label}):t('tool.emptyAria',{label});
       btn.setAttribute('aria-label',aria);
     };
     set(extraBtn,'extraMoves',canExtra&&!locked,t('tool.help.extra'));
     set(rocketBtn,'rocket',!locked||armed==='rocket',t('tool.help.rocket'));
     rocketBtn.classList.toggle('is-armed',armed==='rocket');rocketBtn.setAttribute('aria-pressed',String(armed==='rocket'));
   }
-  function hide(){hud.hidden=true;tools.hidden=true;if(tipEl)tipEl.hidden=true;if(capEl)capEl.hidden=true;hideIntro();hideResult();}
+  function hide(){hud.hidden=true;tools.hidden=true;if(tipEl)tipEl.hidden=true;if(capEl)capEl.hidden=true;prevDone=null;dropGoalPopups();hideResult();}
   extraBtn.addEventListener('click',()=>onTool?.('extraMoves'));
   rocketBtn.addEventListener('click',()=>onTool?.('rocket'));
 

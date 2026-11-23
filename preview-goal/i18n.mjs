@@ -3,7 +3,7 @@
 import { STRINGS } from './locales.mjs?v=preview-goal';
 
 export const LANGS = Object.freeze(['de', 'en']);
-export const LANG_KEY = 'preview-goal-squish-lang-v1';
+export const LANG_KEY = 'squish-lang-v1';
 
 const listeners = new Set();
 let lang = 'en';

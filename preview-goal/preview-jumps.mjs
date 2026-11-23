@@ -36,7 +36,7 @@ export async function installPreviewJumps(api = {}) {
 
   const p = seedProgress(level);
   setProgress?.(p);
-  // Aufgabenkarte soll sichtbar sein, nicht hinter Erklärfenstern.
+  // Ziel-Anzeige oben soll sichtbar sein, nicht hinter Erklärfenstern.
   if (explainer && q.get('explain') !== '1') {
     for (const k of ['merge', 'merge5', 'street', 'tools', 'gifts', 'gates', 'ads', 'tool-cost', 'gold-used']) explainer.mark?.(k);
   }

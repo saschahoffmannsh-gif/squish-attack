@@ -37,7 +37,7 @@ export function installDeviceMotion({button, status, onImpulse, clearImpulses, c
   const supported = window.isSecureContext && typeof window.DeviceMotionEvent !== 'undefined';
   const filter = createMotionFilter();
   let enabled = false, pending = false, disposed = false;
-  const preferenceKey = 'preview-goal-squish-phone-motion-v1';
+  const preferenceKey = 'squish-phone-motion-v1';
   let wanted = false;
   try { wanted = localStorage.getItem(preferenceKey) === 'on'; } catch {}
   function remember(value) {

@@ -1,6 +1,6 @@
 import { TOOL_ICONS } from './tool-icons.mjs?v=preview-goal';
 import { getLang } from './i18n.mjs?v=preview-goal';
-import { addToStock, saveInventory } from './campaign.mjs?v=preview-goal';
+import { grantTool, saveInventory } from './campaign.mjs?v=preview-goal';
 import { createConfetti } from './confetti.mjs?v=preview-goal';
 import { createHaptics } from './haptics.mjs?v=preview-goal';
 import {
@@ -51,9 +51,8 @@ export function grantGold(type, id) {
   const inv = hooks.getInventory?.();
   if (!inv || !type || !id) return false;
   if ((inv.gifts || []).includes(id)) return false;
-  const next = addToStock(inv, { [type]: 1 });
-  next.gifts = [...(next.gifts || []), id];
-  next.at = Date.now();
+  const r = grantTool(inv, type);
+  const next = { ...r.inventory, gifts: [...(r.inventory.gifts || []), id], at: Date.now() };
   if (hooks.applyInventory) hooks.applyInventory(next);
   else {
     inv.extraMoves = next.extraMoves;
@@ -65,7 +64,7 @@ export function grantGold(type, id) {
     inv.at = next.at;
     saveInventory(inv);
   }
-  return true;
+  return r;
 }
 
 export function syncGifted(state) {
@@ -252,13 +251,30 @@ export function showPopup(event, { onClose } = {}) {
     if (!event.gift) return;
     busy = true;
     try {
-      grantGold(event.gift.type, event.gift.id);
+      const granted = grantGold(event.gift.type, event.gift.id);
       await wait(reduced() ? 80 : 280);
       if (giftImg) giftImg.src = GIFT_OPEN;
+      const got = granted && granted.status !== 'full' ? granted.type : event.gift.type;
       const from = giftImg || pocket;
-      await flyIcon(event.gift.type, from, pocket);
-      const live = [...document.querySelectorAll(`#home-menu .aw-chip[data-type="${event.gift.type}"]`)].find(isOnScreen);
-      if (live) await flyIcon(event.gift.type, pocket, live);
+      if (granted && granted.status === 'full') {
+        const note = document.createElement('p');
+        note.className = 'sp-note';
+        note.textContent = lang() === 'en' ? 'Inventory full — you already have both tools.' : 'Vorrat voll — Rakete und +3 Züge hast du schon.';
+        reward.append(note);
+      } else {
+        await flyIcon(got, from, pocket);
+        const live = [...document.querySelectorAll(`#home-menu .aw-chip[data-type="${got}"]`)].find(isOnScreen);
+        if (live) await flyIcon(got, pocket, live);
+        if (granted && granted.status === 'converted') {
+          const note = document.createElement('p');
+          note.className = 'sp-note';
+          const names = { rocket: lang() === 'en' ? 'Rocket' : 'Rakete', extraMoves: lang() === 'en' ? '+3 moves' : '+3 Züge' };
+          note.textContent = lang() === 'en'
+            ? `You already had ${names[granted.wanted] || granted.wanted}, so you get ${names[got] || got} instead.`
+            : `${names[granted.wanted] || granted.wanted} hattest du schon, darum ${names[got] || got}.`;
+          reward.append(note);
+        }
+      }
     } finally {
       busy = false;
     }

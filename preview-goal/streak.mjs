@@ -2,7 +2,7 @@
 // Counts total unique calendar login days — a missed day does not reset progress.
 // Calendar days are always the device-local date (YYYY-MM-DD).
 
-export const STORAGE_KEY = 'preview-goal-squish-streak-v1';
+export const STORAGE_KEY = 'squish-streak-v1';
 export const DAYS_PER_WEEK = 7;
 export const WEEK_COUNT = 4;
 export const JOURNEY_DAYS = WEEK_COUNT * DAYS_PER_WEEK;

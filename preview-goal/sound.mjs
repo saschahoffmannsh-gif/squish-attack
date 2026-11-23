@@ -66,7 +66,7 @@ export function createGameSound(button,{
   page=globalThis.document,
   storage=globalThis.localStorage,
 }={}) {
-  const key='preview-goal-squish-sound-v1';
+  const key='squish-sound-v1';
   let enabled=storage?.getItem(key)!=='off',context=null,master=null,paused=false,disposed=false;
   let lastRecord=0,countVoice=null,duckUntil=0,lastSlideAt=-1e3;
   const bytes=new Map(),buffers=new Map(),voices=new Set(),pending=[],lastPlays=[];

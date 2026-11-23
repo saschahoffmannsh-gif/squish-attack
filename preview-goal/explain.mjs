@@ -9,7 +9,7 @@ import { t, onLangChange } from './i18n.mjs?v=preview-goal';
 import { TOOL_ICONS, GIFT_SVG } from './tool-icons.mjs?v=preview-goal';
 import { starGate, CHAPTER_SIZE, LEVEL_GIFTS } from './campaign.mjs?v=preview-goal';
 
-export const EXPLAIN_KEY = 'preview-goal-squish-explain-seen-v1';
+export const EXPLAIN_KEY = 'squish-explain-seen-v1';
 const PALETTE = { 1: ['#5cc2ff', '#1f7ff0', '#0d3f9e'], 2: ['#ff7a66', '#e8291f', '#a3101a'], 3: ['#9df25a', '#38b81c', '#1b7a10'],
   4: ['#ffb04a', '#ff7a0c', '#b8460a'], 5: ['#b57cff', '#8a3cf0', '#5418a8'], 6: ['#ffe36b', '#ffc21f', '#c98a06'],
   7: ['#ff8cc6', '#f0459e', '#a8186a'], 8: ['#6ff0e2', '#1fc9bd', '#0e8a84'] };

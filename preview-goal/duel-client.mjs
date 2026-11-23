@@ -8,7 +8,7 @@ export function createDuelClient({canSync,onView,onPrepare,onBegin,onConnection,
   const input=document.getElementById('duel-input'),form=document.getElementById('duel-join-form');
   const hostTab=document.getElementById('duel-host-tab'),joinTab=document.getElementById('duel-join-tab');
   let session=null,view=null,flight=false,syncing=false,moving=false,connected=false,prepared=false,begun=false,opening=false,stopped=false,retryMove=null,offset=0,lastGood=0,mode='host';
-  const sessionKey='preview-goal-squish-duel-session-v1';
+  const sessionKey='squish-duel-session-v1';
   // Room codes are 6 digits now; 4-digit codes of rooms opened before the update still work.
   const CODE_LEN=6,CODE_RE=/^(\d{4}|\d{6})$/;
   // Adaptive polling (ms between requests). Any request - including moves - resets the clock,

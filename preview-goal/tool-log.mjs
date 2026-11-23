@@ -1,7 +1,7 @@
 // Werkzeug-Protokoll (launch-13, Testphase): nur lokal (localStorage), nie ans Backend.
 // Hält fest, wann/wo Hilfsmittel gebraucht wurden: Dummy-Werbung, Einsatz, Level-Versuche.
 // Reine Logik ohne DOM; storage ist austauschbar (Tests).
-export const TOOL_LOG_KEY = 'preview-goal-squish-tool-log-v1';
+export const TOOL_LOG_KEY = 'squish-tool-log-v1';
 export const TOOL_LOG_MAX_EVENTS = 4000;
 export const TOOL_LOG_MAX_ATTEMPTS = 3000;
 const TYPES = ['extraMoves', 'rocket', 'hint', 'wand'];

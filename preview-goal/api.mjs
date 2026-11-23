@@ -12,7 +12,7 @@ export function apiBase() {
   return DEFAULT_LOCAL;
 }
 
-const SAVE_KEY = 'preview-goal-squish-save-token-v1';
+const SAVE_KEY = 'squish-save-token-v1';
 
 export function hasSaveToken() {
   try { return /^[a-f0-9]{64}$/.test(globalThis.localStorage?.getItem(SAVE_KEY) || ''); } catch { return false; }
@@ -38,10 +38,5 @@ export function apiFetch(path, opts = {}) {
   const auth = headers.get('Authorization') || headers.get('authorization');
   if (!auth) headers.set('Authorization', `Bearer ${saveToken()}`);
   const suffix = path.startsWith('/') ? path : `/${path}`;
-  const method = String(opts.method || 'GET').toUpperCase();
-  // Vorschau: keine Backend-Schreibzugriffe.
-  if (method !== 'GET' && method !== 'HEAD') {
-    return Promise.reject(new Error('preview-goal: backend writes blocked'));
-  }
   return fetch(`${apiBase()}${suffix}`, { ...opts, headers, credentials: 'omit' });
 }

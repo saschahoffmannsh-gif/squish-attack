@@ -22,7 +22,6 @@ import {createShopUI} from './shop-ui.mjs?v=preview-goal';
 import {createGiftFx} from './gift-fx.mjs?v=preview-goal';
 import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=preview-goal';
 import {createAdUI} from './ad-ui.mjs?v=preview-goal';
-import {isOffline} from './native-ads.mjs?v=preview-goal';
 import {createStatsUI} from './stats-ui.mjs?v=preview-goal';
 import * as ToolLog from './tool-log.mjs?v=preview-goal';
 import {createProgressSync} from './progress-sync.mjs?v=preview-goal';
@@ -146,7 +145,7 @@ const newTile = value => ({ id: nextId++, value });
 // Feste Rätsel-Level (levels/levels-001-100.json). Der Endlos-Spielstand bleibt
 // in localStorage unangetastet: während der Kampagne wird nichts davon gespeichert,
 // beim Verlassen wird er wieder geladen.
-const MODE_KEY='preview-goal-squish-mode-v1';
+const MODE_KEY='squish-mode-v1';
 const LEVELS_URL=new URL('../levels/levels-001-100.json?v=preview-goal',import.meta.url);
 // launch-16: Test-Level für die neuen Squishes (Eis, Ketten, Bombe) – eigener kleiner Satz, kein Fortschritt/Protokoll.
 const LAB_URL=new URL('../levels/levels-lab.json?v=preview-goal',import.meta.url);
@@ -190,6 +189,8 @@ if(Camp.CURVE_STARS_RESET){const c=Camp.resetCurveStarsOnce(campaignProgress);ca
 // Schwellen neu bewertet – nie gelöscht, gelöste Level bleiben gelöst, schon offene Kapitel bleiben offen
 // (openChapters). Alter Werkzeug-Vorrat entfällt (Hilfen sind jetzt unbegrenzt), Gold-Geschenke bleiben. Epoche 28.
 {const m=Camp.migrateRules28Once(campaignProgress,inventory);if(m.migrated){campaignProgress=m.progress;inventory=m.inventory;Camp.saveProgress(campaignProgress);}}
+// launch-42: bereits gelöste Belohnungslevel nicht nachträglich mit Werkzeugen füllen; Vorrat auf 1 je Typ kürzen.
+{const m=Camp.markPastToolRewards(campaignProgress,inventory);if(m.marked)inventory=m.inventory;}
 // launch-19: Abenteuer-Fortschritt + Vorrat zusätzlich in der Cloud sichern (anonym, gleicher Geräte-Token).
 // Offline zuerst: lokal bleibt die Wahrheit, der Abgleich läuft still im Hintergrund (progress-sync.mjs).
 const progressSync=createProgressSync({fetch:apiFetch,epoch:epochOf(Camp.PROGRESS_EPOCH),hasToken:hasSaveToken,
@@ -197,7 +198,7 @@ const progressSync=createProgressSync({fetch:apiFetch,epoch:epochOf(Camp.PROGRES
   setLocal:(p,inv)=>{campaignProgress=p;Camp.saveProgress(p);if(inv!==inventory){inventory=inv;Camp.saveInventory(inv,undefined,false);}try{renderCampaign();void worldMenu.refresh?.();}catch{}}});
 const cloudSync=()=>{if(!labMode)progressSync.schedule();};
 progressSync.attach(window);
-const BUILD_LABEL='preview-goal';
+const BUILD_LABEL='launch-42';
 let toolLog=ToolLog.loadLog(),logAttempt=null;
 // Versuche, die beim letzten Mal offen blieben (Seite geschlossen), gelten als abgebrochen.
 if(toolLog.attempts.some(a=>!a.outcome)){for(const a of toolLog.attempts)if(!a.outcome)ToolLog.endAttempt(toolLog,a.id,{outcome:'quit',moves:a.moves});ToolLog.saveLog(toolLog);}
@@ -228,38 +229,31 @@ const campaignUI=createCampaignUI({
   reduceMotion,
 });
 onLangChange(()=>{if(labMode&&camp&&campaignMode)campaignUI.renderHud(camp.run,camp.n,labHudLabel());});
-// launch-28: Hilfsmittel (+3 Züge, Rakete) beliebig oft. Gold-Geschenke werden zuerst verbraucht (ohne Werbung).
-// launch-32: keine Hilfe kostet Sterne (Sterne = übrige Züge); ohne Werbefrei kommt vor jedem Einsatz ein Belohnungsclip.
+// launch-42: Hilfsmittel kommen aus dem Vorrat (höchstens 1 je Typ), nicht aus Belohnungsclips.
 const goldNow=()=>Camp.goldStock(inventory);
-// launch-29/32: Reihenfolge der Bild-Lektionen: erst „Hilfe ist okay, Sterne kommen von übrigen Zügen“ (L6), dann „Gold = Hilfe ohne Werbung“.
-// Gold bleibt im Vorrat, bis die Stern-Lektion gesehen ist (Tutorial L6 oder erste normale Hilfe), und im Tutorial-Level selbst.
-// Bestand: wer L6 schon gelöst oder die launch-28-Erklärung gesehen hat, gilt als belehrt.
 const costLessonDone=()=>explainer.seen('tool-cost')||explainer.seen('tools')||!!campaignProgress?.levels?.['6'];
-const goldBlocked=()=>!!(campaignMode&&(camp?.tutorialRun||!costLessonDone()));
-const hasGold=type=>!goldBlocked()&&(inventory?.[type]|0)>0;
-// launch-32: Hilfen kosten keine Sterne – nach einem Einsatz nur bei Gold ein kurzer Hinweis „ohne Werbung“.
+const hasGold=type=>(inventory?.[type]|0)>0;
 function announceToolCap(gold=false,type='rocket'){if(gold)showNote(t('note.goldUsed',{tool:Camp.toolName(type)}),2800);}
 /** Einsatz verbuchen: Gold aus dem Vorrat nehmen (falls Gold), protokollieren. ctx = Stand VOR dem Einsatz. */
 function commitTool(type,gold,ctx){
   if(gold){const g=Camp.spendGold(inventory,type);if(g){inventory=g;Camp.saveInventory(inventory);cloudSync();}}
   logTool('use',type,{...ctx,gold:!!gold});
 }
-/** launch-32: Bild-Lektionen. Nach der Tutorial-Hilfe: Sterne bleiben (übrige Züge zählen). Beim ersten Gold-Einsatz: gratis, ohne Werbung. */
+/** Bild-Lektionen. Tutorial L6: Sterne bleiben (übrige Züge). Erstes Geschenk aus dem Vorrat: Geschenk-Erklärung. */
 function toolLesson(type,{free=false,gold=false}={}){
   if(gold)return explainer.showOnceAs('gold-used','gifts',{used:type});
   if(free){explainer.mark('tool-cost');return explainer.show('tools',{used:type});}
   return explainer.showOnceAs('tool-cost','tools',{used:type});
 }
-// Tutorial (Level 6, bis es einmal gelöst ist): erst ein Hilfsmittel ausprobieren – gratis, ohne Werbung.
+// Tutorial (Level 6, bis es einmal gelöst ist): erst ein Hilfsmittel ausprobieren – gratis, ohne Vorrat.
 const TOOL_TUTORIAL_LEVEL=6;
 const tutorialToolPending=()=>!!(campaignMode&&camp?.tutorialTool&&!camp.run.toolsUsed.length&&!(camp.run.giftsUsed?.length));
 function tutorialToolDone(){if(camp?.tutorialTool){camp.tutorialTool=false;campaignUI.toolButton('rocket')?.classList.remove('is-tutor');campaignUI.toolButton('extraMoves')?.classList.remove('is-tutor');camp.tutorialDone=true;}}
-// ---------- Werbung (Dummy) + Werkzeug-Protokoll ----------
-// launch-28: Jeder Einsatz eines Abenteuer-Hilfsmittels verlangt einen Belohnungsclip, außer der Spieler
-// hat Werbefrei (App) oder setzt ein Gold-Geschenk ein. Im Web bleibt der Dummy-Clip als Testpfad.
-const adsEnabled=()=>Camp.AD_TOOLS;
-const refillMode=()=>adsEnabled()?'ad':shopEnabled()?'shop':null;
-const toolAdRequired=()=>campaignMode&&!!camp&&!labMode&&!isAdFree();
+// ---------- Werbung + Werkzeug-Protokoll ----------
+// launch-42: keine Belohnungsclips mehr für Hilfen. Zwischenwerbung läuft über ad-pacing (App).
+const adsEnabled=()=>false;
+const refillMode=()=>shopEnabled()?'shop':null;
+const toolAdRequired=()=>false;
 function logCtx(where){
   const r=camp?.run;if(!r)return {where};
   return {level:camp.n,move:r.moves,movesLeft:Camp.movesLeft(r),where,
@@ -282,22 +276,7 @@ const adPacing=createAdPacing({isAdFree});
 // launch-28: bebilderte Erklär-Fenster (Regeln, Hilfsmittel, Gold-Geschenke, Kapitel, Werbung).
 const explainer=createExplainer({sound,haptics});
 let adFollow=null,lastAd=null;
-/** Belohnungsclip vor dem Einsatz. Werbefrei oder kein Abenteuer → sofort true. Abbruch → false. */
-/** launch-31: Hilfe braucht einen Clip, aber keiner ist zu haben (offline / kein Clip geladen) → gesperrt, kurzer Hinweis.
- *  Werbefrei, Gold-Geschenke und die freie Tutorial-Hilfe brauchen keinen Clip und bleiben nutzbar. */
-function helpUnavailable(why='offline'){showNote(t(why==='offline'?'tool.offline':'tool.noAd'),2800);haptics.pulse?.('tap');}
-const helpOffline=()=>toolAdRequired()&&isOffline();
-function requestToolAd(type,where='tool'){
-  if(!toolAdRequired())return Promise.resolve(true);
-  if(isOffline()){helpUnavailable('offline');return Promise.resolve(false);}
-  if(adUI.isOpen)return Promise.resolve(false);
-  return explainer.showOnce('ads').then(()=>new Promise(resolve=>{
-    let done=false;
-    const finish=ok=>{if(done)return;done=true;adFollow=null;resolve(!!ok);};
-    adFollow={type,where,then:()=>finish(true),cancel:()=>finish(false)};
-    adUI.open(type);
-  }));
-}
+function helpUnavailable(why='empty'){showNote(t(why==='empty'?'tool.empty':'tool.noAd'),2800);haptics.pulse?.('tap');}
 function refreshAdFreeSettings(){
   const buy=document.getElementById('adfree-buy');
   const desc=document.getElementById('adfree-desc');
@@ -368,7 +347,9 @@ async function openGift(){
   await giftFx.open({items:[{type:gift.type,count:1}],gold:true,targetFor:target,onPop:()=>{
     const c=Camp.collectGift(inventory,gift.id);if(!c)return;
     inventory=c.inventory;Camp.saveInventory(inventory);cloudSync();
-    logTool('gift',gift.type,{...logCtx(campaignUI.resultOpen?'result':campaignMode?'level':'menu'),giftId:gift.id,giftLevel:Camp.giftLevel(gift.id)});   // launch-14: Geschenke im Protokoll
+    logTool('gift',c.gift.type,{...logCtx(campaignUI.resultOpen?'result':campaignMode?'level':'menu'),giftId:gift.id,giftLevel:Camp.giftLevel(gift.id),status:c.gift.status});
+    if(c.gift.status==='converted')showNote(t('note.toolConverted',{wanted:Camp.toolName(c.gift.wanted||gift.wanted||gift.type),got:Camp.toolName(c.gift.type)}),3200);
+    else if(c.gift.status==='full')showNote(t('note.toolFull'),3200);
     renderCampaign();if(campaignUI.resultOpen)campaignUI.setGifts(inventory.pending);
   }});
   if(campaignUI.resultOpen)campaignUI.setGifts(inventory.pending);
@@ -403,7 +384,7 @@ function renderCampaign(){
   if(!campaignMode||!camp)return;
   campaignUI.renderHud(camp.run,camp.n,labMode?labHudLabel():null);   // launch-28: Test-Titel nur im Testmodus
   const tutor=tutorialToolPending();
-  campaignUI.renderTools(goldBlocked()?{extraMoves:0,rocket:0}:goldNow(),{needsAd:toolAdRequired(),offline:helpOffline(),canExtra:camp.run.status==='playing',armed:armedTool,locked:camp.run.status!=='playing',
+  campaignUI.renderTools(goldNow(),{canExtra:camp.run.status==='playing',armed:armedTool,locked:camp.run.status!=='playing',
     toolsUsed:camp.run.toolsUsed.length,giftsUsed:camp.run.giftsUsed?.length|0,freeTry:tutor||null});
   for(const ty of Camp.ADVENTURE_TOOLS)campaignUI.toolButton(ty)?.classList.toggle('is-tutor',tutor);
 }
@@ -451,7 +432,7 @@ async function playLevel(n){
   await prepareLevel(n);
   await enterGame();
   if(labMode)showNote(levelNote(),5200);
-  // Die Aufgabe steht in der Startkarte. Nur Test-Level behalten den kurzen Hinweis oben.
+  // Die Aufgabe steht dauerhaft oben in der Ziel-Karte neben den Zügen.
   scheduleBombTick();
   await levelExplainers();
   showTutorialFinger(true);
@@ -511,8 +492,8 @@ async function finishLevel(){
   endLogAttempt(won?'won':'lost',{moves:r.moves,stars:won?Camp.starsOfRun(r):0,lostReason:r.lostReason});
   if(won){
     stars=Camp.starsOfRun(r);
-    if(!labMode){campaignProgress=Camp.recordResult(campaignProgress,camp.level.id,{stars,moves:r.moves});Camp.saveProgress(campaignProgress);cloudSync();adPacing.levelWon();}
-    if(!labMode&&Camp.TOOL_GIFTS){const g=Camp.queueGifts(inventory,campaignProgress);if(g.queued.length){inventory=g.inventory;Camp.saveInventory(inventory);cloudSync();}}
+    if(!labMode){campaignProgress=Camp.recordResult(campaignProgress,camp.level.id,{stars,moves:r.moves});Camp.saveProgress(campaignProgress);cloudSync();adPacing.levelWon(n);}
+    if(!labMode&&Camp.TOOL_GIFTS){const g=Camp.queueGifts(inventory,campaignProgress);if(g.queued.length){inventory=g.inventory;Camp.saveInventory(inventory);cloudSync();if(g.queued.some(x=>x.status==='full'))showNote(t('note.toolFull'),3200);}}
     sound.play('record');haptics.pulse('big');
     if(!reduceMotion.matches)visual.celebrateHud?.('queue-0',.3);
     // Erst kurz Konfetti über dem Brett, dann der Dialog mit den Sternen.
@@ -524,7 +505,7 @@ async function finishLevel(){
   paused=true;releaseGesture();phoneMotion.reset();
   const count=levelList().length,nextLock=n<count&&!labMode?Camp.lockReason(campaignProgress,n+1):null;
   campaignUI.showResult({n,won,stars,moves:r.moves,limit:Camp.moveLimit(r),base:r.level.moves,left:Camp.starMovesLeft(r),lostReason:r.lostReason,toolLevel:r.level.tool||null,
-    canNext:won&&n<count&&!nextLock,nextLock,gifts:Camp.TOOL_GIFTS&&!labMode?inventory.pending.slice():gifts,extraAvailable:1,extraGold:inventory.extraMoves|0,extraAd:toolAdRequired()&&!hasGold('extraMoves'),toolsUsed:r.toolsUsed.length,giftsUsed:r.giftsUsed?.length|0,tutorialTool:won&&!!camp.tutorialDone,
+    canNext:won&&n<count&&!nextLock,nextLock,gifts:Camp.TOOL_GIFTS&&!labMode?inventory.pending.slice():gifts,extraAvailable:(hasGold('extraMoves')||tutorialToolPending())?1:0,extraGold:inventory.extraMoves|0,extraAd:false,toolsUsed:r.toolsUsed.length,giftsUsed:r.giftsUsed?.length|0,tutorialTool:won&&!!camp.tutorialDone,
     unlockModes:won&&!labMode&&n===Camp.MODES_UNLOCK_LEVEL&&Camp.modesUnlocked(campaignProgress)});
   renderCampaign();
   // launch-32: Signal für die App-Hülle (z. B. ATT-Vorfrage erst nach dem ersten gelösten Level). Im Web ohne Zuhörer.
@@ -535,11 +516,11 @@ async function useExtraMoves(where='tool'){
   const r=camp.run;
   if(r.status==='won'||(r.status==='lost'&&r.lostReason!=='moves')){if(r.status==='lost')showNote(t('note.extraNoHelp'),2600);return;}
   const gold=hasGold('extraMoves'),free=tutorialToolPending();
+  if(!gold&&!free){helpUnavailable('empty');return;}
   // launch-39: Erklärung zuerst, dann der Einsatz – die +3-Animation bleibt frei.
   await toolLesson('extraMoves',{free,gold});
   if(!campaignMode||camp?.run!==r||busy)return;
-  if(!gold&&!free&&!await requestToolAd('extraMoves',where==='result'?'result':'tool'))return;
-  if(!campaignMode||camp?.run!==r||busy)return;
+  if(!gold&&!free&&!hasGold('extraMoves')&&!tutorialToolPending()){helpUnavailable('empty');return;}
   const ctx=logCtx(campaignUI.resultOpen?'result':'level');
   const wasLost=r.status==='lost';
   const added=Camp.addExtraMoves(r,3,{gift:gold});
@@ -581,9 +562,8 @@ async function toggleTool(type){
     return;
   }
   if(camp.run.status!=='playing'||busy||explainer.isOpen)return;
-  if(helpOffline()&&!hasGold(type)&&!tutorialToolPending()){helpUnavailable('offline');return;}   // launch-31: gar nicht erst scharf
-  // Gold/gratis vor der Lektion merken: die Lektion darf diesen Einsatz nicht nachträglich auf Gold umbiegen.
   const gold=hasGold('rocket'),free=tutorialToolPending();
+  if(!gold&&!free){helpUnavailable('empty');return;}
   const gen=++toolArmGen;
   // launch-39: erste Lektion beim Antippen der Rakete, vor dem Scharfstellen und vor dem Platzen.
   await toolLesson('rocket',{free,gold});
@@ -603,7 +583,7 @@ async function rocketAt(tileId){
   if(!cell||!camp||busy)return false;
   if(camp.run.board[cell[0]][cell[1]]?.bound){showNote(t('note.chainVsRocket'),2200);return false;}
   const meta=armedToolMeta,gold=meta?!!meta.gold:hasGold('rocket'),free=meta?!!meta.free:tutorialToolPending(),run=camp.run;
-  if(!gold&&!free&&!await requestToolAd('rocket'))return false;
+  if(!gold&&!free){helpUnavailable('empty');return false;}
   if(!campaignMode||camp?.run!==run||busy||!cellOf(tileId))return false;
   const ctx=logCtx('level');
   if(!Camp.useRocket(run,cell[0],cell[1],{gift:gold}))return false;
@@ -1407,7 +1387,6 @@ export const ready=start();
 // Erster Abgleich nach dem Laden, ohne den Start zu bremsen (nur wenn nötig, siehe progress-sync.mjs).
 void ready.then(()=>setTimeout(()=>{if(!duelMode)void progressSync.flush();},2500)).catch(()=>{});
 void ready.then(()=>loadLevels()).catch(()=>{});
-void ready.catch(()=> {booting=true;showNote(t('boot.graphicsFail'),60000);});
 void ready.then(()=>installPreviewJumps({
   worldMenu,
   play: arg => worldMenu.play(arg),
@@ -1419,3 +1398,4 @@ void ready.then(()=>installPreviewJumps({
   openShop: () => shopUI.open?.(),
   openSelect: () => { const list=levelList(); if(list) campaignUI.openSelect({levels:list,progress:campaignProgress}); },
 })).catch(()=>{});
+void ready.catch(()=> {booting=true;showNote(t('boot.graphicsFail'),60000);});
