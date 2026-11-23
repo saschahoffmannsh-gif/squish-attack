@@ -230,15 +230,33 @@ async function popMetrics(page) {
 
 
 // --- launch-42: Werkzeuge ohne Clip, Vorrat, Werbefrei-Text ---
+async function startAdventure(page, level=1) {
+  await page.evaluate(() => { const p=document.getElementById('streak-pop'); if(p) p.remove(); });
+  await page.$$eval('#home-screen button, [data-nav]', bs => (bs.find(b => b.dataset.nav === 'levels') || bs.find(b => b.dataset.nav === 'adventure')).click());
+  await page.waitForFunction(() => document.getElementById('campaign-screen') && !document.getElementById('campaign-screen').hidden, { timeout: 20000 }).catch(()=>{});
+  if (await page.evaluate(() => document.getElementById('campaign-screen')?.hidden !== false)) {
+    await page.$$eval('#home-screen button, [data-nav]', bs => (bs.find(b => b.dataset.nav === 'levels') || {}).click?.());
+    await page.waitForFunction(() => document.getElementById('campaign-screen') && !document.getElementById('campaign-screen').hidden, { timeout: 20000 });
+  }
+  await sleep(300);
+  const sel = `.campaign-level-btn[data-level="${level}"]`;
+  await page.waitForSelector(sel, { timeout: 15000 });
+  await page.$eval(sel, el => el.scrollIntoView({ block: 'center' }));
+  await sleep(200);
+  await page.click(sel);
+  await page.waitForFunction(() => window.SquishGame.state?.started && !window.SquishGame.state?.busy, { timeout: 60000, polling: 100 });
+  const intro = await page.$('#goal-intro:not([hidden])');
+  if (intro) { await page.click('.goal-intro-card').catch(()=>{}); await page.waitForFunction(() => document.querySelector('#goal-intro')?.hidden, { timeout: 4000 }).catch(()=>{}); await sleep(200); }
+}
+
 {
-  // Frisches Spiel: leere Knöpfe ausgegraut, kein AD-Abzeichen. Merker darf nicht vorab
-  // gesetzt sein: markPastToolRewards läuft selbst und trägt nichts nach (nichts gelöst).
-  const P = await newPage({});
-  await P.page.$$eval('#home-screen button, [data-nav]', bs => (bs.find(b => b.dataset.nav === 'adventure') || bs.find(b => b.dataset.nav === 'levels')).click());
-  await P.page.waitForFunction(() => window.SquishGame.state?.started && !window.SquishGame.state?.busy, { timeout: 60000, polling: 100 });
-  await P.page.waitForSelector('#goal-intro:not([hidden]), .campaign-tools', { timeout: 20000 });
-  const intro = await P.page.$('#goal-intro:not([hidden])');
-  if (intro) { await P.page.click('.goal-intro-card').catch(()=>{}); await sleep(400); }
+  // Frisches Spiel: leere Knöpfe ausgegraut, kein AD-Abzeichen.
+  const today = localDateISO();
+  const P = await newPage({
+    'squish-explain-seen-v1': JSON.stringify(['merge', 'merge5', 'street', 'tools', 'gifts', 'gates', 'ads', 'tool-cost', 'gold-used']),
+    'squish-streak-v1': JSON.stringify({ v: 2, title: 'noob', week: 1, dayInWeek: 1, totalDays: 1, lastCheckIn: today, gifted: [], complete: false }),
+  });
+  await startAdventure(P.page);
   const tools = await P.page.evaluate(() => {
     const info = id => {
       const b = document.getElementById(id);
@@ -253,15 +271,14 @@ async function popMetrics(page) {
 }
 {
   // Vorrat mit Rakete: Knopf aktiv, Zähler 1, kein AD. Merker gesetzt, damit keine Gaben nachgetragen werden.
+  const today = localDateISO();
   const P = await newPage({
     'squish-campaign-tool-rewards-42': 'launch-42',
     'squish-campaign-tools-v1': JSON.stringify({ version: 3, extraMoves: 0, rocket: 1, hint: 0, wand: 0, gifts: [], pending: [], at: 1 }),
     'squish-explain-seen-v1': JSON.stringify(['merge', 'merge5', 'street', 'tools', 'gifts', 'gates', 'ads', 'tool-cost', 'gold-used']),
+    'squish-streak-v1': JSON.stringify({ v: 2, title: 'noob', week: 1, dayInWeek: 1, totalDays: 1, lastCheckIn: today, gifted: [], complete: false }),
   });
-  await P.page.$$eval('#home-screen button, [data-nav]', bs => (bs.find(b => b.dataset.nav === 'adventure') || {}).click?.());
-  await P.page.waitForFunction(() => window.SquishGame.state?.started && !window.SquishGame.state?.busy, { timeout: 60000, polling: 100 });
-  const intro = await P.page.$('#goal-intro:not([hidden])');
-  if (intro) { await P.page.click('.goal-intro-card').catch(()=>{}); await sleep(400); }
+  await startAdventure(P.page);
   const tools = await P.page.evaluate(() => {
     const b = document.getElementById('tool-rocket');
     const e = document.getElementById('tool-extra');
@@ -283,7 +300,7 @@ async function popMetrics(page) {
     'squish-explain-seen-v1': JSON.stringify(['merge', 'merge5', 'street', 'tools', 'gifts', 'gates', 'ads', 'tool-cost', 'gold-used']),
   });
   const queued = await P.page.evaluate(() => {
-    const i = window.SquishGame.campaign.inventory;
+    const i = JSON.parse(localStorage.getItem('squish-campaign-tools-v1') || '{}');
     return { pending: (i.pending || []).map(g => [g.id, g.type, g.status]), gifts: (i.gifts || []).slice(), extra: i.extraMoves | 0, rocket: i.rocket | 0 };
   });
   // markPast merkt tool-14 als schon erhalten, weil Level 14 im Stand steht – das ist gewollt für Bestandsspieler.
@@ -307,7 +324,7 @@ async function popMetrics(page) {
   });
   const st = await P.page.evaluate(() => ({
     merker: localStorage.getItem('squish-campaign-tool-rewards-42'),
-    gifts: (window.SquishGame.campaign.inventory.gifts || []).slice(),
+    gifts: JSON.parse(localStorage.getItem('squish-campaign-tools-v1') || '{}').gifts || [],
   }));
   ok(`${lang} vor L14 kein tool-14-Merker`, st.merker === 'launch-42' && !st.gifts.includes('tool-14'), JSON.stringify(st));
   await P.ctx.close();
