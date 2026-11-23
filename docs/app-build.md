@@ -146,7 +146,7 @@ Einmaliger In-App-Kauf, **kein** Abonnement, **kein** Verbrauchsartikel.
 |---|---|---|
 | **App-ID (Bundle-ID)** | `de.hoffmann.squishattack` | `app/capacitor.config.json` → `appId` **und** in Xcode → Target App → Signing & Capabilities → Bundle Identifier (setzt `PRODUCT_BUNDLE_IDENTIFIER` in `app/ios/App/App.xcodeproj/project.pbxproj`). Danach `npm run sync`. |
 | **AdMob-App-ID** | `ca-app-pub-3940256099942544~1458002511` (Google-Test) | `app/ios/App/App/Info.plist` → `GADApplicationIdentifier` |
-| **AdMob-Anzeigenblöcke** | Google-Test-IDs für Rewarded und Interstitial | `app/src/app-config.mjs` → `admob.rewardedId`, `admob.interstitialId` |
+| **AdMob-Anzeigenblöcke** | Google-Test-IDs für Interstitial (Rewarded seit launch-42 ungenutzt) | `app/src/app-config.mjs` → `admob.interstitialId` |
 | **Test-Modus Werbung** | `testing: true` | `app/src/app-config.mjs` → erst **nach** dem Eintragen der echten IDs auf `false` |
 | **Produkt-IDs (Werkzeug-Shop)** | `de.hoffmann.squishattack.<shop-id>`, z. B. `…rocket_3`, `…bundle_mix` | Präfix in `app/src/app-config.mjs` → `store.productPrefix`; die Shop-IDs kommen aus `SHOP_CONFIG` in `game/shop.mjs`. In App Store Connect als **Verbrauchsartikel** genau so anlegen. Die Testdatei `app/ios/App/App/Squish.storekit` muss dieselben IDs haben (bei neuem Präfix dort mit ändern). Shop bleibt ausgeblendet. |
 | **Werbefrei (IAP)** | `squish.adfree` (ohne Präfix), einmalig **4,99 EUR**, **Nicht-Verbrauch** | `app/src/app-config.mjs` → `store.adFreeProductId`. In App Store Connect als Non-Consumable mit genau dieser ID anlegen (siehe Abschnitt „Werbefrei in App Store Connect anlegen“). Testdatei `Squish.storekit` enthält denselben Eintrag. Einstellungen: Kauf + „Käufe wiederherstellen“. |

@@ -1,17 +1,23 @@
 // Werbe-Takt. Reine Logik, kein DOM, kein Netz – im Browser ohne Werbe-Adapter ungenutzt,
 // in der App-Hülle mit AdMob verbunden.
-// - Abenteuer: nach jedem 10. gewonnenen Level (launch-28; vorher 5.) ist eine Zwischenwerbung fällig. Sie wird erst
-//   beim Start des nächsten Levels gezeigt (nie mitten in einem Level, nie über dem Sterne-Dialog).
-// - Endlos: nach je 15 Minuten (launch-32; vorher 10) aktiver Spielzeit eine kurze Zwischenwerbung ohne Belohnung
-//   (launch-29: Endlos hat keine Werkzeuge), direkt nach einem Zug, wenn alles ruhig ist.
+// - Abenteuer (launch-42): in Level 1–5 keine Zwischenwerbung, danach nach jedem 3. gelösten
+//   Level (also nach 8, 11, 14, …). Sie wird erst beim Start des nächsten Levels gezeigt
+//   (nie mitten in einem Level, nie über dem Sterne-Dialog).
+// - Endlos: nach je 15 Minuten (launch-32) aktiver Spielzeit eine kurze Zwischenwerbung ohne
+//   Belohnung, direkt nach einem Zug, wenn alles ruhig ist.
 //   Lange Pausen zwischen zwei Zügen zählen nur bis MAX_GAP_MS (Pause/Menü/Hintergrund zählt nicht).
-//   Werbefrei (`isAdFree`) unterdrückt Zwischenwerbung und Endlos-Werbung, nicht den Hilfsmittel-Takt.
+//   Werbefrei (`isAdFree`) unterdrückt Zwischenwerbung und Endlos-Werbung.
 export const AD_PACING = Object.freeze({
-  interstitialEvery: 10,          // jedes 10. gewonnene Abenteuer-Level (launch-28; launch-26: 5)
-  endlessOfferMs: 15 * 60 * 1000, // launch-32: 15 Minuten aktive Endlos-Spielzeit (vorher 10)
+  interstitialEvery: 3,           // nach je 3 gelösten Leveln, sobald interstitialFreeLevels vorbei sind
+  interstitialFreeLevels: 5,      // die ersten 5 Level ohne Zwischenwerbung
+  endlessOfferMs: 15 * 60 * 1000, // launch-32: 15 Minuten aktive Endlos-Spielzeit
   maxGapMs: 30 * 1000,            // mehr zählt zwischen zwei Zügen nicht
 });
 const KEY = 'squish-ad-pacing-v1';
+
+export function interstitialAfterWin(n, { freeLevels = AD_PACING.interstitialFreeLevels, every = AD_PACING.interstitialEvery } = {}) {
+  return Number.isInteger(n) && n > freeLevels && (n - freeLevels) % every === 0;
+}
 
 export function createAdPacing({ storage = globalThis.localStorage, config = AD_PACING, now = () => Date.now(), isAdFree = () => false } = {}) {
   const free = () => { try { return !!isAdFree(); } catch { return false; } };
@@ -20,11 +26,11 @@ export function createAdPacing({ storage = globalThis.localStorage, config = AD_
   const save = () => { try { storage?.setItem(KEY, JSON.stringify(state)); } catch {} };
   let endlessMs = 0, lastMove = null;
   return {
-    /** Ein Abenteuer-Level wurde gewonnen (nicht für Test-Level aufrufen). → true, wenn jetzt eine Zwischenwerbung fällig wird. */
-    levelWon() {
+    /** Ein Abenteuer-Level n wurde gewonnen (nicht für Test-Level aufrufen). → true, wenn jetzt eine Zwischenwerbung fällig wird. */
+    levelWon(n) {
       state.wins++;
       // Werbefrei: Siege zählen weiter, aber es wird keine Zwischenwerbung fällig.
-      if (!free() && state.wins % config.interstitialEvery === 0) state.due = true;
+      if (!free() && interstitialAfterWin(n, { freeLevels: config.interstitialFreeLevels, every: config.interstitialEvery })) state.due = true;
       save(); return !free() && state.due;
     },
     get interstitialDue() { return !free() && state.due; },

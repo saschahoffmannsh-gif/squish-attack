@@ -50,7 +50,7 @@ squish-app/                    (eigenes Repo oder Ordner, Capacitor-Projekt)
 | Teil | Wo | Stand |
 |---|---|---|
 | Kauf-Schnittstelle | `game/shop.mjs` → `registerNativeStore(adapter)`, auch über `window.SquishNative.registerNativeStore` | vorbereitet; Shop ist aus (`SHOP_CONFIG.enabled = false`) |
-| Werbe-Schnittstelle | `game/native-ads.mjs` → `registerNativeAds({showRewarded, showInterstitial})`, auch über `window.SquishNative.registerNativeAds` | neu in launch-19; ohne Adapter bleibt es bei der Dummy-Werbung |
+| Werbe-Schnittstelle | `game/native-ads.mjs` → `registerNativeAds({showInterstitial})`, auch über `window.SquishNative.registerNativeAds` | launch-42: nur noch Zwischenwerbung; ohne Adapter keine Werbung |
 | Native Kleinigkeiten | Branch `capacitor-bridge`, `game/native.mjs`: Haptik, Duell-Code teilen, Bildschirm wach halten, Pause/Weiter speichert, Game-Center-Platzhalter | **noch nicht in `main`**; der Branch liegt 58 Commits zurück und wird beim Start der App-Hülle nachgezogen |
 | CORS für die App | Edge Function `squish` v2 | live |
 | Fortschritt in der Cloud | `game/progress-sync.mjs`, Route `/progress` | live seit launch-19 |
@@ -68,11 +68,10 @@ Mobile Ads SDK und die UMP-Einwilligung.
 
 | Stelle | Art | Regel |
 |---|---|---|
-| Abenteuer: Hilfsmittel einsetzen (ohne Werbefrei) | **Rewarded** | je Einsatz ein Clip; nur wenn er zu Ende geschaut wurde, wird die 1×-Ladung verbraucht. Kein Vorrat, kein Ansammeln. Werbefrei (`squish.adfree`, 4,99 €, StoreKit, Nicht-Verbrauch): gleicher 1×-Takt, ohne Clip |
-| Abenteuer: nach jedem **5.** gewonnenen Level (launch-26, vorher 10) | **Interstitial** | Pflichtwerbung, erst vor dem nächsten Level, nie mitten im Level; entfällt bei Werbefrei |
-| Endlos: alle 15 Minuten ein Angebot, direkt nach einem Zug (wenn die Animationen fertig sind) | **Rewarded** (Angebot, kann weggedrückt werden) | Belohnung = **ein Werkzeug für den eigenen Endlos-Vorrat** (reihum Rakete, Zauberstab; Protokoll-Quelle `ad-endless`); der Abenteuer-Vorrat bleibt unberührt; **kein** Weiterspielen nach Game Over; entfällt bei Werbefrei |
-| Geschenke nach Level 3/6/10/20 | – | launch-26: entfallen vollständig, auch nicht in den Endlos-Vorrat |
-| Werbefrei (einmalig 4,99 €, `squish.adfree`) | IAP, nur App | Hook `registerAdFree({ isAdFree, purchase, restore })`. Entfernt Clips, Zwischenwerbung und das Endlos-Angebot, nicht das 1×-Limit. Werkzeug-Shop bleibt aus; in den Einstellungen: Kauf und „Käufe wiederherstellen“ |
+| Abenteuer: Hilfsmittel | – | launch-42: nach festgelegten Leveln ein Werkzeug im Vorrat (max. 1 je Typ). Keine Belohnungsclips. |
+| Abenteuer: keine Werbung in Level 1–5, danach nach jedem **3.** gelösten Level | **Interstitial** | Pflichtwerbung erst vor dem nächsten Level, nie mitten im Level; entfällt bei Werbefrei |
+| Endlos: alle 15 Minuten, direkt nach einem Zug (wenn die Animationen fertig sind) | **Interstitial** | ohne Belohnung; entfällt bei Werbefrei |
+| Werbefrei (einmalig 4,99 €, `squish.adfree`) | IAP, nur App | Hook `registerAdFree({ isAdFree, purchase, restore })`. Entfernt die Zwischenwerbung im Abenteuer und im Endlos-Spiel, nicht die Hilfsmittel. Werkzeug-Shop bleibt aus; in den Einstellungen: Kauf und „Käufe wiederherstellen“ |
 
 Werkzeug-Pakete im Shop bleiben ausgeblendet. Energie-Systeme: keine.
 
@@ -81,14 +80,9 @@ Werkzeug-Pakete im Shop bleiben ausgeblendet. Energie-Systeme: keine.
 import { AdMob, RewardAdPluginEvents } from '@capacitor-community/admob';
 await AdMob.initialize({ initializeForTesting: false });
 // Einwilligung (UMP) beim Start; ATT erst nach dem ersten gelösten Level (siehe 4.)
-const REWARDED = 'ca-app-pub-XXX/YYY', INTER = 'ca-app-pub-XXX/ZZZ';
+const INTER = 'ca-app-pub-XXX/ZZZ';
 window.SquishNative.registerNativeAds({
   name: 'admob',
-  async showRewarded({ placement, tool }) {
-    await AdMob.prepareRewardVideoAd({ adId: REWARDED });
-    const reward = await AdMob.showRewardVideoAd();     // löst nur bei vollständigem Ansehen aus
-    return { ok: !!reward };
-  },
   async showInterstitial({ placement }) {
     await AdMob.prepareInterstitial({ adId: INTER });
     await AdMob.showInterstitial();

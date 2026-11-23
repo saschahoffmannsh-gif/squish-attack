@@ -1,0 +1,139 @@
+/* Kampagne: Ziel-Karte, Züge, Hilfsmittel, Ergebnis und Levelauswahl. Gleiche Creme-Optik wie die Punkte-Anzeige. */
+.campaign-hud[hidden],.campaign-tools[hidden],.campaign-tool-cap[hidden],.campaign-result[hidden],.campaign-screen[hidden] {display:none;}
+.is-campaign .scores,.is-campaign .score-label {visibility:hidden;}
+.campaign-hud {position:absolute;inset:0;z-index:3;pointer-events:none;}
+.is-start .campaign-hud,.is-start .campaign-tools,.is-start .campaign-tool-cap {visibility:hidden;}
+.campaign-goal,.campaign-moves {position:absolute;box-sizing:border-box;background:#f5f2ec;border:1px solid #c5beb3;border-radius:11px;color:#302b25;font-family:ui-rounded,"SF Pro Rounded","Avenir Next",system-ui,sans-serif;}
+.campaign-goal {left:3%;top:30.5cqw;width:41%;min-height:17cqw;padding:1.4cqw 2.2cqw 1.6cqw;}
+.campaign-level {display:block;font-size:clamp(8px,2.3cqw,11px);font-weight:800;letter-spacing:.12em;color:#65594c;}
+.campaign-goal ul {list-style:none;margin:.6cqw 0 0;padding:0;display:grid;gap:.6cqw;}
+.campaign-goal li {display:flex;align-items:baseline;justify-content:space-between;gap:1.5cqw;font-size:clamp(10px,3.05cqw,15px);line-height:1.18;font-weight:750;}
+.campaign-goal li b {flex:none;font-variant-numeric:tabular-nums;font-weight:850;color:#7a4b16;}
+.campaign-goal li.is-done {color:#2f7b3b;}
+.campaign-goal li.is-done b {color:#2f9b45;}
+.campaign-moves {left:46.5%;top:34cqw;width:16%;padding:1.2cqw 0 1.4cqw;text-align:center;}
+.campaign-moves span {display:block;font-size:clamp(8px,2.3cqw,11px);font-weight:800;letter-spacing:.12em;color:#65594c;}
+.campaign-moves output {display:block;font-size:clamp(20px,7.4cqw,36px);line-height:1.05;font-weight:900;font-variant-numeric:tabular-nums;}
+.campaign-moves.is-low {background:#ffe4d6;border-color:#e59a73;}
+.campaign-moves.is-low output {color:#b6401a;}
+.campaign-tool-cap {position:absolute;left:3%;right:3%;top:151cqw;z-index:4;margin:0;padding:.5cqw 2cqw;box-sizing:border-box;
+  border-radius:10px;background:#0a1130f0;border:2px solid #ffd25a;color:#ffe8a3;text-align:center;
+  font:700 clamp(10px,2.7cqw,13px)/1.2 Fredoka,ui-rounded,system-ui,sans-serif;letter-spacing:.01em;
+  text-shadow:0 1px 0 #0a1130;box-shadow:0 2px 0 #6a3304,0 4px 10px #0006;pointer-events:none;}
+.campaign-tool-cap[hidden] {display:none;}
+.campaign-tool-cap[data-cap="0"] {border-color:#ff8a6a;color:#ffd0c4;}
+.campaign-tools {position:absolute;left:0;right:0;top:157cqw;height:18cqw;z-index:4;pointer-events:none;}
+.campaign-tool {position:absolute;top:0;width:16%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3cqw;
+  pointer-events:auto;border:1px solid #c5beb3;border-radius:14px;background:#f5f2ec;color:#302b25;font:900 clamp(15px,5cqw,24px)/1 ui-rounded,"SF Pro Rounded",system-ui,sans-serif;
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer;}
+.campaign-tool small {font-size:clamp(8px,2.3cqw,11px);font-weight:800;letter-spacing:.04em;color:#65594c;}
+.campaign-tool b {position:absolute;top:-1.6cqw;right:-1.6cqw;min-width:5.4cqw;height:5.4cqw;padding:0 1cqw;border-radius:99px;background:#86e9ff;color:#092035;font-size:clamp(9px,2.8cqw,13px);line-height:5.4cqw;box-shadow:0 1px 4px #0006;}
+.campaign-tool:disabled {opacity:.45;cursor:default;}
+.campaign-tool:not(:disabled):active {transform:translateY(2px);}
+.campaign-tool.is-armed {background:#ffd257;border-color:#b98a12;box-shadow:0 0 0 3px #ffd25780;}
+/* launch-26: sichtbarer Hinweis, dass der Einsatz einen Werbeclip braucht (Werbefrei: Attribut fehlt). */
+.campaign-tool[data-ad="1"]::after {content:"AD";position:absolute;left:3%;top:3%;padding:0 .4cqw;border-radius:3px;
+  background:#ffd257;color:#092035;font-size:clamp(6px,1.7cqw,8px);font-weight:900;letter-spacing:.03em;line-height:1.25;}
+.campaign-result #campaign-result-extra[data-refill="ad"] {position:relative;}
+/* launch-31: ohne Verbindung (Clip nötig, aber keiner zu haben) – Symbol grau, „kein Netz“-Abzeichen; Tippen zeigt den Hinweis. */
+.campaign-tool[data-offline="1"] > :not(b) {filter:grayscale(1);opacity:.5;}
+.campaign-tool[data-offline="1"]::after,.campaign-tool[data-ad="1"][data-offline="1"]::after {content:"";left:auto;right:-8%;top:auto;bottom:-8%;width:44%;aspect-ratio:1;padding:0;border-radius:50%;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='11' fill='%23ffffff' stroke='%230b0a16' stroke-width='2'/%3E%3Cpath d='M5.5 10.5a9 9 0 0 1 13 0M8.2 13.4a5.2 5.2 0 0 1 7.6 0' fill='none' stroke='%230b0a16' stroke-width='2.2' stroke-linecap='round'/%3E%3Ccircle cx='12' cy='16.6' r='1.6' fill='%230b0a16'/%3E%3Cpath d='M5 5l14 14' stroke='%23ff4d5e' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;}
+#tool-extra {left:3%;}
+
+.campaign-result {position:fixed;inset:0;z-index:40;}
+.campaign-result .dialog {width:min(100%,360px);text-align:center;}
+.campaign-stars {margin:6px 0 2px;font-size:44px;line-height:1;letter-spacing:.08em;color:#ffd257;text-shadow:0 2px 14px #ffbf2d66;}
+.campaign-stars[hidden] {display:none;}
+.campaign-result #campaign-result-message {margin:10px 0 14px;color:var(--menu-muted);font-size:13px;line-height:1.5;}
+.campaign-gift {margin:0 0 14px;padding:8px 10px;border-radius:12px;background:#86e9ff1f;border:1px solid #86e9ff55;color:var(--menu-cyan);font-weight:800;font-size:14px;}
+.campaign-gift[hidden] {display:none;}
+.campaign-panel {width:min(100%,420px);}
+.campaign-panel h2 {margin-bottom:6px;}
+.campaign-total {margin:0 0 10px !important;font-size:16px !important;font-weight:850;color:#ffd257;}
+.campaign-chapter {margin:10px 0 4px;text-align:left;}
+.campaign-chapter h3 {display:flex;justify-content:space-between;align-items:baseline;margin:0 4px 7px;font:850 14px/1.2 ui-rounded,system-ui,sans-serif;color:var(--menu-ink);}
+.campaign-chapter h3 small {font-size:12px;font-weight:750;color:var(--menu-muted);}
+.campaign-chapter h3 small.is-open {color:#8fe39b;}
+.campaign-grid {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;}
+.campaign-level-btn {display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:54px;padding:4px 0;border:1px solid var(--menu-border);border-radius:12px;
+  background:var(--menu-button-bg);box-shadow:var(--menu-button-shadow);color:var(--menu-ink);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+.campaign-level-btn .num {font:900 18px/1 ui-rounded,system-ui,sans-serif;}
+.campaign-level-btn .stars {font-size:11px;letter-spacing:.04em;color:#ffd257;min-height:13px;}
+.campaign-level-btn.is-done {border-color:#ffd25766;}
+.campaign-level-btn.is-locked {opacity:.5;cursor:not-allowed;}
+.campaign-level-btn.is-locked .num {font-size:15px;}
+.campaign-level-btn:focus-visible {outline:3px solid var(--menu-cyan);outline-offset:2px;}
+.campaign-level-btn.shake {animation:campaign-shake .32s;}
+@keyframes campaign-shake {25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
+.campaign-lock-note {min-height:18px;color:#ffbbc6 !important;font-weight:700;}
+@media(prefers-reduced-motion:reduce){.campaign-level-btn.shake{animation:none;}}
+
+/* launch-15: drei Ziele gleichzeitig – kurze Texte, etwas kleiner (375 px) */
+.campaign-goal ul.is-three {gap:.3cqw;}
+.campaign-goal ul.is-three li {font-size:clamp(9.5px,2.75cqw,13px);line-height:1.12;}
+/* Werkzeug-Level in der Levelauswahl: kleines Werkzeug-Symbol, höchstens 2 ★ */
+.campaign-level-btn.is-tool::after {content:"🔧";position:absolute;top:-6px;right:-5px;font-size:13px;line-height:1;filter:drop-shadow(0 1px 1px #0008);}
+.campaign-level-btn {position:relative;}
+/* launch-15: 100 Level – Kapitel außerhalb des Bildes nicht rendern (flüssiges Scrollen auf dem iPhone) */
+.campaign-chapter {content-visibility:auto;contain-intrinsic-size:auto 170px;}
+
+/* launch-16: Bomben-Countdown über dem Bomben-Squish (Comic-Abzeichen). Nur Text ändert sich 1×/s. */
+.bomb-layer{position:fixed;inset:0;pointer-events:none;z-index:6;contain:layout style}
+.bomb-badge{position:absolute;left:0;top:0;margin:-15px 0 0 -15px;width:30px;height:30px;border-radius:50%;
+  background:#fff4b8;border:3px solid #140a10;box-shadow:2px 2px 0 #140a10;display:grid;place-items:center;
+  font:800 15px/1 Fredoka,system-ui,sans-serif;color:#140a10;will-change:transform}
+.bomb-badge.is-waiting{background:#ffffff;opacity:.92}
+.bomb-badge.is-low{background:#ff5a3c;color:#fff;text-shadow:0 1px 0 #140a10}
+@media (prefers-reduced-motion:no-preference){.bomb-badge.is-low{animation:bomb-pulse 1s steps(2,end) infinite}}
+@keyframes bomb-pulse{50%{background:#ffd34d;color:#140a10}}
+
+/* launch-22: Tutorial-Tipp unter dem Brett. launch-24: Geisterfinger über die ganze Linie (CSS-Transform, kein rAF). */
+.campaign-tip {position:absolute;left:3%;right:3%;top:139cqw;z-index:4;margin:0;padding:1.4cqw 2.6cqw;box-sizing:border-box;
+  border-radius:12px;background:#0a1130f0;border:2px solid #ffd25a;color:#fff7e0;text-align:center;
+  font:700 clamp(11px,3.2cqw,15px)/1.25 Fredoka,ui-rounded,system-ui,sans-serif;letter-spacing:.01em;
+  text-shadow:0 1px 0 #0a1130;box-shadow:0 2px 0 #6a3304,0 6px 14px #0007;pointer-events:none;}
+.campaign-tip[hidden] {display:none;}
+.ghost-hint {position:fixed;inset:0;z-index:8;pointer-events:none;contain:strict;}
+.ghost-hint[hidden] {display:none;}
+.ghost-lane {position:absolute;left:0;top:0;box-sizing:border-box;border-radius:999px;
+  background:#1a15485c;border:2px solid #ffd25ab3;box-shadow:0 0 16px #ffd25a55,inset 0 0 10px #fff3;
+  pointer-events:none;}
+.ghost-hand {position:absolute;left:0;top:0;width:72px;height:72px;opacity:0;pointer-events:none;
+  filter:drop-shadow(0 0 10px #ffffffcc) drop-shadow(0 0 16px #ffd25a99) drop-shadow(0 5px 8px #0006);
+  will-change:transform,opacity;transform-origin:50% 50%;}
+.ghost-hand svg {display:block;width:100%;height:100%;transform:rotate(var(--rot,0deg));}
+.ghost-trail {position:absolute;width:20px;height:20px;border-radius:50%;pointer-events:none;opacity:0;
+  background:radial-gradient(circle,#ffffffd9 0%,#ffd25a99 42%,#ffd25a00 72%);
+  will-change:transform,opacity;}
+.ghost-arrow {display:none;position:absolute;left:0;top:0;height:28px;pointer-events:none;
+  filter:drop-shadow(0 0 8px #ffd25acc) drop-shadow(0 1px 0 #14163e);}
+.ghost-arrow svg {display:block;width:100%;height:100%;overflow:visible;}
+.ghost-hint.is-on .ghost-hand {animation:ghost-hand-swipe 2s ease-in-out infinite;}
+.ghost-hint.is-on .ghost-trail {animation:ghost-trail 2s ease-in-out infinite;}
+.ghost-hint.is-on .ghost-trail:nth-of-type(1) {animation-delay:.07s;}
+.ghost-hint.is-on .ghost-trail:nth-of-type(2) {animation-delay:.14s;}
+.ghost-hint.is-on .ghost-trail:nth-of-type(3) {animation-delay:.22s;}
+.ghost-hint.is-static .ghost-hand {animation:none;opacity:.9;transform:none;
+  filter:drop-shadow(0 0 12px #ffffffdd) drop-shadow(0 0 16px #ffd25acc) drop-shadow(0 3px 6px #0007);}
+.ghost-hint.is-static .ghost-trail {display:none;animation:none;}
+.ghost-hint.is-static .ghost-arrow {display:block;}
+@keyframes ghost-hand-swipe {
+  0% {transform:translate(0,0) scale(1.06);opacity:0;}
+  10% {transform:translate(0,0) scale(.84);opacity:.9;}
+  16% {transform:translate(0,0) scale(.84);opacity:.9;}
+  76% {transform:translate(var(--dx,0),var(--dy,0)) scale(.84);opacity:.86;}
+  86% {transform:translate(var(--dx,0),var(--dy,0)) scale(1.1);opacity:.82;}
+  100% {transform:translate(var(--dx,0),var(--dy,0)) scale(1.02);opacity:0;}
+}
+@keyframes ghost-trail {
+  0%,8% {transform:translate(0,0) scale(.55);opacity:0;}
+  16% {transform:translate(0,0) scale(.7);opacity:.5;}
+  76% {transform:translate(var(--dx,0),var(--dy,0)) scale(.15);opacity:0;}
+  100% {transform:translate(var(--dx,0),var(--dy,0)) scale(.1);opacity:0;}
+}
+@media (prefers-reduced-motion:reduce){
+  .ghost-hint.is-on .ghost-hand {animation:none;opacity:.9;transform:none;}
+  .ghost-hint.is-on .ghost-trail {display:none;animation:none;}
+  .ghost-hint.is-on .ghost-arrow {display:block;}
+}

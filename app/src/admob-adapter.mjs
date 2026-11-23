@@ -2,7 +2,7 @@
 // Capacitor-Brücke (Capacitor.Plugins.AdMob). Reihenfolge beim ersten Start:
 //   initialize → UMP-Einwilligung (requestConsentInfo / showConsentForm) → Anzeigen nur bei canRequestAds.
 //   launch-32: ATT nicht mehr hier beim Start (askTracking:false), sondern nach dem ersten gelösten Level (att-prompt.mjs).
-// Belohnung nur, wenn der Clip bis zum Ende lief (das Plugin lehnt sonst mit REWARDED_AD_CANCELLED ab).
+// launch-42: Belohnungsclips entfallen. showRewarded ist ein No-Op und lädt keine Rewarded-Einheit.
 export const EVENTS = Object.freeze({
   rewardDismissed: 'onRewardedVideoAdDismissed',
   interstitialDismissed: 'interstitialAdDismissed',
@@ -55,20 +55,9 @@ export function createAdMobAdapter({ AdMob, ids, testing = true, ready = Promise
   return {
     name: 'admob',
     get showing() { return showing; },
-    async showRewarded({ placement = 'tool' } = {}) {
-      if (showing) return { ok: false };
-      showing = true;   // sofort, damit nie zwei Clips gleichzeitig laufen
-      try {
-        if (!(await canShow())) return NA;
-        try { await limit(AdMob.prepareRewardVideoAd({ adId: ids.rewardedId, isTesting: !!testing }), loadTimeoutMs, 'rewarded load'); }
-        catch (e) { log('rewarded load ' + placement, e); return NA; }
-        const closed = onceEvent(AdMob, EVENTS.rewardDismissed, dismissTimeoutMs);
-        let reward = null;
-        try { reward = await AdMob.showRewardVideoAd(); } catch (e) { log('rewarded ' + placement, e); }
-        if (reward) await closed;   // erst weiter, wenn der Clip zu ist
-        return { ok: !!reward };
-      } catch (e) { log('rewarded ' + placement, e); return NA; }
-      finally { showing = false; }
+    async showRewarded() {
+      // launch-42: bewusst ungenutzt, kein SDK-Aufruf.
+      return { ok: false, unavailable: true };
     },
     async showInterstitial({ placement = 'level' } = {}) {
       if (showing) return { ok: false };

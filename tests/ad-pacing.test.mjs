@@ -1,32 +1,34 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { AD_PACING, createAdPacing } from '../game/ad-pacing.mjs';
+import { AD_PACING, createAdPacing, interstitialAfterWin } from '../game/ad-pacing.mjs';
 
 const mem = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k) }; };
 
-test('launch-28: Zwischenwerbung alle 10 gewonnenen Abenteuer-Level', () => {
-  assert.equal(AD_PACING.interstitialEvery, 10);
+test('launch-42: Zwischenwerbung erst nach Level 8, dann nach jedem 3. gelösten Level', () => {
+  assert.equal(AD_PACING.interstitialEvery, 3);
+  assert.equal(AD_PACING.interstitialFreeLevels, 5);
   assert.equal(AD_PACING.endlessOfferMs, 15 * 60 * 1000);
+  for (const n of [1, 2, 3, 4, 5, 6, 7, 9, 10, 12]) assert.equal(interstitialAfterWin(n), false, `kein Slot nach ${n}`);
+  for (const n of [8, 11, 14, 17, 20, 23, 26, 29, 32, 98]) assert.equal(interstitialAfterWin(n), true, `Slot nach ${n}`);
   const s = mem();
   const p = createAdPacing({ storage: s });
-  for (let i = 1; i <= 9; i++) {
-    assert.equal(p.levelWon(), false, `win ${i} noch nicht fällig`);
-  }
-  assert.equal(p.levelWon(), true);
+  for (const n of [1, 2, 3, 4, 5, 6, 7]) assert.equal(p.levelWon(n), false, `win ${n} noch nicht fällig`);
+  assert.equal(p.levelWon(8), true);
   assert.equal(p.interstitialDue, true);
   assert.equal(p.takeInterstitial(), true);
   assert.equal(p.interstitialDue, false);
   assert.equal(p.takeInterstitial(), false);
-  for (let i = 1; i <= 9; i++) assert.equal(p.levelWon(), false);
-  assert.equal(p.levelWon(), true);
+  assert.equal(p.levelWon(9), false);
+  assert.equal(p.levelWon(10), false);
+  assert.equal(p.levelWon(11), true);
 });
 
 test('Zähler und fälliger Merker überleben einen Neustart', () => {
   const storage = mem();
   const a = createAdPacing({ storage });
-  for (let i = 0; i < 10; i++) a.levelWon();
+  for (const n of [1, 2, 3, 4, 5, 6, 7, 8]) a.levelWon(n);
   const b = createAdPacing({ storage });
-  assert.equal(b.wins, 10);
+  assert.equal(b.wins, 8);
   assert.equal(b.takeInterstitial(), true);
 });
 
@@ -51,8 +53,8 @@ test('Endlos-Angebot nach 15 Minuten aktiver Spielzeit (launch-32), Pausen zähl
 test('Werbefrei unterdrückt Zwischenwerbung und Endlos-Angebot, Siege zählen weiter', () => {
   let owned = true;
   const p = createAdPacing({ storage: mem(), isAdFree: () => owned });
-  for (let i = 1; i <= 10; i++) assert.equal(p.levelWon(), false, `win ${i}`);
-  assert.equal(p.wins, 10);
+  for (const n of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]) assert.equal(p.levelWon(n), false, `win ${n}`);
+  assert.equal(p.wins, 11);
   assert.equal(p.interstitialDue, false);
   assert.equal(p.takeInterstitial(), false);
   let now = 1_000_000;

@@ -1,0 +1,94 @@
+/* The title screen has its own stage; the in-game dialogs keep their glass panels. */
+.start-menu-overlay {
+  background:
+    radial-gradient(ellipse at 50% 40%, #18384855, transparent 49%),
+    radial-gradient(ellipse at 50% 73%, #28194166, transparent 52%),
+    #08080a;
+}
+.title-menu {
+  width:min(100%, 424px);
+  max-height:100%;
+  overflow:auto;
+  scrollbar-width:thin;
+  overscroll-behavior:contain;
+  padding:20px 12px 26px;
+  text-align:center;
+  outline:none;
+  animation:title-arrive .32s ease-out both;
+}
+@keyframes title-arrive {from {opacity:0;transform:translateY(8px);}}
+.title-brand {position:relative;isolation:isolate;padding:10px 0 0;}
+.title-brand h2 {position:relative;margin:0 auto;width:min(88%, 340px);}
+.title-brand img {display:block;width:100%;height:auto;object-fit:contain;filter:drop-shadow(0 13px 22px #000a);}
+.title-brand p {margin:12px 0 0;color:#b9cadb;font-size:clamp(12px, 3.5vw, 14px);font-weight:650;letter-spacing:.075em;}
+.title-gel {
+  position:absolute;z-index:-1;display:block;width:clamp(24px,9vw,44px);aspect-ratio:1;
+  border-radius:34%;border:1px solid #ffffff47;
+  background:linear-gradient(146deg,#ffffff80,transparent 37%),var(--gel-color);
+  box-shadow:inset 0 2px 3px #ffffff55,inset 0 -6px 10px #0005,0 0 20px var(--gel-glow);
+  pointer-events:none;
+}
+.title-gel-cyan {--gel-color:#1296bd;--gel-glow:#00c9ff72;left:0;bottom:34%;transform:rotate(-24deg);}
+.title-gel-violet {--gel-color:#7849c0;--gel-glow:#a440ff72;right:1%;top:2%;transform:rotate(27deg);}
+.title-gel-rose {--gel-color:#ab365e;--gel-glow:#ff42ca65;width:17px;right:6%;bottom:22%;transform:rotate(-18deg);}
+.title-controls {width:min(100%, 316px);margin:34px auto 0;}
+.title-main-actions {position:relative;display:grid;justify-items:center;gap:5px;}
+.title-play,.title-shortcut,.title-retry {font:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+.title-play {
+  position:relative;isolation:isolate;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;min-height:72px;padding:12px 14px;border:1px solid #abf1ff;border-radius:26px;
+  background:linear-gradient(177deg,#97eeff 0%,#55dbfb 39%,#13a8df 76%,#0981b7 100%);
+  box-shadow:inset 0 2px 2px #e7fcffb0,inset 0 -5px 9px #00557b73,0 6px 0 #055072,0 8px 28px #00b8ef55;
+  color:#062035;font-size:clamp(19px,5vw,24px);font-weight:900;letter-spacing:-.025em;
+}
+.title-play::before {
+  content:"";position:absolute;z-index:-1;inset:5px 11px auto;height:37%;border-radius:20px 20px 50% 50%;
+  background:linear-gradient(#ffffff61,#ffffff02);pointer-events:none;
+}
+.title-play svg {width:25px;height:25px;fill:currentColor;}
+#menu-continue:not([hidden])+#menu-new.title-play {
+  width:auto;min-height:44px;margin-top:8px;padding:8px 16px;
+  border:0;border-radius:12px;background:none;box-shadow:none;color:#b8d6e8;font-size:14px;letter-spacing:0;
+}
+#menu-continue:not([hidden])+#menu-new.title-play svg,
+#menu-continue:not([hidden])+#menu-new.title-play::before {display:none;}
+.title-shortcuts {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:24px auto 0;}
+.title-menu .title-shortcut {
+  display:flex;flex-direction:column;align-items:center;gap:7px;min-width:0;min-height:92px;padding:3px;
+  border:0;border-radius:15px;background:none;color:#e3edf9;font-size:clamp(11px,3.4vw,14px);font-weight:750;
+}
+.title-shortcut small {margin-top:-4px;color:#b9aacd;font-size:11px;font-weight:600;}
+.title-icon {
+  display:grid;place-items:center;width:50px;height:49px;border-radius:17px;
+  border:1px solid #a581f9a0;color:#f1e7ff;
+  background:linear-gradient(155deg,#7951c7,#452878 82%);
+  box-shadow:inset 0 2px #ffffff36,inset 0 -4px #2e145c80,0 5px 13px #803bf84f;
+}
+.title-icon-settings {
+  border-color:#739eb591;color:#e0f6ff;background:linear-gradient(155deg,#385c70,#1e3547);
+  box-shadow:inset 0 2px #d1f3ff38,inset 0 -4px #0d233980,0 5px 13px #48bae329;
+}
+.title-icon svg {width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round;}
+.title-retry {min-height:44px;padding:8px 16px;border:1px solid #72bdd784;border-radius:12px;background:#173040;color:#d8f5ff;font-size:14px;font-weight:750;}
+.title-menu button:focus-visible {outline:2px solid #a0ecff;outline-offset:5px;}
+.title-menu button:disabled {opacity:.53;cursor:default;}
+.title-menu button[hidden] {display:none;}
+.title-menu button {transition:transform .14s ease,filter .14s ease;}
+.title-menu button:active:not(:disabled) {transform:translateY(3px) scale(.98);filter:brightness(.94);}
+@media(hover:hover) {.title-menu button:hover:not(:disabled) {filter:brightness(1.16);}}
+@media(max-height:680px) {
+  .title-menu {padding-block:13px 18px;}
+  .title-controls {margin-top:22px;}
+  .title-play {min-height:60px;}
+  .title-shortcuts {margin-top:19px;}
+}
+@media(max-height:500px) and (orientation:landscape) {
+  .title-menu {width:min(100%,690px);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:23px;}
+  .title-controls {margin-top:0;}
+  .title-brand p {font-size:11px;}
+}
+@media(prefers-reduced-motion:reduce) {
+  .title-menu {animation:none;}
+  .title-menu button {transition:none;}
+}

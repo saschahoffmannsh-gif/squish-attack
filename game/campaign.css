@@ -28,10 +28,10 @@
   touch-action:manipulation;-webkit-tap-highlight-color:transparent;cursor:pointer;}
 .campaign-tool small {font-size:clamp(8px,2.3cqw,11px);font-weight:800;letter-spacing:.04em;color:#65594c;}
 .campaign-tool b {position:absolute;top:-1.6cqw;right:-1.6cqw;min-width:5.4cqw;height:5.4cqw;padding:0 1cqw;border-radius:99px;background:#86e9ff;color:#092035;font-size:clamp(9px,2.8cqw,13px);line-height:5.4cqw;box-shadow:0 1px 4px #0006;}
-.campaign-tool:disabled {opacity:.45;cursor:default;}
+.campaign-tool:disabled,.campaign-tool.is-empty {opacity:.45;cursor:default;filter:grayscale(.75) brightness(.85);}
 .campaign-tool:not(:disabled):active {transform:translateY(2px);}
-.campaign-tool.is-armed {background:#ffd257;border-color:#b98a12;box-shadow:0 0 0 3px #ffd25780;}
-/* launch-26: sichtbarer Hinweis, dass der Einsatz einen Werbeclip braucht (Werbefrei: Attribut fehlt). */
+.campaign-tool.is-armed {background:#ffd257;border-color:#b98a12;box-shadow:0 0 0 3px #ffd25780;filter:none;opacity:1;}
+/* launch-26: AD-Abzeichen (launch-42 ungenutzt – Hilfen kommen aus dem Vorrat, nicht aus Clips). */
 .campaign-tool[data-ad="1"]::after {content:"AD";position:absolute;left:3%;top:3%;padding:0 .4cqw;border-radius:3px;
   background:#ffd257;color:#092035;font-size:clamp(6px,1.7cqw,8px);font-weight:900;letter-spacing:.03em;line-height:1.25;}
 .campaign-result #campaign-result-extra[data-refill="ad"] {position:relative;}

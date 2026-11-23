@@ -1,6 +1,6 @@
 import test, { beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { setLang } from '../game/i18n.mjs?v=launch-41';
+import { setLang } from '../game/i18n.mjs?v=launch-42';
 beforeEach(() => setLang('de', { persist: false }));
 import {
   createLevelRun, applyLevelMove, starsFor, replaySolution, goalProgress, queueOf, movesLeft,
@@ -230,7 +230,7 @@ test('Freischalten (launch-30): Sterne-Schranke am Kapitelanfang; offene Kapitel
   assert.equal(lockReason(played, 11), null);
 });
 
-import { FREE_TOOLS_PER_LEVEL, TOOL_STOCK, goldStock, spendGold, ADVENTURE_TOOLS, LEVEL_GIFTS, queueGifts, collectGift, addToStock } from '../game/campaign.mjs';
+import { FREE_TOOLS_PER_LEVEL, TOOL_STOCK, TOOL_CAP, goldStock, spendGold, ADVENTURE_TOOLS, LEVEL_GIFTS, queueGifts, collectGift, addToStock, grantTool, markPastToolRewards, TOOL_REWARD_KEY, TOOL_REWARD_MARKER, resolveToolGrant } from '../game/campaign.mjs';
 import { SHOP_CONFIG, shopProducts, formatPrice, purchase, activeStore, registerNativeStore, productById } from '../game/shop.mjs';
 import { useRocket, progressVector, emptyInventory, loadInventory, saveInventory, spendTool, grantGifts, toolName } from '../game/campaign.mjs';
 import { findHint, hintState } from '../game/hint-solver.mjs';
@@ -257,34 +257,35 @@ test('Inventar: laden, speichern, verbrauchen; alter Hammer wird Rakete', () => 
   assert.equal(spendTool(inv, 'hint').hint, 1);
   assert.deepEqual(loadInventory({ getItem: () => '{"version":1,"gifts":[],"extraMoves":-3}' }).extraMoves, 0);
   const old = loadInventory({ getItem: () => '{"version":1,"extraMoves":1,"hammer":2,"gifts":["level-10","stars-20"]}' });
-  assert.deepEqual(old, { version: 3, extraMoves: 1, rocket: 2, hint: 0, wand: 0, gifts: ['level-10', 'stars-20'], pending: [] });
+  assert.deepEqual(old, { version: 3, extraMoves: 1, rocket: 1, hint: 0, wand: 0, gifts: ['level-10', 'stars-20'], pending: [] }); // launch-42: max. 1
   assert.equal(toolName('rocket'), 'Rakete'); assert.equal(toolName('extraMoves'), '+3 Züge');
 });
 
-test('Gold-Geschenke (launch-28): nur nach Level 3, 10, 20, 30, 50, 75, 100 – je einmal, nur Rakete/+3', () => {
-  assert.deepEqual(LEVEL_GIFTS.map(([n]) => n), [3, 10, 20, 30, 50, 75, 100]);
+test('Hilfsmittel-Geschenke (launch-42): nach festgelegten Leveln, je einmal, nur Rakete/+3', () => {
+  assert.deepEqual(LEVEL_GIFTS.map(([n]) => n), [14, 16, 22, 34, 43, 49, 59, 65, 74, 81, 91]);
   assert.ok(LEVEL_GIFTS.every(([, ty]) => ADVENTURE_TOOLS.includes(ty)));
   let p = emptyProgress();
-  for (let n = 1; n <= 9; n++) p = recordResult(p, n, { stars: 3, moves: 5, now: 1 });   // 27★
+  for (let n = 1; n <= 13; n++) p = recordResult(p, n, { stars: 3, moves: 5, now: 1 });
   let r = grantGifts(emptyInventory(), p);
-  assert.deepEqual(r.granted.map(g => g.id), ['gold-3']);                                 // kein Sterne-Geschenk, kein Level 6 mehr
-  assert.equal(r.inventory.rocket, 1);
-  p = recordResult(p, 10, { stars: 3, moves: 5, now: 1 });
-  r = grantGifts(r.inventory, p);
-  assert.deepEqual(r.granted.map(g => g.id), ['gold-10']);
+  assert.deepEqual(r.granted, []);                                 // erst nach Level 14
+  p = recordResult(p, 14, { stars: 3, moves: 5, now: 1 });
+  r = grantGifts(emptyInventory(), p);
+  assert.deepEqual(r.granted.map(g => g.id), ['tool-14']);
   assert.equal(r.inventory.extraMoves, 1);
-  assert.deepEqual(grantGifts(r.inventory, p).granted, []);                               // nicht doppelt (auch nicht beim Wiederholen)
-  p = recordResult(p, 10, { stars: 3, moves: 4, now: 3 });
-  assert.deepEqual(grantGifts(r.inventory, p).granted, []);
-  for (let n = 11; n <= 25; n++) p = recordResult(p, n, { stars: 3, moves: 4, now: 2 });
+  assert.equal(r.granted[0].type, 'extraMoves');
+  assert.deepEqual(grantGifts(r.inventory, p).granted, []);         // nicht doppelt (auch nicht beim Wiederholen)
+  p = recordResult(p, 16, { stars: 3, moves: 5, now: 1 });
   r = grantGifts(r.inventory, p);
-  assert.deepEqual(r.granted, [{ id: 'gold-20', type: 'rocket' }]);
-  // alte Merker (level-3 …) blockieren die neuen Gold-Geschenke nicht
-  const old = loadInventory({ getItem: () => '{"version":3,"extraMoves":0,"rocket":0,"hint":0,"wand":0,"gifts":["level-3","level-6","level-10"],"pending":[]}' });
-  assert.deepEqual(grantGifts(old, p).granted.map(g => g.id), ['gold-3', 'gold-10', 'gold-20']);
-  assert.equal(giftLevel('gold-20'), 20); assert.equal(giftLevel('level-20'), 20); assert.equal(giftLevel('stars-10'), null);
-  // Gold-Vorrat: nur Rakete/+3, Verbrauch einzeln
-  assert.deepEqual(goldStock({ ...emptyInventory(), rocket: 2, hint: 5 }), { extraMoves: 0, rocket: 2 });
+  assert.equal(r.granted[0].id, 'tool-16');
+  assert.equal(r.granted[0].type, 'rocket');
+  assert.equal(r.inventory.rocket, 1);
+  // alte Merker (gold-3 …) blockieren die neuen Geschenke nicht
+  const old = loadInventory({ getItem: () => '{"version":3,"extraMoves":0,"rocket":0,"hint":0,"wand":0,"gifts":["gold-3","gold-10","level-14"],"pending":[]}' });
+  const g2 = grantGifts(old, p);
+  assert.ok(g2.granted.some(g => g.id === 'tool-14'));
+  assert.ok(g2.granted.some(g => g.id === 'tool-16'));
+  assert.equal(giftLevel('tool-14'), 14); assert.equal(giftLevel('gold-20'), 20); assert.equal(giftLevel('level-20'), 20); assert.equal(giftLevel('stars-10'), null);
+  assert.deepEqual(goldStock({ ...emptyInventory(), rocket: 1, hint: 5 }), { extraMoves: 0, rocket: 1 });
   assert.equal(spendGold({ ...emptyInventory(), rocket: 1 }, 'rocket').rocket, 0);
   assert.equal(spendGold({ ...emptyInventory(), hint: 1 }, 'hint'), null);
   assert.equal(spendGold(emptyInventory(), 'rocket'), null);
@@ -316,40 +317,41 @@ test('Hinweis-Suche: kürzester Weg wie der Solver, Züge gewinnen wirklich; kei
   assert.equal(tight.exact, false);
 });
 
-test('launch-28: Hilfsmittel unbegrenzt – keine Ladungen mehr, nur +3 Züge und Rakete im Abenteuer', () => {
-  assert.equal(FREE_TOOLS_PER_LEVEL, Infinity);
-  assert.equal(TOOL_STOCK, false);
+test('launch-42: Hilfsmittel aus dem Vorrat, höchstens 1 je Typ; Sterne unabhängig von Hilfen', () => {
+  assert.equal(FREE_TOOLS_PER_LEVEL, 0);
+  assert.equal(TOOL_STOCK, true);
+  assert.equal(TOOL_CAP, 1);
   assert.deepEqual([...ADVENTURE_TOOLS], ['extraMoves', 'rocket']);
   const run = createLevelRun(base({ moves: 3 }));
   for (let i = 0; i < 4; i++) { run.board[0][0] ||= { value: 1 }; assert.ok(useRocket(run, 0, 0)); }
-  assert.equal(run.toolsUsed.length, 4);                          // beliebig oft
+  assert.equal(run.toolsUsed.length, 4);                          // Run-Logik begrenzt den Vorrat nicht selbst
   assert.equal(starsFor(run.level, 1, true), 3);                  // launch-32: Hilfen kosten keine Sterne
 });
 
-test('Gold-Geschenke als offene Pakete: einreihen, einzeln einsammeln, gespeichert, nie doppelt', () => {
+test('Hilfsmittel-Geschenke als offene Pakete: einreihen, einzeln einsammeln, gespeichert, nie doppelt', () => {
   let p = emptyProgress();
-  for (let n = 1; n <= 10; n++) p = recordResult(p, n, { stars: 1, moves: 5, now: 1 });   // Level 3 und 10
+  for (let n = 1; n <= 16; n++) p = recordResult(p, n, { stars: 1, moves: 5, now: 1 });   // Level 14 und 16
   let q = queueGifts(emptyInventory(), p);
-  assert.deepEqual(q.queued.map(g => g.id), ['gold-3', 'gold-10']);
-  assert.deepEqual(q.inventory.pending, q.queued);
-  assert.equal(q.inventory.rocket, 0);                                                    // noch nicht gutgeschrieben
+  assert.deepEqual(q.queued.map(g => g.id), ['tool-14', 'tool-16']);
+  assert.deepEqual(q.inventory.pending.map(g => g.id), q.queued.map(g => g.id));
+  assert.equal(q.inventory.extraMoves, 0);                                                // noch nicht gutgeschrieben
   assert.deepEqual(queueGifts(q.inventory, p).queued, []);                                // nicht doppelt
   const mem = new Map(); const storage = { getItem: k => mem.get(k) ?? null, setItem: (k, v) => mem.set(k, v) };
   saveInventory(q.inventory, storage);
   let inv = loadInventory(storage);
-  assert.deepEqual(inv.pending.map(g => g.id), ['gold-3', 'gold-10']);   // bleibt bis zum Einsammeln
+  assert.deepEqual(inv.pending.map(g => g.id), ['tool-14', 'tool-16']);   // bleibt bis zum Einsammeln
   const c = collectGift(inv);
-  assert.deepEqual(c.gift, { id: 'gold-3', type: 'rocket' });
-  assert.equal(c.inventory.rocket, 1); assert.equal(c.inventory.pending.length, 1);
-  const d = collectGift(c.inventory, 'gold-10');
-  assert.equal(d.inventory.extraMoves, 1); assert.deepEqual(d.inventory.pending, []);
+  assert.equal(c.gift.id, 'tool-14'); assert.equal(c.gift.type, 'extraMoves');
+  assert.equal(c.inventory.extraMoves, 1); assert.equal(c.inventory.pending.length, 1);
+  const d = collectGift(c.inventory, 'tool-16');
+  assert.equal(d.inventory.rocket, 1); assert.deepEqual(d.inventory.pending, []);
   assert.equal(collectGift(d.inventory, 'nope'), null);
   assert.equal(collectGift(emptyInventory()), null);
   assert.equal(collectGift({ ...emptyInventory(), pending: [{ id: 'level-6', type: 'wand' }] }), null);   // alte Typen nicht mehr
   assert.deepEqual(queueGifts(d.inventory, p).queued, []);                                // eingesammelt = vergeben
   const bad = loadInventory({ getItem: () => '{"version":3,"gifts":[],"pending":[{"id":"x","type":"hammer"},{"id":"y","type":"wand"},null]}' });
   assert.deepEqual(bad.pending, [{ id: 'y', type: 'wand' }]);
-  assert.deepEqual(addToStock(emptyInventory(), { rocket: 3, hammer: 2, wand: -1 }).rocket, 3);
+  assert.equal(addToStock(emptyInventory(), { rocket: 3, hammer: 2, wand: -1 }).rocket, 1); // launch-42: cap
 });
 
 test('Shop: eine Preistabelle, Testkauf legt in den Vorrat, Schnittstelle für nativen Store', async () => {
@@ -363,7 +365,7 @@ test('Shop: eine Preistabelle, Testkauf legt in den Vorrat, Schnittstelle für n
   assert.match(formatPrice(2.49), /^2,49\s?€$/);
   const r = await purchase('extraMoves-3', { config: on });
   assert.ok(r.ok && r.test); assert.deepEqual(r.items, { extraMoves: 3 });
-  assert.equal(addToStock(emptyInventory(), r.items).extraMoves, 3);
+  assert.equal(addToStock(emptyInventory(), r.items).extraMoves, 1);  // launch-42: kein Stapeln
   assert.equal(productById('hint-1'), null); assert.equal(productById('wand-1'), null);   // launch-29: keine Hinweis-/Zauberstab-Pakete
   const mix = await purchase('bundle-mix', { config: on });
   assert.deepEqual(mix.items, { extraMoves: 3, rocket: 3 });
@@ -387,13 +389,13 @@ import { AD_TOOLS, TOOL_GIFTS, giftLevel, resetStockOnce, TOOL_RESET_KEY, loadIn
 import { loadLog, saveLog, startAttempt, logEvent, endAttempt, reopenAttempt, summarize, exportLog, emptyLog, TOOL_LOG_KEY } from '../game/tool-log.mjs';
 const memStore = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k), m }; };
 
-test('launch-28: Hilfsmittel unbegrenzt, Gold-Geschenke an, kein Vorrats-Shop, keine Vorrats-Werbung', () => {
-  assert.equal(FREE_TOOLS_PER_LEVEL, Infinity);
-  assert.equal(TOOL_STOCK, false);
+test('launch-42: Vorrat an, Geschenke an, kein Clip-Takt, Shop bleibt aus', () => {
+  assert.equal(FREE_TOOLS_PER_LEVEL, 0);
+  assert.equal(TOOL_STOCK, true);
   assert.equal(AD_TOOLS, false);
   assert.equal(TOOL_GIFTS, true);
   const leftover = { ...emptyInventory(), rocket: 9, hint: 9, wand: 9, extraMoves: 9 };
-  assert.deepEqual(goldStock(leftover), { extraMoves: 9, rocket: 9 });   // Vorrat-Felder tragen jetzt den Gold-Vorrat
+  assert.deepEqual(goldStock(leftover), { extraMoves: 9, rocket: 9 });   // Rohzähler; Laden/Gutschrift kürzt auf TOOL_CAP
 });
 
 test('launch-13: Vorrat wird einmalig geleert (auch offene Geschenke), vergebene Geschenk-ids bleiben', () => {
@@ -493,7 +495,12 @@ test('launch-14: Abenteuer einmalig zurückgesetzt (Fortschritt + Geschenke), Re
   assert.equal(isUnl14(r.progress, 1), true); assert.equal(isUnl14(r.progress, 2), false);
   // nach Reset: Level 3 geschafft → Geschenk kommt wieder
   const p3 = { ...emptyP14(), levels: { 1: { stars: 3 }, 2: { stars: 3 }, 3: { stars: 3 } } };
-  assert.deepEqual(queueGifts(li, p3).queued, [{ id: 'gold-3', type: 'rocket' }]);   // launch-28: Gold-Geschenk
+  assert.deepEqual(queueGifts(li, p3).queued, []);   // launch-42: erstes Geschenk erst nach Level 14
+  const p14 = { ...emptyP14(), levels: Object.fromEntries(Array.from({ length: 14 }, (_, i) => [String(i + 1), { stars: 3 }])) };
+  const q14 = queueGifts(li, p14);
+  assert.equal(q14.queued.length, 1);
+  assert.equal(q14.queued[0].id, 'tool-14');
+  assert.equal(q14.queued[0].type, 'extraMoves');
   // Neuladen: kein zweiter Reset
   st.setItem(PK14, JSON.stringify(p3));
   const again = resetCampaignOnce(loadP14(st), li, st);
@@ -806,4 +813,52 @@ test('launch-30: Neustart für alle – Merker launch-24/29-Stand löst den Rese
   assert.equal(st.getItem('squish-adfree-v1'), '1', 'Werbefrei bleibt');
   assert.equal(st.getItem(TUTORIAL_RESET_KEY), 'launch-30');
   assert.equal(resetAdventureForTutorialsOnce(loadP14(st), loadInventory(st), st).reset, false, 'nur einmal');
+});
+
+test('launch-42: Vorrat stapelt nicht – umwandeln oder Vorrat voll, klar sichtbar', () => {
+  let inv = { ...emptyInventory(), extraMoves: 1 };
+  const conv = resolveToolGrant(inv, 'extraMoves');
+  assert.deepEqual(conv, { type: 'rocket', status: 'converted', wanted: 'extraMoves' });
+  const g = grantTool(inv, 'extraMoves');
+  assert.equal(g.status, 'converted');
+  assert.equal(g.inventory.extraMoves, 1);
+  assert.equal(g.inventory.rocket, 1);
+  const full = grantTool(g.inventory, 'rocket');
+  assert.equal(full.status, 'full');
+  assert.equal(full.inventory.rocket, 1);
+  assert.equal(full.inventory.extraMoves, 1);
+  // queue: schon +3 → Rakete, Animation zeigt die Rakete; beide voll → merken, nicht pending
+  const p = { ...emptyProgress(), levels: { 14: { stars: 1 }, 16: { stars: 1 } } };
+  const q = queueGifts({ ...emptyInventory(), extraMoves: 1 }, p);
+  const byId = Object.fromEntries(q.queued.map(x => [x.id, x]));
+  assert.equal(byId['tool-14'].status, 'converted');
+  assert.equal(byId['tool-14'].type, 'rocket');
+  assert.equal(byId['tool-16'].status, 'full');
+  assert.ok(q.inventory.pending.some(g => g.id === 'tool-14' && g.type === 'rocket'));
+  assert.ok(!q.inventory.pending.some(g => g.id === 'tool-16'));
+  assert.ok(q.inventory.gifts.includes('tool-16'));
+});
+
+test('launch-42: schon gelöste Belohnungslevel werden nicht nachgetragen, Vorrat auf 1 gekürzt', () => {
+  const st = memStore();
+  const p = { ...emptyProgress(), levels: Object.fromEntries(Array.from({ length: 22 }, (_, i) => [String(i + 1), { stars: 1 }])) };
+  const inv = { ...emptyInventory(), rocket: 4, extraMoves: 3, pending: [{ id: 'gold-20', type: 'rocket' }], gifts: ['gold-3'] };
+  const a = markPastToolRewards(p, inv, st);
+  assert.equal(a.marked, true);
+  assert.equal(a.inventory.rocket, 1);
+  assert.equal(a.inventory.extraMoves, 1);
+  assert.deepEqual(a.inventory.pending, []);
+  assert.ok(a.inventory.gifts.includes('tool-14'));
+  assert.ok(a.inventory.gifts.includes('tool-16'));
+  assert.ok(a.inventory.gifts.includes('tool-22'));
+  assert.ok(!a.inventory.gifts.includes('tool-34'));
+  assert.equal(st.getItem(TOOL_REWARD_KEY), TOOL_REWARD_MARKER);
+  const b = markPastToolRewards(p, a.inventory, st);
+  assert.equal(b.marked, false);
+  // frisches Gerät ohne gelöste Level: nichts vorgemerkt, Geschenke kommen später
+  const st2 = memStore();
+  const fresh = markPastToolRewards(emptyProgress(), emptyInventory(), st2);
+  assert.equal(fresh.marked, true);
+  assert.deepEqual(fresh.inventory.gifts, []);
+  assert.equal(queueGifts(fresh.inventory, { ...emptyProgress(), levels: { 14: { stars: 1 } } }).queued[0].id, 'tool-14');
 });

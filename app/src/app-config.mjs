@@ -10,6 +10,7 @@ export const APP_CONFIG = Object.freeze({
     testing: true,
     // Google-TEST-Anzeigenblöcke für iOS (öffentlich, von Google dokumentiert).
     // Echte IDs aus AdMob → Apps → Squish Attack → Anzeigenblöcke eintragen.
+    // launch-42: rewardedId ungenutzt (Hilfen kommen aus dem Vorrat, nicht aus Clips). Darf in AdMob entfallen.
     rewardedId: 'ca-app-pub-3940256099942544/1712485313',
     interstitialId: 'ca-app-pub-3940256099942544/4411468910',
     // Die AdMob-App-ID steht in ios/App/App/Info.plist (GADApplicationIdentifier), ebenfalls TEST.

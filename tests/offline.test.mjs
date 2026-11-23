@@ -30,7 +30,7 @@ test('Start blockiert nie auf dem Netz: Build-Check ohne festen alten Tag, keine
   assert.ok(/searchParams\.has\('t'\)/.test(sw), 'build.txt?t=… geht unverändert durchs Netz');
 });
 
-test('Werbung offline: Zwischenwerbung still übersprungen, Belohnungsclip „nicht verfügbar“ (Hilfe bleibt dann gesperrt)', async () => {
+test('Werbung offline: Zwischenwerbung still übersprungen; showRewarded (ungenutzt) bleibt „nicht verfügbar“', async () => {
   const na = await import('../game/native-ads.mjs');
   const nav = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
   let calls = 0;
@@ -52,13 +52,17 @@ test('Werbung offline: Zwischenwerbung still übersprungen, Belohnungsclip „ni
   }
 });
 
-test('launch-31: Hilfe ohne Clip gesperrt – kurzer Hinweis DE/EN, Werbefrei/Gold/Tutorial bleiben frei', async () => {
+test('launch-42: Hilfen kommen aus dem Vorrat, kein Belohnungsclip, offline nicht gesperrt', async () => {
   const { STRINGS } = await import('../game/locales.mjs');
-  assert.equal(STRINGS['tool.offline'].de, 'Ohne Netz kein Clip. Später nochmal.');
-  assert.ok(STRINGS['tool.offline'].en && STRINGS['tool.noAd'].de && STRINGS['tool.noAd'].en && STRINGS['tool.offlineAria'].en);
+  assert.match(STRINGS['tool.empty'].de, /Vorrat/);
+  assert.match(STRINGS['tool.empty'].en, /inventory/i);
+  assert.match(STRINGS['settings.adFreeDesc'].de, /Zwischenwerbung/);
+  assert.match(STRINGS['settings.adFreeOwned'].de, /keine Zwischenwerbung/);
+  assert.ok(!/Clip/.test(STRINGS['settings.adFreeDesc'].de) && !/clip/i.test(STRINGS['settings.adFreeDesc'].en));
   const src = readFileSync(new URL('../game/game.mjs', import.meta.url), 'utf8');
-  const req = src.slice(src.indexOf('function requestToolAd'), src.indexOf('function requestToolAd') + 260);
-  assert.ok(req.indexOf('if(!toolAdRequired())return Promise.resolve(true);') < req.indexOf("if(isOffline()){helpUnavailable('offline');return Promise.resolve(false);}"), 'Werbefrei zuerst frei, sonst offline gesperrt');
-  const ui = readFileSync(new URL('../game/ad-ui.mjs', import.meta.url), 'utf8');
-  assert.ok(/if \(!res\.ok\) \{ if \(res\.unavailable\)[^}]*onUnavailable\?\.\(type\); \} onClose\?\.\(\); return; \}/.test(ui), 'kein Clip → keine Hilfe, Hinweis');
+  assert.ok(!/function requestToolAd/.test(src), 'kein Clip-Pfad mehr vor dem Einsatz');
+  assert.ok(/const toolAdRequired=\(\)=>false/.test(src));
+  assert.ok(/adPacing\.levelWon\(n\)/.test(src));
+  const ui = readFileSync(new URL('../game/campaign-ui.mjs', import.meta.url), 'utf8');
+  assert.ok(/is-empty/.test(ui) && !/dataset\.ad=\(g<=0&&needsAd/.test(ui), 'leere Knöpfe ausgegraut, kein AD-Abzeichen');
 });

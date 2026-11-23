@@ -81,16 +81,11 @@ test('ATT nur einmal fragen und abschaltbar; kein Formular wenn nicht nötig', a
   await setupConsent(B, { askTracking: false });
   assert.ok(!B.calls.some(c => c[0].startsWith('tracking') || c[0] === 'requestTracking'));
 });
-test('Belohnung nur bei vollständig angesehenem Clip; Test-IDs', async () => {
+test('launch-42: showRewarded ist ein No-Op und lädt keine Rewarded-Einheit', async () => {
   const A = admobMock();
   const ad = createAdMobAdapter({ AdMob: A, ids: APP_CONFIG.admob, testing: true });
-  assert.deepEqual(await ad.showRewarded({ placement: 'tool' }), { ok: true });
-  assert.equal(A.calls.find(c => c[0] === 'prepareReward')[1].adId, 'ca-app-pub-3940256099942544/1712485313');
-  assert.equal(A.listeners.get(EVENTS.rewardDismissed).length, 0, 'Listener wieder entfernt');
-  const B = admobMock({ reward: false });
-  assert.deepEqual(await createAdMobAdapter({ AdMob: B, ids: APP_CONFIG.admob }).showRewarded(), { ok: false });
-  const C = admobMock({ failLoad: true });
-  assert.deepEqual(await createAdMobAdapter({ AdMob: C, ids: APP_CONFIG.admob }).showRewarded(), { ok: false, unavailable: true }, 'nicht geladen = nicht verfügbar');
+  assert.deepEqual(await ad.showRewarded({ placement: 'tool' }), { ok: false, unavailable: true });
+  assert.ok(!A.calls.some(c => c[0] === 'prepareReward' || c[0] === 'showReward'), 'kein SDK-Aufruf');
 });
 test('Keine Werbung ohne Einwilligung (canRequestAds=false); nie zwei gleichzeitig', async () => {
   const A = admobMock();
