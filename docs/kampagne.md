@@ -1,11 +1,13 @@
 # Kampagne – Rätselmodus für Squish Attack
 
-Stand: 23.11.2026, launch-42. Hilfsmittel (Rakete, +3 Züge) liegen im Vorrat,
-höchstens 1 je Typ, und werden nach festgelegten Leveln geschenkt (14, 16, 22,
-34, 43, 49, 59, 65, 74, 81, 91). Keine Belohnungsclips mehr. Zwischenwerbung
-im Abenteuer: keine in Level 1–5, danach nach jedem 3. gelösten Level; im
-Endlos-Spiel weiter alle 15 Minuten. Werbefrei (4,99 €) entfernt nur die
-Zwischenwerbung. `PROGRESS_EPOCH` bleibt launch-30.
+Stand: 25.11.2026, launch-43. Level 20 verlangt jetzt einen 4er (statt 5er)
+oder höher und weiterhin 8 gelöste Steine in 12 Zügen; Sterne bleiben 10/11.
+`PROGRESS_EPOCH` bleibt launch-30. Monetisierung unverändert aus launch-42:
+Hilfsmittel (Rakete, +3 Züge) liegen im Vorrat, höchstens 1 je Typ, und werden
+nach festgelegten Leveln geschenkt (14, 16, 22, 34, 43, 49, 59, 65, 74, 81, 91).
+Keine Belohnungsclips. Zwischenwerbung im Abenteuer: keine in Level 1–5, danach
+nach jedem 3. gelösten Level; im Endlos-Spiel weiter alle 15 Minuten. Werbefrei
+(4,99 €) entfernt nur die Zwischenwerbung.
 
 ## 1. Die echten Regeln (Grundlage für alle Level)
 

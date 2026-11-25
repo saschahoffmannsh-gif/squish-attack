@@ -25,7 +25,7 @@ Gel. = Gewinnrate Gelegenheitsspieler ohne Werkzeug, mit Wkz = mit dem Schlüsse
 | 17 | normal | 5er bauen | 14 | 5 | – | 22 | 22 | 21 | 78 % | – |
 | 18 | normal | 4× 3er+ | 14 | 5 | – | 26 | 26 | 26 | 59 % | – |
 | 19 | normal | 2 Straßen | 15 | 8 | – | 34 | 34 | 28 | 80 % | – |
-| 20 | Meilenstein | 5er bauen · 8 Steine lösen | 18 | 12 | – | 58 | 58 | 39 | 30 % | – |
+| 20 | Meilenstein | 4er bauen · 8 Steine lösen | 12 | 3 | – | 16 | 16 | 16 | 94 % | – |
 | 21 | Erholung | 10 Steine lösen | 12 | 4 | – | 15 | 15 | 15 | 99 % | – |
 | 22 | Erholung | 220 Punkte | 12 | 5 | – | 22 | 22 | 20 | 90 % | – |
 | 23 | normal | 4er bauen · 6 Steine lösen | 16 | 8 | – | 27 | 27 | 24 | 96 % | – |

@@ -1898,7 +1898,7 @@
    "goals": [
     {
      "type": "tile",
-     "value": 5
+     "value": 4
     },
     {
      "type": "clear",
@@ -1909,28 +1909,28 @@
     "three": 10,
     "two": 11
    },
-   "solution": "ordrrr",
+   "solution": "bdr",
    "meta": {
     "generator": "build18",
     "k": 60,
     "seed": 338798656,
     "role": "milestone",
-    "note": "Meilenstein: ein 5er liegt schon auf dem Brett, dazu räumen",
-    "minMoves": 6,
-    "slack": 6,
+    "note": "Meilenstein: einen 4er bauen und 8 Steine räumen",
+    "minMoves": 3,
+    "slack": 9,
     "toolMin": null,
-    "optimalSolutions": null,
+    "optimalSolutions": 6,
     "pOptimal": null,
     "target": 39,
     "estimate": {
-     "D": 53,
-     "Dfelt": 53,
-     "casual": 0.417,
-     "good": 0.361,
-     "random": 0.05,
+     "D": 16,
+     "Dfelt": 16,
+     "casual": 0.94,
+     "good": 0.968,
+     "random": 0.345,
      "greedy": true
     },
-    "exact": false,
+    "exact": true,
     "searched": {
      "tried": 77,
      "usable": 36

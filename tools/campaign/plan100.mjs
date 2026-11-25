@@ -79,7 +79,7 @@ export const MISSIONS = {
   17: { goals: [T('tile', 5)] },
   18: { goals: [T('make', 3, 4)] },
   19: { goals: [T('street', 2)] },
-  20: { goals: [T('tile', 5), T('clear', 8)], note: 'Meilenstein: ein 5er liegt schon auf dem Brett, dazu räumen' },
+  20: { goals: [T('tile', 4), T('clear', 8)], note: 'Meilenstein: einen 4er bauen und 8 Steine räumen' },
   21: { goals: [T('clear', 10)], note: 'Erholung (statt Kette)' },
   22: { goals: [T('score', 220)], note: 'Erholung (statt Kette)' },
   23: { goals: [T('tile', 4), T('clear', 6)], note: 'Doppelziel mit bekannten Typen' },
