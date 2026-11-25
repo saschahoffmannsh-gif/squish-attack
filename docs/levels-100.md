@@ -16,13 +16,13 @@ Gel. = Gewinnrate Gelegenheitsspieler ohne Werkzeug, mit Wkz = mit dem Schlüsse
 | 8 | normal | 3× 2er+ | 6 | 3 | – | 18 | 18 | 22 | 59 % | – |
 | 9 | normal | 5 Steine lösen | 5 | 2 | – | 15 | 15 | 22 | 61 % | – |
 | 10 | Meilenstein | 3 Steine lösen | 6 | 2 | – | 15 | 15 | 28 | 69 % | – |
-| 11 | Erholung | 4er bauen | 12 | 4 | – | 29 | 29 | 11 | 61 % | – |
+| 11 | Erholung | 4er bauen | 12 | 4 | – | 29 | 29 | 11 | 87 % | – |
 | 12 | Erholung | 3× 3er+ | 12 | 4 | – | 16 | 16 | 15 | 93 % | – |
 | 13 | normal | 8 Steine lösen | 13 | 5 | – | 21 | 21 | 20 | 84 % | – |
 | 14 | normal | 1 Straße | 13 | 4 | – | 25 | 25 | 24 | 68 % | – |
 | 15 | Werkzeug-Peak | 12 Steine lösen · 160 Punkte | 5 | 5 | +3 Züge | 79 | 34 | 27 | 6 % | 56 % |
 | 16 | Erholung | 180 Punkte | 12 | 4 | – | 14 | 14 | 13 | 100 % | – |
-| 17 | normal | 5er bauen | 14 | 5 | – | 22 | 22 | 21 | 78 % | – |
+| 17 | normal | 5er bauen | 12 | 3 | – | 22 | 22 | 21 | 87 % | – |
 | 18 | normal | 4× 3er+ | 14 | 5 | – | 26 | 26 | 26 | 59 % | – |
 | 19 | normal | 2 Straßen | 15 | 8 | – | 34 | 34 | 28 | 80 % | – |
 | 20 | Meilenstein | 4er bauen · 8 Steine lösen | 12 | 3 | – | 16 | 16 | 16 | 94 % | – |

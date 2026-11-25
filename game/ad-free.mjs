@@ -4,7 +4,7 @@
 // launch-42: Der Kauf entfernt die Zwischenwerbung (Abenteuer nach den ersten 5 Leveln
 // alle 3 gelösten Level, Endlos alle 15 Minuten). Hilfsmittel kommen aus dem Vorrat
 // (Geschenke nach festgelegten Leveln), nicht aus Clips – Werbefrei schaltet sie nicht frei.
-import { fmtPrice } from './i18n.mjs?v=launch-43';
+import { fmtPrice } from './i18n.mjs?v=launch-44';
 
 export const AD_FREE_PRODUCT = Object.freeze({
   id: 'squish.adfree',

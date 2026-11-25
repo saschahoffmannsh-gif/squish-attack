@@ -1,9 +1,9 @@
 // Werkzeug-Statistik (launch-13, Testphase): Übersicht aus dem lokalen Protokoll, Export, Zurücksetzen.
 // launch-35: lokale Variable sm.total nicht mehr t nennen – das hat t() (i18n) überschrieben und das Öffnen verhindert.
-import { TOOL_ICONS } from './tool-icons.mjs?v=launch-43';
-import { toolName } from './campaign.mjs?v=launch-43';
-import { summarize, exportLog } from './tool-log.mjs?v=launch-43';
-import { t } from './i18n.mjs?v=launch-43';
+import { TOOL_ICONS } from './tool-icons.mjs?v=launch-44';
+import { toolName } from './campaign.mjs?v=launch-44';
+import { summarize, exportLog } from './tool-log.mjs?v=launch-44';
+import { t } from './i18n.mjs?v=launch-44';
 
 const TYPES = ['extraMoves', 'rocket'];   // launch-29: nur noch +3 Züge und Rakete
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };

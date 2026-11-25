@@ -6,7 +6,7 @@
 //  sichtbaren Kanten laufen kurze Kettenglieder hinunter. Beim Befreien
 //  zerplatzen die Glieder.
 import {THREE,PARAMETERS} from '../squish/squish-graphics.js?v=play-sharp-1';
-import {applyComic,LIGHT} from './comic-style.mjs?v=launch-43';
+import {applyComic,LIGHT} from './comic-style.mjs?v=launch-44';
 
 const ART='launch-25';
 const url=name=>new URL(`./assets/specials/${name}.webp?v=${ART}`,import.meta.url).href;

@@ -878,7 +878,7 @@
     ],
     [
      null,
-     2,
+     3,
      1,
      null,
      null
@@ -894,7 +894,7 @@
      null,
      null,
      1,
-     2,
+     3,
      1
     ],
     [
@@ -910,7 +910,7 @@
     2,
     1,
     2,
-    2,
+    3,
     2,
     2,
     2,
@@ -935,26 +935,26 @@
     "three": 5,
     "two": 9
    },
-   "solution": "ahnh",
+   "solution": "arna",
    "meta": {
     "generator": "build18",
     "k": 135,
     "seed": 1877406902,
     "role": "relief",
-    "note": "Einstieg in längere Level, Erholung",
+    "note": "Einstieg in längere Level, Erholung: einen 4er bauen, 3er liegen schon bereit",
     "minMoves": 4,
     "slack": 8,
     "toolMin": null,
-    "optimalSolutions": 421,
-    "pOptimal": 0.00264,
+    "optimalSolutions": 90,
+    "pOptimal": 0.00057,
     "target": 11,
     "estimate": {
      "D": 29,
      "Dfelt": 29,
-     "casual": 0.681,
-     "good": 0.719,
-     "random": 0.171,
-     "greedy": false
+     "casual": 0.873,
+     "good": 0.917,
+     "random": 0.23,
+     "greedy": true
     },
     "exact": true,
     "searched": {
@@ -1519,7 +1519,7 @@
     [
      null,
      4,
-     null,
+     4,
      null,
      null
     ],
@@ -1528,7 +1528,7 @@
      null,
      null,
      null,
-     4
+     null
     ],
     [
      null,
@@ -1566,7 +1566,7 @@
     4,
     2
    ],
-   "moves": 8,
+   "moves": 12,
    "goals": [
     {
      "type": "tile",
@@ -1575,27 +1575,27 @@
    ],
    "stars": {
     "three": 6,
-    "two": 7
+    "two": 9
    },
-   "solution": "aamrr",
+   "solution": "agh",
    "meta": {
     "generator": "build18",
     "k": 827,
     "seed": 473266360,
     "role": "normal",
-    "note": null,
-    "minMoves": 5,
-    "slack": 3,
+    "note": "Einen 5er bauen, die 4er liegen nebeneinander",
+    "minMoves": 3,
+    "slack": 9,
     "toolMin": null,
-    "optimalSolutions": 4015,
-    "pOptimal": 0.00112,
+    "optimalSolutions": 118,
+    "pOptimal": 0.0148,
     "target": 21,
     "estimate": {
      "D": 22,
      "Dfelt": 22,
-     "casual": 0.756,
-     "good": 0.844,
-     "random": 0.204,
+     "casual": 0.868,
+     "good": 0.86,
+     "random": 0.282,
      "greedy": true
     },
     "exact": true,

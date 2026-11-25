@@ -1,10 +1,10 @@
 // Kampagne: DOM-Teile (Ziel-Anzeige, Züge, Hilfsmittel, Ergebnis-Dialog, Levelauswahl).
 // Reine Darstellung; Spiellogik und Speichern liegen in game.mjs / campaign.mjs.
-import {TOOL_ICONS,GIFT_SVG} from './tool-icons.mjs?v=launch-43';
-import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-43';
-import {fitLabelsSoon} from './fit-labels.mjs?v=launch-43';
-import {goalProgress,goalText,goalShort,goalIntro,LONG_STREET,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName,starsFor,starMovesUsed} from './campaign.mjs?v=launch-43';
-import {miniTile} from './explain.mjs?v=launch-43';
+import {TOOL_ICONS,GIFT_SVG} from './tool-icons.mjs?v=launch-44';
+import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-44';
+import {fitLabelsSoon} from './fit-labels.mjs?v=launch-44';
+import {goalProgress,goalText,goalShort,goalIntro,LONG_STREET,movesLeft,totalStars,lockReason,chapterOf,starGate,CHAPTER_SIZE,toolName,starsFor,starMovesUsed} from './campaign.mjs?v=launch-44';
+import {miniTile} from './explain.mjs?v=launch-44';
 
 const $=id=>document.getElementById(id);
 export const TOOL_ARTICLE=new Proxy({},{get:(_,k)=>t('tool.'+k)});
