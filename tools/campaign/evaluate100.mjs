@@ -255,6 +255,10 @@ export function makeLevel(id, k, seqLen) {
       missingVals.forEach((v, i) => { sequence[i] = v; });
       sequence[Math.max(at, missingVals.length)] = planted.trigger;
     }
+    // launch-44: kalibrierte Zell-/Folge-Korrekturen nach der Saat, ohne die Erzeugung zu ändern.
+    if (variety.setCells) for (const [r, c, v] of variety.setCells) board[r][c] = v;
+    if (variety.clearCells) for (const [r, c] of variety.clearCells) board[r][c] = null;
+    if (variety.setSeq) for (const [i, v] of variety.setSeq) sequence[i] = v;
     return { board, sequence, goals: applyScoreLift(goals, highOffset, highBodyMax), variety, highOffset };
   }
   return null;

@@ -70,13 +70,13 @@ export function minMovesWanted(i) {
 
 // Missionen der neu gebauten Level (11–100). note = Absicht (für Doku/Seite).
 export const MISSIONS = {
-  11: { goals: [T('tile', 4)], note: 'Einstieg in längere Level, Erholung' },
+  11: { goals: [T('tile', 4)], note: 'Einstieg in längere Level, Erholung: einen 4er bauen, 3er liegen schon bereit' },
   12: { goals: [T('make', 3, 3)] },
   13: { goals: [T('clear', 8)] },
   14: { goals: [T('street', 1)] },
   15: { goals: [T('clear', 12), T('score', 160)], note: '1. Werkzeug-Spitze: +3 Züge' },
   16: { goals: [T('score', 180)], note: 'Erholung' },
-  17: { goals: [T('tile', 5)] },
+  17: { goals: [T('tile', 5)], note: 'Einen 5er bauen, die 4er liegen nebeneinander' },
   18: { goals: [T('make', 3, 4)] },
   19: { goals: [T('street', 2)] },
   20: { goals: [T('tile', 4), T('clear', 8)], note: 'Meilenstein: einen 4er bauen und 8 Steine räumen' },
@@ -168,7 +168,9 @@ export const FIRST_USE = { empty: 31, long: 41, purge: 51, three: 71 };
 // high = ein hoher Stein (~28–32); die übrigen Start- und Folgesteine werden in eine Bandbreite direkt darunter angehoben (launch-36).
 // climb = Aufbau aus 3ern/4ern (und oft einem 5er) zu einem hohen Ziel.
 export const VARIETY = {
-  17: { climb: true, has5: false },
+  // launch-44: feste Nachbesserungen am generierten Brett/Folge (gleiche Saat).
+  11: { setCells: [[1, 1, 3], [3, 3, 3]], setSeq: [[4, 3]] },
+  17: { climb: true, has5: false, setCells: [[1, 2, 4]], clearCells: [[2, 4]] },
   20: { has5: true },
   30: { has5: true },
   34: { climb: true, has5: true },

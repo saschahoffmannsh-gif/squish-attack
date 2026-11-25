@@ -1,8 +1,10 @@
 # Kampagne – Rätselmodus für Squish Attack
 
-Stand: 25.11.2026, launch-43. Level 20 verlangt jetzt einen 4er (statt 5er)
-oder höher und weiterhin 8 gelöste Steine in 12 Zügen; Sterne bleiben 10/11.
-`PROGRESS_EPOCH` bleibt launch-30. Monetisierung unverändert aus launch-42:
+Stand: 25.11.2026, launch-44. Level 11 (Erholung, 4er bauen) hat jetzt 3er
+auf dem Brett und in der Folge, Sterne bleiben 5/9. Level 17 (5er bauen):
+die Start-4er liegen nebeneinander, 12 statt 8 Züge, Sterne 6/9.
+`PROGRESS_EPOCH` bleibt launch-30. Level-20-Anpassung aus launch-43 und
+Monetisierung aus launch-42 unverändert:
 Hilfsmittel (Rakete, +3 Züge) liegen im Vorrat, höchstens 1 je Typ, und werden
 nach festgelegten Leveln geschenkt (14, 16, 22, 34, 43, 49, 59, 65, 74, 81, 91).
 Keine Belohnungsclips. Zwischenwerbung im Abenteuer: keine in Level 1–5, danach
