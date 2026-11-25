@@ -1,38 +1,38 @@
-import {apiFetch,hasSaveToken} from './api.mjs?v=launch-42';
-import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-42';
+import {apiFetch,hasSaveToken} from './api.mjs?v=launch-43';
+import { SIZE, START_VALUES, createStartValues, insertTile, settlePass, settle, isGameOver } from './game-logic.mjs?v=launch-43';
 import { nextSpawn, spawnProfile } from './balance.mjs';
-import {canContinueRun} from './run-availability.mjs?v=launch-42';
-import { createMergeEffects } from './merge-effects.mjs?v=launch-42';
-import { createGameGraphics } from './graphics-adapter.mjs?v=launch-42';
-import { installDeviceMotion } from './device-motion.mjs?v=launch-42';
-import { createGameSound } from './sound.mjs?v=launch-42';
+import {canContinueRun} from './run-availability.mjs?v=launch-43';
+import { createMergeEffects } from './merge-effects.mjs?v=launch-43';
+import { createGameGraphics } from './graphics-adapter.mjs?v=launch-43';
+import { installDeviceMotion } from './device-motion.mjs?v=launch-43';
+import { createGameSound } from './sound.mjs?v=launch-43';
 import { installSettings } from './settings.mjs?v=woodland-menu-1';
-import { createDuelClient } from './duel-client.mjs?v=launch-42';
+import { createDuelClient } from './duel-client.mjs?v=launch-43';
 import {installFullscreen} from './fullscreen.mjs?v=timed-duel-1';
-import {createHomeMenu} from './home-menu.mjs?v=launch-42';
-import {createConfetti} from './confetti.mjs?v=launch-42';
-import {createHaptics} from './haptics.mjs?v=launch-42';
-import * as native from './native.mjs?v=launch-42';
+import {createHomeMenu} from './home-menu.mjs?v=launch-43';
+import {createConfetti} from './confetti.mjs?v=launch-43';
+import {createHaptics} from './haptics.mjs?v=launch-43';
+import * as native from './native.mjs?v=launch-43';
 import {planMergeRipple} from './merge-ripple.mjs?v=swarm-fx-3';
-import * as Camp from './campaign.mjs?v=launch-42';
-import {createCampaignUI} from './campaign-ui.mjs?v=launch-42';
-import {createToolFx} from './tool-fx.mjs?v=launch-42';
-import {createGhostFinger} from './ghost-finger.mjs?v=launch-42';
-import * as Shop from './shop.mjs?v=launch-42';
-import {createShopUI} from './shop-ui.mjs?v=launch-42';
-import {createGiftFx} from './gift-fx.mjs?v=launch-42';
-import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-42';
-import {createAdUI} from './ad-ui.mjs?v=launch-42';
-import {hasNativeAds,showInterstitial} from './native-ads.mjs?v=launch-42';
-import {createStatsUI} from './stats-ui.mjs?v=launch-42';
-import * as ToolLog from './tool-log.mjs?v=launch-42';
-import {createProgressSync} from './progress-sync.mjs?v=launch-42';
-import {epochOf} from './progress-merge.mjs?v=launch-42';
-import {createAdPacing} from './ad-pacing.mjs?v=launch-42';
-import {isAdFree,canOfferAdFree,canRestoreAdFree,purchaseAdFree,restoreAdFree,adFreePriceLabel,onAdFreeChange} from './ad-free.mjs?v=launch-42';
-import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-42';
-import {createExplainer} from './explain.mjs?v=launch-42';
-import {installStreak,isOpen as streakOpen} from './streak-ui.mjs?v=launch-42';
+import * as Camp from './campaign.mjs?v=launch-43';
+import {createCampaignUI} from './campaign-ui.mjs?v=launch-43';
+import {createToolFx} from './tool-fx.mjs?v=launch-43';
+import {createGhostFinger} from './ghost-finger.mjs?v=launch-43';
+import * as Shop from './shop.mjs?v=launch-43';
+import {createShopUI} from './shop-ui.mjs?v=launch-43';
+import {createGiftFx} from './gift-fx.mjs?v=launch-43';
+import {GIFT_SVG,SHOP_SVG} from './tool-icons.mjs?v=launch-43';
+import {createAdUI} from './ad-ui.mjs?v=launch-43';
+import {hasNativeAds,showInterstitial} from './native-ads.mjs?v=launch-43';
+import {createStatsUI} from './stats-ui.mjs?v=launch-43';
+import * as ToolLog from './tool-log.mjs?v=launch-43';
+import {createProgressSync} from './progress-sync.mjs?v=launch-43';
+import {epochOf} from './progress-merge.mjs?v=launch-43';
+import {createAdPacing} from './ad-pacing.mjs?v=launch-43';
+import {isAdFree,canOfferAdFree,canRestoreAdFree,purchaseAdFree,restoreAdFree,adFreePriceLabel,onAdFreeChange} from './ad-free.mjs?v=launch-43';
+import {t, fmtNum, hasKey, onLangChange} from './i18n.mjs?v=launch-43';
+import {createExplainer} from './explain.mjs?v=launch-43';
+import {installStreak,isOpen as streakOpen} from './streak-ui.mjs?v=launch-43';
 const playfield = document.getElementById('playfield');
 const gameElement = document.querySelector('.game');
 const visual = createGameGraphics(document.getElementById('graphics'));
@@ -147,9 +147,9 @@ const newTile = value => ({ id: nextId++, value });
 // in localStorage unangetastet: während der Kampagne wird nichts davon gespeichert,
 // beim Verlassen wird er wieder geladen.
 const MODE_KEY='squish-mode-v1';
-const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-42',import.meta.url);
+const LEVELS_URL=new URL('../levels/levels-001-100.json?v=launch-43',import.meta.url);
 // launch-16: Test-Level für die neuen Squishes (Eis, Ketten, Bombe) – eigener kleiner Satz, kein Fortschritt/Protokoll.
-const LAB_URL=new URL('../levels/levels-lab.json?v=launch-42',import.meta.url);
+const LAB_URL=new URL('../levels/levels-lab.json?v=launch-43',import.meta.url);
 let labMode=false,labLevels=null,labLoading=null;
 function loadLab(){
   return labLoading||=fetch(LAB_URL,{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('lab '+r.status);return r.json();})
@@ -201,7 +201,7 @@ const progressSync=createProgressSync({fetch:apiFetch,epoch:epochOf(Camp.PROGRES
     try{renderCampaign();void worldMenu.refresh?.();}catch{}}});
 const cloudSync=()=>{if(!labMode)progressSync.schedule();};
 progressSync.attach(window);
-const BUILD_LABEL='launch-42';
+const BUILD_LABEL='launch-43';
 let toolLog=ToolLog.loadLog(),logAttempt=null;
 // Versuche, die beim letzten Mal offen blieben (Seite geschlossen), gelten als abgebrochen.
 if(toolLog.attempts.some(a=>!a.outcome)){for(const a of toolLog.attempts)if(!a.outcome)ToolLog.endAttempt(toolLog,a.id,{outcome:'quit',moves:a.moves});ToolLog.saveLog(toolLog);}

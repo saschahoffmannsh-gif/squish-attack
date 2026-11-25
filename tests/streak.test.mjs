@@ -1,4 +1,4 @@
-import { emptyState, checkIn, addDaysISO, diffDays, localDateISO, stateAfterConsecutive, prepareForDay, titleLabel, viewOf, normalizeState } from '../game/streak.mjs?v=launch-42';
+import { emptyState, checkIn, addDaysISO, diffDays, localDateISO, stateAfterConsecutive, prepareForDay, titleLabel, viewOf, normalizeState } from '../game/streak.mjs?v=launch-43';
 
 const assert = (c, msg) => { if (!c) throw new Error(msg); };
 let n = 0;

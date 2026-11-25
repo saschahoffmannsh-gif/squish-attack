@@ -5,9 +5,9 @@
 //   Fusion: 3–4 gleiche in Linie (auch T/L/Kreuz) → +1, ab 5 Steinen → +2.
 //   Straße: ≥ 3 aufeinanderfolgende Werte in Linie → höchster Wert, ab 4 Steinen → höchster + 1.
 //   Gleiche Werte verschmelzen zuerst; neue Treffer danach = Kettenreaktion.
-import { t, onLangChange } from './i18n.mjs?v=launch-42';
-import { TOOL_ICONS, GIFT_SVG } from './tool-icons.mjs?v=launch-42';
-import { starGate, CHAPTER_SIZE, LEVEL_GIFTS } from './campaign.mjs?v=launch-42';
+import { t, onLangChange } from './i18n.mjs?v=launch-43';
+import { TOOL_ICONS, GIFT_SVG } from './tool-icons.mjs?v=launch-43';
+import { starGate, CHAPTER_SIZE, LEVEL_GIFTS } from './campaign.mjs?v=launch-43';
 
 export const EXPLAIN_KEY = 'squish-explain-seen-v1';
 const PALETTE = { 1: ['#5cc2ff', '#1f7ff0', '#0d3f9e'], 2: ['#ff7a66', '#e8291f', '#a3101a'], 3: ['#9df25a', '#38b81c', '#1b7a10'],
