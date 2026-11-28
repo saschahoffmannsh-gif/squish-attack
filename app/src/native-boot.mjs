@@ -4,7 +4,7 @@
 // 3. Werbung (AdMob: UMP beim Start; ATT launch-32 erst nach dem ersten gelösten Level mit Vorfrage) und
 //    StoreKit-Käufe an die vorhandenen Spiel-Schnittstellen hängen
 // Alles lokal im App-Paket, kein Code aus dem Netz. Im Browser (ohne Capacitor) startet nur das Spiel.
-import { APP_CONFIG } from './app-config.mjs?v=__BUILD__';
+import { APP_CONFIG, resolveAdMob } from './app-config.mjs?v=__BUILD__';
 import { restoreToken, persistToken } from './token-keychain.mjs?v=__BUILD__';
 import { setupConsent, createAdMobAdapter } from './admob-adapter.mjs?v=__BUILD__';
 import { createStoreKitAdapter, createAdFreeAdapter } from './store-adapter.mjs?v=__BUILD__';
@@ -41,13 +41,14 @@ async function boot() {
   const AdMob = plugin('AdMob');
   if (AdMob) {
     // launch-32: beim Start nur die UMP-Einwilligung – ATT kommt später (createAttFlow).
-    const ready = setupConsent(AdMob, { askTracking: false, testing: APP_CONFIG.admob.testing, log })
+    const admob = resolveAdMob();
+    const ready = setupConsent(AdMob, { askTracking: false, testing: admob.testing, log })
       .then(s => { status.ads = s; return s; });
-    if (APP_CONFIG.admob.askTracking) {
+    if (admob.askTracking) {
       const lang = () => { try { const v = localStorage.getItem('squish-lang-v1') || navigator.language || 'de'; return String(v).toLowerCase().startsWith('de') ? 'de' : 'en'; } catch { return 'de'; } };
       status.att = createAttFlow({ AdMob, ready, lang, log }).stats;
     }
-    ads.registerNativeAds(createAdMobAdapter({ AdMob, ids: APP_CONFIG.admob, testing: APP_CONFIG.admob.testing, ready, log }));
+    ads.registerNativeAds(createAdMobAdapter({ AdMob, ids: admob, testing: admob.testing, ready, log }));
     // Einstellungen → „Werbe-Einwilligung ändern“ kann das aufrufen (Pflicht, wenn UMP es verlangt).
     status.showPrivacyOptions = () => AdMob.showPrivacyOptionsForm().catch(e => log('privacy options', e));
     ready.then(s => { if (s.privacyOptions) addPrivacyButton(status.showPrivacyOptions); }).catch(() => {});

@@ -281,10 +281,11 @@ in der App liegen.
    App-Datenschutz-Angaben (siehe 4.5), Kategorie „Spiele → Puzzle“, Screenshots (6,9″ und 6,5″
    iPhone), Beschreibung, Support-URL, Datenschutz-URL. Außerdem den **Vertrag für kostenpflichtige
    Apps** abschließen, mit Bankverbindung und **Steuerformularen**; ohne den keine In-App-Käufe.
-4. **Google AdMob-Konto:** App anlegen, Anzeigenblöcke für Rewarded und Interstitial erstellen,
-   Zahlungsdaten und Steuerinfos hinterlegen. Den **Consent-Dialog (UMP, IAB TCF)** unter
-   „Datenschutz & Mitteilungen“ veröffentlichen und `app-ads.txt` auf einer eigenen Domain
-   bereitstellen (die Entwickler-Website aus App Store Connect).
+4. **Google AdMob-Konto:** iOS-App und Interstitial-Block sind angelegt, die IDs stehen in der
+   App-Hülle (Debug bleibt bei Google-Test-IDs). Noch offen: Zahlungsdaten und Steuerinfos,
+   den **Consent-Dialog (UMP, IAB TCF)** unter „Datenschutz & Mitteilungen“ veröffentlichen
+   und `app-ads.txt` auf der Entwickler-Website aus App Store Connect bereitstellen
+   (`https://spoostudio.de/app-ads.txt`, Vorlage `docs/app-ads.txt`).
 5. **Rechtliches:** Daten für Impressum und Datenschutzerklärung (Name, Anschrift, E-Mail), Texte
    prüfen lassen, im Supabase-Dashboard den **Auftragsverarbeitungsvertrag (DPA)** annehmen und
    klären, ob ein Gewerbe angemeldet werden muss (Werbeeinnahmen); steuerlich mit Steuerberater

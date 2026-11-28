@@ -18,12 +18,17 @@ test('capacitor.config.json: Platzhalter-App-ID, lokales webDir, kein server.url
   assert.equal(c.ios.scrollEnabled, false);
   assert.equal(c.ios.contentInset, 'never');
 });
-test('Info.plist: nur Hochformat, AdMob-TEST-App-ID, ATT-Text, SKAdNetwork', () => {
+test('Info.plist: nur Hochformat, AdMob-App-ID aus xcconfig, ATT-Text, SKAdNetwork', () => {
   const p = read('ios/App/App/Info.plist');
   const orient = p.match(/<key>UISupportedInterfaceOrientations<\/key>\s*<array>([\s\S]*?)<\/array>/)[1];
   assert.deepEqual([...orient.matchAll(/<string>(.*?)<\/string>/g)].map(m => m[1]), ['UIInterfaceOrientationPortrait']);
   assert.ok(!p.includes('UISupportedInterfaceOrientations~ipad'));
-  assert.match(p, /<key>GADApplicationIdentifier<\/key>\s*<string>ca-app-pub-3940256099942544~1458002511<\/string>/);
+  assert.match(p, /<key>GADApplicationIdentifier<\/key>\s*<string>\$\(ADMOB_APP_ID\)<\/string>/);
+  assert.match(read('ios/debug.xcconfig'), /ADMOB_APP_ID = ca-app-pub-3940256099942544~1458002511/);
+  assert.match(read('ios/release.xcconfig'), /ADMOB_APP_ID = ca-app-pub-3147947530766307~6450785208/);
+  const x = read('ios/App/App.xcodeproj/project.pbxproj');
+  assert.match(x, /release\.xcconfig/);
+  assert.match(x, /Set AdMob debug\/release IDs/);
   assert.match(p, /<key>NSUserTrackingUsageDescription<\/key>/);
   assert.ok((p.match(/\.skadnetwork</g) || []).length >= 40);
   assert.match(p, /cstr6suwn9\.skadnetwork/);

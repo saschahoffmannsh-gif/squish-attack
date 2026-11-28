@@ -68,8 +68,9 @@
 	<string>UIStatusBarStyleLightContent</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<!-- Debug: Google-Test-App-ID (debug.xcconfig); Release: echte ID (release.xcconfig) -->
 	<key>GADApplicationIdentifier</key>
-	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<string>$(ADMOB_APP_ID)</string>
 	<key>GADDelayAppMeasurementInit</key>
 	<true/>
 	<key>NSUserTrackingUsageDescription</key>

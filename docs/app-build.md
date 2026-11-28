@@ -53,18 +53,20 @@ npm run open      # öffnet das Xcode-Projekt
    Beim ersten Mal auf dem iPhone: Einstellungen → Allgemein → VPN & Geräteverwaltung → dem
    Entwickler vertrauen.
 
-Beim ersten Start siehst du nacheinander: den Google-Einwilligungsdialog (nur in der EU, nur wenn
-in AdMob angelegt), dann Apples Frage „Darf … dich über Apps hinweg verfolgen?“. Danach startet das
-Spiel. Werbung läuft mit **Google-Test-Anzeigen** (Banner „Test Ad“). Echtes Geld fließt dabei nicht.
+Beim ersten Start siehst du den Google-Einwilligungsdialog (nur in der EU, und nur wenn die
+DSGVO-Mitteilung in AdMob veröffentlicht ist). Apples Frage „Darf … dich über Apps hinweg
+verfolgen?“ kommt erst nach dem ersten gewonnenen Level (mit einer kurzen Vorfrage). Mit **▶**
+(Debug) läuft Werbung mit **Google-Test-Anzeigen** (Banner „Test Ad“), echtes Geld fließt nicht.
+Ein **Archive** / TestFlight / App-Store-Build (Release) nutzt die echten AdMob-IDs.
 
 ### Was du auf dem iPhone testen solltest
 
 - **Start offline:** Flugmodus an, App starten. Das Spiel muss laufen, nur Sync und Duell fehlen.
 - **Haptik:** Bei Zügen und Merges vibriert es spürbar (Einstellungen → Vibration ist in der App an).
-- **Abenteuer:** Leeres Hilfsmittel → „Ansehen“ → Test-Video bis zum Ende → +1 Hilfsmittel.
-  Schließt du das Video vorher, gibt es nichts.
-- **Zwischenwerbung:** nach jedem 10. gewonnenen Level (Wiederholungen zählen mit), immer erst
-  **vor** dem nächsten Level.
+- **Abenteuer:** Hilfsmittel kommen nach festgelegten Leveln in den Vorrat (kein Werbeclip mehr,
+  launch-42). Maximal 1 Stück je Sorte, kein Stapeln.
+- **Zwischenwerbung:** in den Leveln 1–5 keine, danach jedes 3. gewonnene Level (6, 9, 12, …),
+  immer erst **vor** dem nächsten Level. Werbefrei entfernt sie.
 - **Endlos:** nach je 15 Minuten Spielzeit kommt nach einem Zug eine normale Zwischenwerbung
   ohne Belohnung (Werbefrei entfernt sie). launch-29: Endlos hat keine Werkzeuge mehr.
 - **Spielstand über Neuinstallation:** ein paar Level spielen, App löschen, neu installieren
@@ -145,9 +147,9 @@ Einmaliger In-App-Kauf, **kein** Abonnement, **kein** Verbrauchsartikel.
 | Was | Platzhalter | Wo ändern |
 |---|---|---|
 | **App-ID (Bundle-ID)** | `de.hoffmann.squishattack` | `app/capacitor.config.json` → `appId` **und** in Xcode → Target App → Signing & Capabilities → Bundle Identifier (setzt `PRODUCT_BUNDLE_IDENTIFIER` in `app/ios/App/App.xcodeproj/project.pbxproj`). Danach `npm run sync`. |
-| **AdMob-App-ID** | `ca-app-pub-3940256099942544~1458002511` (Google-Test) | `app/ios/App/App/Info.plist` → `GADApplicationIdentifier` |
-| **AdMob-Anzeigenblöcke** | Google-Test-IDs für Interstitial (Rewarded seit launch-42 ungenutzt) | `app/src/app-config.mjs` → `admob.interstitialId` |
-| **Test-Modus Werbung** | `testing: true` | `app/src/app-config.mjs` → erst **nach** dem Eintragen der echten IDs auf `false` |
+| **AdMob-App-ID** | Debug: Google-Test `ca-app-pub-3940256099942544~1458002511`; Release: `ca-app-pub-3147947530766307~6450785208` | `GADApplicationIdentifier` in `Info.plist` ist `$(ADMOB_APP_ID)`; IDs in `app/ios/debug.xcconfig` und `app/ios/release.xcconfig` |
+| **AdMob-Interstitial** | Debug: Google-Test `…/4411468910`; Release: `ca-app-pub-3147947530766307/3361587432` | `app/src/app-config.mjs` (`ADMOB_TEST_IDS` / `ADMOB_LIVE_IDS`). Rewarded-Blöcke gibt es nicht mehr (launch-42). |
+| **Test- vs. Live-Werbung** | Debug (Xcode ▶) = Test-IDs; Release (Archive / TestFlight / Store) = echte IDs | `app/src/admob-runtime.mjs` wird im Release-Bundle vom Xcode-Skript auf `ADMOB_TESTING = false` gesetzt. Nicht von Hand auf Live stellen, wenn du mit ▶ testest. |
 | **Produkt-IDs (Werkzeug-Shop)** | `de.hoffmann.squishattack.<shop-id>`, z. B. `…rocket_3`, `…bundle_mix` | Präfix in `app/src/app-config.mjs` → `store.productPrefix`; die Shop-IDs kommen aus `SHOP_CONFIG` in `game/shop.mjs`. In App Store Connect als **Verbrauchsartikel** genau so anlegen. Die Testdatei `app/ios/App/App/Squish.storekit` muss dieselben IDs haben (bei neuem Präfix dort mit ändern). Shop bleibt ausgeblendet. |
 | **Werbefrei (IAP)** | `squish.adfree` (ohne Präfix), einmalig **4,99 EUR**, **Nicht-Verbrauch** | `app/src/app-config.mjs` → `store.adFreeProductId`. In App Store Connect als Non-Consumable mit genau dieser ID anlegen (siehe Abschnitt „Werbefrei in App Store Connect anlegen“). Testdatei `Squish.storekit` enthält denselben Eintrag. Einstellungen: Kauf + „Käufe wiederherstellen“. |
 | **ATT-Text** | „Damit wir dir passendere Werbung zeigen können …“ | `app/ios/App/App/de.lproj/InfoPlist.strings`, `en.lproj/InfoPlist.strings` (und Info.plist) |
@@ -155,9 +157,12 @@ Einmaliger In-App-Kauf, **kein** Abonnement, **kein** Verbrauchsartikel.
 | **App-Icon / Startbild** | aus `game/icons/squishy-v1-1024.png` und dem Logo erzeugt | neue Vorlagen in `game/…` ablegen, dann `npm run assets` (braucht Python mit Pillow) |
 | **Version** | `1.0` (Build `1`) | Xcode → Target App → General |
 
-AdMob-Konsole (wenn das Konto da ist): App anlegen (iOS), zwei Anzeigenblöcke („Mit Prämie“ und
-„Interstitial“), unter **Datenschutz & Mitteilungen** die DSGVO-Mitteilung (UMP) und die IDFA-Erklärung
-veröffentlichen, `app-ads.txt` auf der Entwickler-Website hinterlegen.
+AdMob-Konsole: iOS-App und Interstitial-Block sind angelegt (IDs stehen im Code). Noch zu tun:
+unter **Datenschutz & Mitteilungen** die **DSGVO-Mitteilung (UMP, IAB TCF)** und die IDFA-Erklärung
+veröffentlichen, Zahlungs- und Steuerdaten hinterlegen, `app-ads.txt` auf der Entwickler-Website
+(`https://spoostudio.de/app-ads.txt`) hosten. Vorlage: `docs/app-ads.txt`. Ohne veröffentlichte
+UMP-Mitteilung erscheint in der EU kein Einwilligungsdialog, und personalisierte Werbung darf
+nicht geladen werden.
 
 ## Aufbau (für später)
 
@@ -172,7 +177,7 @@ app/
     native-boot.mjs       Start: Schlüsselbund-Token → Spiel → AdMob/StoreKit anmelden
     app-config.mjs        alle Platzhalter-IDs an einer Stelle
     token-keychain.mjs    Spieler-Token im iOS-Schlüsselbund (Fallback localStorage)
-    admob-adapter.mjs     UMP → Rewarded/Interstitial (nur Test-IDs)
+    admob-adapter.mjs     UMP → Interstitial (Debug: Test-IDs, Release: echte IDs)
     att-prompt.mjs        launch-32: Vorfrage + ATT nach dem ersten gelösten Level
     store-adapter.mjs     StoreKit über @capgo/native-purchases (Werkzeug-Pakete + Werbefrei squish.adfree)
     app.css               kein Zoom/Gummiband in der App

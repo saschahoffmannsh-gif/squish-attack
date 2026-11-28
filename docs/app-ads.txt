@@ -1,0 +1,4 @@
+# app-ads.txt for spoostudio.de (App Store developer website).
+# Host this file at the site root: https://spoostudio.de/app-ads.txt
+# (spoostudio-site repo root, same folder as CNAME and index.html — not under /squish-attack/).
+google.com, pub-3147947530766307, DIRECT, f08c47fec0942fa0

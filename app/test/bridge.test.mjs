@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { restoreToken, persistToken } from '../src/token-keychain.mjs';
 import { setupConsent, createAdMobAdapter, EVENTS } from '../src/admob-adapter.mjs';
 import { createStoreKitAdapter, createAdFreeAdapter } from '../src/store-adapter.mjs';
-import { APP_CONFIG, storeProductId, shopIdFromProductId } from '../src/app-config.mjs';
+import { APP_CONFIG, resolveAdMob, storeProductId, shopIdFromProductId } from '../src/app-config.mjs';
 import { createAttFlow, ATT_ASKED_KEY, ATT_TEXT } from '../src/att-prompt.mjs';
 import { readFileSync } from 'node:fs';
 
@@ -66,6 +66,29 @@ function admobMock({ consent = { status: 'REQUIRED', isConsentFormAvailable: tru
     async showInterstitial() { calls.push(['showInterstitial']); emit(EVENTS.interstitialDismissed); },
     async showPrivacyOptionsForm() {} };
 }
+
+test('AdMob: Debug-Test-IDs standard, Release-IDs bei __SQUISH_ADMOB_TESTING__=false; kein rewardedId', () => {
+  assert.equal(APP_CONFIG.admob.testing, true);
+  assert.equal(APP_CONFIG.admob.interstitialId, 'ca-app-pub-3940256099942544/4411468910');
+  assert.equal('rewardedId' in APP_CONFIG.admob, false);
+  const prev = globalThis.__SQUISH_ADMOB_TESTING__;
+  try {
+    globalThis.__SQUISH_ADMOB_TESTING__ = false;
+    const live = resolveAdMob();
+    assert.equal(live.testing, false);
+    assert.equal(live.appId, 'ca-app-pub-3147947530766307~6450785208');
+    assert.equal(live.interstitialId, 'ca-app-pub-3147947530766307/3361587432');
+    assert.equal('rewardedId' in live, false);
+    globalThis.__SQUISH_ADMOB_TESTING__ = true;
+    const testIds = resolveAdMob();
+    assert.equal(testIds.testing, true);
+    assert.equal(testIds.appId, 'ca-app-pub-3940256099942544~1458002511');
+    assert.equal(testIds.interstitialId, 'ca-app-pub-3940256099942544/4411468910');
+  } finally {
+    if (prev === undefined) delete globalThis.__SQUISH_ADMOB_TESTING__;
+    else globalThis.__SQUISH_ADMOB_TESTING__ = prev;
+  }
+});
 test('Reihenfolge: initialize → UMP → Formular → ATT', async () => {
   const A = admobMock();
   const s = await setupConsent(A, { askTracking: true, testing: true });
