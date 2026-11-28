@@ -46,7 +46,7 @@ export function createFlipbookLayer(layer,{page=document,base=new URL('./assets/
   const canvas=page.createElement('canvas');canvas.className='vfx-canvas';canvas.setAttribute('aria-hidden','true');layer.prepend(canvas);
   const gl=canvas.getContext('webgl',{alpha:true,premultipliedAlpha:true,antialias:false,depth:false,stencil:false,preserveDrawingBuffer:false,powerPreference:'default'});
   const sprites=[],atlases=new Map(),data=new Float32Array(MAX_SPRITES*VERTS*FLOATS);
-  let timeScale=1,manifest=null,program=null,buffer=null,loc={},width=1,height=1,ratio=1,raf=0,disposed=false,lost=false,clean=true,drawn=0,frameCost=0;
+  let timeScale=1,manifest=null,program=null,buffer=null,loc={},width=1,height=1,ratio=1,raf=0,disposed=false,lost=false,clean=true,drawn=0,frameCost=0,driven=false;
   let clock=null;
   const now=()=>clock?clock():performance.now();
   function compile(type,source){const s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);return s;}
@@ -106,7 +106,7 @@ export function createFlipbookLayer(layer,{page=document,base=new URL('./assets/
   }
   // Static cells (rendered gel beads, glints, pearls) for moving particles.
   function stamp(name,cell,o){return play(name,{...o,from:cell,to:cell,life:o.life??16,fps:1});}
-  function wake(){if(!raf&&!disposed&&!page.hidden)raf=requestAnimationFrame(draw);}
+  function wake(){if(!driven&&!raf&&!disposed&&!page.hidden)raf=requestAnimationFrame(draw);}
   function clear(){if(!gl)return;gl.viewport(0,0,canvas.width,canvas.height);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);clean=true;}
   function write(offset,x,y,u0,v0,u1,v1,m,s,alpha){
     const k=offset;data[k]=x;data[k+1]=y;data[k+2]=u0;data[k+3]=v0;data[k+4]=u1;data[k+5]=v1;data[k+6]=m;
@@ -166,12 +166,19 @@ export function createFlipbookLayer(layer,{page=document,base=new URL('./assets/
     }
     clean=false;
     frameCost=frameCost*.85+(now()-began)*.15;
-    if(alive)wake();else clear();
+    if(alive){if(!driven)wake();}else clear();
   }
   function visibility(){if(page.hidden){sprites.length=0;if(raf)cancelAnimationFrame(raf);raf=0;clear();}}
   page.addEventListener('visibilitychange',visibility);
+  function tick(time){
+    if(!driven||disposed||page.hidden)return;
+    if(raf){cancelAnimationFrame(raf);raf=0;}
+    if(!sprites.length&&clean)return;
+    draw(typeof time==='number'?time:now());
+  }
   return {
-    ready,load,preload,play,stamp,
+    ready,load,preload,play,stamp,tick,
+    setDriven(on){driven=!!on;if(driven&&raf){cancelAnimationFrame(raf);raf=0;}},
     get size(){return {width,height};},
     // QA only: slow motion for stills.
     set clock(fn){clock=typeof fn==='function'?fn:null;},

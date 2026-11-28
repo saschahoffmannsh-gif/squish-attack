@@ -15,15 +15,18 @@ export const mobile=ios||(typeof matchMedia==='function'&&matchMedia('(max-width
 // On phones we skip blob prefill and compileAsync unless ?prewarm=1.
 // Burst/fusion program warmup in prepareEntry always runs.
 const wantPrewarm=has('prewarm');
+// Native Capacitor shell (data-app-shell on the app copy of index.html, or capacitor:).
+export const appShell=(typeof document!=='undefined'&&!!document.documentElement?.hasAttribute?.('data-app-shell'))
+  ||(typeof location!=='undefined'&&location.protocol==='capacitor:');
 export const flags=Object.freeze({
   debug:has('debug'),
   nofusion:has('nofusion'),
   noworker:has('noworker'),
   noprewarm:has('noprewarm')||(!wantPrewarm&&mobile),
   nosound:has('nosound'),
-  ios,safari,mobile,
+  ios,safari,mobile,appShell,
 });
 export function flagSummary(){
-  return {build:BUILD,debug:flags.debug,nofusion:flags.nofusion,noworker:flags.noworker,noprewarm:flags.noprewarm,nosound:flags.nosound,ios,safari,mobile};
+  return {build:BUILD,debug:flags.debug,nofusion:flags.nofusion,noworker:flags.noworker,noprewarm:flags.noprewarm,nosound:flags.nosound,ios,safari,mobile,appShell:flags.appShell};
 }
 if(typeof window!=='undefined')window.SquishFlags=flagSummary();

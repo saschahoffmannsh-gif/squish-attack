@@ -6,8 +6,9 @@
 // optics shade it with a ray-marched boundary patched to the same field.
 // The torn skin is animated on the GPU from a tiny per-shard state texture.
 import {pillowTopHeight} from './original-gel-models.js?v=menu-1';
-import {createHost,capsuleIndex} from './fusion-core.mjs?v=fuse-3';
+import {createHost,capsuleIndex} from './fusion-core.mjs?v=fuse-4';
 import {flags} from './flags.mjs?v=launch-44';
+import {spawnFusionWorker} from './fusion-worker-boot.mjs?v=fuse-4';
 import {comicOutline,comicColors,toonUniforms,comicBurstTexture,comicSparkTexture,comicRingTexture} from './comic-style.mjs?v=launch-44';
 
 export function createFusion({internals:I,graphics}){
@@ -44,9 +45,13 @@ export function createFusion({internals:I,graphics}){
   // ---------- the mesher: a module worker, or the same code inline ----------
   const half=G.width/2,J=G.height+G.dome+G.footClip,Y0=J/2-G.footClip,HD=G.height+G.dome,TH=96,PH=192;
   const gel=JSON.parse(JSON.stringify(G));
-  let channel=null,inline=false,tablesReady=false,r0Texture=null,resolveTables;
+  let channel=null,inline=false,tablesReady=false,r0Texture=null,resolveTables,queued=[];
   const tablesPromise=new Promise(r=>resolveTables=r);
   const lineMap=new Map(),tears=new Map();let lineSeq=1,tearSeq=1;
+  function attachChannel(next){
+    channel=next;const wait=queued.splice(0);
+    for(const [msg,transfer] of wait)channel.post(msg,transfer);
+  }
   function onMessage(msg){
     const t0=now();
     if(msg.type==='tables'){
@@ -61,23 +66,29 @@ export function createFusion({internals:I,graphics}){
   function useInline(){
     if(inline)return;inline=true;
     const handle=createHost(msg=>Promise.resolve().then(()=>onMessage(msg)));
-    channel={post(msg){handle(msg);}};
-    if(!tablesReady)channel.post({type:'init',G:gel});
+    attachChannel({post(msg){handle(msg);}});
+    if(!tablesReady)post({type:'init',G:gel,warm:false});
     // Replay what a dead worker may have dropped.
     for(const line of lineMap.values())line.reopen();
-    for(const [rid,t] of tears)channel.post(t.msg);
+    for(const [rid,t] of tears)post(t.msg);
   }
+  const post=(msg,transfer)=>{if(channel)channel.post(msg,transfer);else queued.push([msg,transfer]);};
   if(flags.noworker)setTimeout(useInline,0);
-  else try{
-    const worker=new Worker(new URL('./fusion-worker.mjs?v=fuse-3',import.meta.url),{type:'module'});
-    worker.onmessage=e=>onMessage(e.data);
-    worker.onerror=e=>{e.preventDefault?.();console.warn('fusion worker unavailable, meshing inline');try{worker.terminate();}catch{}useInline();};
-    channel={post(msg,transfer){worker.postMessage(msg,transfer||[]);}};
-    channel.post({type:'init',G:gel});
-    // A silent iOS module-worker (no error event) must not leave meshing stuck.
-    setTimeout(()=>{if(!tablesReady&&!inline){console.warn('fusion worker silent, meshing inline');try{worker.terminate();}catch{}useInline();}},2500);
-  }catch{setTimeout(useInline,0);}
-  const post=(msg,transfer)=>channel.post(msg,transfer);
+  else{
+    // App / capacitor://: load the worker as a JS-MIME blob. A URL module worker
+    // under the custom scheme is often silent (no error), then 2.5s later the
+    // mesher falls back to the main thread.
+    const useBlob=flags.appShell;
+    const boot=spawnFusionWorker({base:import.meta.url,blob:useBlob});
+    Promise.resolve(boot).then(worker=>{
+      if(inline){try{worker.terminate();}catch{}return;}
+      worker.onmessage=e=>onMessage(e.data);
+      worker.onerror=e=>{e.preventDefault?.();console.warn('fusion worker unavailable, meshing inline');try{worker.terminate();}catch{}useInline();};
+      attachChannel({post(msg,transfer){worker.postMessage(msg,transfer||[]);}});
+      post({type:'init',G:gel,warm:!useBlob});
+      setTimeout(()=>{if(!tablesReady&&!inline){console.warn('fusion worker silent, meshing inline');try{worker.terminate();}catch{}useInline();}},2500);
+    }).catch(()=>{if(!inline)useInline();});
+  }
   function requestTear(msg){
     const rid=tearSeq++;msg.type='tear';msg.rid=rid;msg.seed=1+Math.floor(rand()*2e9);
     return new Promise(resolve=>{tears.set(rid,{msg,resolve});post(msg);});
@@ -411,7 +422,7 @@ vN=normalize(mat3(modelMatrix)*shardTurn(shardQ,normal));gl_Position=projectionM
       post(msg,inline?undefined:transfer);
     }
     const line={id,field,blob,group,labels,cushions,targetIndex,value,ready:false,pending:null,
-      show(){group.visible=true;if(!shadows){shadows=true;for(const p of proxies)I.setting.addHudShadow(p);}},
+      show(){group.visible=true;if(!shadows){shadows=true;for(const p of proxies)I.setting.addHudShadow(p);I.requestFrame({shadows:true});}},
       hideShadows(){if(shadows){shadows=false;for(const p of proxies)I.setting.removeHudShadow(p);}},
       // Ask for a mesh of the current field; the newest request wins.
       remesh(labelOpacity){const t0=now();opacity=labelOpacity;if(inflight)dirty=true;else dispatch();charge(t0);},
@@ -433,7 +444,7 @@ vN=normalize(mat3(modelMatrix)*shardTurn(shardQ,normal));gl_Position=projectionM
         const bubbles=blob.s.bubbles.children,layout=I.HUD_PARAMETERS.bubbles.layout;
         bubbles.forEach((bb,k)=>{const o=(k%snap.n)*7,l=layout[k];bb.position.set(c[o]+l[0]*c[o+2],l[1]*c[o+3],c[o+1]+l[2]*c[o+4]);bb.scale.set(c[o+2],c[o+3],c[o+4]);});
         noteMesh(msg.ms);
-        line.ready=true;I.requestFrame({shadows:true});
+        line.ready=true;I.requestFrame(flags.appShell?undefined:{shadows:true});
         if(dirty)dispatch();
       },
       reopen(){open();bufs=null;topBufs.length=0;if(inflight){inflight=false;dispatch();}},
@@ -645,8 +656,10 @@ vN=normalize(mat3(modelMatrix)*shardTurn(shardQ,normal));gl_Position=projectionM
         if(run.popped&&run.landed&&!run.main)finishRun(run);
       }
       charge(t0);
-      I.requestFrame({shadows:true});
-      if(!runs.size){driver=null;hurry=1;prefill();return true;}
+      // App: do not rebuild the shadow map on every fusion frame. Update
+      // when a body is shown (line.show) and once when the run finishes.
+      I.requestFrame(flags.appShell?undefined:{shadows:true});
+      if(!runs.size){I.requestFrame({shadows:true});driver=null;hurry=1;prefill();return true;}
       return false;
     },cancel(){driver=null;api.clear();}});
   }

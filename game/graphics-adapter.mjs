@@ -58,7 +58,7 @@ export function createGameGraphics(host) {
   const setting=installCleanScreen(graphics,host,{direct:true});
   const ray=new THREE.Raycaster(),pointer=new THREE.Vector2(),floor=new THREE.Plane(new THREE.Vector3(0,1,0),-PARAMETERS.board.floor);
   const characters=new WeakMap(),impulses=[],phoneImpulses=[],mergeJobs=[],dropJobs=[],waitJobs=[];
-  const hud=new Map(),extras=new Set(),extraJobs=[];let renderedLast=false,last=null,raf=0,disposed=false,hudDirty=true,warming=false,fusion=null,contextLost=false,I_onLand=null;
+  const hud=new Map(),extras=new Set(),extraJobs=[],afterFrames=new Set();let renderedLast=false,last=null,raf=0,disposed=false,hudDirty=true,warming=false,fusion=null,contextLost=false,I_onLand=null;
   const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
   // Keep drawing a ringing stone until it is visually at rest (was .045:
   // the last frame could freeze a slightly tilted pose).
@@ -310,6 +310,7 @@ export function createGameGraphics(host) {
     // spring is live, the HUD shifts, or something else dirtied the view.
     renderedLast=dirty;
     if(dirty){graphics.render(dt);dirty=false;}
+    if(afterFrames.size)for(const fn of afterFrames){try{fn(now);}catch{}}
     const settledTime=waitJobs.length&&!frameState.paused?graphics.state.time:0;
     if(!frameState.paused)for(let i=waitJobs.length-1;i>=0;i--)if(settledTime>=waitJobs[i].until){
       waitJobs.splice(i,1)[0].resolve();
@@ -381,6 +382,7 @@ export function createGameGraphics(host) {
     set onLand(fn){I_onLand=fn;if(fusion){/* land hook lives on internals */}},
     get contextLost(){return contextLost;},
     clear(){fusion?.clear();impulses.length=0;phoneImpulses.length=0;dropJobs.splice(0).forEach(job=>job.cancel());mergeJobs.splice(0).forEach(job=>job.cancel());waitJobs.splice(0).forEach(job=>job.resolve());graphics.syncTiles([]);requestFrame({shadows:true});},
-    dispose(){disposed=true;fusion?.clear();impulses.length=0;phoneImpulses.length=0;dropJobs.splice(0).forEach(job=>job.cancel());mergeJobs.splice(0).forEach(job=>job.cancel());waitJobs.splice(0).forEach(job=>job.resolve());cancelAnimationFrame(raf);document.removeEventListener('visibilitychange',resetClock);resize.disconnect();setting.dispose();for(const {s} of hud.values())disposeGel(s);hud.clear();graphics.dispose();}
+    onFrame(fn){afterFrames.add(fn);return ()=>afterFrames.delete(fn);},
+    dispose(){disposed=true;afterFrames.clear();fusion?.clear();impulses.length=0;phoneImpulses.length=0;dropJobs.splice(0).forEach(job=>job.cancel());mergeJobs.splice(0).forEach(job=>job.cancel());waitJobs.splice(0).forEach(job=>job.resolve());cancelAnimationFrame(raf);document.removeEventListener('visibilitychange',resetClock);resize.disconnect();setting.dispose();for(const {s} of hud.values())disposeGel(s);hud.clear();graphics.dispose();}
   };
 }

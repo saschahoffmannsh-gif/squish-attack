@@ -1,11 +1,13 @@
 // Render density for the comic renderer (launch-12). Squishes are flat, opaque
 // and drawn straight into the canvas: no HDR target, no gel bloom mask and no
-// refraction pass any more. That budget goes into native resolution: iPhones
-// render at their full 3x, with the canvas' own multisampling (antialias).
+// refraction pass any more. The web game still uses full 3x on iPhones, with
+// the canvas' own multisampling (antialias). The native app caps at 2x and
+// keeps MSAA: 3x+MSAA in a second-context WKWebView was too heavy, and at 2x
+// dropping MSAA would show jaggies.
 const LOST_KEY='squish-render-cap';
-export function renderCaps({dpr=globalThis.devicePixelRatio||1,ios=false,mobile=false,lostCap=null}={}){
+export function renderCaps({dpr=globalThis.devicePixelRatio||1,ios=false,mobile=false,lostCap=null,appShell=false}={}){
   // A lost WebGL context once on this device: stay one notch lower next time.
-  const cap=lostCap??(ios?3:mobile?3:2);
+  const cap=lostCap??(appShell?2:ios?3:mobile?3:2);
   const maximum=Math.max(1,Math.min(dpr,cap));
   const minimum=mobile?Math.min(maximum,2):Math.min(maximum,1.5);
   return {maximum,minimum};
@@ -33,8 +35,10 @@ export function createQualityGovernor({maximum,minimum,mobile,slowMs=mobile?28:3
 export function configureRenderQuality(graphics) {
   const renderer=graphics.renderer,mobile=matchMedia('(max-width:700px), (pointer:coarse)').matches;
   const ios=/iP(hone|ad|od)/.test(navigator.userAgent||'')||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  const appShell=(typeof document!=='undefined'&&document.documentElement?.hasAttribute?.('data-app-shell'))
+    ||(typeof location!=='undefined'&&location.protocol==='capacitor:');
   let lostCap=null;try{const v=Number(sessionStorage.getItem(LOST_KEY));if(v>0)lostCap=v;}catch{}
-  const {maximum,minimum}=renderCaps({ios,mobile,lostCap});
+  const {maximum,minimum}=renderCaps({ios,mobile,lostCap,appShell});
   // Bloom targets stay unused (bloom off); keep them single-sampled and tiny.
   const target=graphics.bloom?.targets?.base;if(target)target.samples=0;
   renderer.setPixelRatio(maximum);

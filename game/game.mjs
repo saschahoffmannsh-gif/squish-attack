@@ -56,6 +56,12 @@ const mergeEffects = createMergeEffects(document.getElementById('effects'), redu
   onRecord:()=>{if(!reduceMotion.matches)visual.celebrateHud('best');sound.play('record');},
   onRecordCollect:()=>{if(!reduceMotion.matches)visual.celebrateHud('best',.24);},
 });
+// App: one rAF. The flipbook layer otherwise runs a second WebGL context's loop
+// whenever particles are alive (merges / pops). Web keeps its own rAF.
+if(native.isNative||document.documentElement.hasAttribute('data-app-shell')){
+  mergeEffects.vfx.setDriven(true);
+  visual.onFrame(time=>mergeEffects.vfx.tick(time));
+}
 let nextId = 1;
 let board;
 let queue;

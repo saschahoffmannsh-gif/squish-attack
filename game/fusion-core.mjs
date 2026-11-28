@@ -176,9 +176,12 @@ export function createHost(post){
     if(msg.type==='init'){core=createCore(msg.G);const t0=performance.now();const R0=core.buildTables().slice();
       post({type:'tables',R0,ms:performance.now()-t0},[R0.buffer]);
       // Warm the JIT so the first real merge meshes at full speed.
-      const warm={PHI:48,CAP:11,midStep:.065,capMid:64,mid:0,radii:new Float32Array(150*48),index:core.capsuleIndex(150,48)};
-      const pos=new Float32Array(150*48*3),nor=new Float32Array(150*48*3),uv=new Float32Array(150*48*2);
-      for(let i=0;i<24;i++){const c=new Float64Array(21);for(let j=0;j<3;j++)c.set([(j-1)*(1.2-.03*i),0,1+.004*i,1,1,0,0],j*7);core.mesh(warm,{n:3,k:.3,ripple:.02,rippleT:i/60,tremble:0,round:.2,c},pos,nor,uv);}
+      // Skip on the main-thread fallback (and in the app): 24 meshes would hitch.
+      if(msg.warm!==false){
+        const warm={PHI:48,CAP:11,midStep:.065,capMid:64,mid:0,radii:new Float32Array(150*48),index:core.capsuleIndex(150,48)};
+        const pos=new Float32Array(150*48*3),nor=new Float32Array(150*48*3),uv=new Float32Array(150*48*2);
+        for(let i=0;i<24;i++){const c=new Float64Array(21);for(let j=0;j<3;j++)c.set([(j-1)*(1.2-.03*i),0,1+.004*i,1,1,0,0],j*7);core.mesh(warm,{n:3,k:.3,ripple:.02,rippleT:i/60,tremble:0,round:.2,c},pos,nor,uv);}
+      }
       return;}
     if(msg.type==='open'){const {id,PHI,CAP,midStep,capMid,labels}=msg,ringCount=CAP*2+capMid+1;
       lines.set(id,{PHI,CAP,midStep,capMid,mid:0,radii:new Float32Array(ringCount*PHI),index:core.capsuleIndex(ringCount,PHI),labels:labels.map(l=>({rx:l.rx,rz:l.rz,prev:new Float32Array(l.rx.length)})),bufs:null});return;}

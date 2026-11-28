@@ -9,6 +9,13 @@ test('iPhone rendert mit voller 3x-Dichte, Minimum 2x', () => {
   assert.deepEqual(renderCaps({dpr:3,ios:true,mobile:true,lostCap:2.5}),{maximum:2.5,minimum:2});
 });
 
+test('Native App begrenzt die Dichte auf 2x (MSAA bleibt)', () => {
+  assert.deepEqual(renderCaps({dpr:3,ios:true,mobile:true,appShell:true}),{maximum:2,minimum:2});
+  assert.deepEqual(renderCaps({dpr:2,ios:true,mobile:true,appShell:true}),{maximum:2,minimum:2});
+  // Web without appShell stays at 3x.
+  assert.deepEqual(renderCaps({dpr:3,ios:true,mobile:true,appShell:false}),{maximum:3,minimum:2});
+});
+
 const run=(g,ms,frames,{rendered=true,settled=true,start=0}={})=>{let t=start,v;for(let i=0;i<frames;i++){t+=ms/1000;v=g.sample(ms/1000,t,{rendered,settled});}return {v,t};};
 
 test('Dichte bleibt bei flüssigen Frames und einzelnen Hängern', () => {
