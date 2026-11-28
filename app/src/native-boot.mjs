@@ -5,6 +5,7 @@
 //    StoreKit-Käufe an die vorhandenen Spiel-Schnittstellen hängen
 // Alles lokal im App-Paket, kein Code aus dem Netz. Im Browser (ohne Capacitor) startet nur das Spiel.
 import { APP_CONFIG, resolveAdMob } from './app-config.mjs?v=__BUILD__';
+import { disableNativeFullscreen } from './disable-fullscreen.mjs?v=__BUILD__';
 import { restoreToken, persistToken } from './token-keychain.mjs?v=__BUILD__';
 import { setupConsent, createAdMobAdapter } from './admob-adapter.mjs?v=__BUILD__';
 import { createStoreKitAdapter, createAdFreeAdapter } from './store-adapter.mjs?v=__BUILD__';
@@ -13,6 +14,8 @@ import { createAttFlow } from './att-prompt.mjs?v=__BUILD__';
 const BUILD = '__BUILD__';
 const cap = globalThis.Capacitor;
 const isNative = !!cap?.isNativePlatform?.();
+// Vor dem Spiel: Fullscreen-API im WKWebView abschalten (Banner, Touch-Verzögerung, Ruckler).
+if (isNative || document.documentElement?.hasAttribute?.('data-app-shell')) disableNativeFullscreen();
 const plugin = name => (isNative && cap.isPluginAvailable?.(name)) ? (cap.Plugins?.[name] || cap.registerPlugin(name)) : null;
 const log = (what, e) => console.warn('[app]', what, e?.message || e || '');
 const status = { build: BUILD, native: isNative, token: null, ads: null, store: null, adFree: null, errors: [] };

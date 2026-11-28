@@ -3,7 +3,8 @@
 // - kopiert index.html, game/, levels/, squish/ (keine lab/, tools/, tests/, docs/, sw.js)
 // - legt die App-Brücke (app/src) nach www/game/app/ und setzt die Build-Kennung ein
 // - ändert NUR die Kopie von game/index.html: App-Viewport (kein Zoom), app.css, native-boot
-//   statt loading-screen (native-boot stellt zuerst den Spieler-Token aus dem Schlüsselbund her)
+//   statt loading-screen (native-boot stellt zuerst den Spieler-Token aus dem Schlüsselbund her),
+//   und ein frühes Inline-Skript, das requestFullscreen im WKWebView abschaltet
 // Alles bleibt relativ und lokal: kein Code aus dem Netz (App-Store-Richtlinie 2.5.2).
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
@@ -32,6 +33,17 @@ export function buildId(root = ROOT) {
   return readFileSync(join(root, 'game', 'build.txt'), 'utf8').trim();
 }
 
+/** Frühes Inline-Skript (App-Kopie von index.html): Fullscreen-API aus, bevor Module laufen. */
+export const FULLSCREEN_STUB_SCRIPT = `<script data-app-no-fullscreen>
+(function(){
+  function n(){return Promise.resolve()}
+  try{var p=Element.prototype;p.requestFullscreen=n;p.webkitRequestFullscreen=n;p.webkitRequestFullScreen=n}catch(e){}
+  function hide(k,v){try{Object.defineProperty(Document.prototype,k,{configurable:true,get:function(){return v}})}catch(e){}}
+  hide('fullscreenEnabled',false);hide('webkitFullscreenEnabled',false);
+  hide('fullscreenElement',null);hide('webkitFullscreenElement',null);
+})();
+</script>`;
+
 /** Ändert die App-Kopie von game/index.html. Wirft, wenn ein erwarteter Anker fehlt. */
 export function patchIndexHtml(html, build) {
   const must = (cond, what) => { if (!cond) throw new Error(`game/index.html: ${what} nicht gefunden`); };
@@ -45,6 +57,10 @@ export function patchIndexHtml(html, build) {
   must(html.includes('</head>'), '</head>');
   html = html.replace('</head>', `    <link rel="stylesheet" href="app/app.css?v=${build}" />\n  </head>`);
   html = html.replace('<html', '<html data-app-shell="ios"');
+  must(html.includes('<head>'), '<head>');
+  if (!html.includes('data-app-no-fullscreen')) {
+    html = html.replace('<head>', `<head>\n    ${FULLSCREEN_STUB_SCRIPT}`);
+  }
   return html;
 }
 

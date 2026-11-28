@@ -4,7 +4,8 @@ import { readFileSync, existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { patchIndexHtml, auditBundle, build, ROOT_INDEX } from '../scripts/build-web.mjs';
+import { patchIndexHtml, auditBundle, build, ROOT_INDEX, FULLSCREEN_STUB_SCRIPT } from '../scripts/build-web.mjs';
+import { disableNativeFullscreen } from '../src/disable-fullscreen.mjs';
 import { storeProductId } from '../src/app-config.mjs';
 
 const APP = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -66,15 +67,53 @@ test('App-Icon und Startbild: alle Dateien vorhanden', () => {
   const splash = JSON.parse(read('ios/App/App/Assets.xcassets/Splash.imageset/Contents.json'));
   for (const i of splash.images) if (i.filename) assert.ok(existsSync(join(APP, 'ios/App/App/Assets.xcassets/Splash.imageset', i.filename)), i.filename);
 });
-test('index.html-Patch: Viewport ohne Zoom, native-boot statt loading-screen, app.css', () => {
+test('index.html-Patch: Viewport ohne Zoom, native-boot statt loading-screen, app.css, kein Fullscreen', () => {
   const html = '<html lang="de"><head><meta name="viewport" content="width=device-width" /></head><body><script type="module" src="loading-screen.mjs?v=launch-9"></script></body></html>';
   const out = patchIndexHtml(html, 'launch-9');
   assert.match(out, /user-scalable=no/); assert.match(out, /viewport-fit=cover/);
   assert.match(out, /src="app\/native-boot\.mjs\?v=launch-9"/);
   assert.ok(!out.includes('loading-screen.mjs'));
   assert.match(out, /href="app\/app\.css\?v=launch-9"/);
+  assert.match(out, /data-app-shell="ios"/);
+  assert.match(out, /data-app-no-fullscreen/);
+  assert.ok(out.includes(FULLSCREEN_STUB_SCRIPT));
+  assert.match(out, /requestFullscreen/);
+  assert.match(out, /webkitRequestFullscreen/);
+  assert.ok(out.indexOf('data-app-no-fullscreen') < out.indexOf('native-boot.mjs'));
   assert.throws(() => patchIndexHtml(html, 'launch-10'), /loading-screen/);
   assert.match(ROOT_INDEX, /game\/index\.html/);
+});
+test('disableNativeFullscreen: requestFullscreen wird zum No-Op, Button versteckt, Enabled aus', () => {
+  const button = { hidden: false };
+  const page = {
+    readyState: 'complete',
+    documentElement: {},
+    getElementById: (id) => id === 'fullscreen-toggle' ? button : null,
+    addEventListener() {},
+  };
+  const ElementCtor = function () {};
+  ElementCtor.prototype = { requestFullscreen: () => 'live', webkitRequestFullscreen: () => 'live' };
+  const DocumentCtor = function () {};
+  DocumentCtor.prototype = { fullscreenEnabled: true, webkitFullscreenEnabled: true };
+  disableNativeFullscreen({ page, ElementCtor, DocumentCtor });
+  assert.equal(page.fullscreenEnabled, false);
+  assert.equal(page.webkitFullscreenEnabled, false);
+  assert.equal(page.fullscreenElement, null);
+  assert.equal(typeof page.documentElement.requestFullscreen, 'function');
+  assert.equal(typeof ElementCtor.prototype.requestFullscreen, 'function');
+  assert.notEqual(ElementCtor.prototype.requestFullscreen(), 'live');
+  return Promise.resolve(ElementCtor.prototype.requestFullscreen()).then((v) => {
+    assert.equal(v, undefined);
+    assert.equal(button.hidden, true);
+  });
+});
+test('native-boot und app.css: Fullscreen in der App aus, will-change an Steinen zurückgesetzt', () => {
+  const boot = read('src/native-boot.mjs');
+  assert.match(boot, /disableNativeFullscreen/);
+  assert.match(boot, /disable-fullscreen\.mjs/);
+  const css = read('src/app.css');
+  assert.match(css, /#fullscreen-toggle/);
+  assert.match(css, /will-change:\s*auto/);
 });
 test('Bundle-Prüfung findet Fremd-Code', () => {
   const d = mkdtempSync(join(tmpdir(), 'sq-'));

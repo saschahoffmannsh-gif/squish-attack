@@ -16,3 +16,9 @@ html[data-app-shell] input, html[data-app-shell] textarea { -webkit-user-select:
 .att-line { margin: 0 6px; font: 600 15.5px/1.35 var(--aw-comic); color: #e9ecff; }
 .att-ok { align-self: stretch; }
 @media (prefers-reduced-motion: reduce) { .att-heart { animation: none; } }
+
+/* Kein Vollbild-Schalter in der App (Web behält den Toggle). */
+html[data-app-shell] #fullscreen-toggle { display: none !important; }
+
+/* will-change:left,top compositet nicht und kostet beim Verschieben der Steine extra Layer. */
+html[data-app-shell] .board-tile { will-change: auto; }
