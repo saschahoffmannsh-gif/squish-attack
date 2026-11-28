@@ -54,7 +54,9 @@ async function boot() {
     ready.then(s => { if (s.privacyOptions) addPrivacyButton(status.showPrivacyOptions); }).catch(() => {});
   }
 
-  const NativePurchases = plugin('NativePurchases');
+  // 1.0: kein IAP — StoreKit nicht anmelden, solange Shop und Werbefrei aus sind.
+  const iapOn = adFreeMod.isAdFreeOfferEnabled() || shop.SHOP_CONFIG.enabled;
+  const NativePurchases = iapOn ? plugin('NativePurchases') : null;
   if (NativePurchases) {
     const store = createStoreKitAdapter({ NativePurchases, prefix: APP_CONFIG.store.productPrefix, log });
     shop.registerNativeStore(store);

@@ -8,6 +8,7 @@
 import { t, onLangChange } from './i18n.mjs?v=launch-44';
 import { TOOL_ICONS, GIFT_SVG } from './tool-icons.mjs?v=launch-44';
 import { starGate, CHAPTER_SIZE, LEVEL_GIFTS } from './campaign.mjs?v=launch-44';
+import { isAdFreeOfferEnabled } from './ad-free.mjs?v=launch-44';
 
 export const EXPLAIN_KEY = 'squish-explain-seen-v1';
 const PALETTE = { 1: ['#5cc2ff', '#1f7ff0', '#0d3f9e'], 2: ['#ff7a66', '#e8291f', '#a3101a'], 3: ['#9df25a', '#38b81c', '#1b7a10'],
@@ -96,6 +97,7 @@ const SCENES = {
     const flyers = ys.map((y, i) => star(-96, y - 4, 'sx-flystar', { mx: 58, my: 0, d: i * .3 + 's' }));
     return stage('gates' + (shut ? ' is-shut' : ''), ys.map((y, i) => lvChip(i + 1, -110, y)), flyers, lock, count, sparks(58, -8, 'sx-lock-spark', 8, 64)); },
   ads: () => { const tv = el('span'); tv.append(el('b', 'sx-tv-ad', 'AD'), el('i', 'sx-tv-bar'));
+    if (!isAdFreeOfferEnabled()) return stage('ads', put(tv, 0, 6, 'sx-tv'));
     return stage('ads', put(tv, -58, 6, 'sx-tv'), icon(TOOL_ICONS.rocket, -58, 6, 'sx-adreward', { mx: 160, my: -30 }),
       plus3(-58, 6, 'sx-adreward is-late', { mx: 160, my: 38 }), put(el('b', 'sx-stamp', t('ex.ads.price')), -52, 4, '')); },
 };
@@ -115,8 +117,11 @@ const TOPICS = {
   gates: { icon: () => el('span', 'ex-ico ex-ico-star', '★'), title: () => t('ex.gates.title'), scene: SCENES.gates,
     line: ctx => ctx?.need && (ctx.have ?? 0) < ctx.need ? t('ex.gates.lineNow', { chapter: ctx.chapter, n: ctx.need - (ctx.have ?? 0) }) : t('ex.gates.line'),
     sr: ctx => [t('ex.gates.l1', { size: CHAPTER_SIZE }), ctx?.need ? t('ex.gates.now', { chapter: ctx.chapter, need: ctx.need, have: ctx.have ?? 0 }) : t('ex.gates.l2'), t('ex.gates.l3')] },
-  ads: { icon: () => el('span', 'ex-ico ex-ico-ad', 'AD'), title: () => t('ex.ads.title'), scene: SCENES.ads, line: () => t('ex.ads.line'),
-    sr: () => [t('ex.ads.l1'), t('ex.ads.l2'), t('ex.ads.l3')] },
+  ads: { icon: () => el('span', 'ex-ico ex-ico-ad', 'AD'), title: () => t('ex.ads.title'), scene: SCENES.ads,
+    line: () => t(isAdFreeOfferEnabled() ? 'ex.ads.line' : 'ex.ads.lineNoIap'),
+    sr: () => isAdFreeOfferEnabled()
+      ? [t('ex.ads.l1'), t('ex.ads.l2'), t('ex.ads.l3')]
+      : [t('ex.ads.l1'), t('ex.ads.l2NoIap'), t('ex.ads.l3NoIap')] },
 };
 export const TOPIC_ORDER = ['merge', 'merge5', 'street', 'tools', 'gifts', 'gates', 'ads'];
 

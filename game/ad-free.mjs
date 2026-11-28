@@ -4,7 +4,18 @@
 // launch-42: Der Kauf entfernt die Zwischenwerbung (Abenteuer nach den ersten 5 Leveln
 // alle 3 gelösten Level, Endlos alle 15 Minuten). Hilfsmittel kommen aus dem Vorrat
 // (Geschenke nach festgelegten Leveln), nicht aus Clips – Werbefrei schaltet sie nicht frei.
+//
+// 1.0: Angebot aus. Zum späteren Einschalten AD_FREE_OFFER_ENABLED auf true setzen
+// (Einstellungen, Erklär-Texte und StoreKit-Anmeldung in native-boot folgen diesem Schalter).
+// Tests können window.__SQUISH_AD_FREE_OFFER__ = true setzen.
 import { fmtPrice } from './i18n.mjs?v=launch-44';
+
+export const AD_FREE_OFFER_ENABLED = false;
+
+export function isAdFreeOfferEnabled() {
+  if (typeof globalThis.__SQUISH_AD_FREE_OFFER__ === 'boolean') return globalThis.__SQUISH_AD_FREE_OFFER__;
+  return AD_FREE_OFFER_ENABLED === true;
+}
 
 export const AD_FREE_PRODUCT = Object.freeze({
   id: 'squish.adfree',
@@ -40,14 +51,14 @@ export function isAdFree() {
   try { return !!adapter?.isAdFree?.(); } catch { return false; }
 }
 
-/** „Werbefrei“-Knopf nur in der App, und nur solange noch nicht gekauft. */
+/** „Werbefrei“-Knopf nur, wenn das Angebot an ist, ein Kauf-Adapter da ist und noch nicht gekauft. */
 export function canOfferAdFree() {
-  return !isAdFree() && typeof adapter?.purchase === 'function';
+  return isAdFreeOfferEnabled() && !isAdFree() && typeof adapter?.purchase === 'function';
 }
 
-/** „Käufe wiederherstellen“ nur, wenn die App einen Restore-Adapter angemeldet hat. */
+/** „Käufe wiederherstellen“ nur, wenn das Angebot an ist und ein Restore-Adapter da ist. */
 export function canRestoreAdFree() {
-  return typeof adapter?.restore === 'function';
+  return isAdFreeOfferEnabled() && typeof adapter?.restore === 'function';
 }
 
 export function adFreePriceLabel() {
