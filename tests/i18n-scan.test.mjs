@@ -66,3 +66,16 @@ test('data-i18n-Schlüssel in index.html existieren', async () => {
   const missing = keys.filter(k => !STRINGS[k]);
   assert.deepEqual(missing, [], 'fehlende Schlüssel: ' + missing.join(', '));
 });
+
+test('Einstellungen: Datenschutz und Support zeigen auf spoostudio.de, passend zur Sprache', async () => {
+  const html = readFileSync(join(root, 'game/index.html'), 'utf8');
+  assert.match(html, /id="settings-privacy"/);
+  assert.match(html, /id="settings-support"/);
+  const { legalUrl, LEGAL_URLS } = await import('../game/settings.mjs');
+  assert.equal(LEGAL_URLS.de.privacy, 'https://spoostudio.de/squish-attack/datenschutz/');
+  assert.equal(LEGAL_URLS.de.support, 'https://spoostudio.de/squish-attack/support/');
+  assert.equal(LEGAL_URLS.en.privacy, 'https://spoostudio.de/en/privacy/');
+  assert.equal(LEGAL_URLS.en.support, 'https://spoostudio.de/en/support/');
+  assert.equal(legalUrl('privacy', 'de'), LEGAL_URLS.de.privacy);
+  assert.equal(legalUrl('support', 'en'), LEGAL_URLS.en.support);
+});

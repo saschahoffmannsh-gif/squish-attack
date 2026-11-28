@@ -17,12 +17,16 @@ test('capacitor.config.json: Platzhalter-App-ID, lokales webDir, kein server.url
   assert.equal(c.server?.url, undefined);
   assert.equal(c.ios.scrollEnabled, false);
   assert.equal(c.ios.contentInset, 'never');
+  assert.equal(c.loggingBehavior, 'production');
 });
 test('Info.plist: nur Hochformat, AdMob-App-ID aus xcconfig, ATT-Text, SKAdNetwork', () => {
   const p = read('ios/App/App/Info.plist');
   const orient = p.match(/<key>UISupportedInterfaceOrientations<\/key>\s*<array>([\s\S]*?)<\/array>/)[1];
   assert.deepEqual([...orient.matchAll(/<string>(.*?)<\/string>/g)].map(m => m[1]), ['UIInterfaceOrientationPortrait']);
   assert.ok(!p.includes('UISupportedInterfaceOrientations~ipad'));
+  assert.match(p, /<key>CFBundleDisplayName<\/key>\s*<string>Squish Attack<\/string>/);
+  assert.match(p, /<key>CFBundleName<\/key>\s*<string>Squish Attack<\/string>/);
+  assert.match(p, /<key>ITSAppUsesNonExemptEncryption<\/key>\s*<false\/>/);
   assert.match(p, /<key>GADApplicationIdentifier<\/key>\s*<string>\$\(ADMOB_APP_ID\)<\/string>/);
   assert.match(read('ios/debug.xcconfig'), /ADMOB_APP_ID = ca-app-pub-3940256099942544~1458002511/);
   assert.match(read('ios/release.xcconfig'), /ADMOB_APP_ID = ca-app-pub-3147947530766307~6450785208/);

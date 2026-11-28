@@ -92,7 +92,10 @@ function addPrivacyButton(onClick) {
   if (!build || document.getElementById('ad-privacy')) return;
   const b = document.createElement('button');
   b.type = 'button'; b.id = 'ad-privacy'; b.className = 'setting-toggle setting-stats';
-  const label = document.createElement('span'); label.className = 'setting-label'; label.textContent = 'Werbe-Einwilligung ändern';
+  const label = document.createElement('span'); label.className = 'setting-label';
+  label.setAttribute('data-i18n', 'settings.privacyOptions');
+  const de = (document.documentElement.lang || localStorage.getItem('squish-lang-v1') || '').toLowerCase().startsWith('de');
+  label.textContent = de ? 'Werbe-Einwilligung ändern' : 'Change ad consent';
   b.append(label); b.addEventListener('click', () => void onClick());
   build.before(b);
 }

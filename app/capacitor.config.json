@@ -2,7 +2,7 @@
   "appId": "de.hoffmann.squishattack",
   "appName": "Squish Attack",
   "webDir": "www",
-  "loggingBehavior": "debug",
+  "loggingBehavior": "production",
   "ios": {
     "contentInset": "never",
     "scrollEnabled": false,
